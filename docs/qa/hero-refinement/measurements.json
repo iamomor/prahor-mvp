@@ -1,0 +1,219 @@
+{
+  "measurements": [
+    {
+      "theme": "quiet-garden",
+      "width": 1440,
+      "viewportWidth": 1440,
+      "documentWidth": 1440,
+      "buttonRadii": [
+        "999px",
+        "999px"
+      ],
+      "phone": {
+        "width": 260,
+        "height": 548.875
+      },
+      "headingFont": "Fraunces, \"Fraunces Fallback\"",
+      "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+      "geometry": [
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        }
+      ],
+      "errors": []
+    },
+    {
+      "theme": "quiet-garden",
+      "width": 390,
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "buttonRadii": [
+        "999px",
+        "999px"
+      ],
+      "phone": {
+        "width": 239.390625,
+        "height": 505.375
+      },
+      "headingFont": "Fraunces, \"Fraunces Fallback\"",
+      "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+      "geometry": [
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        }
+      ],
+      "errors": []
+    },
+    {
+      "theme": "original-rose",
+      "width": 1440,
+      "viewportWidth": 1440,
+      "documentWidth": 1440,
+      "buttonRadii": [
+        "999px",
+        "999px"
+      ],
+      "phone": {
+        "width": 260,
+        "height": 548.875
+      },
+      "headingFont": "Fraunces, \"Fraunces Fallback\"",
+      "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+      "geometry": [
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        }
+      ],
+      "errors": []
+    },
+    {
+      "theme": "original-rose",
+      "width": 390,
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "buttonRadii": [
+        "999px",
+        "999px"
+      ],
+      "phone": {
+        "width": 239.390625,
+        "height": 505.375
+      },
+      "headingFont": "Fraunces, \"Fraunces Fallback\"",
+      "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+      "geometry": [
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        }
+      ],
+      "errors": []
+    },
+    {
+      "theme": "morning-mist",
+      "width": 1440,
+      "viewportWidth": 1440,
+      "documentWidth": 1440,
+      "buttonRadii": [
+        "999px",
+        "999px"
+      ],
+      "phone": {
+        "width": 260,
+        "height": 548.875
+      },
+      "headingFont": "Fraunces, \"Fraunces Fallback\"",
+      "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+      "geometry": [
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        },
+        {
+          "width": 520,
+          "height": 580
+        }
+      ],
+      "errors": []
+    },
+    {
+      "theme": "morning-mist",
+      "width": 390,
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "buttonRadii": [
+        "999px",
+        "999px"
+      ],
+      "phone": {
+        "width": 239.390625,
+        "height": 505.375
+      },
+      "headingFont": "Fraunces, \"Fraunces Fallback\"",
+      "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+      "geometry": [
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        },
+        {
+          "width": 315,
+          "height": 600.46875
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "comparison": {
+    "explanation": "Concurrent work was confirmed by the user. Differences outside the hero belong to that work and were left untouched.",
+    "baselineSections": 11,
+    "currentSections": 11
+  }
+}

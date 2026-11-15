@@ -1,0 +1,302 @@
+[
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 1440,
+    "pageWidth": 1440,
+    "cardHeights": [
+      723.421875,
+      723.421875,
+      723.421875,
+      723.421875
+    ],
+    "headingLines": 1.9997081537356323,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 4.692535849661896,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 390,
+    "pageWidth": 390,
+    "cardHeights": [
+      773.40625,
+      713.6875,
+      801.109375,
+      766.828125
+    ],
+    "headingLines": 2.9991412984913794,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 4.692535849661896,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 1440,
+    "pageWidth": 1440,
+    "cardHeights": [
+      723.421875,
+      723.421875,
+      723.421875,
+      723.421875
+    ],
+    "headingLines": 1.9997081537356323,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 6.264983366754863,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 390,
+    "pageWidth": 390,
+    "cardHeights": [
+      773.40625,
+      713.6875,
+      801.109375,
+      766.828125
+    ],
+    "headingLines": 2.9991412984913794,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 6.264983366754863,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 1440,
+    "pageWidth": 1440,
+    "cardHeights": [
+      723.421875,
+      723.421875,
+      723.421875,
+      723.421875
+    ],
+    "headingLines": 1.9997081537356323,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 5.6117704688772525,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 390,
+    "pageWidth": 390,
+    "cardHeights": [
+      773.40625,
+      713.6875,
+      801.109375,
+      766.828125
+    ],
+    "headingLines": 2.9991412984913794,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 5.6117704688772525,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 1440,
+    "pageWidth": 1440,
+    "cardHeights": [
+      723.421875,
+      723.421875,
+      723.421875,
+      723.421875
+    ],
+    "headingLines": 1.9997081537356323,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 6.264983366754863,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 390,
+    "pageWidth": 390,
+    "cardHeights": [
+      773.40625,
+      713.6875,
+      801.109375,
+      766.828125
+    ],
+    "headingLines": 2.9991412984913794,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 6.264983366754863,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 1440,
+    "pageWidth": 1440,
+    "cardHeights": [
+      723.421875,
+      723.421875,
+      723.421875,
+      723.421875
+    ],
+    "headingLines": 1.9997081537356323,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 5.369437179352873,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 390,
+    "pageWidth": 390,
+    "cardHeights": [
+      773.40625,
+      713.6875,
+      801.109375,
+      766.828125
+    ],
+    "headingLines": 2.9991412984913794,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 5.369437179352873,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 1440,
+    "pageWidth": 1440,
+    "cardHeights": [
+      723.421875,
+      723.421875,
+      723.421875,
+      723.421875
+    ],
+    "headingLines": 1.9997081537356323,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 6.264983366754863,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 390,
+    "pageWidth": 390,
+    "cardHeights": [
+      773.40625,
+      713.6875,
+      801.109375,
+      766.828125
+    ],
+    "headingLines": 2.9991412984913794,
+    "headingFont": "Fraunces, \"Fraunces Fallback\"",
+    "bodyFont": "Manrope, \"Manrope Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\"",
+    "bodyWeight": "500",
+    "tagFont": "\"JetBrains Mono\", \"JetBrains Mono Fallback\", \"Noto Sans Bengali\", \"Noto Sans Bengali Fallback\", monospace",
+    "minimumTextSize": 13,
+    "minimumContrast": 6.264983366754863,
+    "contrastFailures": [],
+    "sectionOverflow": [
+      0,
+      0
+    ],
+    "errors": []
+  }
+]

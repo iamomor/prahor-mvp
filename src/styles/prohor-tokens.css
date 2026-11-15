@@ -1,0 +1,324 @@
+/* PROHOR design tokens v2 — Tailwind CSS v4.
+   Import once from global CSS (do not duplicate @import "tailwindcss").
+   EVERYTHING visual is a user preference resolved to attributes on <html>:
+     data-theme      quiet-garden | original-rose | morning-mist
+     data-contrast   more                (absent = standard)
+     data-font       default | rubik | google-sans | noto-serif | roboto-slab
+     data-text-scale large | extra-large (absent = 100%)
+     data-text-spacing relaxed           (absent = standard)
+     data-layout     compact | spacious  (absent = comfortable)
+     data-motion     reduce              (absent = follow OS)
+   Attributes are independent: no rule here may couple one preference to another.
+   Components use only --pro-* tokens / Tailwind aliases — never hex, never a font name. */
+@import "tailwindcss";
+
+/* ── 1. Appearance themes (default = Quiet Garden) ───────────────── */
+:root,
+:root[data-theme="quiet-garden"],
+[data-prohor-preview][data-theme="quiet-garden"] {
+  color-scheme: light;
+  --pro-bg: #fffcf5;
+  --pro-surface: #e6f2e9;
+  --pro-surface-2: #d3e6d9;
+  --pro-elevated: #ffffff;
+  --pro-text: #23352d;
+  --pro-muted: #4a6358;
+  --pro-primary: #2f6b54;
+  --pro-primary-hover: #245441;
+  --pro-on-primary: #ffffff;
+  --pro-on-primary-muted: #e1efe6;
+  --pro-accent: #f4c96b;
+  --pro-on-accent: #23352d;
+  --pro-accent-strong: #7a5200;
+  --pro-border: #9aada2;
+  --pro-control-border: #5c7468;
+  --pro-focus: #145da0;
+  --pro-shadow-rgb: 35 53 45;
+}
+:root[data-theme="original-rose"],
+[data-prohor-preview][data-theme="original-rose"] {
+  --pro-bg: #fbf6f2;
+  --pro-surface: #f2dfe4;
+  --pro-surface-2: #ecd3da;
+  --pro-elevated: #ffffff;
+  --pro-text: #432c36;
+  --pro-muted: #62535b;
+  --pro-primary: #70445a;
+  --pro-primary-hover: #5a3548;
+  --pro-on-primary: #ffffff;
+  --pro-on-primary-muted: #f6e6ec;
+  --pro-accent: #e8bac7;
+  --pro-on-accent: #432c36;
+  --pro-accent-strong: #8a3556;
+  --pro-border: #aa949e;
+  --pro-control-border: #75616d;
+  --pro-focus: #165e9b;
+  --pro-shadow-rgb: 67 44 54;
+}
+:root[data-theme="morning-mist"],
+[data-prohor-preview][data-theme="morning-mist"] {
+  --pro-bg: #f8faf9;
+  --pro-surface: #dfeeee;
+  --pro-surface-2: #cbe2e2;
+  --pro-elevated: #ffffff;
+  --pro-text: #17373b;
+  --pro-muted: #4c6161;
+  --pro-primary: #075b67;
+  --pro-primary-hover: #054852;
+  --pro-on-primary: #ffffff;
+  --pro-on-primary-muted: #dcf0f1;
+  --pro-accent: #e8b3c0;
+  --pro-on-accent: #17373b;
+  --pro-accent-strong: #8a3350;
+  --pro-border: #9cadaa;
+  --pro-control-border: #4e6c70;
+  --pro-focus: #144db5;
+  --pro-shadow-rgb: 23 55 59;
+}
+
+/* ── 2. Shared tokens (identical in every theme) ─────────────────── */
+:root {
+  --pro-success: #1a6848;  --pro-success-soft: #e3f1e8;
+  --pro-warning: #7c4a08;  --pro-warning-soft: #fbeed2;
+  --pro-danger: #a33138;  --pro-danger-soft: #f8e1df;
+  --pro-info: #1b5e86;  --pro-info-soft: #e0eef6;
+}
+
+:root {
+  --pro-radius-control: 0.625rem;
+  --pro-radius-field: 0.75rem;
+  --pro-radius-card: 1rem;
+  --pro-radius-hero: 1.5rem;
+  --pro-radius-pill: 999px;
+  --pro-duration-fast: 160ms;
+  --pro-duration-normal: 220ms;
+  --pro-ease: cubic-bezier(0.2, 0, 0, 1);
+  --pro-shadow-1: 0 1px 2px rgb(var(--pro-shadow-rgb) / 0.08);
+  --pro-shadow-3: 0 8px 24px rgb(var(--pro-shadow-rgb) / 0.14);
+  --pro-scrim: rgb(var(--pro-shadow-rgb) / 0.55);
+
+  /* layout density (see data-layout below) */
+  --pro-control-h: 3rem;
+  --pro-gap-field: 1rem;
+  --pro-gap-group: 1.5rem;
+  --pro-gap-section: 2.5rem;
+  --pro-pad-card: 1.25rem;
+
+  /* text spacing (see data-text-spacing below) */
+  --pro-leading-body: 1.6;
+  --pro-leading-body-bn: 1.75;
+  --pro-word-spacing: normal;
+  --pro-letter-spacing: normal;   /* never applied to Bangla */
+  --pro-para-gap: 1em;
+}
+
+/* ── 3. Higher contrast: independent overlay, one block PER THEME ── */
+/* Keeps the user's chosen hue family; target 7:1 for text. Saved theme is never overwritten. */
+:root[data-contrast="more"],
+[data-prohor-preview][data-contrast="more"] {
+  --pro-bg: #ffffff;
+  --pro-surface: #eef2ef;
+  --pro-surface-2: #dfe7e2;
+  --pro-elevated: #ffffff;
+  --pro-text: #11271f;
+  --pro-muted: #243d32;
+  --pro-primary: #153e31;
+  --pro-primary-hover: #0e2d23;
+  --pro-on-primary: #ffffff;
+  --pro-on-primary-muted: #ffffff;
+  --pro-accent: #f4c96b;
+  --pro-on-accent: #11271f;
+  --pro-accent-strong: #5c3d00;
+  --pro-border: #42574a;
+  --pro-control-border: #243d32;
+  --pro-focus: #0041b5;
+  --pro-shadow-rgb: 17 39 31;
+}
+:root[data-contrast="more"] {
+  --pro-success: #14532d;  --pro-success-soft: #e3f1e8;
+  --pro-warning: #5c3a04;  --pro-warning-soft: #fbeed2;
+  --pro-danger: #8b1f1f;  --pro-danger-soft: #f8e1df;
+  --pro-info: #0f4a6e;  --pro-info-soft: #e0eef6;
+}
+:root[data-theme="original-rose"][data-contrast="more"],
+[data-prohor-preview][data-theme="original-rose"][data-contrast="more"] {
+  --pro-bg: #ffffff;
+  --pro-surface: #f5eef0;
+  --pro-surface-2: #f0e6e9;
+  --pro-elevated: #ffffff;
+  --pro-text: #2a1520;
+  --pro-muted: #46303b;
+  --pro-primary: #4d2640;
+  --pro-primary-hover: #3a1c30;
+  --pro-on-primary: #ffffff;
+  --pro-on-primary-muted: #ffffff;
+  --pro-accent: #e8bac7;
+  --pro-on-accent: #2a1520;
+  --pro-accent-strong: #6b2243;
+  --pro-border: #5d4651;
+  --pro-control-border: #46303b;
+  --pro-focus: #0041b5;
+  --pro-shadow-rgb: 42 21 32;
+}
+:root[data-theme="morning-mist"][data-contrast="more"],
+[data-prohor-preview][data-theme="morning-mist"][data-contrast="more"] {
+  --pro-bg: #ffffff;
+  --pro-surface: #eef4f4;
+  --pro-surface-2: #dde9e9;
+  --pro-elevated: #ffffff;
+  --pro-text: #0c2427;
+  --pro-muted: #25403f;
+  --pro-primary: #053f48;
+  --pro-primary-hover: #03303a;
+  --pro-on-primary: #ffffff;
+  --pro-on-primary-muted: #ffffff;
+  --pro-accent: #e8b3c0;
+  --pro-on-accent: #0c2427;
+  --pro-accent-strong: #6b2238;
+  --pro-border: #3f5d5f;
+  --pro-control-border: #25403f;
+  --pro-focus: #0041b5;
+  --pro-shadow-rgb: 12 36 39;
+}
+
+/* ── 4. Typeface presets (user choice). Families come from next/font variables.
+      Every stack ends in a Bengali family so Bangla glyphs fall back per character. */
+:root,
+:root[data-font="default"] {
+  --pro-font-display: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-heading: var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-body:    var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-control: var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-record:  var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+}
+:root[data-font="rubik"] {
+  --pro-font-display: var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-heading: var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-body:    var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-control: var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-record:  var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+}
+:root[data-font="google-sans"] {
+  --pro-font-display: var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-heading: var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-body:    var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-control: var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-record:  var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
+}
+:root[data-font="noto-serif"] {
+  --pro-font-display: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-heading: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-body:    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-control: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-record:  var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+}
+:root[data-font="roboto-slab"] {
+  --pro-font-display: var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-heading: var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-body:    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-control: var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-record:  var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+}
+
+/* ── 5. Text size, text spacing, layout density (independent) ────── */
+html { font-size: 100%; scroll-padding-top: 5rem; }
+html[data-text-scale="large"]       { font-size: 112.5%; }
+html[data-text-scale="extra-large"] { font-size: 125%; }
+
+:root[data-text-spacing="relaxed"] {
+  --pro-leading-body: 1.85;
+  --pro-leading-body-bn: 2;
+  --pro-word-spacing: 0.08em;
+  --pro-letter-spacing: 0.02em;
+  --pro-para-gap: 1.5em;
+}
+:root[data-layout="compact"] {
+  --pro-control-h: 2.75rem;  /* 44px at 100%: never smaller */
+  --pro-gap-field: 0.75rem;  --pro-gap-group: 1.25rem;
+  --pro-gap-section: 2rem;   --pro-pad-card: 1rem;
+}
+:root[data-layout="spacious"] {
+  --pro-control-h: 3.5rem;
+  --pro-gap-field: 1.25rem;  --pro-gap-group: 2rem;
+  --pro-gap-section: 3.25rem; --pro-pad-card: 1.5rem;
+}
+
+/* ── 6. Tailwind v4 aliases: bg-pro-bg, text-pro-text, font-display, rounded-card … */
+@theme inline {
+  --color-pro-bg: var(--pro-bg);
+  --color-pro-surface: var(--pro-surface);
+  --color-pro-surface-2: var(--pro-surface-2);
+  --color-pro-elevated: var(--pro-elevated);
+  --color-pro-text: var(--pro-text);
+  --color-pro-muted: var(--pro-muted);
+  --color-pro-primary: var(--pro-primary);
+  --color-pro-primary-hover: var(--pro-primary-hover);
+  --color-pro-on-primary: var(--pro-on-primary);
+  --color-pro-on-primary-muted: var(--pro-on-primary-muted);
+  --color-pro-accent: var(--pro-accent);
+  --color-pro-on-accent: var(--pro-on-accent);
+  --color-pro-accent-strong: var(--pro-accent-strong);
+  --color-pro-border: var(--pro-border);
+  --color-pro-control-border: var(--pro-control-border);
+  --color-pro-focus: var(--pro-focus);
+  --color-pro-success: var(--pro-success);  --color-pro-success-soft: var(--pro-success-soft);
+  --color-pro-warning: var(--pro-warning);  --color-pro-warning-soft: var(--pro-warning-soft);
+  --color-pro-danger: var(--pro-danger);    --color-pro-danger-soft: var(--pro-danger-soft);
+  --color-pro-info: var(--pro-info);        --color-pro-info-soft: var(--pro-info-soft);
+  --font-display: var(--pro-font-display);
+  --font-heading: var(--pro-font-heading);
+  --font-body: var(--pro-font-body);
+  --font-control: var(--pro-font-control);
+  --font-record: var(--pro-font-record);
+  --font-tag: var(--pro-font-tag);
+  --radius-control: var(--pro-radius-control);
+  --radius-field: var(--pro-radius-field);
+  --radius-card: var(--pro-radius-card);
+  --radius-hero: var(--pro-radius-hero);
+  --radius-pill: var(--pro-radius-pill);
+  --shadow-pro-1: var(--pro-shadow-1);
+  --shadow-pro-3: var(--pro-shadow-3);
+  --ease-pro: var(--pro-ease);
+  --text-display: clamp(2.5rem, 1.9rem + 2.4vw, 3.75rem);
+  --text-display--line-height: 1.1;
+  --text-headline: clamp(1.875rem, 1.6rem + 1vw, 2.5rem);
+  --text-headline--line-height: 1.2;
+}
+
+/* ── 7. Base rules (in @layer base so Tailwind utilities can override) */
+@layer base {
+  body {
+    background: var(--pro-bg);
+    color: var(--pro-text);
+    font-family: var(--pro-font-body);
+    font-size: 1rem;
+    line-height: var(--pro-leading-body);
+    word-spacing: var(--pro-word-spacing);
+    letter-spacing: var(--pro-letter-spacing);
+    font-synthesis: none;
+  }
+  :lang(bn) { line-height: var(--pro-leading-body-bn); letter-spacing: 0; }   /* never track Bangla */
+  p + p { margin-block-start: var(--pro-para-gap); }
+  h1, h2 { font-family: var(--pro-font-display); line-height: 1.2; }
+  h3, h4 { font-family: var(--pro-font-heading); line-height: 1.35; }
+  :lang(bn) :is(h1, h2) { line-height: 1.35; }
+  :lang(bn) :is(h3, h4) { line-height: 1.45; }
+  :is(button, [role="tab"], [role="button"]) { font-family: var(--pro-font-control); }
+  :focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 3px; }
+  .on-primary :focus-visible { outline-color: var(--pro-bg); }   /* rings on primary-coloured bands */
+  :where(button, input, select, textarea) { min-block-size: var(--pro-control-h); }
+}
+
+/* ── 8. Motion: OS signal OR user choice; either one reduces ─────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
+  scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important;
+}
+
+/* ── 9. Forced colors (Windows High Contrast): system palette owns the UI.
+      Do NOT set forced-color-adjust: none. Keep real borders on cards/inputs. */
+@media (forced-colors: active) {
+  :focus-visible { outline-color: Highlight; }
+}

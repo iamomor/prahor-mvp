@@ -1,0 +1,1384 @@
+{
+  "results": [
+    {
+      "theme": "quiet-garden",
+      "contrast": "normal",
+      "minimum": 5.44,
+      "failures": [],
+      "pairs": [
+        {
+          "text": "Connected care. A more human experience.",
+          "ratio": 6.75
+        },
+        {
+          "text": "Maternal care,",
+          "ratio": 12.66
+        },
+        {
+          "text": "designed around",
+          "ratio": 12.66
+        },
+        {
+          "text": "every mother.",
+          "ratio": 6.11
+        },
+        {
+          "text": "আপনার যত্ন, আপনার মতো।",
+          "ratio": 6.11
+        },
+        {
+          "text": "PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you.",
+          "ratio": 6.37
+        },
+        {
+          "text": "Explore PROHOR",
+          "ratio": 6.26
+        },
+        {
+          "text": "See how it works",
+          "ratio": 12.97
+        },
+        {
+          "text": "Mother & baby records",
+          "ratio": 11.27
+        },
+        {
+          "text": "Bangla answers with sources",
+          "ratio": 11.27
+        },
+        {
+          "text": "Reports explained",
+          "ratio": 11.27
+        },
+        {
+          "text": "Well-being",
+          "ratio": 11.27
+        },
+        {
+          "text": "Human support",
+          "ratio": 11.27
+        },
+        {
+          "text": "Explore without an account.",
+          "ratio": 6.37
+        },
+        {
+          "text": "Sample data",
+          "ratio": 6.53
+        },
+        {
+          "text": "PROHOR",
+          "ratio": 6.11
+        },
+        {
+          "text": "প্রহর",
+          "ratio": 6.11
+        },
+        {
+          "text": "YOUR CARE. YOUR WAY.",
+          "ratio": 6.11
+        },
+        {
+          "text": "আজ কী করতে চান?",
+          "ratio": 12.66
+        },
+        {
+          "text": "What would you like to do?",
+          "ratio": 6.37
+        },
+        {
+          "text": "Ask PROHOR",
+          "ratio": 12.97
+        },
+        {
+          "text": "প্রশ্ন করুন",
+          "ratio": 6.53
+        },
+        {
+          "text": "My Health",
+          "ratio": 12.97
+        },
+        {
+          "text": "আমার স্বাস্থ্য",
+          "ratio": 6.53
+        },
+        {
+          "text": "My Wellness",
+          "ratio": 12.97
+        },
+        {
+          "text": "আমার সুস্থতা",
+          "ratio": 6.53
+        },
+        {
+          "text": "Find Care",
+          "ratio": 12.97
+        },
+        {
+          "text": "সেবা খুঁজুন",
+          "ratio": 6.53
+        },
+        {
+          "text": "Your language. Your pace.",
+          "ratio": 5.44
+        },
+        {
+          "text": "Private by your choice",
+          "ratio": 6.37
+        },
+        {
+          "text": "Home",
+          "ratio": 6.11
+        },
+        {
+          "text": "Ask",
+          "ratio": 6.37
+        },
+        {
+          "text": "Health",
+          "ratio": 6.37
+        },
+        {
+          "text": "Care",
+          "ratio": 6.37
+        },
+        {
+          "text": "Barta",
+          "ratio": 6.26
+        },
+        {
+          "text": "বার্তা",
+          "ratio": 6.53
+        },
+        {
+          "text": "আমার পছন্দও কি গুরুত্বপূর্ণ?",
+          "ratio": 12.97
+        },
+        {
+          "text": "আপনার অভিজ্ঞতাও যত্নের অংশ।",
+          "ratio": 6.53
+        },
+        {
+          "text": "WHO · Antenatal care, 2016",
+          "ratio": 5.44
+        },
+        {
+          "text": "Jibonrekha",
+          "ratio": 6.26
+        },
+        {
+          "text": "Week 24",
+          "ratio": 12.97
+        },
+        {
+          "text": "Your care story",
+          "ratio": 6.53
+        },
+        {
+          "text": "Mother",
+          "ratio": 12.97
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 6.53
+        },
+        {
+          "text": "Baby",
+          "ratio": 12.97
+        },
+        {
+          "text": "Separate record",
+          "ratio": 6.53
+        },
+        {
+          "text": "Bondhon",
+          "ratio": 6.26
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 12.97
+        },
+        {
+          "text": "Selected reports",
+          "ratio": 12.97
+        },
+        {
+          "text": "Diary & AI conversations:",
+          "ratio": 6.53
+        },
+        {
+          "text": "Private",
+          "ratio": 6.26
+        },
+        {
+          "text": "Adapt",
+          "ratio": 6.26
+        },
+        {
+          "text": "A",
+          "ratio": 11.27
+        },
+        {
+          "text": "A+",
+          "ratio": 6.26
+        },
+        {
+          "text": "Animation off · reduced motion",
+          "ratio": 6.37
+        }
+      ]
+    },
+    {
+      "theme": "quiet-garden",
+      "contrast": "more",
+      "minimum": 9.89,
+      "failures": [],
+      "pairs": [
+        {
+          "text": "Connected care. A more human experience.",
+          "ratio": 9.89
+        },
+        {
+          "text": "Maternal care,",
+          "ratio": 15.74
+        },
+        {
+          "text": "designed around",
+          "ratio": 15.74
+        },
+        {
+          "text": "every mother.",
+          "ratio": 11.9
+        },
+        {
+          "text": "আপনার যত্ন, আপনার মতো।",
+          "ratio": 11.9
+        },
+        {
+          "text": "PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you.",
+          "ratio": 11.74
+        },
+        {
+          "text": "Explore PROHOR",
+          "ratio": 11.9
+        },
+        {
+          "text": "See how it works",
+          "ratio": 15.74
+        },
+        {
+          "text": "Mother & baby records",
+          "ratio": 13.93
+        },
+        {
+          "text": "Bangla answers with sources",
+          "ratio": 13.93
+        },
+        {
+          "text": "Reports explained",
+          "ratio": 13.93
+        },
+        {
+          "text": "Well-being",
+          "ratio": 13.93
+        },
+        {
+          "text": "Human support",
+          "ratio": 13.93
+        },
+        {
+          "text": "Explore without an account.",
+          "ratio": 11.74
+        },
+        {
+          "text": "Sample data",
+          "ratio": 11.74
+        },
+        {
+          "text": "PROHOR",
+          "ratio": 11.9
+        },
+        {
+          "text": "প্রহর",
+          "ratio": 11.9
+        },
+        {
+          "text": "YOUR CARE. YOUR WAY.",
+          "ratio": 11.9
+        },
+        {
+          "text": "আজ কী করতে চান?",
+          "ratio": 15.74
+        },
+        {
+          "text": "What would you like to do?",
+          "ratio": 11.74
+        },
+        {
+          "text": "Ask PROHOR",
+          "ratio": 15.74
+        },
+        {
+          "text": "প্রশ্ন করুন",
+          "ratio": 11.74
+        },
+        {
+          "text": "My Health",
+          "ratio": 15.74
+        },
+        {
+          "text": "আমার স্বাস্থ্য",
+          "ratio": 11.74
+        },
+        {
+          "text": "My Wellness",
+          "ratio": 15.74
+        },
+        {
+          "text": "আমার সুস্থতা",
+          "ratio": 11.74
+        },
+        {
+          "text": "Find Care",
+          "ratio": 15.74
+        },
+        {
+          "text": "সেবা খুঁজুন",
+          "ratio": 11.74
+        },
+        {
+          "text": "Your language. Your pace.",
+          "ratio": 10.53
+        },
+        {
+          "text": "Private by your choice",
+          "ratio": 11.74
+        },
+        {
+          "text": "Home",
+          "ratio": 11.9
+        },
+        {
+          "text": "Ask",
+          "ratio": 11.74
+        },
+        {
+          "text": "Health",
+          "ratio": 11.74
+        },
+        {
+          "text": "Care",
+          "ratio": 11.74
+        },
+        {
+          "text": "Barta",
+          "ratio": 11.9
+        },
+        {
+          "text": "বার্তা",
+          "ratio": 11.74
+        },
+        {
+          "text": "আমার পছন্দও কি গুরুত্বপূর্ণ?",
+          "ratio": 15.74
+        },
+        {
+          "text": "আপনার অভিজ্ঞতাও যত্নের অংশ।",
+          "ratio": 11.74
+        },
+        {
+          "text": "WHO · Antenatal care, 2016",
+          "ratio": 10.53
+        },
+        {
+          "text": "Jibonrekha",
+          "ratio": 11.9
+        },
+        {
+          "text": "Week 24",
+          "ratio": 15.74
+        },
+        {
+          "text": "Your care story",
+          "ratio": 11.74
+        },
+        {
+          "text": "Mother",
+          "ratio": 15.74
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 11.74
+        },
+        {
+          "text": "Baby",
+          "ratio": 15.74
+        },
+        {
+          "text": "Separate record",
+          "ratio": 11.74
+        },
+        {
+          "text": "Bondhon",
+          "ratio": 11.9
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 15.74
+        },
+        {
+          "text": "Selected reports",
+          "ratio": 15.74
+        },
+        {
+          "text": "Diary & AI conversations:",
+          "ratio": 11.74
+        },
+        {
+          "text": "Private",
+          "ratio": 11.9
+        },
+        {
+          "text": "Adapt",
+          "ratio": 11.9
+        },
+        {
+          "text": "A",
+          "ratio": 13.93
+        },
+        {
+          "text": "A+",
+          "ratio": 11.9
+        },
+        {
+          "text": "Animation off · reduced motion",
+          "ratio": 11.74
+        }
+      ]
+    },
+    {
+      "theme": "original-rose",
+      "contrast": "normal",
+      "minimum": 6.18,
+      "failures": [],
+      "pairs": [
+        {
+          "text": "Connected care. A more human experience.",
+          "ratio": 7.18
+        },
+        {
+          "text": "Maternal care,",
+          "ratio": 11.84
+        },
+        {
+          "text": "designed around",
+          "ratio": 11.84
+        },
+        {
+          "text": "every mother.",
+          "ratio": 7.35
+        },
+        {
+          "text": "আপনার যত্ন, আপনার মতো।",
+          "ratio": 7.35
+        },
+        {
+          "text": "PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you.",
+          "ratio": 6.73
+        },
+        {
+          "text": "Explore PROHOR",
+          "ratio": 7.88
+        },
+        {
+          "text": "See how it works",
+          "ratio": 12.71
+        },
+        {
+          "text": "Mother & baby records",
+          "ratio": 9.96
+        },
+        {
+          "text": "Bangla answers with sources",
+          "ratio": 9.96
+        },
+        {
+          "text": "Reports explained",
+          "ratio": 9.96
+        },
+        {
+          "text": "Well-being",
+          "ratio": 9.96
+        },
+        {
+          "text": "Human support",
+          "ratio": 9.96
+        },
+        {
+          "text": "Explore without an account.",
+          "ratio": 6.73
+        },
+        {
+          "text": "Sample data",
+          "ratio": 7.22
+        },
+        {
+          "text": "PROHOR",
+          "ratio": 7.35
+        },
+        {
+          "text": "প্রহর",
+          "ratio": 7.35
+        },
+        {
+          "text": "YOUR CARE. YOUR WAY.",
+          "ratio": 7.35
+        },
+        {
+          "text": "আজ কী করতে চান?",
+          "ratio": 11.84
+        },
+        {
+          "text": "What would you like to do?",
+          "ratio": 6.73
+        },
+        {
+          "text": "Ask PROHOR",
+          "ratio": 12.71
+        },
+        {
+          "text": "প্রশ্ন করুন",
+          "ratio": 7.22
+        },
+        {
+          "text": "My Health",
+          "ratio": 12.71
+        },
+        {
+          "text": "আমার স্বাস্থ্য",
+          "ratio": 7.22
+        },
+        {
+          "text": "My Wellness",
+          "ratio": 12.71
+        },
+        {
+          "text": "আমার সুস্থতা",
+          "ratio": 7.22
+        },
+        {
+          "text": "Find Care",
+          "ratio": 12.71
+        },
+        {
+          "text": "সেবা খুঁজুন",
+          "ratio": 7.22
+        },
+        {
+          "text": "Your language. Your pace.",
+          "ratio": 6.18
+        },
+        {
+          "text": "Private by your choice",
+          "ratio": 6.73
+        },
+        {
+          "text": "Home",
+          "ratio": 7.35
+        },
+        {
+          "text": "Ask",
+          "ratio": 6.73
+        },
+        {
+          "text": "Health",
+          "ratio": 6.73
+        },
+        {
+          "text": "Care",
+          "ratio": 6.73
+        },
+        {
+          "text": "Barta",
+          "ratio": 7.88
+        },
+        {
+          "text": "বার্তা",
+          "ratio": 7.22
+        },
+        {
+          "text": "আমার পছন্দও কি গুরুত্বপূর্ণ?",
+          "ratio": 12.71
+        },
+        {
+          "text": "আপনার অভিজ্ঞতাও যত্নের অংশ।",
+          "ratio": 7.22
+        },
+        {
+          "text": "WHO · Antenatal care, 2016",
+          "ratio": 6.18
+        },
+        {
+          "text": "Jibonrekha",
+          "ratio": 7.88
+        },
+        {
+          "text": "Week 24",
+          "ratio": 12.71
+        },
+        {
+          "text": "Your care story",
+          "ratio": 7.22
+        },
+        {
+          "text": "Mother",
+          "ratio": 12.71
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 7.22
+        },
+        {
+          "text": "Baby",
+          "ratio": 12.71
+        },
+        {
+          "text": "Separate record",
+          "ratio": 7.22
+        },
+        {
+          "text": "Bondhon",
+          "ratio": 7.88
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 12.71
+        },
+        {
+          "text": "Selected reports",
+          "ratio": 12.71
+        },
+        {
+          "text": "Diary & AI conversations:",
+          "ratio": 7.22
+        },
+        {
+          "text": "Private",
+          "ratio": 7.88
+        },
+        {
+          "text": "Adapt",
+          "ratio": 7.88
+        },
+        {
+          "text": "A",
+          "ratio": 9.96
+        },
+        {
+          "text": "A+",
+          "ratio": 7.88
+        },
+        {
+          "text": "Animation off · reduced motion",
+          "ratio": 6.73
+        }
+      ]
+    },
+    {
+      "theme": "original-rose",
+      "contrast": "more",
+      "minimum": 10.85,
+      "failures": [],
+      "pairs": [
+        {
+          "text": "Connected care. A more human experience.",
+          "ratio": 10.85
+        },
+        {
+          "text": "Maternal care,",
+          "ratio": 17.12
+        },
+        {
+          "text": "designed around",
+          "ratio": 17.12
+        },
+        {
+          "text": "every mother.",
+          "ratio": 12.6
+        },
+        {
+          "text": "আপনার যত্ন, আপনার মতো।",
+          "ratio": 12.6
+        },
+        {
+          "text": "PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you.",
+          "ratio": 12.03
+        },
+        {
+          "text": "Explore PROHOR",
+          "ratio": 12.6
+        },
+        {
+          "text": "See how it works",
+          "ratio": 17.12
+        },
+        {
+          "text": "Mother & baby records",
+          "ratio": 14.98
+        },
+        {
+          "text": "Bangla answers with sources",
+          "ratio": 14.98
+        },
+        {
+          "text": "Reports explained",
+          "ratio": 14.98
+        },
+        {
+          "text": "Well-being",
+          "ratio": 14.98
+        },
+        {
+          "text": "Human support",
+          "ratio": 14.98
+        },
+        {
+          "text": "Explore without an account.",
+          "ratio": 12.03
+        },
+        {
+          "text": "Sample data",
+          "ratio": 12.03
+        },
+        {
+          "text": "PROHOR",
+          "ratio": 12.6
+        },
+        {
+          "text": "প্রহর",
+          "ratio": 12.6
+        },
+        {
+          "text": "YOUR CARE. YOUR WAY.",
+          "ratio": 12.6
+        },
+        {
+          "text": "আজ কী করতে চান?",
+          "ratio": 17.12
+        },
+        {
+          "text": "What would you like to do?",
+          "ratio": 12.03
+        },
+        {
+          "text": "Ask PROHOR",
+          "ratio": 17.12
+        },
+        {
+          "text": "প্রশ্ন করুন",
+          "ratio": 12.03
+        },
+        {
+          "text": "My Health",
+          "ratio": 17.12
+        },
+        {
+          "text": "আমার স্বাস্থ্য",
+          "ratio": 12.03
+        },
+        {
+          "text": "My Wellness",
+          "ratio": 17.12
+        },
+        {
+          "text": "আমার সুস্থতা",
+          "ratio": 12.03
+        },
+        {
+          "text": "Find Care",
+          "ratio": 17.12
+        },
+        {
+          "text": "সেবা খুঁজুন",
+          "ratio": 12.03
+        },
+        {
+          "text": "Your language. Your pace.",
+          "ratio": 11.02
+        },
+        {
+          "text": "Private by your choice",
+          "ratio": 12.03
+        },
+        {
+          "text": "Home",
+          "ratio": 12.6
+        },
+        {
+          "text": "Ask",
+          "ratio": 12.03
+        },
+        {
+          "text": "Health",
+          "ratio": 12.03
+        },
+        {
+          "text": "Care",
+          "ratio": 12.03
+        },
+        {
+          "text": "Barta",
+          "ratio": 12.6
+        },
+        {
+          "text": "বার্তা",
+          "ratio": 12.03
+        },
+        {
+          "text": "আমার পছন্দও কি গুরুত্বপূর্ণ?",
+          "ratio": 17.12
+        },
+        {
+          "text": "আপনার অভিজ্ঞতাও যত্নের অংশ।",
+          "ratio": 12.03
+        },
+        {
+          "text": "WHO · Antenatal care, 2016",
+          "ratio": 11.02
+        },
+        {
+          "text": "Jibonrekha",
+          "ratio": 12.6
+        },
+        {
+          "text": "Week 24",
+          "ratio": 17.12
+        },
+        {
+          "text": "Your care story",
+          "ratio": 12.03
+        },
+        {
+          "text": "Mother",
+          "ratio": 17.12
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 12.03
+        },
+        {
+          "text": "Baby",
+          "ratio": 17.12
+        },
+        {
+          "text": "Separate record",
+          "ratio": 12.03
+        },
+        {
+          "text": "Bondhon",
+          "ratio": 12.6
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 17.12
+        },
+        {
+          "text": "Selected reports",
+          "ratio": 17.12
+        },
+        {
+          "text": "Diary & AI conversations:",
+          "ratio": 12.03
+        },
+        {
+          "text": "Private",
+          "ratio": 12.6
+        },
+        {
+          "text": "Adapt",
+          "ratio": 12.6
+        },
+        {
+          "text": "A",
+          "ratio": 14.98
+        },
+        {
+          "text": "A+",
+          "ratio": 12.6
+        },
+        {
+          "text": "Animation off · reduced motion",
+          "ratio": 12.03
+        }
+      ]
+    },
+    {
+      "theme": "morning-mist",
+      "contrast": "normal",
+      "minimum": 6.28,
+      "failures": [],
+      "pairs": [
+        {
+          "text": "Connected care. A more human experience.",
+          "ratio": 7.5
+        },
+        {
+          "text": "Maternal care,",
+          "ratio": 12.17
+        },
+        {
+          "text": "designed around",
+          "ratio": 12.17
+        },
+        {
+          "text": "every mother.",
+          "ratio": 7.42
+        },
+        {
+          "text": "আপনার যত্ন, আপনার মতো।",
+          "ratio": 7.42
+        },
+        {
+          "text": "PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you.",
+          "ratio": 6.28
+        },
+        {
+          "text": "Explore PROHOR",
+          "ratio": 7.77
+        },
+        {
+          "text": "See how it works",
+          "ratio": 12.76
+        },
+        {
+          "text": "Mother & baby records",
+          "ratio": 10.69
+        },
+        {
+          "text": "Bangla answers with sources",
+          "ratio": 10.69
+        },
+        {
+          "text": "Reports explained",
+          "ratio": 10.69
+        },
+        {
+          "text": "Well-being",
+          "ratio": 10.69
+        },
+        {
+          "text": "Human support",
+          "ratio": 10.69
+        },
+        {
+          "text": "Explore without an account.",
+          "ratio": 6.28
+        },
+        {
+          "text": "Sample data",
+          "ratio": 6.58
+        },
+        {
+          "text": "PROHOR",
+          "ratio": 7.42
+        },
+        {
+          "text": "প্রহর",
+          "ratio": 7.42
+        },
+        {
+          "text": "YOUR CARE. YOUR WAY.",
+          "ratio": 7.42
+        },
+        {
+          "text": "আজ কী করতে চান?",
+          "ratio": 12.17
+        },
+        {
+          "text": "What would you like to do?",
+          "ratio": 6.28
+        },
+        {
+          "text": "Ask PROHOR",
+          "ratio": 12.76
+        },
+        {
+          "text": "প্রশ্ন করুন",
+          "ratio": 6.58
+        },
+        {
+          "text": "My Health",
+          "ratio": 12.76
+        },
+        {
+          "text": "আমার স্বাস্থ্য",
+          "ratio": 6.58
+        },
+        {
+          "text": "My Wellness",
+          "ratio": 12.76
+        },
+        {
+          "text": "আমার সুস্থতা",
+          "ratio": 6.58
+        },
+        {
+          "text": "Find Care",
+          "ratio": 12.76
+        },
+        {
+          "text": "সেবা খুঁজুন",
+          "ratio": 6.58
+        },
+        {
+          "text": "Your language. Your pace.",
+          "ratio": 6.52
+        },
+        {
+          "text": "Private by your choice",
+          "ratio": 6.28
+        },
+        {
+          "text": "Home",
+          "ratio": 7.42
+        },
+        {
+          "text": "Ask",
+          "ratio": 6.28
+        },
+        {
+          "text": "Health",
+          "ratio": 6.28
+        },
+        {
+          "text": "Care",
+          "ratio": 6.28
+        },
+        {
+          "text": "Barta",
+          "ratio": 7.77
+        },
+        {
+          "text": "বার্তা",
+          "ratio": 6.58
+        },
+        {
+          "text": "আমার পছন্দও কি গুরুত্বপূর্ণ?",
+          "ratio": 12.76
+        },
+        {
+          "text": "আপনার অভিজ্ঞতাও যত্নের অংশ।",
+          "ratio": 6.58
+        },
+        {
+          "text": "WHO · Antenatal care, 2016",
+          "ratio": 6.52
+        },
+        {
+          "text": "Jibonrekha",
+          "ratio": 7.77
+        },
+        {
+          "text": "Week 24",
+          "ratio": 12.76
+        },
+        {
+          "text": "Your care story",
+          "ratio": 6.58
+        },
+        {
+          "text": "Mother",
+          "ratio": 12.76
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 6.58
+        },
+        {
+          "text": "Baby",
+          "ratio": 12.76
+        },
+        {
+          "text": "Separate record",
+          "ratio": 6.58
+        },
+        {
+          "text": "Bondhon",
+          "ratio": 7.77
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 12.76
+        },
+        {
+          "text": "Selected reports",
+          "ratio": 12.76
+        },
+        {
+          "text": "Diary & AI conversations:",
+          "ratio": 6.58
+        },
+        {
+          "text": "Private",
+          "ratio": 7.77
+        },
+        {
+          "text": "Adapt",
+          "ratio": 7.77
+        },
+        {
+          "text": "A",
+          "ratio": 10.69
+        },
+        {
+          "text": "A+",
+          "ratio": 7.77
+        },
+        {
+          "text": "Animation off · reduced motion",
+          "ratio": 6.28
+        }
+      ]
+    },
+    {
+      "theme": "morning-mist",
+      "contrast": "more",
+      "minimum": 10.43,
+      "failures": [],
+      "pairs": [
+        {
+          "text": "Connected care. A more human experience.",
+          "ratio": 10.99
+        },
+        {
+          "text": "Maternal care,",
+          "ratio": 16.19
+        },
+        {
+          "text": "designed around",
+          "ratio": 16.19
+        },
+        {
+          "text": "every mother.",
+          "ratio": 11.6
+        },
+        {
+          "text": "আপনার যত্ন, আপনার মতো।",
+          "ratio": 11.6
+        },
+        {
+          "text": "PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you.",
+          "ratio": 11.15
+        },
+        {
+          "text": "Explore PROHOR",
+          "ratio": 11.6
+        },
+        {
+          "text": "See how it works",
+          "ratio": 16.19
+        },
+        {
+          "text": "Mother & baby records",
+          "ratio": 14.56
+        },
+        {
+          "text": "Bangla answers with sources",
+          "ratio": 14.56
+        },
+        {
+          "text": "Reports explained",
+          "ratio": 14.56
+        },
+        {
+          "text": "Well-being",
+          "ratio": 14.56
+        },
+        {
+          "text": "Human support",
+          "ratio": 14.56
+        },
+        {
+          "text": "Explore without an account.",
+          "ratio": 11.15
+        },
+        {
+          "text": "Sample data",
+          "ratio": 11.15
+        },
+        {
+          "text": "PROHOR",
+          "ratio": 11.6
+        },
+        {
+          "text": "প্রহর",
+          "ratio": 11.6
+        },
+        {
+          "text": "YOUR CARE. YOUR WAY.",
+          "ratio": 11.6
+        },
+        {
+          "text": "আজ কী করতে চান?",
+          "ratio": 16.19
+        },
+        {
+          "text": "What would you like to do?",
+          "ratio": 11.15
+        },
+        {
+          "text": "Ask PROHOR",
+          "ratio": 16.19
+        },
+        {
+          "text": "প্রশ্ন করুন",
+          "ratio": 11.15
+        },
+        {
+          "text": "My Health",
+          "ratio": 16.19
+        },
+        {
+          "text": "আমার স্বাস্থ্য",
+          "ratio": 11.15
+        },
+        {
+          "text": "My Wellness",
+          "ratio": 16.19
+        },
+        {
+          "text": "আমার সুস্থতা",
+          "ratio": 11.15
+        },
+        {
+          "text": "Find Care",
+          "ratio": 16.19
+        },
+        {
+          "text": "সেবা খুঁজুন",
+          "ratio": 11.15
+        },
+        {
+          "text": "Your language. Your pace.",
+          "ratio": 10.43
+        },
+        {
+          "text": "Private by your choice",
+          "ratio": 11.15
+        },
+        {
+          "text": "Home",
+          "ratio": 11.6
+        },
+        {
+          "text": "Ask",
+          "ratio": 11.15
+        },
+        {
+          "text": "Health",
+          "ratio": 11.15
+        },
+        {
+          "text": "Care",
+          "ratio": 11.15
+        },
+        {
+          "text": "Barta",
+          "ratio": 11.6
+        },
+        {
+          "text": "বার্তা",
+          "ratio": 11.15
+        },
+        {
+          "text": "আমার পছন্দও কি গুরুত্বপূর্ণ?",
+          "ratio": 16.19
+        },
+        {
+          "text": "আপনার অভিজ্ঞতাও যত্নের অংশ।",
+          "ratio": 11.15
+        },
+        {
+          "text": "WHO · Antenatal care, 2016",
+          "ratio": 10.43
+        },
+        {
+          "text": "Jibonrekha",
+          "ratio": 11.6
+        },
+        {
+          "text": "Week 24",
+          "ratio": 16.19
+        },
+        {
+          "text": "Your care story",
+          "ratio": 11.15
+        },
+        {
+          "text": "Mother",
+          "ratio": 16.19
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 11.15
+        },
+        {
+          "text": "Baby",
+          "ratio": 16.19
+        },
+        {
+          "text": "Separate record",
+          "ratio": 11.15
+        },
+        {
+          "text": "Bondhon",
+          "ratio": 11.6
+        },
+        {
+          "text": "Visit questions",
+          "ratio": 16.19
+        },
+        {
+          "text": "Selected reports",
+          "ratio": 16.19
+        },
+        {
+          "text": "Diary & AI conversations:",
+          "ratio": 11.15
+        },
+        {
+          "text": "Private",
+          "ratio": 11.6
+        },
+        {
+          "text": "Adapt",
+          "ratio": 11.6
+        },
+        {
+          "text": "A",
+          "ratio": 14.56
+        },
+        {
+          "text": "A+",
+          "ratio": 11.6
+        },
+        {
+          "text": "Animation off · reduced motion",
+          "ratio": 11.15
+        }
+      ]
+    }
+  ],
+  "reflow": {
+    "document": 320,
+    "viewport": 320,
+    "hero": 320,
+    "overflow": [
+      {
+        "tag": "SPAN",
+        "class": null,
+        "right": 331.8515625
+      }
+    ]
+  }
+}

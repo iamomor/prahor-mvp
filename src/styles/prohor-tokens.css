@@ -57,31 +57,35 @@
 }
 :root[data-theme="morning-mist"],
 [data-prohor-preview][data-theme="morning-mist"] {
-  --pro-bg: #f8faf9;
-  --pro-surface: #dfeeee;
-  --pro-surface-2: #cbe2e2;
+  --pro-bg: #fbf1e8;
+  --pro-surface: #f3e2d5;
+  --pro-surface-2: #f7e8ef;
   --pro-elevated: #ffffff;
-  --pro-text: #17373b;
-  --pro-muted: #4c6161;
-  --pro-primary: #075b67;
-  --pro-primary-hover: #054852;
+  --pro-text: #33252c;
+  --pro-muted: #6d554c;
+  --pro-primary: #893c2c;
+  --pro-primary-hover: #6f3023;
   --pro-on-primary: #ffffff;
-  --pro-on-primary-muted: #dcf0f1;
-  --pro-accent: #e8b3c0;
-  --pro-on-accent: #17373b;
-  --pro-accent-strong: #8a3350;
-  --pro-border: #9cadaa;
-  --pro-control-border: #4e6c70;
+  --pro-on-primary-muted: #f7e8ef;
+  --pro-accent: #edbd91;
+  --pro-on-accent: #33252c;
+  --pro-accent-strong: #6f3023;
+  --pro-border: #b9907c;
+  --pro-control-border: #765044;
   --pro-focus: #144db5;
-  --pro-shadow-rgb: 23 55 59;
+  --pro-shadow-rgb: 51 37 44;
 }
 
 /* ── 2. Shared tokens (identical in every theme) ─────────────────── */
 :root {
-  --pro-success: #1a6848;  --pro-success-soft: #e3f1e8;
-  --pro-warning: #7c4a08;  --pro-warning-soft: #fbeed2;
-  --pro-danger: #a33138;  --pro-danger-soft: #f8e1df;
-  --pro-info: #1b5e86;  --pro-info-soft: #e0eef6;
+  --pro-success: #1a6848;
+  --pro-success-soft: #e3f1e8;
+  --pro-warning: #7c4a08;
+  --pro-warning-soft: #fbeed2;
+  --pro-danger: #a33138;
+  --pro-danger-soft: #f8e1df;
+  --pro-info: #1b5e86;
+  --pro-info-soft: #e0eef6;
 }
 
 :root {
@@ -108,7 +112,7 @@
   --pro-leading-body: 1.6;
   --pro-leading-body-bn: 1.75;
   --pro-word-spacing: normal;
-  --pro-letter-spacing: normal;   /* never applied to Bangla */
+  --pro-letter-spacing: normal; /* never applied to Bangla */
   --pro-para-gap: 1em;
 }
 
@@ -135,10 +139,14 @@
   --pro-shadow-rgb: 17 39 31;
 }
 :root[data-contrast="more"] {
-  --pro-success: #14532d;  --pro-success-soft: #e3f1e8;
-  --pro-warning: #5c3a04;  --pro-warning-soft: #fbeed2;
-  --pro-danger: #8b1f1f;  --pro-danger-soft: #f8e1df;
-  --pro-info: #0f4a6e;  --pro-info-soft: #e0eef6;
+  --pro-success: #14532d;
+  --pro-success-soft: #e3f1e8;
+  --pro-warning: #5c3a04;
+  --pro-warning-soft: #fbeed2;
+  --pro-danger: #8b1f1f;
+  --pro-danger-soft: #f8e1df;
+  --pro-info: #0f4a6e;
+  --pro-info-soft: #e0eef6;
 }
 :root[data-theme="original-rose"][data-contrast="more"],
 [data-prohor-preview][data-theme="original-rose"][data-contrast="more"] {
@@ -185,45 +193,82 @@
       Every stack ends in a Bengali family so Bangla glyphs fall back per character. */
 :root,
 :root[data-font="default"] {
-  --pro-font-display: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-heading: var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-body:    var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-control: var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-record:  var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-display:
+    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-heading:
+    var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-body:
+    var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-control:
+    var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-record:
+    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
 }
 :root[data-font="rubik"] {
-  --pro-font-display: var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-heading: var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-body:    var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-control: var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-record:  var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-display:
+    var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-heading:
+    var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-body:
+    var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-control:
+    var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-record:
+    var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
 }
 :root[data-font="google-sans"] {
-  --pro-font-display: var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-heading: var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-body:    var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-control: var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
-  --pro-font-record:  var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
+  --pro-font-display:
+    var(--font-google-sans), var(--font-noto-sans-bengali), system-ui,
+    sans-serif;
+  --pro-font-heading:
+    var(--font-google-sans), var(--font-noto-sans-bengali), system-ui,
+    sans-serif;
+  --pro-font-body:
+    var(--font-google-sans), var(--font-noto-sans-bengali), system-ui,
+    sans-serif;
+  --pro-font-control:
+    var(--font-google-sans), var(--font-noto-sans-bengali), system-ui,
+    sans-serif;
+  --pro-font-record:
+    var(--font-google-sans), var(--font-noto-sans-bengali), system-ui,
+    sans-serif;
 }
 :root[data-font="noto-serif"] {
-  --pro-font-display: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-heading: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-body:    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-control: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-record:  var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-display:
+    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-heading:
+    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-body:
+    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-control:
+    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-record:
+    var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
 }
 :root[data-font="roboto-slab"] {
-  --pro-font-display: var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-heading: var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-body:    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-control: var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
-  --pro-font-record:  var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-display:
+    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-heading:
+    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-body:
+    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-control:
+    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+  --pro-font-record:
+    var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
 }
 
 /* ── 5. Text size, text spacing, layout density (independent) ────── */
-html { font-size: 100%; scroll-padding-top: 5rem; }
-html[data-text-scale="large"]       { font-size: 112.5%; }
-html[data-text-scale="extra-large"] { font-size: 125%; }
+html {
+  font-size: 100%;
+  scroll-padding-top: 5rem;
+}
+html[data-text-scale="large"] {
+  font-size: 112.5%;
+}
+html[data-text-scale="extra-large"] {
+  font-size: 125%;
+}
 
 :root[data-text-spacing="relaxed"] {
   --pro-leading-body: 1.85;
@@ -233,14 +278,18 @@ html[data-text-scale="extra-large"] { font-size: 125%; }
   --pro-para-gap: 1.5em;
 }
 :root[data-layout="compact"] {
-  --pro-control-h: 2.75rem;  /* 44px at 100%: never smaller */
-  --pro-gap-field: 0.75rem;  --pro-gap-group: 1.25rem;
-  --pro-gap-section: 2rem;   --pro-pad-card: 1rem;
+  --pro-control-h: 2.75rem; /* 44px at 100%: never smaller */
+  --pro-gap-field: 0.75rem;
+  --pro-gap-group: 1.25rem;
+  --pro-gap-section: 2rem;
+  --pro-pad-card: 1rem;
 }
 :root[data-layout="spacious"] {
   --pro-control-h: 3.5rem;
-  --pro-gap-field: 1.25rem;  --pro-gap-group: 2rem;
-  --pro-gap-section: 3.25rem; --pro-pad-card: 1.5rem;
+  --pro-gap-field: 1.25rem;
+  --pro-gap-group: 2rem;
+  --pro-gap-section: 3.25rem;
+  --pro-pad-card: 1.5rem;
 }
 
 /* ── 6. Tailwind v4 aliases: bg-pro-bg, text-pro-text, font-display, rounded-card … */
@@ -261,10 +310,14 @@ html[data-text-scale="extra-large"] { font-size: 125%; }
   --color-pro-border: var(--pro-border);
   --color-pro-control-border: var(--pro-control-border);
   --color-pro-focus: var(--pro-focus);
-  --color-pro-success: var(--pro-success);  --color-pro-success-soft: var(--pro-success-soft);
-  --color-pro-warning: var(--pro-warning);  --color-pro-warning-soft: var(--pro-warning-soft);
-  --color-pro-danger: var(--pro-danger);    --color-pro-danger-soft: var(--pro-danger-soft);
-  --color-pro-info: var(--pro-info);        --color-pro-info-soft: var(--pro-info-soft);
+  --color-pro-success: var(--pro-success);
+  --color-pro-success-soft: var(--pro-success-soft);
+  --color-pro-warning: var(--pro-warning);
+  --color-pro-warning-soft: var(--pro-warning-soft);
+  --color-pro-danger: var(--pro-danger);
+  --color-pro-danger-soft: var(--pro-danger-soft);
+  --color-pro-info: var(--pro-info);
+  --color-pro-info-soft: var(--pro-info-soft);
   --font-display: var(--pro-font-display);
   --font-heading: var(--pro-font-heading);
   --font-body: var(--pro-font-body);
@@ -297,28 +350,68 @@ html[data-text-scale="extra-large"] { font-size: 125%; }
     letter-spacing: var(--pro-letter-spacing);
     font-synthesis: none;
   }
-  :lang(bn) { line-height: var(--pro-leading-body-bn); letter-spacing: 0; }   /* never track Bangla */
-  p + p { margin-block-start: var(--pro-para-gap); }
-  h1, h2 { font-family: var(--pro-font-display); line-height: 1.2; }
-  h3, h4 { font-family: var(--pro-font-heading); line-height: 1.35; }
-  :lang(bn) :is(h1, h2) { line-height: 1.35; }
-  :lang(bn) :is(h3, h4) { line-height: 1.45; }
-  :is(button, [role="tab"], [role="button"]) { font-family: var(--pro-font-control); }
-  :focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 3px; }
-  .on-primary :focus-visible { outline-color: var(--pro-bg); }   /* rings on primary-coloured bands */
-  :where(button, input, select, textarea) { min-block-size: var(--pro-control-h); }
+  :lang(bn) {
+    line-height: var(--pro-leading-body-bn);
+    letter-spacing: 0;
+  } /* never track Bangla */
+  p + p {
+    margin-block-start: var(--pro-para-gap);
+  }
+  h1,
+  h2 {
+    font-family: var(--pro-font-display);
+    line-height: 1.2;
+  }
+  h3,
+  h4 {
+    font-family: var(--pro-font-heading);
+    line-height: 1.35;
+  }
+  :lang(bn) :is(h1, h2) {
+    line-height: 1.35;
+  }
+  :lang(bn) :is(h3, h4) {
+    line-height: 1.45;
+  }
+  :is(button, [role="tab"], [role="button"]) {
+    font-family: var(--pro-font-control);
+  }
+  :focus-visible {
+    outline: 3px solid var(--pro-focus);
+    outline-offset: 3px;
+  }
+  .on-primary :focus-visible {
+    outline-color: var(--pro-bg);
+  } /* rings on primary-coloured bands */
+  :where(button, input, select, textarea) {
+    min-block-size: var(--pro-control-h);
+  }
 }
 
 /* ── 8. Motion: OS signal OR user choice; either one reduces ─────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
-:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
-  scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important;
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }
 
 /* ── 9. Forced colors (Windows High Contrast): system palette owns the UI.
       Do NOT set forced-color-adjust: none. Keep real borders on cards/inputs. */
 @media (forced-colors: active) {
-  :focus-visible { outline-color: Highlight; }
+  :focus-visible {
+    outline-color: Highlight;
+  }
 }

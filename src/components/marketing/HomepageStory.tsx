@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { ArrowDown, ArrowRight, ArrowUpRight, Baby, BookOpen, CalendarDays, Check, FileCheck2, FileText, Heart, HeartHandshake, LockKeyhole, MapPin, MessageCircle, ShieldCheck, SlidersHorizontal, Sun, UserRound } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { HeroProductScene } from "./HeroProductScene";
 import { MaternalFacts } from "./HomepageUpgrade";
 import { SectionEyebrow } from "./SectionEyebrow";

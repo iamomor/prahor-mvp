@@ -1,0 +1,423 @@
+- link "মূল বিষয়বস্তুতে যান":
+  - /url: "#main-content"
+- banner:
+  - link "প্রহর প্রথম পাতা":
+    - /url: /
+    - text: PROHOR প্রহর
+  - button "Read this homepage in English"
+  - button "প্রহর ব্যবহারের ধরন বদলান"
+  - button "সাইন ইন"
+  - button "নেভিগেশন খুলুন"
+- main:
+  - region "মাতৃত্বের যত্ন, প্রতিটি মায়ের মতো করে।":
+    - paragraph: সংযুক্ত যত্ন। আরও মানবিক অভিজ্ঞতা।
+    - heading "মাতৃত্বের যত্ন, প্রতিটি মায়ের মতো করে।" [level=1]:
+      - text: মাতৃত্বের যত্ন,
+      - emphasis: প্রতিটি মায়ের মতো করে।
+    - paragraph: আপনার যত্ন, আপনার মতো।
+    - paragraph: স্বাস্থ্য সম্পর্কে জানুন, যত্নের গল্প একসঙ্গে রাখুন, পরের ধাপের প্রস্তুতি নিন—আপনার উপযোগী যত্নে।
+    - link "প্রহর ঘুরে দেখুন":
+      - /url: "#features"
+    - link "কীভাবে কাজ করে দেখুন":
+      - /url: "#how-it-works"
+    - img "ছবির স্থানধারক। নির্ধারিত মায়ের ছবিটি পাওয়া যায়নি।"
+    - text: Sample data
+    - article "আমার যত্নে আমার পছন্দ?":
+      - text: Barta বার্তা
+      - heading "আমার যত্নে আমার পছন্দ?" [level=2]
+      - paragraph: গর্ভকালীন যত্নে আপনার শারীরিক ও মানসিক সুস্থতা এবং আপনার অভিজ্ঞতাও গুরুত্বপূর্ণ।
+      - link "WHO · Antenatal care, 2016 Opens in a new tab":
+        - /url: https://www.who.int/publications/i/item/9789241549912
+    - article "মা ও শিশুর সময়রেখা":
+      - text: আপনার যত্নের গল্প মা
+      - strong: ২৪তম সপ্তাহ · নীলার যাত্রা
+      - text: শিশু
+      - strong: তার নিজের গল্প
+  - region "এক নজরে প্রহর":
+    - strong: "8"
+    - heading "সংযুক্ত মডিউল" [level=2]
+    - paragraph: অ্যাডাপ্ট, বার্তা, সংকেত, জীবনরেখা, বুঝি, সুস্থতা, পথ, বন্ধন
+    - strong: "24"
+    - heading "পরিকল্পিত সুবিধা" [level=2]
+    - link "এক পরিকল্পনায় প্রতিটির স্পষ্ট অবস্থান":
+      - /url: "#roadmap"
+    - strong: "0"
+    - heading "বেছে নেওয়ার অক্ষমতার শ্রেণি" [level=2]
+    - paragraph: প্রতিটি মায়ের জন্য একই যত্ন; পরিচয়ের শ্রেণি নয়, নিজের পছন্দ
+    - strong: "2"
+    - heading "রেকর্ড, ১ যাত্রা" [level=2]
+    - paragraph: এক সময়রেখায় মা ও শিশুর রেকর্ড থাকে আলাদা
+  - region "মাতৃত্ব একটি যাত্রা। যত্ন যেন ধাঁধা না হয়।":
+    - img "ছবির স্থানধারক। নির্ধারিত মায়ের ছবিটি পাওয়া যায়নি।"
+    - text: এখানে একটি রিপোর্ট। ওখানে একটি সাক্ষাৎ। যত্নই রাখুক সব একসঙ্গে।
+    - paragraph: কেন প্রহর
+    - heading "মাতৃত্ব একটি যাত্রা। যত্ন যেন ধাঁধা না হয়।" [level=2]:
+      - text: মাতৃত্ব একটি যাত্রা।
+      - emphasis: যত্ন যেন ধাঁধা না হয়।
+    - list:
+      - listitem:
+        - heading "ছড়ানো কমুক। সংযোগ বাড়ুক।" [level=3]
+        - paragraph: রেকর্ড, প্রশ্ন ও সাক্ষাৎ থাকুক একই গল্পে।
+      - listitem:
+        - heading "বাধা কমুক। পথ বাড়ুক।" [level=3]
+        - paragraph: ভাষা, ছোট লেখা ও শুধু কণ্ঠের কাজ যেন যত্নের পথে বাধা না হয়।
+      - listitem:
+        - heading "জন্মের পরেও। আপনার জন্যও।" [level=3]
+        - paragraph: শিশুর শুরু মায়ের যত্নেরও আরেক অধ্যায়।
+    - paragraph:
+      - text: ২০২৩ সালে বাংলাদেশে আনুমানিক ৪,০০০ মাতৃমৃত্যু; ২০০০ সালের তুলনায় মাতৃমৃত্যুর অনুপাত ৭৯% কম।
+      - link "জাতিসংঘের হিসাব · বিশ্ব স্বাস্থ্য সংস্থা, ইউনিসেফ, ইউএনএফপিএ · ২০২৫ (opens in a new tab)":
+        - /url: https://www.unicef.org/bangladesh/en/press-releases/uncertainty-aid-commitments-threatens-bangladeshs-progress-maternal-health-unicef
+    - paragraph:
+      - text: মাতৃমৃত্যুর শিকার প্রতি ৩ জন নারীর ১ জন তিন বা তার বেশি স্থানে সেবা চেয়েছিলেন।
+      - link "BMMS 2016 · Journal of Global Health, 2023 (opens in a new tab)":
+        - /url: https://pmc.ncbi.nlm.nih.gov/articles/PMC10248997/
+  - region "একই যত্ন। আপনার মতো।":
+    - paragraph: ভিন্ন পছন্দের কথা ভেবে
+    - heading "একই যত্ন। আপনার মতো।" [level=2]:
+      - text: একই যত্ন।
+      - emphasis: আপনার মতো।
+    - paragraph: সাক্ষাতের একই প্রশ্নের তিনটি উপস্থাপনা। প্রশ্ন লিখে দেখুন। উপস্থাপনা বদলালেও আপনার লেখা থাকবে।
+    - group "স্পর্শ ও লেখা":
+      - text: স্পর্শ ও লেখা Sample data PROHOR
+      - paragraph: আপনার পরের সাক্ষাৎ
+      - heading "আপনার ভাষায় একটি প্রশ্ন।" [level=3]
+      - text: আপনি কী জানতে চান?
+      - textbox "আপনি কী জানতে চান?": আমার পরের সাক্ষাতের জন্য কীভাবে প্রস্তুতি নেব?
+      - paragraph: How can I prepare for my next visit?
+      - button "আমার প্রশ্ন দেখুন"
+      - paragraph: আপনার কথা। আপনার পছন্দ।
+    - group "বড় লেখা ও বেশি কনট্রাস্ট":
+      - text: বড় লেখা ও বেশি কনট্রাস্ট Sample data PROHOR
+      - paragraph: আপনার পরের সাক্ষাৎ
+      - heading "আপনার ভাষায় একটি প্রশ্ন।" [level=3]
+      - text: আপনি কী জানতে চান?
+      - textbox "আপনি কী জানতে চান?": আমার পরের সাক্ষাতের জন্য কীভাবে প্রস্তুতি নেব?
+      - paragraph: How can I prepare for my next visit?
+      - button "আমার প্রশ্ন দেখুন"
+      - paragraph: আপনার কথা। আপনার পছন্দ।
+    - group "ছবি ও লেখা":
+      - text: ছবি ও লেখা Sample data PROHOR
+      - paragraph: আপনার পরের সাক্ষাৎ
+      - heading "আপনার ভাষায় একটি প্রশ্ন।" [level=3]
+      - text: আপনি কী জানতে চান?
+      - group "ছবি ও লেখার নমুনা বাক্যাংশ":
+        - button "আমার সাক্ষাৎ নিয়ে"
+        - button "আমার রেকর্ড নিয়ে"
+      - textbox "আপনি কী জানতে চান?": আমার পরের সাক্ষাতের জন্য কীভাবে প্রস্তুতি নেব?
+      - paragraph: How can I prepare for my next visit?
+      - button "আমার প্রশ্ন দেখুন"
+      - paragraph: আপনার কথা। আপনার পছন্দ।
+    - paragraph: উপস্থাপনা বদলান। আপনার কথা, পছন্দ ও অবস্থান থাকুক একই।
+    - button "প্রহর ব্যবহারের ধরন বদলান"
+    - status
+  - region "শুধু ট্র্যাকার নয়। যত্নের সঙ্গী।":
+    - paragraph: জীবনের কথা ভেবে যত্ন
+    - heading "শুধু ট্র্যাকার নয়। যত্নের সঙ্গী।" [level=2]:
+      - text: শুধু ট্র্যাকার নয়।
+      - emphasis: যত্নের সঙ্গী।
+    - paragraph: বোঝাপড়া, ব্যবহারযোগ্যতা, সুরক্ষা ও মানুষের সংযোগ। সাক্ষাতের মাঝের সময়ের জন্যও বিবেচনাপূর্ণ উপায়।
+    - article:
+      - text: Barta বার্তা
+      - heading "প্রশ্নের পাশে থাকুক স্পষ্টতা।" [level=3]
+      - paragraph: বাংলায় ব্যাখ্যার সঙ্গে থাকুক খুলে পড়ার মতো সূত্র।
+      - text: একটু কাছে থেকে Sample data
+      - paragraph: আমার যত্নে আমার পছন্দও কি গুরুত্বপূর্ণ?
+      - paragraph: মায়ের শারীরিক ও মানসিক সুস্থতার পাশাপাশি তাঁর অভিজ্ঞতাও গর্ভকালীন যত্নের অংশ।
+      - link "WHO · Antenatal care, 2016 Opens in a new tab":
+        - /url: https://www.who.int/publications/i/item/9789241549912
+    - article:
+      - text: Shonket সংকেত
+      - heading "চ্যাটবটের বাইরেও সহায়তা।" [level=3]
+      - paragraph: সূত্রভিত্তিক সতর্কসংকেত ও জরুরি সহায়তার সরাসরি পথ।
+      - text: একটু কাছে থেকে Sample data
+      - strong: পর্যালোচিত সতর্কসংকেত
+      - list:
+        - listitem: তীব্র মাথাব্যথা যা কমছে না
+        - listitem: শ্বাস নিতে কষ্ট
+        - listitem: অতিরিক্ত রক্তপাত
+      - link "CDC · Warning signs (opens in a new tab)":
+        - /url: https://www.cdc.gov/hearher/maternal-warning-signs/index.html
+      - link "কল ৯৯৯":
+        - /url: tel:999
+      - link "Bangladesh Police emergency number source":
+        - /url: https://www.police.gov.bd/en/hot_line_number
+    - article:
+      - text: Adapt অ্যাডাপ্ট
+      - heading "এখানে জায়গা আছে আপনার পছন্দের।" [level=3]
+      - paragraph: লেখার আকার, থিম ও কনট্রাস্ট একসঙ্গে বেছে নিন। যত্ন থাকুক একই।
+      - text: একটু কাছে থেকে Sample data আপনার উপযোগী উপস্থাপনা
+      - group "নমুনা লেখার আকারের নিয়ন্ত্রণ":
+        - button "A লেখার আকার" [pressed]: A
+        - button "A+ লেখার আকার": A+
+        - button "A++ লেখার আকার": A++
+      - text: থিম
+      - group "নমুনা থিমের নিয়ন্ত্রণ":
+        - button "Quiet Garden" [pressed]
+        - button "Original Rose"
+        - button "Morning Mist"
+      - text: বেশি কনট্রাস্ট
+      - checkbox "বেশি কনট্রাস্ট"
+    - article:
+      - text: Bondhon বন্ধন
+      - heading "অনুমতি নিয়েই সংযোগ।" [level=3]
+      - paragraph: শেয়ারের সিদ্ধান্তের আগে মানুষ ও রেকর্ড বেছে নিন।
+      - text: একটু কাছে থেকে Sample data মা বাছাই করা সহায়ক সেবাদাতা সাক্ষাতের প্রশ্ন
+      - checkbox "সাক্ষাতের প্রশ্ন" [checked]
+      - text: বাছাই করা রিপোর্ট
+      - checkbox "বাছাই করা রিপোর্ট"
+      - text: ডায়েরি ও এআই কথোপকথন ব্যক্তিগত তথ্য দেওয়ার আগে আপনার পর্যালোচনা।
+  - region "এক অ্যাপ, পুরো যাত্রার জন্য।":
+    - paragraph: আট মডিউল, একই ভিত্তি
+    - heading "এক অ্যাপ, পুরো যাত্রার জন্য।" [level=2]:
+      - text: এক অ্যাপ,
+      - emphasis: পুরো যাত্রার জন্য।
+    - paragraph: প্রথম প্রশ্ন থেকে জন্মের পরের অধ্যায়। আপনার পছন্দ ও অনুমতি থাকুক একই অভিজ্ঞতার অংশ।
+    - strong: একটি ওয়েব অ্যাপ। ফোনের ব্রাউজারেই ব্যবহার করুন।
+    - paragraph: ব্রাউজারের মেনু থেকে হোম স্ক্রিনে যোগ করুন।
+    - navigation "প্রহরের আটটি মডিউল":
+      - link "Adapt অ্যাডাপ্ট":
+        - /url: "#module-adapt"
+        - strong: Adapt
+        - text: অ্যাডাপ্ট
+      - link "Barta বার্তা":
+        - /url: "#module-barta"
+        - strong: Barta
+        - text: বার্তা
+      - link "Shonket সংকেত":
+        - /url: "#module-shonket"
+        - strong: Shonket
+        - text: সংকেত
+      - link "Jibonrekha জীবনরেখা":
+        - /url: "#module-jibonrekha"
+        - strong: Jibonrekha
+        - text: জীবনরেখা
+      - link "Bujhi বুঝি":
+        - /url: "#module-bujhi"
+        - strong: Bujhi
+        - text: বুঝি
+      - link "Shusthota সুস্থতা":
+        - /url: "#module-shusthota"
+        - strong: Shusthota
+        - text: সুস্থতা
+      - link "Poth পথ":
+        - /url: "#module-poth"
+        - strong: Poth
+        - text: পথ
+      - link "Bondhon বন্ধন":
+        - /url: "#module-bondhon"
+        - strong: Bondhon
+        - text: বন্ধন
+    - text: অনুরোধের তালিকা সম্মতিসহ রেকর্ড পছন্দের যোগাযোগ কার্যকলাপের ইতিহাস
+    - article:
+      - group "Jibonrekha":
+        - text: Jibonrekha Sample data PROHOR
+        - paragraph: Jibonrekha · জীবনরেখা
+        - heading "যত্নের গল্প একসঙ্গে।" [level=3]
+        - text: মা
+        - strong: ২৪তম সপ্তাহ · নীলার যাত্রা
+        - paragraph: পরের সাক্ষাতের প্রশ্ন
+        - text: শিশু
+        - strong: তার নিজের গল্প
+        - paragraph: শুরু থেকেই আলাদা রেকর্ড
+        - text: দুটি রেকর্ড। এক ধারাবাহিক যাত্রা।
+        - strong: সাক্ষাতের নোট
+        - text: আপনার লেখা
+      - paragraph:
+        - emphasis: Two stories, held together.
+      - paragraph: দুটি গল্প, একসঙ্গে।
+    - article:
+      - group "Bujhi":
+        - text: Bujhi Sample data PROHOR
+        - paragraph: Bujhi · বুঝি
+        - heading "পড়ুন। যাচাই করুন। বুঝুন।" [level=3]
+        - strong: বোঝার জন্য একটি রিপোর্ট
+        - text: visit-report.pdf নথির ধরন
+        - strong: সাক্ষাতের রিপোর্ট
+        - text: রেকর্ডটি যাঁর
+        - strong: মা · আগে যাচাই করুন
+        - list:
+          - listitem: আপলোড
+          - listitem: যাচাই
+          - listitem: নিশ্চিত
+      - paragraph:
+        - emphasis: A little more understanding.
+      - paragraph: আরও একটু বোঝাপড়া।
+    - article:
+      - group "Shusthota":
+        - text: Shusthota Sample data PROHOR
+        - paragraph: Shusthota · সুস্থতা
+        - heading "আজ আপনি কেমন আছেন?" [level=3]
+        - group "নিজের জন্য একটু সময়":
+          - text: নিজের জন্য একটু সময়
+          - radio "শান্ত" [checked]
+          - text: শান্ত ✓
+          - radio "ক্লান্ত"
+          - text: ক্লান্ত
+          - radio "অনিশ্চিত"
+          - text: অনিশ্চিত
+        - heading "বিশ্রামের জন্য একটু জায়গা।" [level=4]
+        - paragraph: আপনার গতি। কোনো স্কোরের চাপ নেই।
+        - paragraph: আপনার ডায়েরি আপনারই।
+      - paragraph:
+        - emphasis: Room for the person, too.
+      - paragraph: মানুষটির জন্যও জায়গা।
+    - article:
+      - group "Poth":
+        - text: Poth Sample data PROHOR
+        - paragraph: Poth · পথ
+        - heading "পরের ধাপের খোঁজ।" [level=3]
+        - text: প্রতিষ্ঠান খুঁজুন
+        - textbox "প্রতিষ্ঠান খুঁজুন":
+          - /placeholder: এই উদাহরণগুলো খুঁজুন
+        - link "ঢাকা মেডিকেল কলেজ হাসপাতাল Shahbag, Dhaka Opens DGHS in a new tab":
+          - /url: https://hrm.dghs.gov.bd/public/facility-registry/facilities/31/profile
+          - strong: ঢাকা মেডিকেল কলেজ হাসপাতাল
+          - text: Shahbag, Dhaka Opens DGHS in a new tab
+        - link "স্যার সলিমুল্লাহ মেডিকেল কলেজ মিটফোর্ড হাসপাতাল Kotwali, Dhaka Opens DGHS in a new tab":
+          - /url: https://hrm.dghs.gov.bd/public/facility-registry/facilities/52/profile
+          - strong: স্যার সলিমুল্লাহ মেডিকেল কলেজ মিটফোর্ড হাসপাতাল
+          - text: Kotwali, Dhaka Opens DGHS in a new tab
+        - paragraph: "সূত্র: স্বাস্থ্য অধিদপ্তরের তালিকা"
+      - paragraph:
+        - emphasis: A clearer way forward.
+      - paragraph: সামনের পথ আরও পরিষ্কার।
+  - region "একটি প্রশ্ন থেকে নিরাপদ, সম্মতিসহ সহায়তার পথে।":
+    - paragraph: ভেবেচিন্তে একটি পথ
+    - heading "একটি প্রশ্ন থেকে নিরাপদ, সম্মতিসহ সহায়তার পথে।" [level=2]:
+      - text: একটি প্রশ্ন থেকে
+      - emphasis: নিরাপদ, সম্মতিসহ সহায়তার পথে।
+    - paragraph: প্রশ্ন শুরু হয় তাঁর কথা থেকে। প্রমাণের সীমা স্পষ্ট থাকে। অন্য মানুষের কাছে কী পৌঁছাবে, তা নির্ধারণ করে অনুমতি।
+    - list:
+      - listitem:
+        - text: তিনি প্রশ্ন করেন
+        - paragraph: আমার পরের সাক্ষাতের জন্য কীভাবে প্রস্তুতি নেব?
+        - paragraph: How can I prepare for my next visit?
+      - listitem:
+        - text: সূত্র খুঁজে দেখা হয়
+        - link "WHO · Antenatal care, 2016 Opens in a new tab":
+          - /url: https://www.who.int/publications/i/item/9789241549912
+        - text: যথেষ্ট প্রমাণ নেই
+        - paragraph: "উত্তর হতে পারে: একজন যোগ্য মানুষের কাছে জেনে নিই।"
+      - listitem:
+        - text: কী শেয়ার করবেন, তিনি বাছেন আমার সাক্ষাতের প্রশ্ন আমার ডায়েরি ব্যক্তিগত
+        - paragraph: তাঁর পর্যালোচনা। তাঁর প্রাপক। তাঁর অনুমতি।
+  - region "মায়ের জন্য। তাঁর পাশে থাকা মানুষের জন্য।":
+    - paragraph: দুটি জানালা, একই যত্নের গল্প
+    - heading "মায়ের জন্য। তাঁর পাশে থাকা মানুষের জন্য।" [level=2]:
+      - text: মায়ের জন্য।
+      - emphasis: তাঁর পাশে থাকা মানুষের জন্য।
+    - paragraph: একই ভিত্তিতে প্রশ্ন করা মানুষ ও তাঁর সহায়তার প্রস্তুতি নেওয়া মানুষের জন্য আলাদা উপস্থাপনা।
+    - article:
+      - text: মায়েদের জন্য
+      - heading "আরও একটু বোঝাপড়া।" [level=3]
+      - paragraph: আপনার প্রশ্ন, রেকর্ড ও পছন্দের কেন্দ্রে থাকুন আপনি।
+      - list:
+        - listitem: বাংলা বা ইংরেজিতে ঘুরে দেখুন
+        - listitem: মা ও শিশুর রেকর্ড আলাদা রাখুন
+        - listitem: কাকে যুক্ত করবেন, নিজে বেছে নিন
+      - text: PROHOR / My care Sample data
+      - link "প্রহর প্রথম পাতা":
+        - /url: /
+        - text: PROHOR প্রহর
+      - heading "আজ একটু নিজের খোঁজ নিন।" [level=3]
+      - paragraph: আপনার যত্ন, এক জায়গায়।
+      - link "আমার যত্নের গল্প":
+        - /url: "#module-jibonrekha"
+      - link "আমার প্রশ্ন":
+        - /url: "#module-barta"
+      - link "আমার পছন্দ":
+        - /url: "#module-adapt"
+      - text: মাতৃত্ব আপনার গল্পের অংশ। কেন্দ্রে আছেন আপনি।
+      - link "আপনার অভিজ্ঞতা দেখুন":
+        - /url: "#your-way"
+    - article:
+      - text: সেবাদাতাদের জন্য
+      - heading "আরও একটু প্রাসঙ্গিক তথ্য।" [level=3]
+      - paragraph: মায়ের বাছাই করা গল্প, তার সূত্র ও তাঁর অনুমতি।
+      - list:
+        - listitem: তাঁর নিজের ভাষায় প্রশ্নটি দেখুন
+        - listitem: সূত্র ও অনুমতি একসঙ্গে রাখুন
+        - listitem: মানুষের সঙ্গে কথোপকথনের প্রস্তুতি নিন
+      - text: PROHOR / Care workspace Sample data মায়ের বাছাই করা তথ্য
+      - heading "শোনার প্রস্তুতি নিন।" [level=3]
+      - text: প্রশ্ন বাছাই করা রেকর্ড অনুমতি
+      - strong: নীলার সাক্ষাতের প্রশ্ন
+      - paragraph: আমার পরের সাক্ষাতের জন্য কীভাবে প্রস্তুতি নেব?
+      - list:
+        - listitem: বাছাই করা রেকর্ডের তথ্য
+        - listitem: প্রতিটি নোটের দৃশ্যমান সূত্র
+        - listitem: মায়ের নির্ধারিত প্রবেশাধিকার
+      - link "যত্নের সংযোগ দেখুন":
+        - /url: "#module-bondhon"
+  - region "এআই বুঝতে সাহায্য করে। মানুষই যত্ন দেন।":
+    - paragraph: বিবেচনাপূর্ণ প্রযুক্তি
+    - heading "এআই বুঝতে সাহায্য করে। মানুষই যত্ন দেন।" [level=2]:
+      - text: এআই বুঝতে সাহায্য করে।
+      - emphasis: মানুষই যত্ন দেন।
+    - paragraph: উপকারী প্রযুক্তির শুরু স্পষ্ট সীমায়। সঙ্গে থাকুক প্রমাণ, মানুষের তত্ত্বাবধান ও আপনার অনুমতি।
+    - article:
+      - heading "খুলে পড়ার মতো প্রমাণ।" [level=3]
+      - paragraph: ব্যাখ্যার পাশে সূত্র থাকুক। উত্তর দেওয়ার মতো তথ্য না থাকলে সেটিও স্পষ্ট হোক।
+      - text: প্রমাণ মানুষের পর্যালোচনা রোগ নির্ণয় নয়
+    - article:
+      - heading "বিচারবোধ থাকুক মানুষের।" [level=3]
+      - paragraph: এআই তথ্য বুঝতে সাহায্য করে। চিকিৎসার সিদ্ধান্ত ও প্রকৃত যত্ন যোগ্য মানুষের কাজ।
+      - text: প্রমাণ মানুষের পর্যালোচনা রোগ নির্ণয় নয়
+    - article:
+      - heading "অনুমতি থাকুক আপনারই।" [level=3]
+      - paragraph: প্রাপক, উদ্দেশ্য ও রেকর্ড বেছে নিন। ডায়েরি ও এআই কথোপকথন স্বাভাবিকভাবে শেয়ার হবে না।
+      - text: প্রমাণ মানুষের পর্যালোচনা রোগ নির্ণয় নয়
+  - region "যত্ন নিয়ে গড়া। যত্নশীল মানুষের হাতে।":
+    - paragraph: প্রহরের পেছনের মানুষ
+    - heading "যত্ন নিয়ে গড়া। যত্নশীল মানুষের হাতে।" [level=2]:
+      - text: যত্ন নিয়ে গড়া।
+      - emphasis: যত্নশীল মানুষের হাতে।
+    - paragraph: সবার জন্য নকশা, প্রযুক্তি ও মাতৃযত্নের দৈনন্দিন খুঁটিনাটি নিয়ে একটি সম্মিলিত প্রচেষ্টা।
+    - article:
+      - heading "Omor" [level=3]
+      - paragraph: প্রকল্প পরিচালনা ও প্ল্যাটফর্ম
+    - article:
+      - heading "Iftee" [level=3]
+      - paragraph: সবার জন্য ইউআই ও প্রবেশগম্যতা
+    - article:
+      - heading "Ifty" [level=3]
+      - paragraph: এআই ও তথ্য অনুসন্ধান
+    - article:
+      - heading "Apubo" [level=3]
+      - paragraph: মা ও শিশুর রেকর্ড
+    - article:
+      - heading "Samin" [level=3]
+      - paragraph: ভালো থাকা ও সেবার পথনির্দেশ
+  - region "যা গড়ে উঠছে।":
+    - paragraph: বড় স্বপ্ন। স্পষ্ট বাস্তবতা।
+    - heading "যা গড়ে উঠছে।" [level=2]:
+      - emphasis: যা গড়ে উঠছে।
+    - paragraph: এই ব্রাউজারের ব্যবহার-পছন্দের নিয়ন্ত্রণ কাজ করে। যত্নের পূর্ণ পরিকল্পনা এবং প্রতিটি সুবিধার অবস্থান দেখুন।
+    - group: ২৪টি সুবিধার পরিকল্পনা দেখুন
+  - region "এক যত্নের যাত্রা। প্রতিটি মায়ের মতো।":
+    - paragraph: আপনার যত্ন। আপনার মতো।
+    - heading "এক যত্নের যাত্রা। প্রতিটি মায়ের মতো।" [level=2]:
+      - text: এক যত্নের যাত্রা।
+      - emphasis: প্রতিটি মায়ের মতো।
+    - paragraph: আরও সংযুক্ত ভবিষ্যতের শুরু প্রতিটি মায়ের জন্য জায়গা করে দিয়ে।
+    - button "প্রহরকে আপনার মতো করুন"
+    - link "যাত্রাটি ঘুরে দেখুন":
+      - /url: "#features"
+    - paragraph: শিক্ষামূলক পণ্যের প্রোটোটাইপ; চিকিৎসাসেবা ও সেবাদাতার কাছে তথ্য পাঠানোর সংযোগ নেই।
+- contentinfo:
+  - link "প্রহর প্রথম পাতা":
+    - /url: /
+    - text: PROHOR প্রহর
+  - paragraph: বাংলাদেশের জন্য যত্ন নিয়ে তৈরি।
+  - navigation "ফুটার":
+    - link "মডিউলগুলো দেখুন":
+      - /url: "#features"
+    - link "দায়িত্বশীল এআই":
+      - /url: "#responsible-ai"
+    - link "পরিকল্পনা":
+      - /url: "#roadmap"
+    - button "সাইন ইন"
+  - button "প্রহর ব্যবহারের ধরন বদলান"
+  - text: © 2026 PROHOR
+  - paragraph: নমুনা পর্দাসহ পণ্যের প্রোটোটাইপ; চিকিৎসাসেবা, সরাসরি এআই ও সেবাদাতার কাছে তথ্য পাঠানোর সংযোগ নেই।

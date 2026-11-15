@@ -1,0 +1,218 @@
+[
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "navbarHeight": 64,
+    "navbarTop": 12,
+    "activeModule": "Adapt1",
+    "unavailableFilters": 2,
+    "moduleFont": "Fraunces, \"Fraunces Fallback\"",
+    "moduleFontSize": "20px",
+    "scrolled": {
+      "height": 56,
+      "top": 12,
+      "current": "#features"
+    },
+    "errors": []
+  }
+]

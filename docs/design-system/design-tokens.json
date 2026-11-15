@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "name": "PROHOR Premium UI/UX",
+    "status": "provisional",
+    "defaultTheme": "quiet-garden",
+    "independentContrast": true
+  },
+  "themes": {
+    "quiet-garden": {
+      "bg": "#FFFCF5",
+      "surface": "#E6F2E9",
+      "text": "#23352D",
+      "muted": "#4A6358",
+      "primary": "#2F6B54",
+      "onPrimary": "#FFFFFF",
+      "accent": "#F4C96B",
+      "onAccent": "#23352D",
+      "controlBorder": "#5C7468"
+    },
+    "original-rose": {
+      "bg": "#FBF6F2",
+      "surface": "#F2DFE4",
+      "text": "#432C36",
+      "muted": "#62535B",
+      "primary": "#70445A",
+      "onPrimary": "#FFFFFF",
+      "accent": "#E8BAC7",
+      "onAccent": "#432C36",
+      "controlBorder": "#75616D"
+    },
+    "morning-mist": {
+      "bg": "#F8FAF9",
+      "surface": "#DFEEEE",
+      "text": "#17373B",
+      "muted": "#4C6161",
+      "primary": "#075B67",
+      "onPrimary": "#FFFFFF",
+      "accent": "#E8B3C0",
+      "onAccent": "#17373B",
+      "controlBorder": "#4E6C70"
+    }
+  },
+  "spacingPx": [
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    32,
+    40,
+    48,
+    64
+  ],
+  "radiusPx": {
+    "control": 10,
+    "field": 12,
+    "card": 16,
+    "hero": 24
+  },
+  "typeRem": {
+    "small": 0.875,
+    "body": 1.0,
+    "lead": 1.125,
+    "card": 1.25,
+    "section": 1.5,
+    "pageMin": 2.0,
+    "pageMax": 2.5
+  },
+  "targetPx": {
+    "preferredMin": 44,
+    "primaryMin": 48
+  },
+  "motionMs": {
+    "micro": 160,
+    "state": 220,
+    "contextMax": 320
+  }
+}

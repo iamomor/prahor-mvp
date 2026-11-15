@@ -1,0 +1,24 @@
+- banner:
+  - link "প্রহর প্রথম পাতা":
+    - /url: /
+    - text: PROHOR প্রহর
+  - button "প্রহর ব্যবহারের ধরন বদলান"
+  - button "নেভিগেশন খুলুন" [expanded]
+  - dialog "প্রহর ঘুরে দেখুন":
+    - heading "প্রহর ঘুরে দেখুন" [level=2]
+    - button "নেভিগেশন বন্ধ করুন"
+    - navigation "মোবাইল প্রধান নেভিগেশন":
+      - link "কেন প্রহর":
+        - /url: "#why-prohor"
+      - link "যেভাবে কাজ করে":
+        - /url: "#how-it-works"
+      - link "সুবিধাসমূহ":
+        - /url: "#features"
+      - link "দায়িত্বশীল এআই":
+        - /url: "#responsible-ai"
+    - text: ভাষা
+    - group "প্রথম পাতার ভাষা":
+      - button "Read this homepage in Bangla" [pressed]: বাং
+      - button "Read this homepage in English": EN
+    - button "প্রহর ব্যবহারের ধরন বদলান"
+    - button "সাইন ইন"

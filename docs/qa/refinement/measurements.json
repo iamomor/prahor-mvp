@@ -1,0 +1,1322 @@
+[
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "heroLines": 3,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(230, 242, 233)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 252, 245)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 252, 245)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(230, 242, 233)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 252, 245)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(230, 242, 233)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 252, 245)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(230, 242, 233)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 252, 245)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(230, 242, 233)",
+        "padding": "128px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      313,
+      293,
+      286,
+      319
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "heroLines": 5,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(230, 242, 233)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 252, 245)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 252, 245)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(230, 242, 233)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 252, 245)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(230, 242, 233)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 252, 245)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(230, 242, 233)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 252, 245)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(230, 242, 233)",
+        "padding": "96px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      346,
+      403,
+      384,
+      431
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "heroLines": 3,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(238, 242, 239)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(238, 242, 239)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(238, 242, 239)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(238, 242, 239)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(238, 242, 239)",
+        "padding": "128px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      313,
+      293,
+      286,
+      319
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "heroLines": 5,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(238, 242, 239)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(238, 242, 239)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(238, 242, 239)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(238, 242, 239)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(238, 242, 239)",
+        "padding": "96px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      346,
+      403,
+      384,
+      431
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "heroLines": 3,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(242, 223, 228)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(251, 246, 242)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(251, 246, 242)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(242, 223, 228)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(251, 246, 242)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(242, 223, 228)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(251, 246, 242)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(242, 223, 228)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(251, 246, 242)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(242, 223, 228)",
+        "padding": "128px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      313,
+      293,
+      286,
+      319
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "heroLines": 5,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(242, 223, 228)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(251, 246, 242)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(251, 246, 242)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(242, 223, 228)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(251, 246, 242)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(242, 223, 228)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(251, 246, 242)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(242, 223, 228)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(251, 246, 242)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(242, 223, 228)",
+        "padding": "96px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      346,
+      403,
+      384,
+      431
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "heroLines": 3,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(245, 238, 240)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(245, 238, 240)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(245, 238, 240)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(245, 238, 240)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(245, 238, 240)",
+        "padding": "128px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      313,
+      293,
+      286,
+      319
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "heroLines": 5,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(245, 238, 240)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(245, 238, 240)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(245, 238, 240)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(245, 238, 240)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(245, 238, 240)",
+        "padding": "96px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      346,
+      403,
+      384,
+      431
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "heroLines": 3,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(223, 238, 238)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(248, 250, 249)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(248, 250, 249)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(223, 238, 238)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(248, 250, 249)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(223, 238, 238)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(248, 250, 249)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(223, 238, 238)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(248, 250, 249)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(223, 238, 238)",
+        "padding": "128px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      313,
+      293,
+      286,
+      319
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "heroLines": 5,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(223, 238, 238)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(248, 250, 249)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(248, 250, 249)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(223, 238, 238)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(248, 250, 249)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(223, 238, 238)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(248, 250, 249)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(223, 238, 238)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(248, 250, 249)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(223, 238, 238)",
+        "padding": "96px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      346,
+      403,
+      384,
+      431
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "heroLines": 3,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(238, 244, 244)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(238, 244, 244)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(238, 244, 244)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(238, 244, 244)",
+        "padding": "128px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 255, 255)",
+        "padding": "128px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(238, 244, 244)",
+        "padding": "128px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      313,
+      293,
+      286,
+      319
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "heroLines": 5,
+    "displayFont": "Fraunces, \"Fraunces Fallback\"",
+    "italicStyle": "italic",
+    "bandParagraph": "rgb(255, 255, 255)",
+    "sections": [
+      {
+        "name": "story-hero",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-product-strip",
+        "background": "rgb(238, 244, 244)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-problem",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-adapt",
+        "background": "rgba(0, 0, 0, 0)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-companion",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-journey",
+        "background": "rgb(238, 244, 244)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-support",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-audiences",
+        "background": "rgb(238, 244, 244)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-responsible",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-team",
+        "background": "rgb(238, 244, 244)",
+        "padding": "96px"
+      },
+      {
+        "name": "story-roadmap",
+        "background": "rgb(255, 255, 255)",
+        "padding": "96px"
+      },
+      {
+        "name": "upgrade-final",
+        "background": "rgb(238, 244, 244)",
+        "padding": "96px"
+      }
+    ],
+    "phoneCount": 7,
+    "cardHeights": [
+      346,
+      403,
+      384,
+      431
+    ],
+    "frames": [
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      },
+      {
+        "width": 260,
+        "height": 548.875
+      }
+    ],
+    "errors": []
+  }
+]

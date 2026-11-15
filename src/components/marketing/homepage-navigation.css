@@ -1,0 +1,119 @@
+/* Homepage navigation only. Keep the approved page sections unchanged. */
+.pro-home .home-header.clean-nav {
+  top: 0;
+  width: 100%;
+  max-width: none;
+  height: 4.5rem;
+  min-height: 4.5rem;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--pro-border) 40%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--pro-bg) 96%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: none;
+}
+.pro-home .clean-nav[data-shrunk="true"] { height: 4rem; min-height: 4rem; }
+.pro-home .clean-nav .home-nav {
+  max-width: 78rem;
+  margin-inline: auto;
+  padding: 0 2rem;
+  gap: 2rem;
+}
+.pro-home .clean-nav .home-brand { gap: .375rem; font-size: 1rem; }
+.pro-home .clean-nav .home-brand svg { width: 2rem; height: 2rem; margin-right: .125rem; }
+.pro-home .clean-nav .home-desktop-nav { gap: .5rem; }
+.pro-home .clean-nav .home-desktop-nav a {
+  position: relative;
+  padding: .5rem .625rem;
+  border-radius: var(--pro-radius-control);
+  white-space: nowrap;
+  background: transparent;
+}
+.pro-home .clean-nav .home-desktop-nav a:hover { background: transparent; }
+.pro-home .clean-nav .home-desktop-nav a[aria-current="location"] { background: transparent; }
+.pro-home .clean-nav .home-desktop-nav a[aria-current="location"]::after {
+  content: "";
+  position: absolute;
+  bottom: .125rem;
+  inset-inline: .625rem;
+  height: 2px;
+  background: var(--pro-primary);
+}
+.pro-home .clean-nav .home-nav-actions { gap: .5rem; }
+/* This scoped override keeps the navigation independent of hero button styling. */
+.pro-home .clean-nav button { border-radius: var(--pro-radius-control) !important; }
+.pro-home .clean-nav .home-access-button {
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: .5rem;
+  background: var(--pro-surface);
+}
+.pro-home .clean-nav .home-access-button:hover { background: var(--pro-surface-2); }
+.pro-home .clean-nav .home-sign-in { padding-inline: 1rem; gap: .5rem; }
+.pro-home .clean-nav .nav-language {
+  padding: 0;
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pro-home .clean-nav .nav-language button { position: relative; padding: .25rem; background: transparent; color: var(--pro-muted); }
+.pro-home .clean-nav .nav-language button[aria-pressed="true"] { color: var(--pro-primary); background: transparent; }
+.pro-home .clean-nav .nav-language button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: .25rem;
+  inset-inline: .75rem;
+  height: 2px;
+  background: var(--pro-primary);
+}
+.pro-home .clean-nav .nav-language button:hover { background: var(--pro-surface); }
+.pro-home .clean-nav .nav-access-wrap:focus-within .nav-adjust-tooltip,
+.pro-home .clean-nav .nav-access-wrap:hover .nav-adjust-tooltip { display: block; }
+.pro-home .clean-nav .nav-access-wrap[data-tooltip-dismissed="true"] .nav-adjust-tooltip { display: none; }
+.pro-home .clean-nav .nav-adjust-tooltip { right: max(1rem, calc((100% - 78rem) / 2 + 2rem)); border-radius: var(--pro-radius-control); }
+.pro-home .clean-nav .home-menu-button { background: transparent; color: var(--pro-text); }
+.pro-home .clean-nav .home-menu-button:hover { background: var(--pro-surface); }
+.pro-home .clean-nav .nav-mobile-sheet {
+  inset: 0 0 auto;
+  width: 100%;
+  max-height: 100dvh;
+  padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem max(1.5rem, env(safe-area-inset-bottom));
+  border: 0;
+  border-bottom: 1px solid var(--pro-border);
+  border-radius: 0 0 var(--pro-radius-card) var(--pro-radius-card);
+}
+.pro-home .clean-nav .nav-sheet-heading { padding-bottom: 1rem; border-bottom: 1px solid color-mix(in srgb, var(--pro-border) 40%, transparent); }
+.pro-home .clean-nav .nav-sheet-heading h2 { font-family: var(--pro-font-body); }
+.pro-home .clean-nav .nav-mobile-sheet nav a { border-radius: var(--pro-radius-control); padding-inline: .75rem; }
+.pro-home .clean-nav .nav-sheet-close { background: transparent; color: var(--pro-text); }
+.pro-home .clean-nav :is(a,button):focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 3px; }
+@media (max-width:1023px) {
+  .pro-home .clean-nav .home-desktop-nav,
+  .pro-home .clean-nav .nav-desktop-language,
+  .pro-home .clean-nav .home-nav > .home-nav-actions > .home-sign-in { display: none; }
+  .pro-home .clean-nav .home-menu-button { display: inline-flex; }
+}
+@container (max-width:60rem) {
+  .pro-home .clean-nav .home-desktop-nav,
+  .pro-home .clean-nav .nav-desktop-language,
+  .pro-home .clean-nav .home-nav > .home-nav-actions > .home-sign-in { display: none; }
+  .pro-home .clean-nav .home-menu-button { display: inline-flex; }
+}
+@media (max-width:767px) {
+  .pro-home .home-header.clean-nav { height: 4rem; min-height: 4rem; }
+  .pro-home .clean-nav .home-nav { gap: 1rem; padding-inline: 1.25rem; }
+  .pro-home .clean-nav .home-brand { font-size: .9375rem; gap: .25rem; }
+  .pro-home .clean-nav .home-brand svg { width: 1.75rem; height: 1.75rem; }
+}
+@container (max-width:16rem) {
+  .pro-home .home-header.clean-nav,
+  .pro-home .clean-nav[data-shrunk="true"] { position: relative; top: 0; height: auto; min-height: 4rem; }
+  .pro-home .clean-nav .home-nav { padding: .5rem 1rem; }
+  .pro-home .clean-nav .nav-mobile-sheet { padding: .5rem; }
+}
+@media (prefers-reduced-motion:reduce) { .pro-home .home-header.clean-nav { transition: none; } }
+html[data-motion="reduce"] .pro-home .home-header.clean-nav { transition: none; }
+@media (forced-colors:active) { .pro-home .home-header.clean-nav { border-bottom: 1px solid; backdrop-filter: none; } }

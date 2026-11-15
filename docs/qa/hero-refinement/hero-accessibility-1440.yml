@@ -1,0 +1,20 @@
+- region "Maternal care, designed around every mother.":
+  - paragraph: Connected care. A more human experience.
+  - heading "Maternal care, designed around every mother." [level=1]:
+    - text: Maternal care, designed around
+    - emphasis: every mother.
+  - paragraph: আপনার যত্ন, আপনার মতো।
+  - paragraph: "PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you."
+  - link "Explore PROHOR":
+    - /url: "#features"
+  - link "See how it works":
+    - /url: "#how-it-works"
+  - list "What you can do with PROHOR":
+    - listitem: Mother & baby records
+    - listitem: Bangla answers with sources
+    - listitem: Reports explained
+    - listitem: Well-being
+    - listitem: Human support
+  - paragraph: Explore without an account.
+  - img "Illustration of the PROHOR app with sample answers, records and sharing controls"
+  - button "Animation off · reduced motion" [disabled] [pressed]

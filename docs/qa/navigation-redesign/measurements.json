@@ -1,0 +1,230 @@
+[
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "width": 1440,
+      "height": 72,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "width": 390,
+      "height": 64,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "width": 1440,
+      "height": 72,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "quiet-garden",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "width": 390,
+      "height": 64,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "width": 1440,
+      "height": 72,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "width": 390,
+      "height": 64,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "width": 1440,
+      "height": 72,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "original-rose",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "width": 390,
+      "height": 64,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "width": 1440,
+      "height": 72,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "normal",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "width": 390,
+      "height": 64,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 1440,
+    "documentWidth": 1440,
+    "header": {
+      "width": 1440,
+      "height": 72,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  },
+  {
+    "theme": "morning-mist",
+    "contrast": "more",
+    "width": 390,
+    "documentWidth": 390,
+    "header": {
+      "width": 390,
+      "height": 64,
+      "top": 0,
+      "radius": "0px"
+    },
+    "adjustWidth": 44,
+    "scrolled": {
+      "height": 64,
+      "top": 0,
+      "current": "#features"
+    },
+    "errors": []
+  }
+]

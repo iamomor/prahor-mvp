@@ -1,3 +1,4 @@
+import { getSyntheticBartaAnswer } from "@/features/barta/synthetic-demo";
 import { jsonNoStore } from "@/lib/api-response";
 import { bartaRequestSchema } from "@/lib/contracts/barta";
 
@@ -11,8 +12,13 @@ export async function POST(request: Request) {
   } catch {
     return jsonNoStore({ message: "Invalid request.", status: "not_connected" }, 400);
   }
-  if (!starterRequestSchema.safeParse(body).success) {
+  const parsed = starterRequestSchema.safeParse(body);
+  if (!parsed.success) {
     return jsonNoStore({ message: "Please enter a valid question.", status: "not_connected" }, 400);
+  }
+
+  if (process.env.NODE_ENV === "development" && process.env.PROHOR_BARTA_DEMO === "1") {
+    return jsonNoStore(getSyntheticBartaAnswer(parsed.data.question), 200);
   }
 
   return jsonNoStore({

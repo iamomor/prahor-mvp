@@ -2,7 +2,10 @@
 
 **Status:** working design specification (tokens and implementation reference), **not** a finalized product `design.md`, certified accessibility audit or finished PROHOR app.
 
+For contributors, start with the [code map](docs/CODE_MAP.md): active entry points, shared contracts, retained references and checks. The [code review report](docs/qa/CODE_REVIEW.md) records reproduced bugs, fixes and untested backend capabilities.
+
 ## What this includes
+- Step 7 architecture proposal: [data model](docs/architecture/data-model.md), [API contracts](docs/architecture/api-contracts.md), [security requirements](docs/architecture/security.md), and [team review](docs/architecture/team-contracts.md). Shared Zod/TypeScript contracts are in `src/lib/contracts/`; run `npm run test:contracts` for structural boundary checks. Proposed behavior is not a deployed backend.
 - `AGENTS.md`: repository-wide developer + AI agent rules.
 - `.claude/skills/prohor-premium-uiux/SKILL.md`: portable Claude-style skill with YAML frontmatter.
 - `docs/design-system/PROHOR_DESIGN_SPEC.md`: vision, UI principles and screen architecture.

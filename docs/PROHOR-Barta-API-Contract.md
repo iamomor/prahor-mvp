@@ -1,92 +1,40 @@
 # PROHOR Barta API contract
 
-Draft for Day 1 review · Owner: Iftee · Reviewers: Omor and Apurbo
+Implementation handoff · Iftee · Reviewed against the Barta files merged from Omor's main update (f9a2957, containing 07e8d83).
 
-## Verified starter behavior
+## What the current route does
 
-At baseline commit 0d27d19, POST /api/ai/chat accepted a JSON object with a question. A valid question returned HTTP 501 with status not_connected and Cache-Control: no-store. A whitespace-only question returned HTTP 400 with “Please enter a valid question.” Malformed JSON returned HTTP 400 with “Invalid request.” The verified starter provided no generated answer. The proposed contract below documents the next implementation.
-
-## Request
-
-- Method and path: POST /api/ai/chat
-- Media type: application/json; encode Bangla as UTF-8.
-- question: required string, trimmed, 1–1,200 characters under the existing validation rule.
-- locale: optional, one of bn or en. The updated UI should send its selected locale. Proposed default: bn for callers that omit locale, preserving the existing {question} request shape.
-- Public route for general educational questions. Request processing uses the question and locale and retrieves approved public passages. Patient records, report attachments, and user identifiers are outside this contract.
+POST /api/ai/chat uses a strict question-only pick of bartaRequestSchema. Send a JSON body with exactly the question field to exercise this route today.
 
 ~~~json
-{"question":"ANC বলতে কী বোঝায়?","locale":"bn"}
+{"question":"ANC বলতে কী বোঝায়?"}
 ~~~
 
-## Response
+| Request | Current route outcome |
+|---|---|
+| Valid question only | HTTP 501, status not_connected, with the existing unavailable message. |
+| Malformed JSON | HTTP 400, status not_connected, message “Invalid request.” |
+| Invalid question or extra key | HTTP 400, status not_connected, message “Please enter a valid question.” |
 
-Each proposed response contains status, locale, grounded, answer, and sources. A non-answer response also contains message. For input or parsing errors, use bn when the requested locale cannot be validated. The response is JSON and always uses Cache-Control: no-store.
+The route uses jsonNoStore for all three branches. These outcomes follow from the merged code and are pending a repeat smoke test on the synced checkout. Earlier baseline results are in [the evaluation checklist](PROHOR-Barta-Evaluation.md).
 
-| HTTP | Status | Trigger | Client display |
-|---|---|---|---|
-| 200 | answered | Approved retrieved evidence supports the entire answer. | Display answer and its source links. |
-| 200 | insufficient_evidence | No approved passage supports the question, or support is incomplete. | Display the localized evidence message. |
-| 200 | out_of_scope | The question seeks an individualized diagnosis, treatment, dosing, triage, or report interpretation. | Display the approved localized scope message. |
-| 400 | invalid_request | JSON parsing fails. | Display the request message. |
-| 400 | invalid_question | A valid JSON body fails request validation, including a blank question or invalid locale. | Display validation feedback and retain the input. |
-| 501 | not_connected | The deployment has Barta generation disabled or unconfigured. | Display the existing unavailable state. |
-| 503 | service_unavailable | Retrieval or generation fails, times out, or returns an unusable result. | Display a localized temporary failure message and allow retry. |
-| 429 | rate_limited | The configured public request limit is reached. | Display a localized retry message and honor Retry-After when provided. |
+## Shared contract for implementation
 
-Only answered has grounded=true, a nonempty answer, and at least one source. Every other response has grounded=false, answer=null, and sources=[]. The 400 and 501 starter shapes are still in use at baseline. During rollout the UI should handle those bodies as well as the proposed shape. Use status for the UI state and message as its fallback text.
+Use src/lib/contracts/barta.ts for runtime validation and TypeScript types. The route's question-only schema is the current transport. The complete request has question, required language validated by languageSchema, and retention. The default retention is ephemeral. A saved request requires confirmed=true and a conversationId or null. A retention choice is separate from authorization. Persisted conversations are outside the first fixture milestone.
 
-### Cited answer example
+| Field or status | Shared shape |
+|---|---|
+| grounded | Nonempty answer, 1–20 citations, and 1–10 nonempty limitations. |
+| abstained | answer=null, citations=[], message, and reason insufficient_evidence, outside_education_scope, or sources_unavailable. |
+| not_connected | answer=null and message under bartaAnswerSchema. The existing HTTP starter route returns its smaller status/message body. |
+| Citation | sourceId, chunkId, sourceVersion, title, publisher, HTTPS url, locator and reviewedAt. |
 
-This is a synthetic test response. The example.invalid URL is a test placeholder. Production source URLs come from the approved passage register.
+The earlier Day 1 draft proposed locale, answered, grounded as a boolean, and sources. Replace those draft names with the shared contract's language, grounded status and citations. Confirm the accepted language values from src/lib/contracts/common.ts before building request fixtures. HTTP mappings for grounded, abstained and service failures are implementation decisions to check against the shared route tests and architecture docs.
 
-~~~json
-{
-  "status": "answered",
-  "locale": "bn",
-  "grounded": true,
-  "answer": "এটি পরীক্ষার জন্য তৈরি একটি নমুনা উত্তর।",
-  "sources": [
-    {
-      "title": "Synthetic fixture",
-      "url": "https://example.invalid/barta-fixture",
-      "excerptId": "FIXTURE-PASSAGE-01"
-    }
-  ]
-}
-~~~
+## First implementation milestone
 
-### Insufficient evidence example
-
-~~~json
-{
-  "status": "insufficient_evidence",
-  "locale": "bn",
-  "grounded": false,
-  "answer": null,
-  "sources": [],
-  "message": "এই প্রশ্নের উত্তর দেওয়ার মতো যাচাই করা তথ্য পাওয়া যায়নি।"
-}
-~~~
-
-### Service failure example
-
-~~~json
-{
-  "status": "service_unavailable",
-  "locale": "en",
-  "grounded": false,
-  "answer": null,
-  "sources": [],
-  "message": "Barta is temporarily unavailable. Please try again."
-}
-~~~
-
-## Retrieval and interface acceptance criteria
-
-1. Retrieve only approved passages from the source register. Build source title, URL, and stable excerptId from server-managed metadata. Reject citations outside the current retrieved set. Citation membership and passage support are separate checks. The evaluation set should assess whether each substantive claim is supported.
-2. With retrieval available and zero eligible results, return insufficient_evidence. Return service_unavailable when retrieval itself fails. A deployment with generation disabled continues to report not_connected. The Day 1 source register has zero approved passages, so integration tests for answered must use isolated, visibly synthetic fixtures until real passages are approved.
-3. Use the existing site typography, approved labels, layout, and interaction patterns. Display source links from the server response. Retain the user’s input and make answer, abstention, and error messages available to assistive technology.
-4. Keep provider credentials on the server. Keep raw questions, patient data, upstream errors, and prompts out of public responses and routine logs.
-5. Test the existing {question} request, UTF-8 Bangla, English locale, invalid input, a supported answer, an evidence gap, a rejected unsupported citation, and an upstream failure. Include the uploaded materials’ accessibility and dosing evaluation cases from PROHOR-Barta-Source-Register.md.
-
-Omor reviews server behavior and failure states. Apurbo reviews locale and rendering. Confirm the proposed default locale before implementation. Bujhi will have its own file-processing contract.
+1. Read tests/api.spec.ts and the Barta sections of tests/contracts before editing. Keep the current question-only request working while the client still uses it. Use the established UI language wiring when the complete request is connected.
+2. Build the smallest server-side answer path with a synthetic passage and deterministic output. Validate its result with bartaAnswerSchema. In a normal live deployment, only passages approved in [the source register](PROHOR-Barta-Source-Register.md) are eligible. There are no approved passages yet. Use test-only fixtures or a visibly labeled demo that cannot pass for patient guidance.
+3. Build citations from retrieved, versioned passage metadata. Verify source approval, citation membership and support for each substantive claim. The schema's required fields alone cannot prove that a citation exists or supports an answer.
+4. For insufficient support or personal advice, construct the canonical abstention with its documented reason. For source unavailability, keep the answer and citations empty and use a user-safe message. Confirm operational failure behavior against the team API tests.
+5. Keep the existing site layout and localized display patterns. Add the approved answer, citations, limitation and abstention states to the product UI as the implementation is integrated. Keep patient records, raw questions, provider credentials and upstream payloads out of public responses and routine logs.

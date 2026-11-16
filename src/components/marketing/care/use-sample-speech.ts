@@ -1,0 +1,82 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { copy } from "../home-content";
+import { useHome } from "../HomeContext";
+
+export function useSampleSpeech(text: string) {
+  const { t, locale } = useHome();
+  const [speechStatus, setSpeechStatus] = useState("");
+  const utterance = useRef<SpeechSynthesisUtterance | null>(null);
+  useEffect(
+    () => () => {
+      if (utterance.current) {
+        utterance.current.onend = null;
+        utterance.current.onerror = null;
+        window.speechSynthesis?.cancel();
+      }
+    },
+    [],
+  );
+
+  function readAloud() {
+    if (!window.speechSynthesis) {
+      setSpeechStatus(
+        t(
+          copy(
+            "Read aloud is unavailable in this browser. The text is here to read.",
+            "এই ব্রাউজারে পড়ে শোনানো যায় না। লেখাটি এখানেই পড়তে পারবেন।",
+          ),
+        ),
+      );
+      return;
+    }
+    window.speechSynthesis.cancel();
+
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = locale === "bn" ? "bn-BD" : "en-GB";
+    if (
+      locale === "bn" &&
+      !window.speechSynthesis
+        .getVoices()
+        .some((voice) => voice.lang.startsWith("bn"))
+    ) {
+      setSpeechStatus("বাংলা কণ্ঠ পাওয়া যায়নি। লেখাটি এখানেই পড়তে পারবেন।");
+      return;
+    }
+    speech.onend = () => {
+      utterance.current = null;
+      setSpeechStatus(
+        t(
+          copy(
+            "Finished reading. Nothing was sent.",
+            "পড়া শেষ। কিছু পাঠানো হয়নি।",
+          ),
+        ),
+      );
+    };
+    speech.onerror = () => {
+      utterance.current = null;
+      setSpeechStatus(
+        t(
+          copy(
+            "Read aloud could not finish. The text is here to read.",
+            "পড়ে শোনানো শেষ হয়নি। লেখাটি এখানেই পড়তে পারবেন।",
+          ),
+        ),
+      );
+    };
+    utterance.current = speech;
+    setSpeechStatus(
+      t(
+        copy(
+          "Reading this sample aloud. Nothing is sent.",
+          "নমুনাটি পড়ে শোনানো হচ্ছে। কিছু পাঠানো হচ্ছে না।",
+        ),
+      ),
+    );
+    window.speechSynthesis.speak(speech);
+  }
+
+  return { speechStatus, setSpeechStatus, readAloud };
+}

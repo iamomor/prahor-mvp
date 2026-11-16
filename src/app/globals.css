@@ -1,18 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&family=Roboto+Slab:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap');
+/*
+ * globals.css — PROHOR application global styles (Phase 0 fix).
+ *
+ * Font loading is now exclusively via next/font/google in src/app/layout.tsx,
+ * which self-hosts fonts and injects CSS variable classes on <body>.
+ * The raw @import url('https://fonts.googleapis.com/...') has been removed:
+ *   - It was a build-time/runtime network dependency that broke production builds
+ *     in sandboxed environments.
+ *   - It loaded Noto Sans Bengali, Noto Serif Bengali, Roboto Slab, and Rubik but
+ *     NOT Manrope, leaving the Default body font undefined.
+ *   - Variable names it set did not match the semantic variables expected by
+ *     prohor-tokens.css (e.g. --font-rubik ≠ --font-latin).
+ *
+ * Fonts now available via next/font CSS variables on <body>:
+ *   --font-manrope           Manrope (Default body/heading/control)
+ *   --font-noto-sans-bengali Noto Sans Bengali (Bangla companion, all presets)
+ *   --font-noto-serif        Noto Serif (Default display role)
+ *   --font-noto-serif-bengali Noto Serif Bengali (Bangla serif companion)
+ *   --font-rubik             Rubik (Rubik preset)
+ *   --font-roboto-slab       Roboto Slab (Default record role; Roboto Slab preset)
+ *
+ * The marketing page (page.tsx) previously re-loaded a subset under different
+ * variable names (--font-prohor-manrope etc.). That page will be updated to use
+ * the canonical root-layout variables instead.
+ */
+
 /* Existing token file is imported unchanged and owns Tailwind v4 import. */
 @import "../styles/prohor-tokens.css";
 
 /* ── Typography Stack ── */
 :root {
   --pro-max: 1240px;
-  --font-rubik: "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-roboto-slab: "Roboto Slab", Georgia, serif;
-  --font-noto-sans-bn: "Noto Sans Bengali", sans-serif;
-  --font-noto-serif-bn: "Noto Serif Bengali", serif;
-  --font-latin: var(--font-rubik);
-  --font-display: var(--font-roboto-slab);
-  --font-bangla: var(--font-noto-sans-bn);
-  --font-bangla-serif: var(--font-noto-serif-bn);
 }
 
 * { box-sizing: border-box; }
@@ -21,13 +38,15 @@ body {
   min-height: 100dvh;
   background-color: var(--pro-bg);
   color: var(--pro-text);
-  font-family: var(--font-rubik), system-ui, sans-serif;
+  /* Default body font: Manrope (Latin) with Noto Sans Bengali fallback for Bangla glyphs.
+     This is overridden at the token layer by --pro-font-body (data-font preset). */
+  font-family: var(--font-manrope), var(--font-noto-sans-bengali), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 :lang(bn) {
-  font-family: var(--font-noto-sans-bn), sans-serif;
+  font-family: var(--font-noto-sans-bengali), sans-serif;
   line-height: 1.7;
 }
 

@@ -1,7 +1,7 @@
 /* Two homepage sections; other sections only opt into the requested tag role. */
 .pro-home { --pro-font-tag: var(--pro-font-body); }
 html:not([data-font]) .pro-home, html[data-font="default"] .pro-home {
-  --pro-font-tag: var(--font-prohor-jetbrains), var(--font-prohor-bangla-sans), monospace;
+  --pro-font-tag: var(--font-prohor-jetbrains), var(--font-noto-sans-bengali), monospace;
 }
 .pro-home .font-tag, .pro-home .font-tag :not(svg) {
   font-family: var(--pro-font-tag);
@@ -12,7 +12,7 @@ html:not([data-font]) .pro-home, html[data-font="default"] .pro-home {
   text-transform: none;
 }
 .pro-home .font-tag:lang(bn), .pro-home .font-tag :lang(bn) {
-  font-family: var(--font-prohor-bangla-sans);
+  font-family: var(--font-noto-sans-bengali), sans-serif;
 }
 .pro-home :is(.story-sample,.story-status) {
   font-family: var(--pro-font-tag);
@@ -20,7 +20,7 @@ html:not([data-font]) .pro-home, html[data-font="default"] .pro-home {
   font-weight: 500;
   letter-spacing: 0;
 }
-.pro-home :is(.story-sample,.story-status):lang(bn) { font-family: var(--font-prohor-bangla-sans); }
+.pro-home :is(.story-sample,.story-status):lang(bn) { font-family: var(--font-noto-sans-bengali), sans-serif; }
 .pro-home .story-device .story-device-label .story-sample.font-tag { font-family: var(--pro-font-tag); font-size: .8125rem; font-weight: 500; }
 .pro-home :is(.care-companion,.care-support) {
   font-size: 1rem;

@@ -129,7 +129,7 @@ function VisitPhone({ mode, question, onQuestion, reviewed, onReview }: {
         <div className="pass-phone-intro"><span className="pass-phone-icon"><CalendarDays size={25} aria-hidden="true" /></span><p>{t(copy("A little preparation.", "একটু প্রস্তুতি।"))}</p><h3>{t(copy("Your next visit.", "আপনার পরের সাক্ষাৎ।"))}</h3></div>
         <label htmlFor={id}>{t(copy("What would you like to ask?", "আপনি কী জানতে চান?"))}</label>
         {mode.id === "picture" && <div className="pass-phrase-grid" role="group" aria-label={t(copy("Picture-and-text sample phrases", "ছবি ও লেখার নমুনা বাক্যাংশ"))}>
-          {phrases.map(({ icon: PhraseIcon, label }) => <button key={label.en} type="button" onClick={() => onQuestion(`${question}${question ? " " : ""}${label[locale]}`)}><PhraseIcon size={24} aria-hidden="true" /><span>{t(label)}</span><Plus size={16} aria-hidden="true" /></button>)}
+          {phrases.map(({ icon: PhraseIcon, label }) => <button key={label.en} type="button" onClick={() => onQuestion(question || label[locale])}><PhraseIcon size={24} aria-hidden="true" /><span>{t(label)}</span><Plus size={16} aria-hidden="true" /></button>)}
         </div>}
         <textarea id={id} rows={3} value={question} onChange={event => onQuestion(event.target.value)} placeholder={t(copy("What should I bring to my visit?", "সাক্ষাতে কী সঙ্গে আনব?"))} />
         <button className="home-button pass-review-button" onClick={onReview}>{t(copy("Review my question", "আমার প্রশ্ন দেখুন"))}<ArrowRight size={19} aria-hidden="true" /></button>

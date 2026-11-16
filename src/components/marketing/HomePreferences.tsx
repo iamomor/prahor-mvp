@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Accessibility, Check, X } from "lucide-react";
-import { DEFAULT_PROHOR_PREFERENCES, applyPreferences, readLocalPreferences, saveLocalPreferences, type ProhorAccessPreferences } from "@/lib/access-preferences";
+import { DEFAULT_PROHOR_PREFERENCES, READING_PREFERENCES_KEY, applyPreferences, readLocalPreferences, saveLocalPreferences, type ProhorAccessPreferences } from "@/lib/access-preferences";
 import { copy, type Locale } from "./home-content";
 import { useHome } from "./HomeContext";
+import { ContrastPreferenceControl } from "@/components/accessibility/ContrastPreferenceControl";
 
 export type ReadingPreferences = {
   font: "default" | "rubik" | "roboto-slab";
@@ -12,7 +13,7 @@ export type ReadingPreferences = {
   density: "comfortable" | "compact" | "spacious";
 };
 
-export const readingKey = "prohor-home-reading-v1";
+export const readingKey = READING_PREFERENCES_KEY;
 export const defaultReading: ReadingPreferences = { font: "default", textSpacing: "standard", density: "comfortable" };
 
 export function readReadingPreferences(): ReadingPreferences {
@@ -21,7 +22,7 @@ export function readReadingPreferences(): ReadingPreferences {
     return {
       font: ["default", "rubik", "roboto-slab"].includes(value?.font) ? value.font : "default",
       textSpacing: value?.textSpacing === "relaxed" ? "relaxed" : "standard",
-      density: ["comfortable", "compact", "spacious"].includes(value?.density) ? value.density : readLocalPreferences().spaciousLayout ? "spacious" : "comfortable",
+      density: readLocalPreferences().layoutDensity,
     };
   } catch { return defaultReading; }
 }
@@ -64,15 +65,27 @@ export function HomePreferences({ open, onClose }: { open: boolean; onClose: () 
   }
 
   function updateReading<K extends keyof ReadingPreferences>(key: K, value: ReadingPreferences[K]) {
-    const next = { ...reading, [key]: value };
+    const next = {
+      ...reading,
+      [key]: value,
+      density: key === "density" ? value as ReadingPreferences["density"] : readLocalPreferences().layoutDensity,
+    };
     setReading(next);
     applyReadingPreferences(next);
-    if (key === "density") {
-      const combined = { ...readLocalPreferences(), ...prefs, language: locale, spaciousLayout: value === "spacious" };
-      setPrefs(combined);
-      saveLocalPreferences(combined);
-    }
-    try { localStorage.setItem(readingKey, JSON.stringify(next)); } catch { /* The controls continue in memory. */ }
+    const combined = {
+      ...readLocalPreferences(),
+      ...prefs,
+      language: locale,
+      layoutDensity: next.density,
+      spaciousLayout: next.density === "spacious",
+    };
+    setPrefs(combined);
+    saveLocalPreferences(combined);
+    try {
+      // Layout density is canonical in the shared access store. Keep only
+      // typography and spacing in this legacy reading store.
+      localStorage.setItem(readingKey, JSON.stringify({ font: next.font, textSpacing: next.textSpacing }));
+    } catch { /* The controls continue in memory. */ }
     setStorageMessage(t(copy("Applied to this page. Storage availability determines whether it is remembered.", "এই পাতায় প্রয়োগ হয়েছে। সংরক্ষণের সুযোগ অনুযায়ী পরেরবার মনে থাকবে।")));
   }
 
@@ -83,7 +96,7 @@ export function HomePreferences({ open, onClose }: { open: boolean; onClose: () 
     applyPreferences(defaults);
     applyReadingPreferences(defaultReading);
     saveLocalPreferences(defaults);
-    try { localStorage.setItem(readingKey, JSON.stringify(defaultReading)); } catch { /* Continue in memory. */ }
+    try { localStorage.setItem(readingKey, JSON.stringify({ font: defaultReading.font, textSpacing: defaultReading.textSpacing })); } catch { /* Continue in memory. */ }
     setStorageMessage(t(copy("Default appearance restored. Your language and practice text are unchanged.", "মূল চেহারা ফিরেছে। আপনার ভাষা ও অনুশীলনের লেখা একই আছে।")));
   }
 
@@ -97,7 +110,11 @@ export function HomePreferences({ open, onClose }: { open: boolean; onClose: () 
           <label key={id}><input type="radio" name="home-theme" value={id} checked={prefs.theme === id} onChange={() => update("theme", id)} /><span lang="en">{label}</span></label>
         ))}
       </div></fieldset>
-      <label className="home-check"><input type="checkbox" checked={prefs.highContrast} onChange={e => update("highContrast", e.target.checked)} />{t(copy("Higher contrast · independent of theme", "বেশি কনট্রাস্ট · থিমের থেকে স্বাধীন"))}</label>
+      <ContrastPreferenceControl
+        value={prefs.highContrast}
+        onChange={value => update("highContrast", value)}
+        compact
+      />
       <fieldset><legend>{t(copy("Reading & layout", "পড়া ও বিন্যাস"))}</legend>
         <div className="home-select-label"><label htmlFor="home-text-size">{t(copy("Text size", "লেখার আকার"))}</label><select id="home-text-size" value={prefs.textScale} onChange={e => update("textScale", e.target.value as ProhorAccessPreferences["textScale"])}>
           <option value="default">{t(copy("Default", "সাধারণ"))}</option><option value="large">{t(copy("Large", "বড়"))}</option><option value="extra-large">{t(copy("Extra large", "আরও বড়"))}</option>

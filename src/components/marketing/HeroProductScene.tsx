@@ -54,7 +54,7 @@ function ProductPhone() {
     <div className="hero-product-phone">
       <div className="hero-phone-hardware"><span /></div>
       <div className="hero-phone-brand"><ProhorSymbol /><strong>PROHOR</strong><span lang="bn">প্রহর</span></div>
-      <div className="hero-phone-screens">
+      <div className="hero-phone-screens" aria-hidden="true">
         <PhoneHome />
         <div className="hero-screen hero-screen-ask" data-screen="ask"><span className="hero-screen-eyebrow">BARTA · বার্তা</span><p className="hero-phone-title" lang="bn">আপনার ভাষায়, সূত্রসহ।</p><p className="hero-phone-gloss">Room for your questions.</p><div className="hero-phone-answer"><MessageCircle size={22} /><SampleAnswer /></div><p className="hero-phone-education">Sample educational answer.<br />People provide clinical care.</p><div className="hero-phone-compose"><span lang="bn">আপনার প্রশ্ন লিখুন</span><ArrowUpRight size={17} /></div></div>
         <div className="hero-screen hero-screen-health" data-screen="health"><span className="hero-screen-eyebrow">JIBONREKHA · জীবনরেখা</span><p className="hero-phone-title">One journey.<br />Two care stories.</p><p className="hero-phone-gloss">Your records, connected.</p><div className="hero-phone-week"><Heart size={19} /><strong>Week 24</strong><span>Sample journey</span></div><SampleTimeline /><div className="hero-phone-record"><BookOpen size={17} /><span>Visit questions<small>Recorded by you</small></span><ChevronRight size={15} /></div><p className="hero-phone-private"><LockKeyhole size={12} />You choose what to share</p></div>

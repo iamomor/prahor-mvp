@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowRight, ArrowUpRight, Baby, BookOpen, CalendarDays, Check, ChevronRight, FileCheck2, FileText, Heart, HeartHandshake, LockKeyhole, MapPin, MessageCircle, Phone, Plus, Search, ShieldCheck, SlidersHorizontal, Sun, Upload, UserRound } from "lucide-react";
 import { HomeBrand, ProhorSymbol } from "./HomeBrand";
 import { useHome } from "./HomeContext";
@@ -138,13 +138,18 @@ export function SharedVisitPhones() {
   const [question, setQuestion] = useState(sampleQuestion);
   const [gloss, setGloss] = useState("How can I prepare for my next visit?");
   const [reviewed, setReviewed] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const modes = [
     { id: "touch", label: copy("Touch & text", "স্পর্শ ও লেখা"), icon: MessageCircle },
     { id: "larger", label: copy("Large text + high contrast", "বড় লেখা ও বেশি কনট্রাস্ট"), icon: SlidersHorizontal },
     { id: "picture", label: copy("Picture-and-text", "ছবি ও লেখা"), icon: Heart },
   ];
   function change(value: string, english = "") { setQuestion(value); setGloss(english); setReviewed(false); }
-  return <><div className="story-visit-phones" role="region" aria-label={t(copy("Visit question presentations", "সাক্ষাতের প্রশ্নের উপস্থাপনা"))} tabIndex={0}>{modes.map(({ id, label, icon: Icon }) => <PhoneFrame key={id} title={t(label)} className={`story-visit-${id}`}>
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setHydrated(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return <><div className="story-visit-phones" data-hydrated={hydrated ? "true" : undefined} role="region" aria-label={t(copy("Visit question presentations", "সাক্ষাতের প্রশ্নের উপস্থাপনা"))} tabIndex={0}>{modes.map(({ id, label, icon: Icon }) => <PhoneFrame key={id} title={t(label)} className={`story-visit-${id}`}>
     <ScreenTitle icon={<Icon size={24} />} small={t(copy("Your next visit", "আপনার পরের সাক্ষাৎ"))} title={t(copy("A question, in your words.", "আপনার ভাষায় একটি প্রশ্ন।"))} />
     <label className="story-question-label" htmlFor={`visit-question-${id}`}>{t(copy("What would you like to ask?", "আপনি কী জানতে চান?"))}</label>
     {id === "picture" && <div className="story-phrase-picker" role="group" aria-label={t(copy("Picture-and-text sample phrases", "ছবি ও লেখার নমুনা বাক্যাংশ"))}>{[

@@ -141,12 +141,37 @@ test("complete phrases never duplicate and drafts survive live controls, languag
   await page.locator("#module-adapt").getByRole("button", { name: "Original Rose", exact: true }).click();
   await page.locator("#module-adapt").getByRole("switch", { name: "Higher contrast", exact: true }).check();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "quiet-garden"); await expect(page.locator("html")).not.toHaveAttribute("data-contrast", "more");
-  await page.reload(); await expect(page.locator("html")).toHaveAttribute("lang", "en"); await expect(page.locator(".story-visit-phones")).toHaveAttribute("data-hydrated", "true");
+  await page.reload(); await expect(page.locator("html")).toHaveAttribute("lang", "en"); await expect(page.locator("#visit-question-touch")).toHaveAttribute("aria-busy", "false");
   await input.fill("Synthetic visit question");
-  const dialog = await openPreferences(page); await dialog.getByRole("radio", { name: "Original Rose", exact: true }).check(); await dialog.locator('input[type="radio"][value="more"]').check(); await dialog.getByLabel("Text size", { exact: true }).selectOption("extra-large"); await dialog.getByLabel("Typeface", { exact: true }).selectOption("rubik"); await dialog.getByLabel("Layout", { exact: true }).selectOption("spacious"); await dialog.getByLabel("Relaxed text spacing", { exact: true }).check(); await dialog.getByLabel("Reduce motion", { exact: true }).check(); await dialog.getByRole("button", { name: "Done, keep exploring" }).click();
+  const dialog = await openPreferences(page);
+  await dialog.getByRole("radio", { name: "Original Rose", exact: true }).check();
+  await dialog.locator('input[type="radio"][value="more"]').check();
+  await dialog.getByLabel("Text size", { exact: true }).selectOption("extra-large");
+  await dialog.getByLabel("Typeface", { exact: true }).selectOption("rubik");
+  await dialog.getByLabel("Layout", { exact: true }).selectOption("spacious");
+  await dialog.getByLabel("Relaxed text spacing", { exact: true }).check();
+  await dialog.getByLabel("Reduce motion", { exact: true }).check();
+  await dialog.getByRole("button", { name: "Done, keep exploring" }).click();
   await page.getByRole("button", { name: "Read this homepage in Bangla" }).click(); await expect(page.locator("html")).toHaveAttribute("lang", "bn");
   for (const id of ["touch", "larger", "picture"]) await expect(page.locator(`#visit-question-${id}`)).toHaveValue("Synthetic visit question"); expect(calls).toEqual([]);
   await page.reload(); for (const [attribute, value] of [["data-theme", "original-rose"], ["data-contrast", "more"], ["data-font", "rubik"], ["data-layout", "spacious"], ["lang", "bn"]]) await expect(page.locator("html")).toHaveAttribute(attribute, value); await expect(input).toHaveValue(original);
+});
+
+test("practice inputs become editable only after their shared state initializes", async ({ browser, page, baseURL }) => {
+  const noScript = await browser.newContext({ javaScriptEnabled: false, baseURL });
+  try {
+    const staticPage = await noScript.newPage();
+    await staticPage.goto("/");
+    await expect(staticPage.locator("#visit-question-touch")).toHaveAttribute("readonly", "");
+    await expect(staticPage.locator("#visit-question-touch")).toHaveAttribute("aria-busy", "true");
+  } finally {
+    await noScript.close();
+  }
+  await page.goto("/");
+  for (const id of ["touch", "larger", "picture"]) {
+    await expect(page.locator(`#visit-question-${id}`)).toBeEditable();
+    await expect(page.locator(`#visit-question-${id}`)).toHaveAttribute("aria-busy", "false");
+  }
 });
 
 test("facility filtering, check-in and consent stay local and truthful", async ({ page }) => {
@@ -168,7 +193,11 @@ test("320–1440px reflow includes 200% Bangla, spacious layout and relaxed spac
 });
 
 test("axe checks all themes, independent contrast, Bangla and both dialogs", async ({ page }) => {
-  test.setTimeout(90000); await page.goto("/"); await page.locator(".hero-showcase").hover();
+  test.setTimeout(90000);
+  // Sample stable colors, not a partially transparent decorative entrance frame.
+  // Animation, pause and reduced-motion behavior are covered in hero.spec.ts.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
   for (const theme of themes) for (const contrast of ["normal", "more"]) { await page.evaluate(({ theme, contrast }) => { document.documentElement.dataset.theme = theme; document.documentElement.dataset.contrast = contrast; }, { theme, contrast }); expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze()).violations, `${theme} ${contrast}`).toEqual([]); for (const ratio of await darkHeadingContrast(page)) expect(ratio, `4.5:1 floor for large accent text in ${theme} ${contrast}`).toBeGreaterThanOrEqual(4.5); }
   await openPreferences(page); expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze()).violations).toEqual([]); await page.keyboard.press("Escape"); await page.getByRole("button", { name: "Sign in", exact: true }).first().click(); expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze()).violations).toEqual([]); await page.keyboard.press("Escape"); await page.getByRole("button", { name: "Read this homepage in Bangla" }).click(); expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze()).violations).toEqual([]);
 });

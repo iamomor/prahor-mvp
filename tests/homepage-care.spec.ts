@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 
 test("Adapt works by keyboard without changing the page or losing a draft", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.locator(".story-visit-phones")).toHaveAttribute("data-hydrated", "true");
+  await expect(page.locator("#visit-question-touch")).toHaveAttribute("aria-busy", "false");
   const draft = page.locator("#visit-question-touch");
   await draft.fill("Synthetic appointment question");
   const preview = page.locator(".care-adapt-preview");

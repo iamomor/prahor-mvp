@@ -58,6 +58,42 @@ const adapt = {
   originalRose: { en: "Original Rose", bn: "প্রারম্ভিক গোলাপ" },
   morningMist: { en: "Morning Mist", bn: "সকালের কুয়াশা" },
   englishFallbackNotice: { en: "This page's content is still in English.", bn: "এই পাতার কিছু লেখা এখনো ইংরেজিতে আছে।" },
+  cloudSync: {
+    title: { en: "Account Preference Sync", bn: "অ্যাকাউন্ট পছন্দ সিঙ্ক" },
+    subtitle: {
+      en: "Sync your appearance and accessibility preferences securely to your account. Accessible on all your devices.",
+      bn: "আপনার অ্যাক্সেসিবিলিটি ও ইন্টারফেস পছন্দ অ্যাকাউন্টে সুরক্ষিতভাবে সংরক্ষণ করুন। আপনার সব ডিভাইসে ব্যবহারযোগ্য।",
+    },
+    privacyGuarantee: {
+      en: "Privacy guarantee: Only accessibility and interface preferences are synced. Health records, pregnancy details, and diary entries are strictly never included.",
+      bn: "গোপনীয়তার নিশ্চয়তা: কেবল অ্যাক্সেসিবিলিটি ও ইন্টারফেস পছন্দ সিঙ্ক হয়। স্বাস্থ্যতথ্য, গর্ভকালীন তথ্য বা ডায়েরি কখনই সিঙ্ক হবে না।",
+    },
+    consentToggle: { en: "Sync preferences with account", bn: "অ্যাকাউন্টে পছন্দ সিঙ্ক করুন" },
+    statusSynced: { en: "Synced with account", bn: "অ্যাকাউন্টের সাথে সিঙ্ক সম্পন্ন" },
+    statusSyncing: { en: "Syncing…", bn: "সিঙ্ক হচ্ছে…" },
+    statusConflict: { en: "Conflict detected — resolution needed", bn: "পছন্দের অমিল — সমাধান প্রয়োজন" },
+    statusOffline: { en: "Offline — pending connection", bn: "অফলাইন — ইন্টারনেটের অপেক্ষা" },
+    statusError: { en: "Sync error", bn: "সিঙ্ক ত্রুটি" },
+    statusDisabled: { en: "Cloud sync is off", bn: "ক্লাউড সিঙ্ক বন্ধ" },
+    lastSyncedAt: { en: "Last synced", bn: "সর্বশেষ সিঙ্ক" },
+    syncNow: { en: "Sync now", bn: "এখনই সিঙ্ক করুন" },
+    revokeSync: { en: "Revoke sync & delete cloud preferences", bn: "সিঙ্ক বাতিল ও ক্লাউড তথ্য মুছে ফেলুন" },
+    signInPrompt: { en: "Sign in with your account to enable preference sync across your devices.", bn: "আপনার সব ডিভাইসে পছন্দ সিঙ্ক করতে অ্যাকাউন্টে সাইন ইন করুন।" },
+    conflictTitle: { en: "Preference Conflict Detected", bn: "পছন্দসমূহের অমিল পাওয়া গেছে" },
+    conflictDesc: {
+      en: "The accessibility preferences on this device differ from the preferences saved in your account. Which would you like to use?",
+      bn: "এই ডিভাইসের পছন্দসমূহ আপনার অ্যাকাউন্টে সংরক্ষিত পছন্দের সাথে মিলছে না। আপনি কোনটি ব্যবহার করতে চান?",
+    },
+    keepDevice: { en: "Keep this device's settings (Save to account)", bn: "এই ডিভাইসের পছন্দ রাখুন (অ্যাকাউন্টে সংরক্ষণ করুন)" },
+    useAccount: { en: "Use account settings (Apply to this device)", bn: "অ্যাকাউন্টের পছন্দ ব্যবহার করুন (এই ডিভাইসে প্রয়োগ করুন)" },
+    confirmDeleteTitle: { en: "Delete cloud preferences?", bn: "ক্লাউড পছন্দসমূহ মুছে ফেলবেন?" },
+    confirmDeleteDesc: {
+      en: "This will remove your saved preference record from the cloud. Your local device settings will remain unaffected.",
+      bn: "এটি ক্লাউড থেকে আপনার সংরক্ষিত পছন্দের তথ্য মুছে ফেলবে। আপনার ডিভাইসের বর্তমান সেটিংস অপরিবর্তিত থাকবে।",
+    },
+    confirmDeleteBtn: { en: "Yes, delete cloud preferences", bn: "হ্যাঁ, ক্লাউড পছন্দ মুছে ফেলুন" },
+    cancelBtn: { en: "Cancel", bn: "বাতিল" },
+  },
 } as const;
 
 export const translations = {

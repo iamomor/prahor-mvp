@@ -1,82 +1,44 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useSpeechSynthesis } from "@/features/adapt/hooks/useSpeechSynthesis";
+import type { SpeechLanguage } from "@/features/adapt/hooks/useSpeechSynthesis";
 import { copy } from "../home-content";
 import { useHome } from "../HomeContext";
 
 export function useSampleSpeech(text: string) {
   const { t, locale } = useHome();
-  const [speechStatus, setSpeechStatus] = useState("");
-  const utterance = useRef<SpeechSynthesisUtterance | null>(null);
-  useEffect(
-    () => () => {
-      if (utterance.current) {
-        utterance.current.onend = null;
-        utterance.current.onerror = null;
-        window.speechSynthesis?.cancel();
-      }
-    },
-    [],
-  );
+  const speech = useSpeechSynthesis(text, locale as SpeechLanguage);
+  const [notice, setNotice] = useState("");
+
+  const messages = {
+    loading: copy("Loading available voices…", "উপলভ্য কণ্ঠ খোঁজা হচ্ছে…"),
+    ready: copy("Ready. The sample text remains visible.", "প্রস্তুত। নমুনার লেখাটি দেখার জন্য এখানেই আছে।"),
+    starting: copy("Starting playback…", "পড়া শুরু হচ্ছে…"),
+    playing: copy("Reading this sample aloud. Nothing is sent.", "নমুনাটি পড়ে শোনানো হচ্ছে। কিছু পাঠানো হচ্ছে না।"),
+    paused: copy("Reading paused. Nothing is sent.", "পড়া থামানো হয়েছে। কিছু পাঠানো হয়নি।"),
+    completed: copy("Finished reading. Nothing was sent.", "পড়া শেষ। কিছু পাঠানো হয়নি।"),
+    "voice-unavailable": copy("A matching voice is unavailable on this device. The text remains visible.", "এই ডিভাইসে মেলার মতো কণ্ঠ নেই। লেখাটি দেখার জন্য এখানেই আছে।"),
+    unsupported: copy("Read aloud is unavailable in this browser. The text is here to read.", "এই ব্রাউজারে পড়ে শোনানো যায় না। লেখাটি এখানেই পড়তে পারবেন।"),
+    failed: copy("Read aloud could not finish. The text is here to read.", "পড়ে শোনানো শেষ হয়নি। লেখাটি এখানেই পড়তে পারবেন।"),
+  } as const;
 
   function readAloud() {
-    if (!window.speechSynthesis) {
-      setSpeechStatus(
-        t(
-          copy(
-            "Read aloud is unavailable in this browser. The text is here to read.",
-            "এই ব্রাউজারে পড়ে শোনানো যায় না। লেখাটি এখানেই পড়তে পারবেন।",
-          ),
-        ),
-      );
-      return;
-    }
-    window.speechSynthesis.cancel();
-
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = locale === "bn" ? "bn-BD" : "en-GB";
-    if (
-      locale === "bn" &&
-      !window.speechSynthesis
-        .getVoices()
-        .some((voice) => voice.lang.startsWith("bn"))
-    ) {
-      setSpeechStatus("বাংলা কণ্ঠ পাওয়া যায়নি। লেখাটি এখানেই পড়তে পারবেন।");
-      return;
-    }
-    speech.onend = () => {
-      utterance.current = null;
-      setSpeechStatus(
-        t(
-          copy(
-            "Finished reading. Nothing was sent.",
-            "পড়া শেষ। কিছু পাঠানো হয়নি।",
-          ),
-        ),
-      );
-    };
-    speech.onerror = () => {
-      utterance.current = null;
-      setSpeechStatus(
-        t(
-          copy(
-            "Read aloud could not finish. The text is here to read.",
-            "পড়ে শোনানো শেষ হয়নি। লেখাটি এখানেই পড়তে পারবেন।",
-          ),
-        ),
-      );
-    };
-    utterance.current = speech;
-    setSpeechStatus(
-      t(
-        copy(
-          "Reading this sample aloud. Nothing is sent.",
-          "নমুনাটি পড়ে শোনানো হচ্ছে। কিছু পাঠানো হচ্ছে না।",
-        ),
-      ),
-    );
-    window.speechSynthesis.speak(speech);
+    setNotice("");
+    speech.start();
   }
 
-  return { speechStatus, setSpeechStatus, readAloud };
+  function setSpeechStatus(message: string) {
+    setNotice(message);
+  }
+
+  return {
+    speechStatus: notice || t(messages[speech.status]),
+    setSpeechStatus,
+    readAloud,
+    pause: speech.pause,
+    resume: speech.resume,
+    stop: speech.stop,
+    status: speech.status,
+  };
 }

@@ -28,14 +28,15 @@ export function Homepage({ imageAvailable, fontVariables, teamImages }: { imageA
     const chosen = stored ? saved.language : "en";
     document.documentElement.lang = chosen;
     const timer = setTimeout(() => { if (!languageChosen.current) setLocaleState(chosen); setOffline(!navigator.onLine); }, 0);
-    const updateOnline = () => setOffline(!navigator.onLine);
-    window.addEventListener("online", updateOnline);
-    window.addEventListener("offline", updateOnline);
+    const handleOnline = () => setOffline(false);
+    const handleOffline = () => setOffline(true);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
     return () => {
       clearTimeout(timer);
       if (previewFocusFrame.current !== null) cancelAnimationFrame(previewFocusFrame.current);
-      window.removeEventListener("online", updateOnline);
-      window.removeEventListener("offline", updateOnline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
       if (initialLanguage.current) document.documentElement.lang = initialLanguage.current;
     };
   }, []);

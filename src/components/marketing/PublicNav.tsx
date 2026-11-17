@@ -32,6 +32,7 @@ export function PublicNav() {
   const menuButton = useRef<HTMLButtonElement>(null);
   const sheet = useRef<HTMLDialogElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const tooltipWrap = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const hero = document.querySelector(".story-hero");
@@ -80,6 +81,18 @@ export function PublicNav() {
     };
   }, [expanded]);
 
+  useEffect(() => {
+    const dismissTooltip = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape" && document.activeElement === tooltipWrap.current?.querySelector(".home-access-button")) {
+        tooltipWrap.current.dataset.tooltipDismissed = "true";
+        setTooltipDismissed(true);
+        (document.activeElement as HTMLElement).blur();
+      }
+    };
+    window.addEventListener("keydown", dismissTooltip);
+    return () => window.removeEventListener("keydown", dismissTooltip);
+  }, []);
+
   function closeMenu() { setExpanded(false); }
   function trapMenuFocus(event: KeyboardEvent<HTMLDialogElement>) {
     if (event.key !== "Tab") return;
@@ -104,7 +117,7 @@ export function PublicNav() {
       </nav>
       <div className="home-nav-actions">
         <div className="nav-desktop-language"><LanguageControl /></div>
-        <div className="nav-access-wrap" data-tooltip-dismissed={tooltipDismissed} onMouseEnter={() => setTooltipDismissed(false)} onFocus={() => setTooltipDismissed(false)}><button className="home-access-button" onClick={openPreferences} onKeyDown={event => { if (event.key === "Escape") setTooltipDismissed(true); }} aria-haspopup="dialog" aria-label={adjustLabel} aria-describedby="nav-adjust-tooltip"><SlidersHorizontal size={20} aria-hidden="true" /></button><span id="nav-adjust-tooltip" className="nav-adjust-tooltip" role="tooltip">{adjustLabel}</span></div>
+        <div ref={tooltipWrap} className="nav-access-wrap" data-tooltip-dismissed={tooltipDismissed} onMouseEnter={() => { if (document.activeElement !== tooltipWrap.current?.querySelector(".home-access-button")) setTooltipDismissed(false); }} onFocus={() => setTooltipDismissed(false)}><button className="home-access-button" onClick={openPreferences} onKeyDown={event => { if (event.key === "Escape") { tooltipWrap.current?.setAttribute("data-tooltip-dismissed", "true"); setTooltipDismissed(true); event.currentTarget.blur(); } }} aria-haspopup="dialog" aria-label={adjustLabel} aria-describedby="nav-adjust-tooltip"><SlidersHorizontal size={20} aria-hidden="true" /></button><span id="nav-adjust-tooltip" className="nav-adjust-tooltip" role="tooltip">{adjustLabel}</span></div>
         <button className="home-sign-in" onClick={openSignIn} aria-haspopup="dialog">{t(copy("Sign in", "সাইন ইন"))}<ArrowUpRight size={17} aria-hidden="true" /></button>
         <button className="home-menu-button" ref={menuButton} aria-expanded={expanded} aria-controls="home-mobile-menu" aria-haspopup="dialog" aria-label={t(copy("Open navigation", "নেভিগেশন খুলুন"))} onClick={() => setExpanded(true)}><Menu size={22} aria-hidden="true" /></button>
       </div>

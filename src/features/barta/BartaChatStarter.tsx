@@ -3,63 +3,106 @@
 /**
  * BartaChatStarter — accessible Barta AI question-and-response panel.
  *
- * Integrates with Adapt preferences:
+ * Integrates with Adapt preferences & AAC communication:
  *   - Text scaling / contrast / layout  → inherited via CSS data attributes on <html>
  *   - Read-aloud                        → ReadAloudButton rendered on AI response
- *   - AAC insert                        → AACComposer can populate the textarea via
- *                                         the shared "prohor-aac-insert" CustomEvent
- *   - Simple text                       → not applicable (Barta is user input, not static content)
+ *   - AAC symbol composer               → AACComposer available inline or via AAC mode
+ *   - AAC insert contract               → list of composed phrases inserted cleanly
+ *                                         via mergeAacText; never auto-submits
+ *   - Screen reader announcements       → role="status" live regions for insertion and response
  *   - Keyboard                          → all controls keyboard reachable, focus-visible
- *   - Screen reader                     → role="status" live region for AI response,
- *                                         fieldset/legend, labelled textarea, error role="alert"
  *
  * Owner: Iftee (Barta AI logic). Accessibility integration: Apurbo.
  * Status: Prototype — no real AI is connected. Returns a demo response.
- *
- * AGENTS.md requirements:
- *   - 44px minimum controls (min-h-11).
- *   - Semantic HTML only (no click-only divs).
- *   - No colour-only status.
- *   - No automatic audio playback.
- *   - Medical disclaimer present and honest.
- *   - No hardcoded hex — only --pro-* tokens.
  */
 
-import { useState, useId, useRef, useEffect } from "react";
+import { useState, useId, useRef, useEffect, useSyncExternalStore } from "react";
+import { MessageSquareDot, Sparkles, AlertCircle } from "lucide-react";
 import { ReadAloudButton } from "@/features/adapt/components/ReadAloudButton";
-import { useAdaptPreferences } from "@/features/adapt";
+import { useAdaptPreferences, AACComposer, AAC_INSERT_EVENT, mergeAacText, getStoredAacDraft, clearStoredAacDraft } from "@/features/adapt";
+import { InlineLiveRegion } from "@/components/accessibility/LiveRegion";
 
-/** AAC insert event contract — matches AACComposer's dispatchInsert call. */
-const AAC_INSERT_EVENT = "prohor-aac-insert";
+function subscribeDraft(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", callback);
+  window.addEventListener("prohor-aac-draft-change", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("prohor-aac-draft-change", callback);
+  };
+}
+
+function getDraftSnapshot(): string | null {
+  return getStoredAacDraft();
+}
+
+function getServerDraftSnapshot(): string | null {
+  return null;
+}
 
 export function BartaChatStarter() {
   const [question, setQuestion] = useState("");
   const [response, setResponse] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+
+  const { prefs } = useAdaptPreferences();
+
+  // Cross-page draft subscription with zero hydration mismatch
+  const storedDraft = useSyncExternalStore(subscribeDraft, getDraftSnapshot, getServerDraftSnapshot);
+  const [dismissedDraft, setDismissedDraft] = useState<string | null>(null);
+  const pendingDraft = storedDraft && storedDraft !== dismissedDraft ? storedDraft : null;
+
+  // Show inline AAC composer if user prefers AAC, or toggles it open
+  const [userAacToggle, setUserAacToggle] = useState<boolean | null>(null);
+  const showAacComposer = userAacToggle ?? (prefs.communication === "aac");
 
   const textareaId = useId();
   const errorId = useId();
   const responseId = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { prefs } = useAdaptPreferences();
-
   /* ── AAC insert listener ─────────────────────────────────────────── */
   useEffect(() => {
     function handleAACInsert(event: Event) {
       const e = event as CustomEvent<{ text: string }>;
       if (!e.detail?.text) return;
-      setQuestion((prev) =>
-        prev ? `${prev.trimEnd()} ${e.detail.text}` : e.detail.text
-      );
-      // Return focus to the textarea so the user can review and edit.
+      const textToInsert = e.detail.text;
+      setQuestion((prev) => mergeAacText(prev, textToInsert));
+      setAnnouncement("AAC message inserted into your question field. You can review and edit below.");
+      // Return focus to the textarea so the user can review and edit
       textareaRef.current?.focus();
     }
 
     window.addEventListener(AAC_INSERT_EVENT, handleAACInsert);
     return () => window.removeEventListener(AAC_INSERT_EVENT, handleAACInsert);
   }, []);
+
+  function handleDirectAacInsert(text: string) {
+    setQuestion((prev) => mergeAacText(prev, text));
+    setAnnouncement("AAC message inserted into your question field. You can review and edit below.");
+    clearStoredAacDraft();
+    setDismissedDraft(text);
+    textareaRef.current?.focus();
+  }
+
+  function handleConsumeDraft() {
+    if (!pendingDraft) return;
+    setQuestion((prev) => mergeAacText(prev, pendingDraft));
+    const consumed = pendingDraft;
+    clearStoredAacDraft();
+    setDismissedDraft(consumed);
+    setAnnouncement("Saved AAC draft inserted into your question field.");
+    textareaRef.current?.focus();
+  }
+
+  function handleDismissDraft() {
+    const dismissed = pendingDraft;
+    clearStoredAacDraft();
+    if (dismissed) setDismissedDraft(dismissed);
+    setAnnouncement("Saved draft dismissed.");
+  }
 
   /* ── Form submit ─────────────────────────────────────────────────── */
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -122,12 +165,80 @@ export function BartaChatStarter() {
         </p>
       </div>
 
-      {/* AAC hint when AAC preference is active */}
-      {prefs.communication === "aac" && (
-        <p className="text-sm text-pro-muted" role="note">
-          <strong>AAC active:</strong> Compose a message in the AAC panel and
-          insert it into the question field below before submitting.
-        </p>
+      {/* Saved draft recovery banner */}
+      {pendingDraft && (
+        <div
+          role="region"
+          aria-label="Pending AAC draft notice"
+          className="rounded-card border border-pro-primary bg-pro-surface p-3.5 space-y-2"
+        >
+          <div className="flex items-start gap-2">
+            <Sparkles size={18} className="text-pro-primary shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-pro-text">
+                You composed a message using AAC symbols:
+              </p>
+              <p className="mt-1 text-xs text-pro-text bg-pro-elevated p-2 rounded border border-pro-border">
+                &ldquo;{pendingDraft}&rdquo;
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-1 pl-6">
+            <button
+              type="button"
+              onClick={handleConsumeDraft}
+              className="pro-btn pro-btn-primary !min-h-9 !px-3 text-xs"
+            >
+              Insert into question field
+            </button>
+            <button
+              type="button"
+              onClick={handleDismissDraft}
+              className="pro-btn pro-btn-secondary !min-h-9 !px-3 text-xs"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AAC Composer Toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setUserAacToggle(!showAacComposer)}
+          aria-expanded={showAacComposer}
+          className={[
+            "inline-flex min-h-11 items-center gap-2 rounded-pill px-4 text-xs font-semibold transition-all",
+            "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
+            showAacComposer
+              ? "bg-pro-primary text-pro-on-primary shadow-xs"
+              : "border border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface",
+          ].join(" ")}
+        >
+          <MessageSquareDot size={16} aria-hidden="true" />
+          <span>
+            {showAacComposer
+              ? "Hide AAC Symbol Board"
+              : "Use AAC Symbol Board / ছবি ও প্রতীক দিয়ে লিখুন"}
+          </span>
+        </button>
+
+        {prefs.communication === "aac" && (
+          <span className="text-xs text-pro-muted">
+            AAC communication mode active
+          </span>
+        )}
+      </div>
+
+      {/* Inline AAC Composer */}
+      {showAacComposer && (
+        <div className="pt-1">
+          <AACComposer
+            targetLabel="Insert into question / প্রশ্নে যুক্ত করুন"
+            onInsert={handleDirectAacInsert}
+          />
+        </div>
       )}
 
       {/* Question form */}
@@ -146,8 +257,8 @@ export function BartaChatStarter() {
               </span>
             </label>
             <p id={`${textareaId}-hint`} className="text-xs text-pro-muted">
-              Type or paste your question. If you use the AAC board, your
-              composed message will appear here for review before you send it.
+              Type your question, or use the AAC symbol board above to compose natural phrases.
+              You can freely edit the text before sending.
             </p>
             <textarea
               id={textareaId}
@@ -188,8 +299,7 @@ export function BartaChatStarter() {
               role="alert"
               className="inline-flex items-center gap-1.5 rounded-field border border-pro-danger-soft bg-pro-danger-soft px-3 py-2 text-sm font-medium text-pro-danger"
             >
-              {/* Icon + text — never colour alone */}
-              <span aria-hidden="true">⚠</span>
+              <AlertCircle size={14} aria-hidden="true" className="shrink-0" />
               {errorMsg}
             </p>
           )}
@@ -220,6 +330,9 @@ export function BartaChatStarter() {
         </fieldset>
       </form>
 
+      {/* Screen reader announcement for insertion events */}
+      <InlineLiveRegion message={announcement} />
+
       {/* AI response — live region for screen readers */}
       {response && (
         <div
@@ -236,14 +349,12 @@ export function BartaChatStarter() {
                 বার্তার উত্তর
               </span>
             </h2>
-            {/* ReadAloud integration — only renders if TTS available */}
             <ReadAloudButton
               text={response}
               label="Read response aloud"
             />
           </div>
 
-          {/* role="status" announces update to screen readers without interrupting */}
           <p
             role="status"
             id={responseId}

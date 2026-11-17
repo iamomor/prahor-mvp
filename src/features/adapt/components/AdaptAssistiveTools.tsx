@@ -17,6 +17,7 @@
 import { useState } from "react";
 import { useAdaptPreferences } from "../hooks/useAdaptPreferences";
 import { AACComposer } from "./AACComposer";
+import { dispatchAacInsert } from "../lib/aac-events";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { GuidedTaskShell, type GuidedStep } from "@/components/accessibility/GuidedTaskShell";
 import { SimplifiedText } from "@/components/accessibility/SimplifiedText";
@@ -119,13 +120,14 @@ type SectionProps = {
 };
 
 function ToolSection({ title, titleBn, icon, status, defaultOpen = false, children }: SectionProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [userToggled, setUserToggled] = useState<boolean | null>(null);
+  const open = userToggled ?? defaultOpen;
 
   return (
     <div className="rounded-card border border-pro-border bg-pro-elevated">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => setUserToggled(!open)}
         aria-expanded={open}
         className="flex w-full items-center justify-between gap-3 p-[var(--pro-pad-card)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus rounded-card text-left"
       >
@@ -158,6 +160,9 @@ function ToolSection({ title, titleBn, icon, status, defaultOpen = false, childr
 export function AdaptAssistiveTools() {
   const { prefs } = useAdaptPreferences();
   const [aacInserted, setAacInserted] = useState("");
+  const [tryAacPreview, setTryAacPreview] = useState(false);
+
+  const showAac = prefs.communication === "aac" || tryAacPreview;
 
   return (
     <div className="space-y-4">
@@ -177,32 +182,58 @@ export function AdaptAssistiveTools() {
         titleBn="ছবি ও পাঠ্য যোগাযোগ"
         icon={<MessageSquareDot size={18} />}
         status="prototype"
-        defaultOpen={prefs.communication === "aac"}
+        defaultOpen={showAac}
       >
-        {prefs.communication === "aac" ? (
+        {showAac ? (
           <>
             <AACComposer
               onInsert={(text) => {
                 setAacInserted(text);
+                dispatchAacInsert(text);
               }}
             />
             {aacInserted && (
-              <div className="mt-3 rounded-field border border-pro-success-soft bg-pro-success-soft px-3 py-2 text-sm text-pro-success">
-                <p className="font-semibold">Inserted into message composer:</p>
-                <p className="mt-1 font-mono text-xs" lang="bn">{aacInserted}</p>
-                <p className="mt-1 text-xs text-pro-muted">
-                  Review and edit in your message field before sending. Nothing is sent automatically.
+              <div className="mt-3 rounded-field border border-pro-success-soft bg-pro-success-soft px-3 py-2 text-sm text-pro-success space-y-2">
+                <p className="font-semibold">Inserted into message draft:</p>
+                <p className="rounded border border-pro-border bg-pro-elevated p-2 font-mono text-xs text-pro-text" lang="bn">
+                  {aacInserted}
                 </p>
+                <p className="text-xs text-pro-muted">
+                  Draft saved in session buffer and dispatched. Nothing is sent automatically.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <a
+                    href="/ask"
+                    className="pro-btn pro-btn-secondary !min-h-9 !px-3 text-xs font-semibold"
+                  >
+                    Open Ask Barta with this text →
+                  </a>
+                  <a
+                    href="/app/bondhon"
+                    className="pro-btn pro-btn-secondary !min-h-9 !px-3 text-xs font-semibold"
+                  >
+                    Open Care Circle request →
+                  </a>
+                </div>
               </div>
             )}
           </>
         ) : (
-          <p className="text-sm text-pro-muted">
-            To use the AAC picture composer, enable{" "}
-            <strong>Picture-and-text (AAC)</strong> in the{" "}
-            <strong>Communication preference</strong> section above.
-            {" "}<span lang="bn">উপরে যোগাযোগ পছন্দে ছবি ও পাঠ্য চালু করুন।</span>
-          </p>
+          <div className="space-y-3">
+            <p className="text-sm text-pro-muted">
+              To use the AAC picture composer across PROHOR, enable{" "}
+              <strong>Picture-and-text (AAC)</strong> in the{" "}
+              <strong>Communication preference</strong> section above.
+              {" "}<span lang="bn">উপরে যোগাযোগ পছন্দে ছবি ও পাঠ্য চালু করুন।</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => setTryAacPreview(true)}
+              className="pro-btn pro-btn-secondary !min-h-11 !px-4 text-xs font-semibold"
+            >
+              Try the AAC composer here
+            </button>
+          </div>
         )}
       </ToolSection>
 
@@ -211,13 +242,13 @@ export function AdaptAssistiveTools() {
         title="Read-aloud"
         titleBn="পড়ে শোনানো"
         icon={<Volume2 size={18} />}
-        status="prototype"
+        status="limited"
       >
         <div className="space-y-3">
           <p className="text-sm text-pro-muted">
             Read-aloud uses your browser&apos;s built-in speech synthesis.
-            It is opt-in and never starts automatically.
-            Language availability depends on your OS and browser.
+            It starts only when you choose Read aloud. Matching voices depend
+            on your device and browser; unsupported text stays visible here.
           </p>
           <div className="rounded-field border border-pro-border bg-pro-surface p-3 text-sm text-pro-text leading-relaxed">
             {DEMO_READ_ALOUD_TEXT}
@@ -227,9 +258,9 @@ export function AdaptAssistiveTools() {
             label="Read the text above"
           />
           <p className="text-xs text-pro-muted">
-            In supported modules (Barta, Shonket), read-aloud buttons appear
-            directly next to their content. Bangla TTS voice availability
-            varies by device — the button honestly reports when unavailable.
+            Barta responses can be read aloud. Future reviewed healthcare
+            content can use the same control. Bangla speech is offered only
+            when this browser reports a matching voice.
           </p>
         </div>
       </ToolSection>

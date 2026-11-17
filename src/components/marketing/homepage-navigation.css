@@ -70,9 +70,9 @@
   background: var(--pro-primary);
 }
 .pro-home .clean-nav .nav-language button:hover { background: var(--pro-surface); }
-.pro-home .clean-nav .nav-access-wrap:focus-within .nav-adjust-tooltip,
-.pro-home .clean-nav .nav-access-wrap:hover .nav-adjust-tooltip { display: block; }
-.pro-home .clean-nav .nav-access-wrap[data-tooltip-dismissed="true"] .nav-adjust-tooltip { display: none; }
+.pro-home .clean-nav .nav-access-wrap:not([data-tooltip-dismissed="true"]):focus-within .nav-adjust-tooltip,
+.pro-home .clean-nav .nav-access-wrap:not([data-tooltip-dismissed="true"]):hover .nav-adjust-tooltip { display: block; }
+.pro-home .clean-nav .nav-access-wrap[data-tooltip-dismissed="true"] .nav-adjust-tooltip { display: none !important; }
 .pro-home .clean-nav .nav-adjust-tooltip { right: max(1rem, calc((100% - 78rem) / 2 + 2rem)); border-radius: var(--pro-radius-control); }
 .pro-home .clean-nav .home-menu-button { background: transparent; color: var(--pro-text); }
 .pro-home .clean-nav .home-menu-button:hover { background: var(--pro-surface); }

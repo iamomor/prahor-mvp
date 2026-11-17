@@ -10,11 +10,16 @@ import { translations, type Language } from "./translations";
 
 function subscribe(callback: () => void) {
   if (typeof window === "undefined") return () => {};
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key !== "prohor-access-preferences-v1") return;
+    document.documentElement.lang = readLocalPreferences().language;
+    callback();
+  };
   window.addEventListener("prohor-preferences-change", callback);
-  window.addEventListener("storage", callback);
+  window.addEventListener("storage", handleStorage);
   return () => {
     window.removeEventListener("prohor-preferences-change", callback);
-    window.removeEventListener("storage", callback);
+    window.removeEventListener("storage", handleStorage);
   };
 }
 

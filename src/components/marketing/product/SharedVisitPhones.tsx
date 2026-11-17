@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { ArrowRight, ArrowUpRight, CalendarDays, Check, FileText, Heart, LockKeyhole, MessageCircle, Plus, SlidersHorizontal } from "lucide-react";
 import { useHome } from "../HomeContext";
 import { copy } from "../home-content";
@@ -9,14 +9,14 @@ import { PhoneFrame, ScreenTitle } from "./ScreenFrame";
 
 export function SharedVisitPhones() {
   const { t, locale, openPreferences } = useHome();
-  const [inputsReady, setInputsReady] = useState(false);
+  const inputsReady = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const [question, setQuestion] = useState(sampleQuestion);
   const [gloss, setGloss] = useState("How can I prepare for my next visit?");
   const [reviewed, setReviewed] = useState(false);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setInputsReady(true), 0);
-    return () => window.clearTimeout(timer);
-  }, []);
   const modes = [
     { id: "touch", label: copy("Touch & text", "স্পর্শ ও লেখা"), icon: MessageCircle },
     { id: "larger", label: copy("Large text + high contrast", "বড় লেখা ও বেশি কনট্রাস্ট"), icon: SlidersHorizontal },

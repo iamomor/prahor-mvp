@@ -82,12 +82,12 @@
 @media (max-width:1023px) {
   .pro-home .floating-nav .nav-access-label { display: none; }
   .pro-home .floating-nav .home-access-button { width: 2.75rem; padding: .375rem; }
-  .pro-home .nav-access-wrap:focus-within .nav-adjust-tooltip, .pro-home .nav-access-wrap:hover .nav-adjust-tooltip { display: block; }
+  .pro-home .nav-access-wrap:not([data-tooltip-dismissed="true"]):focus-within .nav-adjust-tooltip, .pro-home .nav-access-wrap:not([data-tooltip-dismissed="true"]):hover .nav-adjust-tooltip { display: block; }
 }
 @container (max-width:60rem) {
   .pro-home .floating-nav .nav-access-label { display: none; }
   .pro-home .floating-nav .home-access-button { width: 2.75rem; padding: .375rem; }
-  .pro-home .nav-access-wrap:focus-within .nav-adjust-tooltip, .pro-home .nav-access-wrap:hover .nav-adjust-tooltip { display: block; }
+  .pro-home .nav-access-wrap:not([data-tooltip-dismissed="true"]):focus-within .nav-adjust-tooltip, .pro-home .nav-access-wrap:not([data-tooltip-dismissed="true"]):hover .nav-adjust-tooltip { display: block; }
 }
 @media (max-width:767px) {
   .pro-home .floating-nav .home-desktop-nav, .pro-home .floating-nav .nav-desktop-language, .pro-home .floating-nav .home-nav > .home-nav-actions > .home-sign-in { display: none; }

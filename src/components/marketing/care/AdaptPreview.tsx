@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProhorTheme } from "@/lib/access-preferences";
-import { Check, HeartHandshake, MessageCircle, Volume2 } from "lucide-react";
+import { Check, HeartHandshake, MessageCircle, Pause, Play, Square, Volume2 } from "lucide-react";
 import { useState } from "react";
 import { copy } from "../home-content";
 import { useHome } from "../HomeContext";
@@ -28,7 +28,7 @@ export function AdaptPreview() {
   const [theme, setTheme] = useState<ProhorTheme>("quiet-garden");
   const [contrast, setContrast] = useState(false);
   const [phrase, setPhrase] = useState<number | null>(null);
-  const { speechStatus, setSpeechStatus, readAloud } = useSampleSpeech(
+  const { speechStatus, setSpeechStatus, readAloud, pause, resume, stop, status } = useSampleSpeech(
     phrase === null ? t(copy("Your care. Your way.", "আপনার যত্ন, আপনার মতো।")) : t(phrases[phrase].text),
   );
 
@@ -138,10 +138,28 @@ export function AdaptPreview() {
         ))}
       </div>
       <div className="care-read-row">
-        <button type="button" className="care-read-button" onClick={readAloud}>
-          <Volume2 size={17} aria-hidden="true" />
-          {t(copy("Read aloud", "পড়ে শোনান"))}
+        <button
+          type="button"
+          className="care-read-button"
+          onClick={status === "playing" ? pause : status === "paused" ? resume : readAloud}
+          disabled={status === "starting"}
+          aria-label={t(copy(
+            status === "playing" ? "Pause reading" : status === "paused" ? "Resume reading" : "Read aloud",
+            status === "playing" ? "পড়া থামান" : status === "paused" ? "আবার পড়ুন" : "পড়ে শোনান",
+          ))}
+        >
+          {status === "playing" ? <Pause size={17} aria-hidden="true" /> : status === "paused" ? <Play size={17} aria-hidden="true" /> : <Volume2 size={17} aria-hidden="true" />}
+          {t(copy(
+            status === "playing" ? "Pause" : status === "paused" ? "Resume" : "Read aloud",
+            status === "playing" ? "থামান" : status === "paused" ? "আবার পড়ুন" : "পড়ে শোনান",
+          ))}
         </button>
+        {(status === "starting" || status === "playing" || status === "paused") && (
+          <button type="button" className="care-read-button" onClick={stop}>
+            <Square size={17} aria-hidden="true" />
+            {t(copy("Stop", "বন্ধ করুন"))}
+          </button>
+        )}
         <span className="font-tag">
           {t(copy("Try it here only", "শুধু এই নমুনায়"))}
         </span>

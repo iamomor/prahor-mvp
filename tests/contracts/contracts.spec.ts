@@ -4,25 +4,164 @@ import {
   commitDocumentReviewRequestSchema, createConsentGrantRequestSchema, createDocumentRequestSchema,
   createObservationRequestSchema, createSupportRequestRequestSchema,
   createWellnessEntryRequestSchema, diaryEntrySchema, extractedFieldSchema, extractionResultSchema,
-  fromLocalPreferences, healthObservationSchema, isPermittedSupportTransition,
+  fromLocalPreferences, toLocalPreferences, healthObservationSchema, isPermittedSupportTransition,
   knowledgeSourceSchema, measurementSchema, provenanceSchema, providerRequestSchema,
   reviewExtractionRequestSchema, shareableRecordSchema, sharedRecordProjectionSchema,
   supportRequestEventSchema, supportRequestStatuses, timestampSchema, verificationSchema,
   type ApiRequest, type PregnancyRecord, type BabyRecord,
 } from "../../src/lib/contracts";
-import { DEFAULT_PROHOR_PREFERENCES } from "../../src/lib/access-preferences";
+import { DEFAULT_PROHOR_PREFERENCES, sanitizePreferences } from "../../src/lib/access-preferences";
+import { DEFAULT_READING_PREFERENCES } from "../../src/features/adapt/types/adapt.types";
 import { at, ids, later, maternalNote, review } from "./fixtures";
 
 test("v1 preference upgrade preserves independent choices and adds v2 defaults", () => {
-  const upgraded = fromLocalPreferences({
-    ...DEFAULT_PROHOR_PREFERENCES, theme: "original-rose", highContrast: true,
-    communication: "aac", spaciousLayout: true, simplifiedContent: false,
+  const legacyV1 = sanitizePreferences({
+    _schemaVersion: 1,
+    theme: "original-rose",
+    highContrast: true,
+    textScale: "large",
+    communication: "aac",
+    spaciousLayout: true,
+    simplifiedContent: false,
+    language: "en",
   });
+  const upgraded = fromLocalPreferences(legacyV1);
   expect(upgraded).toMatchObject({
     theme: "original-rose", highContrast: true, communication: "aac", spaciousLayout: true,
+    layoutDensity: "spacious", focusedView: false,
     simplifiedContent: false, readAloud: false, textSpacing: "default",
   });
   expect(accessPreferencesSchema.safeParse({ ...DEFAULT_ACCESS_PREFERENCES, role: "provider" }).success).toBe(false);
+});
+
+test("canonical conversion keeps layout and focus, while reading preferences stay a separate local store", () => {
+  const local = {
+    ...DEFAULT_PROHOR_PREFERENCES,
+    theme: "morning-mist" as const,
+    highContrast: false,
+    layoutDensity: "compact" as const,
+    spaciousLayout: false,
+    focusedView: true,
+  };
+  const defaultReading = fromLocalPreferences(local, DEFAULT_READING_PREFERENCES);
+  const relaxedReading = fromLocalPreferences(local, {
+    textSpacing: "relaxed",
+  });
+
+  expect(defaultReading).toMatchObject({
+    theme: "morning-mist", highContrast: false,
+    layoutDensity: "compact", spaciousLayout: false, focusedView: true,
+    textSpacing: "default",
+  });
+  expect(relaxedReading).toMatchObject({
+    layoutDensity: "compact", spaciousLayout: false, focusedView: true,
+    textSpacing: "increased",
+  });
+  expect(relaxedReading).not.toHaveProperty("font");
+  expect(DEFAULT_READING_PREFERENCES).toEqual({
+    font: "default", textSpacing: "standard", density: "comfortable",
+  });
+});
+
+test("API preference parsing upgrades legacy v2 payloads and rejects invalid values", () => {
+  const legacyV2 = { ...DEFAULT_ACCESS_PREFERENCES, spaciousLayout: true } as Record<string, unknown>;
+  delete legacyV2.layoutDensity;
+  delete legacyV2.focusedView;
+
+  expect(accessPreferencesSchema.parse(legacyV2)).toMatchObject({
+    spaciousLayout: true, layoutDensity: "spacious", focusedView: false,
+  });
+  expect(accessPreferencesSchema.safeParse({
+    ...DEFAULT_ACCESS_PREFERENCES, layoutDensity: "wide",
+  }).success).toBe(false);
+  expect(accessPreferencesSchema.safeParse({
+    ...DEFAULT_ACCESS_PREFERENCES, focusedView: "yes",
+  }).success).toBe(false);
+  expect(accessPreferencesSchema.safeParse({
+    ...DEFAULT_ACCESS_PREFERENCES, layoutDensity: "compact", spaciousLayout: true,
+  }).success).toBe(false);
+  expect(accessPreferencesSchema.safeParse({
+    ...DEFAULT_ACCESS_PREFERENCES, textSpacing: "loose",
+  }).success).toBe(false);
+});
+
+test("API preference DTO survives JSON round-trip with its canonical fields", () => {
+  const dto = fromLocalPreferences({
+    ...DEFAULT_PROHOR_PREFERENCES,
+    layoutDensity: "spacious",
+    spaciousLayout: true,
+    focusedView: true,
+  });
+  const restored = accessPreferencesSchema.parse(JSON.parse(JSON.stringify(dto)));
+  expect(restored).toEqual(dto);
+});
+
+test("toLocalPreferences performs safe reverse mapping without corrupting device-local state", () => {
+  const apiDto = fromLocalPreferences(
+    {
+      ...DEFAULT_PROHOR_PREFERENCES,
+      theme: "original-rose",
+      highContrast: null,
+      textScale: "extra-large",
+      layoutDensity: "spacious",
+      spaciousLayout: true,
+      communication: "aac",
+      language: "en",
+      focusedView: true,
+    },
+    { textSpacing: "relaxed" },
+  );
+
+  const local = toLocalPreferences(apiDto);
+  expect(local.access).toEqual({
+    theme: "original-rose",
+    highContrast: null,
+    textScale: "extra-large",
+    layoutDensity: "spacious",
+    spaciousLayout: true,
+    reducedMotion: false,
+    simplifiedContent: false,
+    communication: "aac",
+    language: "en",
+    focusedView: true,
+  });
+  expect(local.reading).toEqual({
+    textSpacing: "relaxed",
+  });
+  // Device-local font must not exist in converted local preferences
+  expect(local.reading).not.toHaveProperty("font");
+});
+
+test("toLocalPreferences preserves standard contrast and standard textSpacing", () => {
+  const apiDto = fromLocalPreferences(
+    {
+      ...DEFAULT_PROHOR_PREFERENCES,
+      highContrast: false,
+      layoutDensity: "compact",
+      spaciousLayout: false,
+    },
+    { textSpacing: "standard" },
+  );
+
+  const local = toLocalPreferences(apiDto);
+  expect(local.access.highContrast).toBe(false);
+  expect(local.access.layoutDensity).toBe("compact");
+  expect(local.access.spaciousLayout).toBe(false);
+  expect(local.reading.textSpacing).toBe("standard");
+});
+
+test("accessPreferencesSchema strictly rejects health and medical records in payload", () => {
+  const forbiddenPayloads = [
+    { ...DEFAULT_ACCESS_PREFERENCES, pregnancy_id: "synthetic-uuid" },
+    { ...DEFAULT_ACCESS_PREFERENCES, due_date: "2026-11-20" },
+    { ...DEFAULT_ACCESS_PREFERENCES, diary_entry: "Confidential maternal notes" },
+    { ...DEFAULT_ACCESS_PREFERENCES, blood_pressure: "120/80" },
+    { ...DEFAULT_ACCESS_PREFERENCES, medical_conditions: ["preeclampsia"] },
+  ];
+
+  for (const forbidden of forbiddenPayloads) {
+    expect(accessPreferencesSchema.safeParse(forbidden).success).toBe(false);
+  }
 });
 
 test("observation inputs reject owner and provenance escalation", () => {

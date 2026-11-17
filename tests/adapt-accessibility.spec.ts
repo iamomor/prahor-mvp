@@ -10,7 +10,7 @@ test("Adapt settings remain usable at 320px and announce live preference changes
   );
 
   await page.locator('input[name="prohor-theme"][value="original-rose"]').check();
-  await expect(page.locator('p[role="status"].min-h-5')).toContainText(/Theme changed|থিম/);
+  await expect(page.getByRole("status").filter({ hasText: /Theme changed|থিম/ })).toContainText(/Theme changed|থিম/);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "original-rose");
 });
 

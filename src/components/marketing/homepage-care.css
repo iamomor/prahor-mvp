@@ -3,6 +3,18 @@
 html:not([data-font]) .pro-home, html[data-font="default"] .pro-home {
   --pro-font-tag: var(--font-prohor-jetbrains), var(--font-noto-sans-bengali), monospace;
 }
+html[data-font="rubik"] .pro-home {
+  --pro-font-tag: var(--font-rubik), var(--font-noto-sans-bengali), system-ui, sans-serif;
+}
+html[data-font="google-sans"] .pro-home {
+  --pro-font-tag: var(--font-google-sans), var(--font-noto-sans-bengali), system-ui, sans-serif;
+}
+html[data-font="noto-serif"] .pro-home {
+  --pro-font-tag: var(--font-noto-serif), var(--font-noto-serif-bengali), Georgia, serif;
+}
+html[data-font="roboto-slab"] .pro-home {
+  --pro-font-tag: var(--font-roboto-slab), var(--font-noto-serif-bengali), Georgia, serif;
+}
 .pro-home .font-tag, .pro-home .font-tag :not(svg) {
   font-family: var(--pro-font-tag);
   font-size: .8125rem;

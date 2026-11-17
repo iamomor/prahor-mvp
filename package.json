@@ -9,30 +9,36 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
+    "test:db": "node scripts/test-database-foundation.mjs",
+    "test:rls": "node scripts/test-rls-sessions.mjs",
+    "test:rls:guards": "node --test tests/rls/session-safety.test.mjs",
+    "test:auth": "playwright test --config playwright.auth.config.ts",
+    "test:auth:live": "node scripts/test-auth-live.mjs",
     "test:contracts": "playwright test --config playwright.contracts.config.ts",
     "check:contrast": "node scripts/check-color-contrast.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.119.0",
+    "lucide-react": "^0.460.0",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "@supabase/supabase-js": "^2.75.0",
-    "@supabase/ssr": "^0.7.0",
-    "lucide-react": "^0.460.0",
-    "zod": "^4.0.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "typescript": "^5.9.0",
+    "@axe-core/playwright": "^4.10.0",
+    "@electric-sql/pglite": "^0.5.16",
+    "@playwright/test": "^1.55.0",
+    "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
     "tailwindcss": "^4.1.0",
-    "@tailwindcss/postcss": "^4.1.0",
-    "@playwright/test": "^1.55.0",
-    "@axe-core/playwright": "^4.10.0"
+    "typescript": "^5.9.0"
   },
   "engines": {
     "node": ">=20.9.0"

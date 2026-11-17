@@ -1,3 +1,5 @@
 "use client";
 import { createBrowserClient } from "@supabase/ssr";
-export function createBrowserSupabase(){const url=process.env.NEXT_PUBLIC_SUPABASE_URL;const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;return url&&key?createBrowserClient(url,key):null;}
+import { publicSupabaseConfig } from "./config";
+/** Public-data helper. Account sessions are managed by server routes (HttpOnly). */
+export function createBrowserSupabase(){const config=publicSupabaseConfig();return config?createBrowserClient(config.url,config.key):null;}

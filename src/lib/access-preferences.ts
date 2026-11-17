@@ -28,6 +28,9 @@ export const DEFAULT_PROHOR_PREFERENCES: ProhorAccessPreferences = {
 };
 
 const KEY = "prohor-access-preferences-v1";
+// Browser-only fallback when storage is blocked or a write exceeds quota.
+// Server reads always return defaults; account preferences never live here.
+let transientPreferences: ProhorAccessPreferences | null = null;
 const isTheme = (v: unknown): v is ProhorTheme => themeIds.includes(v as ProhorTheme);
 const isTextScale = (v: unknown): v is ProhorTextScale =>
   v === "default" || v === "large" || v === "extra-large";
@@ -49,6 +52,7 @@ export function sanitizePreferences(value: unknown): ProhorAccessPreferences {
 
 export function readLocalPreferences(): ProhorAccessPreferences {
   if (typeof window === "undefined") return DEFAULT_PROHOR_PREFERENCES;
+  if (transientPreferences) return { ...transientPreferences };
   try { return sanitizePreferences(JSON.parse(localStorage.getItem(KEY) ?? "null")); }
   catch { return DEFAULT_PROHOR_PREFERENCES; }
 }
@@ -68,6 +72,9 @@ export function applyPreferences(preferences: ProhorAccessPreferences): void {
 
 export function saveLocalPreferences(preferences: ProhorAccessPreferences): void {
   if (typeof window === "undefined") return;
-  try { localStorage.setItem(KEY, JSON.stringify(sanitizePreferences(preferences))); }
-  catch { /* Storage may be unavailable; continue with in-memory preferences. */ }
+  const validated = sanitizePreferences(preferences);
+  try {
+    localStorage.setItem(KEY, JSON.stringify(validated));
+    transientPreferences = null;
+  } catch { transientPreferences = validated; }
 }

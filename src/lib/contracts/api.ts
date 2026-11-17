@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { CurrentApiOperations } from "./current-api";
 import type { AccessPreferences, saveAccessPreferencesRequestSchema } from "./adapt";
 import type { BartaAnswer, BartaRequest } from "./barta";
 import type {
@@ -18,7 +19,6 @@ import type {
   createSymptomNoteRequestSchema,
 } from "./health";
 import type { Facility, saveAppointmentRequestSchema } from "./poth";
-import type { Profile, UserRole } from "./platform";
 import type { SafetyGuidance } from "./shonket";
 import type {
   DiaryEntry, WellnessEntry, createDiaryEntryRequestSchema, createWellnessEntryRequestSchema,
@@ -26,9 +26,8 @@ import type {
 
 type Operation<Request, Response> = { request: Request; response: ApiResult<Response> };
 
-/** Route payload map only; no endpoint is enabled by declaring a contract. See architecture/api-contracts.md. */
-export interface ApiOperations {
-  "GET /api/me": Operation<undefined, { profile: Profile; roles: UserRole[] }>;
+/** Future-domain adoption proposals. Overlapping live routes use CurrentApiOperations until owner approval. */
+export interface ProposedApiOperations {
   "GET /api/access-preferences": Operation<undefined, { settings: AccessPreferences; schemaVersion: 2; updatedAt: string | null }>;
   "PUT /api/access-preferences": Operation<z.infer<typeof saveAccessPreferencesRequestSchema>, { settings: AccessPreferences; updatedAt: string }>;
   "POST /api/ai/chat": Operation<BartaRequest, BartaAnswer>;
@@ -62,5 +61,9 @@ export interface ApiOperations {
   "POST /api/care-requests/:id/close": Operation<z.infer<typeof closeSupportRequestRequestSchema>, SupportRequest | ProviderRequest>;
 }
 
+/** Compatibility map: actual wire types win for existing paths; absent methods remain proposals. */
+export type ApiOperations = CurrentApiOperations & Omit<ProposedApiOperations, keyof CurrentApiOperations>;
 export type ApiRequest<K extends keyof ApiOperations> = ApiOperations[K]["request"];
 export type ApiResponse<K extends keyof ApiOperations> = ApiOperations[K]["response"];
+export type ProposedApiRequest<K extends keyof ProposedApiOperations> = ProposedApiOperations[K]["request"];
+export type ProposedApiResponse<K extends keyof ProposedApiOperations> = ProposedApiOperations[K]["response"];

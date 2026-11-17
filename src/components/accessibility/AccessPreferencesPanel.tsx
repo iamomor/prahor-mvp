@@ -6,6 +6,7 @@ import {
   applyPreferences,
   readLocalPreferences,
   saveLocalPreferences,
+  sanitizePreferences,
   type ProhorAccessPreferences,
   type ProhorTheme,
 } from "../../lib/access-preferences";
@@ -32,20 +33,36 @@ export function AccessPreferencesPanel() {
     applyPreferences(saved);
     // Use requestAnimationFrame or timeout to separate hydration from render cycle
     const timer = setTimeout(() => {
-      setPrefs(saved);
+      setPrefs(readLocalPreferences());
       setReady(true);
     }, 0);
-    return () => clearTimeout(timer);
+    function syncPreferences(event: Event) {
+      const next = event instanceof CustomEvent && event.detail
+        ? sanitizePreferences(event.detail) : readLocalPreferences();
+      setPrefs(next);
+      applyPreferences(next);
+    }
+    window.addEventListener("prohor-preferences-change", syncPreferences);
+    window.addEventListener("storage", syncPreferences);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("prohor-preferences-change", syncPreferences);
+      window.removeEventListener("storage", syncPreferences);
+    };
   }, []);
 
   function update<K extends keyof ProhorAccessPreferences>(
     key: K,
     value: ProhorAccessPreferences[K],
   ) {
-    const next = { ...prefs, [key]: value };
+    commit({ ...prefs, [key]: value });
+  }
+
+  function commit(next: ProhorAccessPreferences) {
     setPrefs(next);
     applyPreferences(next);
     saveLocalPreferences(next);
+    window.dispatchEvent(new CustomEvent("prohor-preferences-change", { detail: next }));
   }
 
   if (!ready)
@@ -182,9 +199,7 @@ export function AccessPreferencesPanel() {
       <button
         type="button"
         onClick={() => {
-          setPrefs(DEFAULT_PROHOR_PREFERENCES);
-          applyPreferences(DEFAULT_PROHOR_PREFERENCES);
-          saveLocalPreferences(DEFAULT_PROHOR_PREFERENCES);
+          commit(DEFAULT_PROHOR_PREFERENCES);
         }}
         className="min-h-12 rounded-xl border border-pro-control-border px-4 font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus"
       >

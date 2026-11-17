@@ -41,7 +41,7 @@ test("exact product counts, seven phones, eight modules and all 24 capabilities"
   await expect(page.locator(".roadmap-panel .story-status-future")).toHaveCount(23);
   expect(await page.locator(".story-status").evaluateAll(elements => elements.every(element => element.closest("#roadmap")))).toBe(true);
   const signIn = page.getByRole("button", { name: "Sign in", exact: true }).first();
-  await signIn.click(); await expect(page.getByRole("dialog", { name: "Sign in is coming." })).toBeVisible();
+  await signIn.click(); await expect(page.getByRole("dialog", { name: "Sign in to PROHOR" })).toBeVisible();
   await page.keyboard.press("Escape"); await expect(signIn).toBeFocused();
 });
 

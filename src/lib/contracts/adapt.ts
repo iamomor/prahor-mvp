@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   DEFAULT_PROHOR_PREFERENCES, themeIds, type ProhorAccessPreferences,
 } from "../access-preferences";
-import { timestampSchema } from "./common";
+import { contractVersion, timestampSchema } from "./common";
 
 /** Existing settings are reused; new controls are proposed, not rendered by this change. */
 export const accessPreferencesSchema = z.strictObject({
@@ -19,6 +19,17 @@ export const accessPreferencesSchema = z.strictObject({
 });
 
 export type AccessPreferences = z.infer<typeof accessPreferencesSchema>;
+export const patchAccessPreferencesSchema = accessPreferencesSchema.partial()
+  .refine(value => Object.values(value).some(item => item !== undefined), "Provide at least one preference.");
+export type PatchAccessPreferences = z.infer<typeof patchAccessPreferencesSchema>;
+export const preferencesResponseSchema = z.strictObject({
+  data: accessPreferencesSchema,
+  schemaVersion: z.literal(2),
+  updatedAt: timestampSchema.nullable(),
+  requestId: z.uuid(),
+  contractVersion: z.literal(contractVersion),
+});
+export type PreferencesResponse = z.infer<typeof preferencesResponseSchema>;
 export const DEFAULT_ACCESS_PREFERENCES = {
   ...DEFAULT_PROHOR_PREFERENCES,
   textSpacing: "default",

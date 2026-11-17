@@ -20,6 +20,7 @@ export function BartaAudioFile({ text, language, ticket, guideLabel, disabled, b
   const request = useRef<AbortController | null>(null);
   const objectUrl = useRef<string | undefined>(undefined);
   const player = useRef<HTMLAudioElement>(null);
+  const firstPlay = useRef<string | undefined>(undefined);
   const ready = Boolean(audioUrl && !failed);
 
   useEffect(() => () => {
@@ -35,7 +36,7 @@ export function BartaAudioFile({ text, language, ticket, guideLabel, disabled, b
     setAudioUrl(undefined);
     setPlaying(false);
     setLoading(true);
-    const timer = window.setTimeout(() => controller.abort(), 15_000);
+    const timer = window.setTimeout(() => controller.abort(), 25_000);
     try {
       const isAudio = (value?: Response) => value?.ok && /^(?:audio\/(?:wav|x-wav|wave|mpeg))(?:;|$)/iu
         .test(value.headers.get("content-type") ?? "");
@@ -68,7 +69,7 @@ export function BartaAudioFile({ text, language, ticket, guideLabel, disabled, b
       void load();
       return;
     }
-    if (media.paused) void media.play().catch(() => setFailed(true));
+    if (media.paused) void media.play().catch(() => {});
     else media.pause();
   }
 
@@ -84,7 +85,18 @@ export function BartaAudioFile({ text, language, ticket, guideLabel, disabled, b
       {ready && (
         <>
           <p role="status">{playing ? copy.audioPlaying : copy.audioReady}</p>
-          <audio ref={player} controls src={audioUrl} aria-label={guideLabel ?? copy.readAloud}
+          <audio ref={player} controls preload="auto" data-barta-audio src={audioUrl} aria-label={guideLabel ?? copy.readAloud}
+            onCanPlay={(event) => {
+              if (!audioUrl || firstPlay.current === audioUrl) return;
+              firstPlay.current = audioUrl;
+              void event.currentTarget.play().catch(() => {});
+            }}
+            onPlay={(event) => {
+              const current = event.currentTarget;
+              document.querySelectorAll<HTMLAudioElement>("audio[data-barta-audio]").forEach((audio) => {
+                if (audio !== current && !audio.paused) audio.pause();
+              });
+            }}
             onPlaying={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
             onEnded={() => setPlaying(false)}

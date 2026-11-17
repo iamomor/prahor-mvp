@@ -2,8 +2,8 @@ import { buildBartaSpeechText, maxSpeechText } from "@/features/barta/barta-spok
 import { issueAudioTicket } from "@/features/barta/audio-ticket";
 import { getBartaBleedingClarification, getUsualPeriodQuestion } from "@/features/barta/bleeding-clarification";
 import { approvedBartaCorpus } from "@/features/barta/approved-corpus";
-import { bartaFollowUpQuestion, prepareBartaKnowledge, resolveBartaKnowledgeAnswer } from "@/features/barta/approved-knowledge";
-import { getBartaPreviewSelector } from "@/features/barta/ai-intent-preview";
+import { bartaFollowUpQuestion, getBartaKnowledgeAnswer, prepareBartaKnowledge, resolveBartaKnowledgeAnswer } from "@/features/barta/approved-knowledge";
+import { getBartaOpenRouterSelector } from "@/features/barta/openrouter-intent";
 import { getBartaGreeting, stripOpeningGreeting } from "@/features/barta/conversation";
 import { getBankSafety, getQuestionBankIntent } from "@/features/barta/question-bank-routing";
 import { getBartaSafetyResponse } from "@/features/barta/safety-gate";
@@ -100,12 +100,15 @@ export async function POST(request: Request) {
       }, 501);
     }
     const query = bartaFollowUpQuestion(knowledge, stripOpeningGreeting(question), language, previousChunkId);
+    // A reviewed literal question takes priority over test-bank aliases and model routing.
+    const exact = knowledge ? getBartaKnowledgeAnswer(knowledge, query, language) : undefined;
+    if (exact?.status === "grounded") return decisionReply(exact, language, 200);
     const intent = getQuestionBankIntent(query, language);
     const answer = await resolveBartaKnowledgeAnswer(
       knowledge,
       intent?.canonical ?? getUsualPeriodQuestion(query, language) ?? query,
       language,
-      getBartaPreviewSelector(),
+      getBartaOpenRouterSelector(),
     );
     const fallback = knowledge && intent && answer.status === "abstained" && answer.reason === "insufficient_evidence"
       ? intent.fallback() : answer;

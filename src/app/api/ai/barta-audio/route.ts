@@ -1,3 +1,5 @@
+import { fishAudioMode, getBartaFishSpeech, getBartaFishVoice } from "@/features/barta/fish-speech";
+import { bundledSpeechId, readBundledSpeech } from "@/features/barta/bundled-speech";
 import { z } from "zod";
 import { getSpeechConfig, verifyAudioTicket } from "@/features/barta/audio-ticket";
 import { getBartaSpokenGuide, maxSpeechText } from "@/features/barta/barta-spoken-text";
@@ -5,6 +7,7 @@ import { synthesizeLocalSpeech } from "@/features/barta/local-speech";
 import { jsonNoStore } from "@/lib/api-response";
 
 export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const signedRequest = z.strictObject({
   text: z.string().min(1).max(maxSpeechText),
@@ -52,13 +55,35 @@ export async function POST(request: Request) {
     windowStart = now;
     requestCount = 0;
   }
+  const fishMode = request.headers.get("X-Barta-Voice-Build") === "1" ? undefined : fishAudioMode();
+  const audioId = bundledSpeechId(text, language);
+  const mp3 = (bytes: Uint8Array<ArrayBuffer>, source: "fish" | "fish-bundled" | "bundled") => new Response(bytes, { headers: {
+    "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-Barta-Audio-Id": audioId, "X-Barta-Audio-Source": source,
+  } });
+  const fishVoice = fishMode ? getBartaFishVoice(language) : undefined;
+  if (fishVoice) {
+    const ready = await readBundledSpeech(text, language, fishVoice);
+    if (ready) return mp3(ready, "fish-bundled");
+  }
+  if (fishMode === "prefer") {
+    const fish = await getBartaFishSpeech(text, language);
+    if (fish) return mp3(fish, "fish");
+  }
+  const bundled = await readBundledSpeech(text, language);
+  if (bundled) return mp3(bundled, "bundled");
+  if (fishMode === "fallback") {
+    const fish = await getBartaFishSpeech(text, language);
+    if (fish) return mp3(fish, "fish");
+  }
+  if (config.provider === "bundled") return jsonNoStore({ message: "No hosted recording is available for this reply." }, 404);
+
   if (requestCount >= maxRequestsPerMinute) return jsonNoStore({ message: "Try audio again in a minute." }, 429);
   requestCount++;
 
   if (config.provider === "local") {
     try {
       const wav = await synthesizeLocalSpeech(config.executable, text, language, request.signal);
-      return new Response(wav, { headers: { "Content-Type": "audio/wav", "Cache-Control": "no-store" } });
+      return new Response(wav, { headers: { "Content-Type": "audio/wav", "Cache-Control": "no-store", "X-Barta-Audio-Source": "local", "X-Barta-Audio-Id": bundledSpeechId(text, language) } });
     } catch {
       return jsonNoStore({ message: "The local speech engine could not create audio." }, 502);
     }

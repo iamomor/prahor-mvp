@@ -342,12 +342,89 @@ function pair(
   }));
 }
 
+const accessSource_adjustments = { ...sharedSource, id: "272480ad-759c-4c51-add9-b4ec79b242b9", publisher: "NHS England", title: "Reasonable adjustments", url: "https://www.england.nhs.uk/learning-disabilities/improving-health/reasonable-adjustments/", version: "Web edition, accessibility reference check", publishedOn: null };
+const accessSource_information = { ...sharedSource, id: "d2b5a888-bedf-4f1b-aa70-0a48258e4e12", publisher: "NHS England", title: "Accessible Information Standard", url: "https://www.england.nhs.uk/long-read/accessible-information-standard-requirements-dapb1605/", version: "Web edition, accessibility reference check", publishedOn: null };
+const accessSource_formats = { ...sharedSource, id: "76027419-dd12-47eb-a7a8-8c3e4047dc28", publisher: "NHS England", title: "Accessible information and communication formats", url: "https://www.england.nhs.uk/accessible-information-standard/why-its-important/", version: "Web edition, accessibility reference check", publishedOn: null };
+const accessSource_maternity = { ...sharedSource, id: "a5072fe3-7aca-4fa1-a9b1-183a41563b09", publisher: "Birthrights", title: "Disability and long-term health conditions and maternity care", url: "https://birthrights.org.uk/factsheets/disability-and-long-term-health-conditions-and-maternity-care/", version: "Web edition, accessibility reference check", publishedOn: null };
+
 export const bartaEducationCorpus: BartaCorpus = {
-  sources: [antenatal, breastfeeding, postnatal, newborn, unicefBangladesh, dghsBangladesh, whoPreeclampsia, perinatalMentalHealth, childbirthPlanning, whoAntenatalSchedule, unicefFoodSafety, nhsMorningSickness, nhsPregnancyTest, whoIronFolate, nhsMovement, nhsPeriodPain, whoAntenatalHandbook, nhsMaternityNotes, nhsPregnancyExercise, whoBirthCompanion, unicefBreastfeedingPosition, nhsGestationalDiabetes,
+  sources: [accessSource_adjustments, accessSource_information, accessSource_formats, accessSource_maternity, antenatal, breastfeeding, postnatal, newborn, unicefBangladesh, dghsBangladesh, whoPreeclampsia, perinatalMentalHealth, childbirthPlanning, whoAntenatalSchedule, unicefFoodSafety, nhsMorningSickness, nhsPregnancyTest, whoIronFolate, nhsMovement, nhsPeriodPain, whoAntenatalHandbook, nhsMaternityNotes, nhsPregnancyExercise, whoBirthCompanion, unicefBreastfeedingPosition, nhsGestationalDiabetes,
     whoCareAtHome, whoChildFood, whoChildPlay, whoSafeHome, whoPostnatalVisits, whoEverydayWellbeing, nhsBabySleep, nhsDiaper, nhsBabyCrying, unicefFeedingAtWork,
     nhsPregnancySleep, nhsPregnancyHeartburn, nhsPregnancyBackache, nhsPregnancyTravel, nhsPregnancyConstipation,
   ],
   passages: [
+    ...pair(accessSource_adjustments, {
+      topic: "accessVisit", stage: "pregnancy", audience: "mother", locator: "Reasonable adjustments", translationGroup: "bf0f6df6-7a93-4ab0-ac74-f97bb0ffcbf6",
+    }, {
+      en: { chunkId: "aa13df6d-f95e-4c85-a2b5-69f93463ee3d", questions: ["How do I ask for accessibility support for a pregnancy appointment?","Can I request an accessible pregnancy checkup?"], text: "Call or message the clinic before your appointment. Describe what would make the visit accessible for you and ask whom to contact when you arrive. You can ask for extra time, a quieter waiting area, an accessible entrance or communication support. Ask the clinic to confirm what it can arrange." },
+      bn: { chunkId: "245ad7b6-da6b-49b8-aaf9-f94f99b268d9", questions: ["চেকআপে প্রতিবন্ধিতার জন্য সহায়তা কীভাবে চাইব?","pregnancy checkup e disability support kivabe chaibo?"], text: "চেকআপের আগে ক্লিনিকে ফোন বা বার্তা দিন। কোন সহায়তা থাকলে চেকআপে যেতে ও কথা বলতে সুবিধা হবে তা জানান। পৌঁছালে কার সঙ্গে যোগাযোগ করবেন, জেনে নিন। বেশি সময়, শান্ত অপেক্ষার জায়গা, চলাচলের উপযোগী প্রবেশপথ বা যোগাযোগের সহায়তা চাইতে পারেন। ক্লিনিক কী ব্যবস্থা করতে পারবে, আগে নিশ্চিত করুন।" },
+    }),
+    ...pair(accessSource_maternity, {
+      topic: "accessWheelchair", stage: "pregnancy", audience: "mother", locator: "Disability and long-term health conditions and maternity care", translationGroup: "4f090310-17dd-420e-a86c-5fd4b56f158f",
+    }, {
+      en: { chunkId: "49a0b6df-a6dd-4484-a821-7611c211d346", questions: ["Can I ask for a wheelchair-accessible exam room?","What transfer support can I ask about at a maternity visit?"], text: "Ask about step-free entry, accessible toilets and room to use your wheelchair. If you need help getting onto an examination bed, ask about suitable equipment and trained staff. Tell the team how you prefer to transfer and ask them to discuss the plan with you before the examination." },
+      bn: { chunkId: "7e71bdf1-eb72-438a-abf9-edc4fae9d72b", questions: ["হুইলচেয়ার থেকে পরীক্ষার খাটে উঠতে কীভাবে সহায়তা চাইব?","wheelchair niye pregnancy checkup e ki ki jiggesh korbo?"], text: "ধাপ ছাড়া প্রবেশপথ, ব্যবহারযোগ্য শৌচাগার এবং হুইলচেয়ার ঘোরানোর জায়গা আছে কি না জিজ্ঞেস করুন। পরীক্ষার খাটে উঠতে সহায়তা লাগলে উপযুক্ত সরঞ্জাম ও প্রশিক্ষিত কর্মী পাওয়া যাবে কি না জানতে চান। কীভাবে স্থান বদলাতে আপনার সুবিধা হয়, তা জানান এবং পরীক্ষার আগে পরিকল্পনাটি আপনার সঙ্গে আলোচনা করতে বলুন।" },
+    }),
+    ...pair(accessSource_information, {
+      topic: "accessHearing", stage: "pregnancy", audience: "mother", locator: "Accessible Information Standard", translationGroup: "92eae64e-6cf9-4664-ab43-449bd07366c8",
+    }, {
+      en: { chunkId: "68a00c3a-5843-41fe-a9ae-6070b0c05ca2", questions: ["Can I request a sign-language interpreter for my pregnancy visit?","How can a Deaf mother get maternity instructions?"], text: "Tell the clinic how you prefer to communicate. Ask in advance about an interpreter in the sign language you use, text communication or other support that works for you. If you lip-read, ask for good lighting and for staff to face you when speaking. Ask how the clinic can send you results and follow-up instructions in an accessible format." },
+      bn: { chunkId: "38929991-9d32-4096-ad49-df50d4494e04", questions: ["গর্ভকালীন চেকআপে ইশারা ভাষার দোভাষী চাইতে পারি কি?","deaf mother pregnancy appointment e interpreter kivabe chaibe?"], text: "আপনি কীভাবে যোগাযোগ করতে স্বাচ্ছন্দ্য বোধ করেন, ক্লিনিককে জানান। আপনি যে ইশারা ভাষা ব্যবহার করেন তার দোভাষী, লিখিত বার্তা বা অন্য উপযোগী সহায়তা পাওয়া যাবে কি না আগে জেনে নিন। ঠোঁট দেখে বুঝলে পর্যাপ্ত আলো ও কথা বলার সময় আপনার দিকে মুখ করে থাকতে বলুন। পরীক্ষার ফল ও পরের নির্দেশনা আপনার ব্যবহারযোগ্য মাধ্যমে চেয়ে নিন।" },
+    }),
+    ...pair(accessSource_formats, {
+      topic: "accessVision", stage: "pregnancy", audience: "mother", locator: "Accessible information and communication formats", translationGroup: "117fa7fd-fbed-45f3-a666-f58cf106b225",
+    }, {
+      en: { chunkId: "d133d7ec-8fe6-409c-a14e-062799352c6c", questions: ["Can my maternity instructions be sent as screen-reader-friendly text?","Can I ask for large-print pregnancy information?"], text: "Ask for instructions in a format you use, such as screen-reader-friendly text, large print, Braille or audio. Ask staff to explain information they would normally point to or show on a screen. Before leaving, confirm how you will receive results and the next appointment details." },
+      bn: { chunkId: "27894986-8bbb-4067-a4f5-d0541ac16c0d", questions: ["গর্ভকালীন নির্দেশনা স্ক্রিন রিডারে পড়ার মতো করে চাইতে পারি কি?","low vision pregnancy information digital text kivabe pabo?"], text: "আপনার ব্যবহারযোগ্য মাধ্যমে নির্দেশনা চান, যেমন স্ক্রিন রিডারে পড়া যায় এমন লেখা, বড় অক্ষর, ব্রেইল বা অডিও। কর্মীরা সাধারণত স্ক্রিনে দেখান বা আঙুল দিয়ে বোঝান এমন তথ্য মুখে বুঝিয়ে বলতে বলুন। ফিরবার আগে ফলাফল ও পরের সাক্ষাতের তথ্য কীভাবে পাবেন, নিশ্চিত করুন।" },
+    }),
+    ...pair(accessSource_information, {
+      topic: "accessEasyRead", stage: "pregnancy", audience: "mother", locator: "Accessible Information Standard", translationGroup: "413f2a60-31d6-4895-a4a0-f7dd3f06bf5b",
+    }, {
+      en: { chunkId: "65500101-e793-41b6-a7f0-954ad266a497", questions: ["Can I get an Easy Read maternity summary?","Can the midwife explain the visit in simpler words?"], text: "Ask for short explanations in plain language, one point at a time. If pictures or Easy Read information help you, ask for those. You can ask for more time to ask questions and for a short summary to take home. Tell the team when you need something explained again." },
+      bn: { chunkId: "49d16835-bcec-40ae-a01d-fbcd2f2d84fd", questions: ["মাতৃসেবার নির্দেশনা সহজ ভাষায় পাওয়া যাবে কি?","midwife ke sohoj vashay bujhiye bolte kivabe bolbo?"], text: "সহজ ভাষায় ছোট করে একবারে একটি বিষয় বোঝাতে বলুন। ছবি বা সহজপাঠ্য নির্দেশনা কাজে লাগলে তা চাইতে পারেন। প্রশ্নের জন্য একটু বেশি সময় এবং বাড়িতে নিয়ে যাওয়ার জন্য সংক্ষিপ্ত নির্দেশনা চান। কোনো বিষয় আবার বোঝানোর প্রয়োজন হলে সেবাদানকারী দলকে জানান।" },
+    }),
+    ...pair(accessSource_information, {
+      topic: "accessCommunication", stage: "pregnancy", audience: "mother", locator: "Accessible Information Standard", translationGroup: "756cbbce-faa4-4128-a799-212a5d3f966c",
+    }, {
+      en: { chunkId: "d0a85069-fd3d-4e89-ad26-42b7e09d837d", questions: ["Can I use a communication board at an antenatal appointment?","Can I bring my AAC device to a maternity checkup?"], text: "Tell the clinic which methods work for you, such as writing, a communication board or a speech-generating device. You can bring your device or a short note about how you communicate. Ask staff to speak to you directly, allow enough time, and check with you that they understood correctly." },
+      bn: { chunkId: "f45f7a26-6bb3-467e-a980-ebcc248d2090", questions: ["গর্ভকালীন চেকআপে যোগাযোগ বোর্ড ব্যবহার করতে পারি কি?","kotha bolte oshubidha hole antenatal visit e ki korbo?"], text: "লেখা, যোগাযোগ বোর্ড বা কথা শোনায় এমন সহায়ক যন্ত্রের মধ্যে কোনটি আপনার কাজে আসে, ক্লিনিককে জানান। যন্ত্রটি বা কীভাবে যোগাযোগ করেন তার ছোট একটি নোট সঙ্গে নিতে পারেন। কর্মীদের সরাসরি আপনার সঙ্গে কথা বলতে, সময় দিতে এবং তাঁরা ঠিক বুঝেছেন কি না আপনার কাছে যাচাই করতে বলুন।" },
+    }),
+    ...pair(accessSource_maternity, {
+      topic: "accessSensory", stage: "pregnancy", audience: "mother", locator: "Disability and long-term health conditions and maternity care", translationGroup: "88f5e594-3ef1-47a3-aff7-c3b46e7a4296",
+    }, {
+      en: { chunkId: "04aef1a3-e5c3-4c2d-a91e-8e6f2878bbeb", questions: ["Can I ask for a quieter maternity waiting room?","How can I plan for sensory overload during labour?"], text: "Explain which sounds, lighting or unexpected changes are difficult for you. Ask about a quieter place to wait, advance explanations or the ability to take a break. For labour, discuss what staff should explain before touching you and what options are available if the room becomes overwhelming." },
+      bn: { chunkId: "a2437590-a299-4a04-aa50-0969abd0952f", questions: ["গর্ভকালীন চেকআপে শান্ত অপেক্ষার জায়গা চাইতে পারি কি?","labour e alo ba shobde osubidha hole ki support chaibo?"], text: "কোন শব্দ, আলো বা হঠাৎ পরিবর্তনে আপনার অসুবিধা হয়, তা জানান। শান্ত জায়গায় অপেক্ষা, আগে থেকে ধাপগুলো বুঝিয়ে বলা বা একটু বিরতি নেওয়ার সুযোগ চাইতে পারেন। প্রসবের আগে আলোচনা করুন, স্পর্শ করার আগে কর্মীরা কীভাবে জানাবেন এবং ঘরের পরিবেশে বেশি অস্বস্তি হলে কী করা যাবে।" },
+    }),
+    ...pair(accessSource_maternity, {
+      topic: "accessBirthPlan", stage: "pregnancy", audience: "mother", locator: "Disability and long-term health conditions and maternity care", translationGroup: "8004a00d-faf3-4ae0-ab02-7257abf2b1a7",
+    }, {
+      en: { chunkId: "8347a264-c558-4878-a275-099f1bfff7dc", questions: ["What disability accommodations can I put in my birth plan?","How do I tell the labour team about my access needs?"], text: "Tell your maternity team early what support you need. Write down your communication preferences, mobility or transfer support, and any equipment or room access you need. Ask the team to record this where staff caring for you can see it, and discuss an alternative if your birth plans change." },
+      bn: { chunkId: "c2510569-322e-4c6d-a0e5-e38edfbed334", questions: ["প্রসব পরিকল্পনায় প্রতিবন্ধিতা সম্পর্কিত প্রয়োজন কীভাবে জানাব?","birth plan e disability support kivabe likhbo?"], text: "সেবাদানকারী দলকে আগেভাগে জানান কোন সহায়তা দরকার। আপনার পছন্দের যোগাযোগের পদ্ধতি, চলাফেরা বা স্থান বদলের সহায়তা, সরঞ্জাম এবং ঘরে ঢোকার প্রয়োজন লিখে রাখুন। আপনার সেবায় থাকবেন এমন কর্মীরা যাতে তা পড়তে পারেন সেভাবে নথিভুক্ত করতে বলুন। পরিকল্পনা বদলালে বিকল্প কী হবে, তা আলোচনা করুন।" },
+    }),
+    ...pair(accessSource_information, {
+      topic: "accessConsent", stage: "pregnancy", audience: "mother", locator: "Accessible Information Standard", translationGroup: "c7627ba3-2638-4d7e-ac03-3185e80f14c1",
+    }, {
+      en: { chunkId: "f607d4fe-71be-4c1c-a665-a3443f9d6f17", questions: ["Can I have a supporter and make my own care choices?","How should staff include me in decisions if I use a communication device?"], text: "Ask the care team to address you directly, explain the options in a format you understand, and give you time to respond. Tell them what kind of help you want from an interpreter, advocate or support person. Tell the team how you want to ask questions or communicate a decision." },
+      bn: { chunkId: "484f53fe-9787-4ad1-a63c-02e433220529", questions: ["সহায়তাকারী সঙ্গে থাকলেও আমি নিজের সেবার সিদ্ধান্ত কীভাবে জানাব?","support person thakle nijer care decision kivabe janabo?"], text: "সেবাদানকারী দলকে বলুন যেন তারা সরাসরি আপনার সঙ্গে কথা বলে, আপনার বোঝার মতো করে বিকল্পগুলো বুঝিয়ে দেয় এবং উত্তর দেওয়ার সময় দেয়। দোভাষী, অধিকার সহায়ক বা সঙ্গে থাকা ব্যক্তির কাছ থেকে কী ধরনের সহায়তা চান তা জানান। কীভাবে প্রশ্ন করবেন বা সিদ্ধান্ত জানাবেন, সেটিও দলকে বলুন।" },
+    }),
+    ...pair(accessSource_maternity, {
+      topic: "accessAfterBirth", stage: "after_birth", audience: "mother", locator: "Disability and long-term health conditions and maternity care", translationGroup: "772549bb-d0f4-4c4f-a5ff-5f93a977a79c",
+    }, {
+      en: { chunkId: "2a9ab508-f7ff-4b0f-ad20-9ba7d121d5b5", questions: ["How can I plan accessible postnatal care after discharge?","What extra support can I ask about on the postnatal ward?"], text: "Talk with the maternity team before going home about the help and equipment you use. Ask about accessible follow-up visits, how to contact the team, and whether occupational therapy or another support service can help you plan. Ask for discharge instructions in your preferred format and confirm whom to contact if your needs change." },
+      bn: { chunkId: "e3345eec-c1a9-4e8f-acf0-f5c748aa8335", questions: ["ছাড়পত্রের পর আমার প্রয়োজন অনুযায়ী প্রসবোত্তর সেবার পরিকল্পনা কীভাবে করব?","delivery er por bari jawar age ki disability support chaibo?"], text: "বাড়ি যাওয়ার আগে আপনি যে সহায়তা ও সরঞ্জাম ব্যবহার করেন, তা নিয়ে মাতৃসেবা দলের সঙ্গে কথা বলুন। পরের চেকআপ কীভাবে আপনার জন্য ব্যবহারযোগ্য হবে, দলের সঙ্গে কীভাবে যোগাযোগ করবেন এবং অকুপেশনাল থেরাপি বা অন্য সহায়তা পাওয়া যাবে কি না জেনে নিন। বাড়ি ফেরার নির্দেশনা আপনার পছন্দের মাধ্যমে চেয়ে নিন। প্রয়োজন বদলালে কার সঙ্গে যোগাযোগ করবেন, নিশ্চিত করুন।" },
+    }),
+    ...pair(accessSource_maternity, {
+      topic: "accessSupportPerson", stage: "pregnancy", audience: "mother", locator: "Disability and long-term health conditions and maternity care", translationGroup: "39c003c7-eec2-4942-a623-a2f9e3c82cb6",
+    }, {
+      en: { chunkId: "20ed01d5-4aba-4ae7-a832-dbb6c4440e18", questions: ["Can I bring someone I trust to help at my maternity visit?","Can my support person help explain my needs during labour?"], text: "Tell the maternity team who you would like to support you and what you want them to help with. Ask in advance what the service can arrange during visits, labour and after birth. Discuss how you want staff to communicate directly with you and any information you prefer to discuss privately." },
+      bn: { chunkId: "08fc2726-941b-46e0-ab1e-644f0cec2440", questions: ["মাতৃসেবা নিতে গেলে বিশ্বস্ত কাউকে সঙ্গে নিতে চাইতে পারি কি?","pregnancy visit e trusted support person niye jete parbo?"], text: "কাকে সঙ্গে চান এবং তিনি কোন কাজে সাহায্য করবেন, তা সেবাদানকারী দলকে জানান। চেকআপ, প্রসব ও প্রসবের পর কেন্দ্র কী ব্যবস্থা করতে পারবে, আগে জেনে নিন। কর্মীরা সরাসরি আপনার সঙ্গে কীভাবে কথা বলবেন এবং কোন বিষয় একান্তে আলোচনা করতে চান, তা জানিয়ে রাখুন।" },
+    }),
+    ...pair(accessSource_formats, {
+      topic: "accessFollowUp", stage: "after_birth", audience: "mother", locator: "Accessible information and communication formats", translationGroup: "7dc803df-9c8e-4709-a4e1-6e14ff32272d",
+    }, {
+      en: { chunkId: "129a84f9-65f8-4d09-a04e-d8b912de93c7", questions: ["Can I ask the clinic to text instead of calling me?","How can I ask for accessible appointment reminders?"], text: "Tell the clinic which way of contacting you works best, such as a text message or accessible email. Ask them to record your preference and explain how to contact them if you miss a message. Before leaving, confirm how you will receive results and appointment changes." },
+      bn: { chunkId: "11e868fd-d6c5-48ed-a8ee-c6865d161564", questions: ["ক্লিনিককে ফোনের বদলে এসএমএস করতে বলতে পারি কি?","postnatal reminder phone er bodole SMS kivabe chaibo?"], text: "ক্লিনিককে জানান কোন মাধ্যমে যোগাযোগে আপনার সুবিধা, যেমন এসএমএস বা ব্যবহারযোগ্য ইমেইল। আপনার পছন্দ নথিতে রাখতে বলুন এবং বার্তা না পেলে কীভাবে যোগাযোগ করবেন তা জেনে নিন। বের হওয়ার আগে পরীক্ষার ফল এবং চেকআপের সময় বদলালে খবর কীভাবে পাবেন, নিশ্চিত করুন।" },
+    }),
     ...pair(nhsPregnancySleep, {
       topic: "pregnancySleep", stage: "pregnancy", audience: "mother", locator: "Sleep positions and insomnia in pregnancy",
       translationGroup: "de4f2903-798d-5c10-8fb0-a30f90f5146f",
@@ -429,12 +506,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "9ff66837-63dd-5921-a969-063bde0b3818",
-        questions: ["How should a baby sleep safely?", "Can a baby sleep with a pillow?", "What is a safe sleeping position for a newborn?"],
+        questions: ["How should a baby sleep safely?", "Can a baby sleep with a pillow?", "What is a safe sleeping position for a newborn?", "Should newborns sleep on their backs?", "Can I leave stuffed toys in my baby's cot?"],
         text: "For naps and night sleep, put your baby down on their back on a firm, flat mattress. Use a separate cot in the room where you sleep for at least the first six months. Keep the cot clear of pillows, stuffed toys, cot bumpers and loose blankets that could cover the face. Keep the sleeping space smoke-free, and never fall asleep with your baby on a sofa or armchair.",
       },
       bn: {
         chunkId: "a8584a2e-90be-51ab-a392-942ed604156a",
-        questions: ["বাচ্চাকে কীভাবে ঘুম পাড়াব?", "শিশুকে চিত করে ঘুম পাড়ানো উচিত কি?", "baby ke kivabe ghum parabo?", "bacchar ghum er jayga kemon hobe?"],
+        questions: ["বাচ্চাকে কীভাবে ঘুম পাড়াব?", "শিশুকে চিত করে ঘুম পাড়ানো উচিত কি?", "baby ke kivabe ghum parabo?", "bacchar ghum er jayga kemon hobe?", "শিশুর খাটে নরম খেলনা রাখা নিরাপদ কি?", "baby ke chit kore ghum parabo?"],
         text: "দিনে ও রাতে ঘুমের সময় শিশুকে চিত করে শক্ত ও সমতল গদিতে শোয়ান। অন্তত প্রথম ছয় মাস নিজের ঘরেই শিশুর জন্য আলাদা খাট রাখুন। মুখ ঢেকে যেতে পারে এমন বালিশ, নরম খেলনা, খাটের পাশের প্যাড বা আলগা কম্বল খাটে রাখবেন না। ঘুমের জায়গা ধোঁয়ামুক্ত রাখুন এবং শিশুকে নিয়ে সোফা বা আরামকেদারায় ঘুমিয়ে পড়বেন না।",
       },
     }),
@@ -444,12 +521,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "bf70c796-a1e0-509a-86b0-06bc116f0297",
-        questions: ["How long should I wait before bathing a newborn?", "When is the first newborn bath?"],
+        questions: ["How long should I wait before bathing a newborn?", "When is the first newborn bath?", "How many hours after birth can I give the first bath?", "Can I wait before giving my newborn their first bath?"],
         text: "After birth, the care team can dry and clean the baby without a bath. WHO advises waiting at least 24 hours before the first bath so the baby can stay warm. Before that first bath, ask your midwife or health worker to show you how to keep the baby warm and support them while washing.",
       },
       bn: {
         chunkId: "22aa6a71-bf0c-5353-8a08-aae3bcd14591",
-        questions: ["নবজাতককে কখন প্রথম গোসল দেওয়া যাবে?", "nobojatok ke kokhon prothom gosol debo?", "baby first gosol kokhon?"],
+        questions: ["নবজাতককে কখন প্রথম গোসল দেওয়া যাবে?", "nobojatok ke kokhon prothom gosol debo?", "baby first gosol kokhon?", "জন্মের কত ঘণ্টা পরে প্রথম গোসল দেওয়া যায়?", "birth er kotokkhon por first gosol dibo?"],
         text: "জন্মের পর সেবাদানকারী দল গোসল ছাড়াই শিশুকে মুছে শুকনো ও পরিষ্কার করতে পারেন। শিশুকে উষ্ণ রাখতে বিশ্ব স্বাস্থ্য সংস্থা প্রথম গোসলের আগে অন্তত ২৪ ঘণ্টা অপেক্ষার পরামর্শ দেয়। প্রথম গোসলের আগে কীভাবে শিশুকে উষ্ণ রাখবেন ও ধোয়ার সময় ধরে রাখবেন, তা ধাত্রী বা স্বাস্থ্যকর্মীর কাছে দেখিয়ে নিতে পারেন।",
       },
     }),
@@ -459,12 +536,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "5f6d50b9-a0a7-5ba2-a810-8d43527b35aa",
-        questions: ["How do I care for the umbilical cord?", "Should I put ointment on the newborn cord?"],
+        questions: ["How do I care for the umbilical cord?", "Should I put ointment on the newborn cord?", "How do I keep the cord stump dry?", "Should I use cream on my baby's cord stump?"],
         text: "Keep the remaining piece of cord dry. Wash your hands with soap and clean water before handling the baby. For routine care, leave the cord uncovered by creams, oils or home remedies. If your maternity team gave a specific instruction, ask them to explain what to use and when.",
       },
       bn: {
         chunkId: "367ffb34-7b53-509b-a7de-6b416b4a864c",
-        questions: ["নাভির যত্ন কীভাবে নেব?", "শিশুর নাভিতে তেল দেব কি?", "nabhir jotno kivabe nibo?", "baby nabhi te oil debo?"],
+        questions: ["নাভির যত্ন কীভাবে নেব?", "শিশুর নাভিতে তেল দেব কি?", "nabhir jotno kivabe nibo?", "baby nabhi te oil debo?", "নাভির গোড়া শুকনো রাখব কীভাবে?", "baby r nabhi shukna kivabe rakhbo?"],
         text: "নাভির সঙ্গে লেগে থাকা শুকাতে থাকা অংশটি শুকনো রাখুন। শিশুকে ধরার আগে সাবান ও পরিষ্কার পানি দিয়ে হাত ধুয়ে নিন। সাধারণ যত্নে নাভিতে ক্রিম, তেল বা ঘরোয়া কিছু লাগাবেন না। সেবাদানকারী দল বিশেষ কোনো নির্দেশনা দিয়ে থাকলে, কী ব্যবহার করবেন ও কখন করবেন, তা তাঁদের কাছে জেনে নিন।",
       },
     }),
@@ -474,12 +551,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "7b612b40-bb10-5213-b45e-fa2952529e72",
-        questions: ["How do I change a nappy?", "How often should I change a wet diaper?", "How to clean baby during a diaper change?"],
+        questions: ["How do I change a nappy?", "How often should I change a wet diaper?", "How to clean baby during a diaper change?", "What do I need for a diaper change?", "How do I wipe my baby during a nappy change?"],
         text: "Change a wet or dirty diaper promptly. Wash your hands and set out a clean diaper, warm water and cotton wool or gentle baby wipes, and a towel. A mat on the floor avoids falls. Clean the folds gently and dry the skin before putting on the fresh diaper. For a girl, wipe from front to back. Wash your hands again afterward. If you use a raised changing table, stay with the baby throughout.",
       },
       bn: {
         chunkId: "76565af0-388e-574c-87cf-e084f3fcff17",
-        questions: ["ডায়াপার বদলানোর নিয়ম কী?", "বাচ্চার ডায়াপার কখন বদলাব?", "baby diaper kivabe change korbo?"],
+        questions: ["ডায়াপার বদলানোর নিয়ম কী?", "বাচ্চার ডায়াপার কখন বদলাব?", "baby diaper kivabe change korbo?", "ডায়াপার বদলানোর সময় শিশুকে কীভাবে মুছব?", "diaper bodlanor somoy baby ke kivabe clean korbo?"],
         text: "ভেজা বা ময়লা ডায়াপার যত তাড়াতাড়ি সম্ভব বদলে দিন। হাত ধুয়ে পরিষ্কার ডায়াপার, কুসুম গরম পানি ও তুলা অথবা মৃদু বেবি ওয়াইপ এবং তোয়ালে কাছে রাখুন। মেঝেতে মাদুর পেতে নিলে পড়ে যাওয়ার ঝুঁকি কমে। ত্বকের ভাঁজগুলো আলতো করে পরিষ্কার ও শুকিয়ে নতুন ডায়াপার পরান। মেয়েশিশুকে সামনে থেকে পেছনে মুছুন। কাজ শেষে আবার হাত ধুয়ে নিন। উঁচু টেবিলে বদলালে শিশুর পাশ থেকে সরবেন না।",
       },
     }),
@@ -489,12 +566,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "97ec5ab3-b5f4-53f0-a6c9-bf37361578f1",
-        questions: ["What complementary foods after 6 months?", "When can a baby start solid food?", "What can I feed a baby at six months?"],
+        questions: ["What complementary foods after 6 months?", "When can a baby start solid food?", "What can I feed a baby at six months?", "When can I give foods alongside breast milk?", "Is six months the time to start complementary feeding?"],
         text: "At around six months, begin giving small amounts of food that are easy for the baby to eat while continuing to breastfeed. Offer small spoonfuls slowly. As the baby gets older, widen the variety and gradually change the texture. Depending on what is available, examples include vegetables, fruit, egg and fish prepared to suit the baby. Encourage eating patiently and stop when the child shows they have had enough.",
       },
       bn: {
         chunkId: "1fe745b6-fda7-5b4b-aee1-8fc31ee58540",
-        questions: ["ছয় মাসের পর কী খাবার দেব?", "বাচ্চাকে বাড়তি খাবার কখন দেব?", "choy mas er por ki khabar debo?", "baby solid food kokhon shuru korbo?"],
+        questions: ["ছয় মাসের পর কী খাবার দেব?", "বাচ্চাকে বাড়তি খাবার কখন দেব?", "choy mas er por ki khabar debo?", "baby solid food kokhon shuru korbo?", "বুকের দুধের পাশাপাশি খাবার কখন শুরু করব?", "buker dudh er sathe onno khabar kokhon dibo?"],
         text: "প্রায় ছয় মাসে বুকের দুধ চালিয়ে যাওয়ার পাশাপাশি অল্প করে শিশুর খাওয়ার উপযোগী খাবার শুরু করুন। চামচে অল্প করে ধীরে খাওয়ান। শিশু বড় হলে ধীরে ধীরে খাবারের ধরন ও ঘনত্ব বদলান এবং বৈচিত্র্য বাড়ান। যা পাওয়া যায়, সে অনুযায়ী শিশুর উপযোগী করে সবজি, ফল, ডিম ও মাছ দিতে পারেন। ধৈর্য ধরে উৎসাহ দিন এবং শিশু আর খেতে না চাইলে থামুন।",
       },
     }),
@@ -534,12 +611,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "3cc5ab22-0348-5c88-86d5-6d7f843b22b7",
-        questions: ["Can I give water to a breastfed baby in hot weather?", "Do breastfed babies need water when it is hot?"],
+        questions: ["Can I give water to a breastfed baby in hot weather?", "Do breastfed babies need water when it is hot?", "Does my exclusively breastfed four-month-old need water on hot days?", "Does hot weather change whether a breastfed baby under six months needs water?"],
         text: "A breastfed baby under six months generally gets the water they need from breast milk, even in hot weather. If the baby shows hunger or thirst cues, you can offer the breast more often. This guidance is for routine feeding.",
       },
       bn: {
         chunkId: "0745d96a-4d5e-5f5c-a2f1-54926038e020",
-        questions: ["গরমে বুকের দুধ খাওয়া শিশুকে পানি দেব কি?", "gorome breastfed baby ke pani debo?", "buker dudh khawa baby ke pani dibo?"],
+        questions: ["গরমে বুকের দুধ খাওয়া শিশুকে পানি দেব কি?", "gorome breastfed baby ke pani debo?", "buker dudh khawa baby ke pani dibo?", "গরমে চার মাসের শুধু বুকের দুধ খাওয়া শিশুকে পানি দিতে হবে কি?", "4 masher buker dudh khawa baby ke gorome pani dibo?"],
         text: "গরমের দিনেও ছয় মাসের কম বয়সী বুকের দুধ খাওয়া শিশু সাধারণত বুকের দুধ থেকেই প্রয়োজনীয় পানি পায়। শিশু ক্ষুধা বা তৃষ্ণার ইঙ্গিত দিলে আরও ঘন ঘন বুকের দুধ দিতে পারেন। এটি সাধারণ খাওয়ানোর নির্দেশনা।",
       },
     }),
@@ -549,12 +626,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "a139a316-c1c9-5894-a544-c159edc9e610",
-        questions: ["How can a working mother keep breastfeeding?", "How can I express milk while working?"],
+        questions: ["How can a working mother keep breastfeeding?", "How can I express milk while working?", "How can I plan to pump breast milk at work?", "How do I continue breastfeeding after returning to my job?"],
         text: "Before returning, decide whether someone can bring the baby to you or whether you will need to express milk. Ask your workplace about private space, breaks and a way to keep the milk cool. Practise expressing in advance and plan with the caregiver how to label the milk and offer it safely. Ask a health worker for local storage guidance, especially if keeping the milk cool is difficult.",
       },
       bn: {
         chunkId: "792b2cd1-05b7-575f-a9db-8f4ea2e3a7e1",
-        questions: ["কর্মজীবী মা কীভাবে বুকের দুধ চালিয়ে যাবে?", "kaj e gele dudh kivabe chaliye jabo?", "kormojibi ma kivabe buker dudh chaliye jabe?"],
+        questions: ["কর্মজীবী মা কীভাবে বুকের দুধ চালিয়ে যাবে?", "kaj e gele dudh kivabe chaliye jabo?", "kormojibi ma kivabe buker dudh chaliye jabe?", "কাজে ফিরে কীভাবে বুকের দুধ খাওয়ানো চালিয়ে যাব?", "office e fire buker dudh kivabe chalu rakhbo?"],
         text: "কাজে ফেরার আগে ঠিক করুন, কেউ শিশুকে আপনার কাছে নিয়ে আসতে পারবেন কি না, নাকি আপনাকে দুধ বের করে রাখতে হবে। কর্মস্থলে ব্যক্তিগত জায়গা, বিরতি ও দুধ ঠান্ডা রাখার ব্যবস্থা আছে কি না জেনে নিন। আগে থেকে দুধ বের করার অনুশীলন করুন এবং যিনি শিশুর যত্ন নেবেন, তাঁর সঙ্গে দুধে তারিখ-সময় লেখা ও নিরাপদে খাওয়ানোর পরিকল্পনা করুন। দুধ ঠান্ডা রাখা কঠিন হলে স্থানীয় সংরক্ষণ নির্দেশনা স্বাস্থ্যকর্মীর কাছে জেনে নিন।",
       },
     }),
@@ -564,7 +641,7 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "f0fc4a2b-8c8d-59d6-bd15-24f33dd16712",
-        questions: ["What are common reasons babies cry?", "How to soothe a crying baby?"],
+        questions: ["What are common reasons babies cry?", "How can I settle a crying baby?", "How to soothe a crying baby?", "What can a caregiver do when the baby cries?"],
         text: "First check whether the baby is hungry, tired, too hot or too cold, or needs a fresh diaper. A cuddle or gentle rocking may help. Never shake a baby. If the crying sounds very different, cannot be settled or comes with signs of illness, get medical advice. If the baby has trouble breathing or is unresponsive, seek emergency help immediately.",
       },
       bn: {
@@ -579,13 +656,13 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "1c58faf9-818d-554a-b80e-ff67f98f3806",
-        questions: ["When should mother and baby have a checkup after birth?", "How many visits after childbirth?"],
-        text: "WHO recommends a check by a health worker in the first 24 hours after birth, whether the birth happened at home or in a facility. It also recommends at least three further contacts during the first six weeks. Ask your care team to write down the next date and where to go if you have concerns between visits. Keep the mother’s and baby’s health and vaccination records together and bring them to appointments.",
+        questions: ["When should mother and baby have a checkup after birth?", "How many visits after childbirth?", "When do I take my baby for a checkup after birth?", "What should I write down before leaving my postnatal checkup?", "What is the postnatal checkup schedule?", "When should we plan a routine visit after delivery?"],
+        text: "WHO recommends a check by a health worker in the first 24 hours after birth, whether the birth happened at home or in a facility. It also recommends at least three further contacts during the first six weeks. Before leaving, write down when the mother and baby should each be seen next, where to go, and whom to contact between check-ups. Ask the health worker which warning signs need a prompt visit and where you can get feeding or family-planning support. Keep the mother’s and baby’s health and vaccination records together and bring them to appointments.",
       },
       bn: {
         chunkId: "2406a699-58d8-56db-b409-e63884e3347c",
-        questions: ["প্রসবের পর মা ও শিশুর চেকআপ কখন?", "deliveryr por checkup kokhon korbo?"],
-        text: "বাড়িতে বা সেবাকেন্দ্রে যেখানেই জন্ম হোক, বিশ্ব স্বাস্থ্য সংস্থা জন্মের প্রথম ২৪ ঘণ্টার মধ্যে স্বাস্থ্যকর্মীর কাছে চেকআপের পরামর্শ দেয়। প্রথম ছয় সপ্তাহে এরপর অন্তত আরও তিনবার যোগাযোগের পরামর্শও দেয়। পরের চেকআপের তারিখ লিখে রাখতে এবং মাঝখানে সমস্যা হলে কোথায় যাবেন তা জানাতে সেবাদানকারী দলকে বলুন। মা ও শিশুর স্বাস্থ্য ও টিকার নথি একসঙ্গে রাখুন এবং চেকআপে সঙ্গে নিন।",
+        questions: ["প্রসবের পর মা ও শিশুর চেকআপ কখন?", "deliveryr por checkup kokhon korbo?", "delivery er pore ma o bacchar checkup kobe?", "প্রসবের পরের চেকআপের আগে কী লিখে রাখব?", "বাচ্চা জন্মের পরে নিয়মিত চেকআপ কবে করব?", "delivery er por routine checkup kobe korbo?"],
+        text: "বাড়িতে বা সেবাকেন্দ্রে যেখানেই জন্ম হোক, বিশ্ব স্বাস্থ্য সংস্থা জন্মের প্রথম ২৪ ঘণ্টার মধ্যে স্বাস্থ্যকর্মীর কাছে চেকআপের পরামর্শ দেয়। প্রথম ছয় সপ্তাহে এরপর অন্তত আরও তিনবার যোগাযোগের পরামর্শও দেয়। সেবা নিয়ে বের হওয়ার আগে মা ও শিশুর পরের চেকআপের তারিখ, কোথায় যাবেন এবং মাঝখানে কার সঙ্গে যোগাযোগ করবেন, তা লিখে রাখুন। কোন লক্ষণ দেখা দিলে দ্রুত স্বাস্থ্যকেন্দ্রে যেতে হবে এবং খাওয়ানো বা পরিবার পরিকল্পনায় কোথায় সহায়তা পাবেন, তা স্বাস্থ্যকর্মীকে জিজ্ঞেস করুন। মা ও শিশুর স্বাস্থ্য ও টিকার নথি একসঙ্গে রাখুন এবং চেকআপে সঙ্গে নিন।",
       },
     }),
     ...pair(whoEverydayWellbeing, {
@@ -609,12 +686,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "4bf89a8a-6614-5a97-bc17-e23913e11062",
-        questions: ["How do I keep my newborn clean?", "What hygiene matters when handling a newborn?"],
+        questions: ["How do I keep my newborn clean?", "What hygiene matters when handling a newborn?", "Should I wash my hands before holding a newborn?", "What should visitors do before touching a newborn?"],
         text: "Wash hands with soap and clean water before handling the newborn, and ask other caregivers to do the same. Keep the baby dry and clean when handling them and keep the cord area dry. Wait at least 24 hours after birth for the first bath. Ask the maternity team to show you routine cleaning and how to keep the baby warm while you do it.",
       },
       bn: {
         chunkId: "92e87642-7cd1-5c7a-a2ef-ccafcb7ed718",
-        questions: ["নবজাতককে কীভাবে পরিষ্কার রাখব?", "newborn ke clean rakhbo kivabe?"],
+        questions: ["নবজাতককে কীভাবে পরিষ্কার রাখব?", "newborn ke clean rakhbo kivabe?", "নবজাতককে কোলে নেওয়ার আগে হাত ধোয়া দরকার কি?", "newborn kole neyar age hat dhute hobe?"],
         text: "নবজাতককে ধরার আগে সাবান ও পরিষ্কার পানি দিয়ে হাত ধুয়ে নিন এবং অন্য যাঁরা যত্ন নেন তাঁদেরও একই কাজ করতে বলুন। শিশুকে ধরার ও পরিষ্কার করার সময় শুকনো ও পরিষ্কার রাখুন এবং নাভির জায়গা শুকনো রাখুন। জন্মের অন্তত ২৪ ঘণ্টা পরে প্রথম গোসল দিন। সাধারণ পরিষ্কার-পরিচ্ছন্নতার যত্ন এবং সেই সময় শিশুকে উষ্ণ রাখার উপায় সেবাদানকারী দলের কাছে দেখে নিন।",
       },
     }),
@@ -970,12 +1047,12 @@ export const bartaEducationCorpus: BartaCorpus = {
       en: {
         chunkId: "07e4ddd7-06b5-4f5b-8bb3-ab2edbb049bb",
         questions: ["What does postnatal care mean?", "Who is postnatal care for?", "What is care after childbirth called?", "What is care after birth?"],
-        text: "Postnatal care is health care and support after childbirth for both the person who gave birth and the newborn. It can be given at a health facility or in the community. In the first weeks, ask your care team about recovery, emotional well-being, feeding support and when the baby and you should be seen again. Find out who to contact if a concern comes up between visits. In the first weeks, ask your care team about recovery, emotional well-being, feeding support and when the baby and you should be seen again. Find out who to contact if a concern comes up between visits.",
+        text: "Postnatal care is health care and support after childbirth for both the person who gave birth and the newborn. It can be given at a health facility or in the community. In the first weeks, ask your care team about recovery, emotional well-being, feeding support and when the baby and you should be seen again. Find out who to contact if a concern comes up between visits.",
       },
       bn: {
         chunkId: "95833c18-92de-420e-b046-adacb585ba0e",
         questions: ["প্রসব-পরবর্তী সেবা কী?", "প্রসবের পরের সেবা কাদের জন্য?", "postnatal care mane ki?", "deliveryr porer sheba ki?"],
-        text: "প্রসবের পরের সেবা হলো যিনি সন্তান জন্ম দিয়েছেন এবং নবজাতক, দুজনেরই স্বাস্থ্যসেবা ও সহায়তা। এই সেবা স্বাস্থ্যকেন্দ্রে বা স্থানীয় পর্যায়ে দেওয়া যায়। প্রথম কয়েক সপ্তাহে নিজের সুস্থ হয়ে ওঠা, মানসিক অবস্থা ও শিশুকে খাওয়ানোর সহায়তা নিয়ে কথা বলুন। মা ও শিশুর পরের চেকআপ কবে এবং মাঝখানে সমস্যা হলে কোথায় যোগাযোগ করবেন, তা জেনে নিন। প্রথম কয়েক সপ্তাহে নিজের সুস্থ হয়ে ওঠা, মানসিক অবস্থা ও শিশুকে খাওয়ানোর সহায়তা নিয়ে কথা বলুন। মা ও শিশুর পরের চেকআপ কবে এবং মাঝখানে সমস্যা হলে কোথায় যোগাযোগ করবেন, তা জেনে নিন।",
+        text: "প্রসবের পরের সেবা হলো যিনি সন্তান জন্ম দিয়েছেন এবং নবজাতক, দুজনেরই স্বাস্থ্যসেবা ও সহায়তা। এই সেবা স্বাস্থ্যকেন্দ্রে বা স্থানীয় পর্যায়ে দেওয়া যায়। প্রথম কয়েক সপ্তাহে নিজের সুস্থ হয়ে ওঠা, মানসিক অবস্থা ও শিশুকে খাওয়ানোর সহায়তা নিয়ে কথা বলুন। মা ও শিশুর পরের চেকআপ কবে এবং মাঝখানে সমস্যা হলে কোথায় যোগাযোগ করবেন, তা জেনে নিন।",
       },
     }),
     ...pair(newborn, {

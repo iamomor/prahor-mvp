@@ -15,7 +15,9 @@ export function getSpeechConfig() {
 
   const key = process.env.BARTA_AZURE_SPEECH_KEY?.trim();
   const region = process.env.BARTA_AZURE_SPEECH_REGION?.trim();
-  return key && region && /^[a-z][a-z0-9-]{1,29}$/u.test(region) ? { provider: "azure", key, region } as const : undefined;
+  return key && region && /^[a-z][a-z0-9-]{1,29}$/u.test(region) ? { provider: "azure", key, region } as const : signingKey && signingKey.length >= 32
+    ? { provider: "bundled", key: signingKey } as const
+    : undefined;
 }
 
 function sign(secret: string, text: string, language: Language, expires: number) {

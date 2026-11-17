@@ -104,6 +104,14 @@ const publishedHosts = new Map([
 ]);
 
 function isApprovedPublisher(publisher: string, address: string): boolean {
+  // These accessibility references are allowed by exact, public URL.
+  if (publisher === "NHS England" || publisher === "Birthrights") {
+    return (publisher === "NHS England" ? [
+      "https://www.england.nhs.uk/learning-disabilities/improving-health/reasonable-adjustments/",
+      "https://www.england.nhs.uk/long-read/accessible-information-standard-requirements-dapb1605/",
+      "https://www.england.nhs.uk/accessible-information-standard/why-its-important/",
+    ] : ["https://birthrights.org.uk/factsheets/disability-and-long-term-health-conditions-and-maternity-care/"]).includes(address);
+  }
   const rule = publishedHosts.get(publisher);
   if (!rule) return false;
   try {
@@ -316,7 +324,7 @@ function similarQuestionTopics(knowledge: BartaKnowledge, question: string, lang
 }
 
 function nearbyCare(knowledge: BartaKnowledge, question: string, language: Language, includeLexical: boolean): BartaAnswer | undefined {
-  if (specificConcerns.test(question) || /[?।!]/u.test(question)) return undefined;
+  if (specificConcerns.test(question) || /[?।!]/u.test(question.replace(/[?।!]+$/u, ""))) return undefined;
   const baby = infantWords.test(question);
   const pregnant = pregnancyWords.test(question);
   const topics: EducationTopic[] = [];

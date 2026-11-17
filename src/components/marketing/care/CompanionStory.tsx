@@ -1,6 +1,7 @@
 "use client";
 
-import { HeartHandshake, MessageCircle, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, HeartHandshake, MessageCircle, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { copy } from "../home-content";
 import { useHome } from "../HomeContext";
 import { SectionEyebrow } from "../SectionEyebrow";
@@ -109,6 +110,12 @@ export function CompanionStory() {
               <h3>{t(title)}</h3>
               <p className="care-card-description">{t(text)}</p>
               {screen}
+              {name === "Barta" && (
+                <Link href="/ask" className="story-text-link self-start">
+                  {t(copy("Ask Barta", "বার্তাকে জিজ্ঞেস করুন"))}
+                  <ArrowUpRight size={19} aria-hidden="true" />
+                </Link>
+              )}
             </article>
           ))}
         </div>

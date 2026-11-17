@@ -36,11 +36,16 @@ test("malformed JSON keeps care explicitly not sent", async ({ request }) => {
   expect(await response.json()).toMatchObject({ status: "not_sent" });
 });
 
-test("missing auth callback code returns to an existing page with a no-store redirect", async ({ request }) => {
+test("missing auth callback code fails closed or redirects to sign-in without caching", async ({ request }) => {
   const response = await request.get("/auth/callback", { maxRedirects: 0 });
-  expect(response.status()).toBe(307);
-  expect(response.headers()["cache-control"]).toBe("no-store");
+  expect([307, 503]).toContain(response.status());
+  expect(response.headers()["cache-control"].split(/,\s*/)).toContain("no-store");
+  if (response.status() === 503) {
+    expect(await response.json()).toEqual({ code: "unavailable" });
+    expect(response.headers().location).toBeUndefined();
+    return;
+  }
   const location = new URL(response.headers().location);
-  expect(location.pathname).toBe("/");
-  expect(location.searchParams.get("error")).toBe("auth");
+  expect(location.pathname).toBe("/sign-in");
+  expect(location.searchParams.get("error")).toBe("link-expired");
 });

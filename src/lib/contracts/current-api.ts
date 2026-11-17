@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { apiErrorSchema, nonEmptyText } from "./common";
 import { currentUserSchema } from "./platform";
-import { bartaRequestSchema } from "./barta";
+import { bartaRequestSchema, bartaAnswerSchema, bartaAudioRequestSchema } from "./barta";
 import { createSupportRequestRequestSchema } from "./bondhon";
 import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt";
 import { currentUserResponseSchema } from "./transport";
@@ -10,6 +10,9 @@ import { currentUserResponseSchema } from "./transport";
 export const starterBartaRequestSchema = bartaRequestSchema.pick({ question: true });
 export const starterCareRequestSchema = createSupportRequestRequestSchema.pick({ message: true, method: true });
 export const starterBartaResponseSchema = z.strictObject({ message: nonEmptyText(500), status: z.literal("not_connected") });
+const bartaErrorSchema = z.strictObject({ message: nonEmptyText(500) });
+export const currentBartaRequestSchema = z.union([bartaRequestSchema, starterBartaRequestSchema]);
+export const currentBartaResponseSchema = z.union([bartaAnswerSchema, starterBartaResponseSchema, bartaErrorSchema]);
 export const starterCareResponseSchema = z.strictObject({ message: nonEmptyText(500), status: z.literal("not_sent") });
 export const starterHealthResponseSchema = z.strictObject({ message: nonEmptyText(500) });
 export const legacyIdentityResponseSchema = z.strictObject({ profile: z.strictObject({
@@ -20,9 +23,9 @@ export const legacyIdentityErrorSchema = z.strictObject({ code: z.enum(["session
 
 type CurrentRoute = {
   source: string;
-  status: "Implemented" | "Mock";
+  status: "Implemented" | "Limited" | "Mock";
   owners: readonly string[];
-  auth: "confirmed-user" | "provider" | "session-only-stub" | "public-stub";
+  auth: "confirmed-user" | "provider" | "session-only-stub" | "public-stub" | "public";
   request: z.ZodType;
   responses: Readonly<Record<number, z.ZodType>>;
 };
@@ -55,8 +58,14 @@ export const currentApiContracts = {
     request: z.undefined(), responses: { 401: starterHealthResponseSchema, 501: starterHealthResponseSchema, 503: starterHealthResponseSchema },
   },
   "POST /api/ai/chat": {
-    source: "src/app/api/ai/chat/route.ts", status: "Mock", owners: ["Iftee", "Omor"], auth: "public-stub",
-    request: starterBartaRequestSchema, responses: { 400: starterBartaResponseSchema, 501: starterBartaResponseSchema },
+    source: "src/app/api/ai/chat/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
+    request: currentBartaRequestSchema,
+    responses: { 200: bartaAnswerSchema, 400: currentBartaResponseSchema, 501: currentBartaResponseSchema, 503: currentBartaResponseSchema },
+  },
+  "POST /api/ai/barta-audio": {
+    source: "src/app/api/ai/barta-audio/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
+    request: bartaAudioRequestSchema,
+    responses: { 200: z.instanceof(Uint8Array), 400: bartaErrorSchema, 403: bartaErrorSchema, 429: bartaErrorSchema, 502: bartaErrorSchema, 503: bartaErrorSchema },
   },
   "POST /api/care-requests": {
     source: "src/app/api/care-requests/route.ts", status: "Mock", owners: ["Omor", "Samin"], auth: "public-stub",

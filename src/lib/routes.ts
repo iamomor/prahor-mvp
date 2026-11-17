@@ -8,6 +8,7 @@ export const PUBLIC_MARKETING_ROUTES = [
   "/for-providers",
   "/trust",
   "/faq",
+  "/ask",
 ] as const;
 
 export function isPublicMarketingRoute(pathname: string | null): boolean {

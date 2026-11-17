@@ -48,7 +48,7 @@ export function HeroStory() {
         <p className="story-bangla-tagline" lang="bn">আপনার যত্ন, আপনার মতো।</p>
         <p className="story-hero-description">{t(copy("PROHOR is one connected place for mothers in Bangladesh: keep mother and baby records, get Bangla answers with sources, understand your reports, notice your well-being, find care and reach real people, in the way that works for you.", "বাংলাদেশের মায়েদের জন্য প্রহর একটি সংযুক্ত জায়গা: মা ও শিশুর রেকর্ড রাখুন, সূত্রসহ বাংলায় উত্তর পান, রিপোর্ট বুঝুন, নিজের ভালো থাকার খোঁজ নিন, সেবা খুঁজুন ও মানুষের সহায়তা নিন—আপনার উপযোগী উপায়ে।"))}</p>
         <div className="story-actions">
-          <Button href="#features">{t(copy("Explore PROHOR", "প্রহর ঘুরে দেখুন"))}<ArrowUpRight size={19} aria-hidden="true" /></Button>
+          <Button href="/ask">{t(copy("Ask Barta", "বার্তাকে জিজ্ঞেস করুন"))}<ArrowUpRight size={19} aria-hidden="true" /></Button>
           <Button href="#how-it-works" variant="secondary">{t(copy("See how it works", "কীভাবে কাজ করে দেখুন"))}<ArrowDown size={18} aria-hidden="true" /></Button>
         </div>
         <ul className="hero-capabilities" aria-label={t(copy("What you can do with PROHOR", "প্রহরে কী করতে পারবেন"))}>{capabilities.map(({ icon: Icon, label }) => <li key={label.en}><Icon size={15} aria-hidden="true" /><span>{t(label)}</span></li>)}</ul>

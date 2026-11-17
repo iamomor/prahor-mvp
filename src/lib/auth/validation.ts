@@ -24,8 +24,8 @@ export function sameOriginRequest(request: Request, expected: string | null): bo
   return Boolean(expected && request.headers.get("origin") === expected);
 }
 
-export async function boundedJson(request: Request): Promise<unknown> {
-  if (Number(request.headers.get("content-length")) > 8192 || !request.body) throw new Error("Invalid body");
+export async function boundedJson(request: Request, maxBytes = 8192): Promise<unknown> {
+  if (Number(request.headers.get("content-length")) > maxBytes || !request.body) throw new Error("Invalid body");
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;
@@ -34,7 +34,7 @@ export async function boundedJson(request: Request): Promise<unknown> {
       const { value, done } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > 8192) { await reader.cancel(); throw new Error("Invalid body"); }
+      if (size > maxBytes) { await reader.cancel(); throw new Error("Invalid body"); }
       chunks.push(value);
     }
   } finally { reader.releaseLock(); }

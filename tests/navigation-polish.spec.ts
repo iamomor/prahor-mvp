@@ -57,7 +57,7 @@ test("mobile sheet traps focus, locks scrolling, switches language and restores 
   await expect(page.getByRole("dialog", { name: "Adjust how you use PROHOR", exact: true })).toBeVisible();
   await page.keyboard.press("Escape"); await expect(menu).toBeFocused();
   await menu.click(); await sheet.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Sign in is coming.", exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Sign in to PROHOR", exact: true })).toBeVisible();
   await page.keyboard.press("Escape"); await expect(menu).toBeFocused();
 });
 

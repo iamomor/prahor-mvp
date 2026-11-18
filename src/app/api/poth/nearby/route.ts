@@ -28,7 +28,8 @@ async function queryOverpass(lat: number, lon: number, radius: number) {
     if (!body || typeof body !== "object" || !("elements" in body) || !Array.isArray(body.elements))
       throw new Error("Unexpected map provider response");
     const elements = body.elements as OsmEntry[];
-    return { places: normalizeOsm(elements, { lat, lon }, radius), truncated: elements.length >= 1200 };
+    const places = normalizeOsm(elements, { lat, lon }, radius);
+    return { places, truncated: elements.length >= 1200 || places.length >= 300 };
   } finally { clearTimeout(timer); }
 }
 export async function GET(request: Request) {
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
   if (!result.success || !insideBangladesh(result.data))
     return NextResponse.json({ error: "Choose a Bangladesh location and radius from 1–20 km." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   const { lat, lon, radius } = result.data;
-  const key = `${lat.toFixed(3)}:${lon.toFixed(3)}:${radius}`;
+  const key = `${lat.toFixed(6)}:${lon.toFixed(6)}:${radius}`;
   const now = Date.now();
   const hit = cache.get(key);
   if (hit && hit.until > now) return NextResponse.json({ places: hit.places, truncated: hit.truncated, source: "openstreetmap-unverified", cached: true }, { headers: { "Cache-Control": "no-store" } });

@@ -39,6 +39,21 @@ test("known Banglish and topic-scoped follow-ups retrieve the linked education",
   expect(bartaFollowUpQuestion(knowledge, mixed, "en", ancVisitChunk)).toBe(mixed);
 });
 
+test("new question variants resolve to the existing cited passages", () => {
+  const cases = [
+    ["What tests do they do at a pregnancy checkup?", "en", educationTopics.ancVisits.en],
+    ["গর্ভাবস্থায় চেকআপে কী কী পরীক্ষা করা হয়?", "bn", educationTopics.ancVisits.bn],
+    ["pregnancy checkup e ki ki test kore?", "bn", educationTopics.ancVisits.bn],
+    ["জন্মের পরপর শিশুর প্রাথমিক যত্নে কী করা হয়?", "bn", educationTopics.newborn.bn],
+    ["nabhi porar age kivabe jotno nebo?", "bn", educationTopics.cordCare.bn],
+  ] as const;
+  for (const [question, language, canonical] of cases) {
+    const expected = getBartaKnowledgeAnswer(knowledge, canonical, language);
+    expect(expected.status).toBe("grounded");
+    expect(getBartaKnowledgeAnswer(knowledge, question, language)).toEqual(expected);
+  }
+});
+
 test("expired or off-allowlist sources cannot supply answers or follow-ups", () => {
   const expired = prepareBartaKnowledge(bartaEducationCorpus, new Date("2027-05-16T00:00:00Z"));
   expect(expired?.available).toBe(false);

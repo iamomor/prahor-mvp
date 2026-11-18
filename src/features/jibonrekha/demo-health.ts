@@ -27,6 +27,8 @@ export type HealthObservation = {
   pregnancyId?: string; enteredAt?: string; enteredBy?: string; updatedAt?: string; revision?: number; archived?: boolean; versions?: ObservationRevision[];
   reportSchemaVersion?: 2;
   documentType?: DocumentType;
+  scanSubtype?: import("../bujhi/ultrasound").UltrasoundSubtype;
+  ultrasound?: import("../bujhi/ultrasound").UltrasoundField;
   reportContext?: AntenatalSections;
   reportContextReviewedAt?: string;
   structuredResult?: StructuredResult;
@@ -49,6 +51,8 @@ export type HealthObservation = {
   reviewStatus?: "verified";
   inputMethod?: "manual" | "image" | "voice";
   unitUnavailable?: boolean;
+  originalLabel?: string;
+  originalUnit?: string;
   rawValue?: string;
   normalizedValue?: string;
   referenceRange?: string;

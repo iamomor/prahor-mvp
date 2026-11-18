@@ -4,10 +4,11 @@ import { educationCopy, type Language } from "./barta-education-copy";
 import styles from "./barta-education.module.css";
 import { claimAudioSession, releaseAudioSession } from "@/lib/audio-session";
 
-export function BartaAudioFile({ text, language, ticket, guideLabel, disabled, browserReading, onBrowserRead }: {
+export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, disabled, browserReading, onBrowserRead }: {
   text: string;
   language: Language;
   ticket?: string;
+  clipUrl?: string;
   guideLabel?: string;
   disabled: boolean;
   browserReading: boolean;
@@ -32,7 +33,7 @@ export function BartaAudioFile({ text, language, ticket, guideLabel, disabled, b
   }, []);
 
   async function load() {
-    if (request.current) return;
+    if (request.current || (!clipUrl && !ticket && !guideLabel)) return;
     const controller = new AbortController();
     request.current = controller;
     setFailed(false);
@@ -43,7 +44,7 @@ export function BartaAudioFile({ text, language, ticket, guideLabel, disabled, b
     try {
       const isAudio = (value?: Response) => value?.ok && /^(?:audio\/(?:wav|x-wav|wave|mpeg))(?:;|$)/iu
         .test(value.headers.get("content-type") ?? "");
-      const response = await fetch("/api/ai/barta-audio", {
+      const response = clipUrl ? await fetch(clipUrl, { signal: controller.signal }) : await fetch("/api/ai/barta-audio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(guideLabel ? { help: true, language } : { text, language, ticket }),

@@ -16,11 +16,17 @@ export function validDate(value: string): boolean {
   }
   return /^\d{4}-\d{2}-\d{2}T/.test(value) && validDate(value.slice(0, 10)) && Number.isFinite(Date.parse(value));
 }
-export function fieldIssues(field: ExtractedReportField, defaultDate: string): { errors: string[]; warnings: string[] } {
+export const isHemoglobinLabel = (label: string) => /^(?:hb|hgb|haemoglobin|hemoglobin|হিমোগ্লোবিন)$/i.test(label.trim());
+
+export function fieldIssues(field: ExtractedReportField, defaultDate: string, checkDestination = true): { errors: string[]; warnings: string[] } {
   const errors: string[] = [], warnings: string[] = [];
   if (!field.label.trim()) errors.push("Enter a test or observation name.");
   if (!field.value.trim()) errors.push("Enter a result or a note; it does not need to be numeric.");
-  if (!["mother", "baby"].includes(field.destination)) errors.push("Choose Mother or Baby.");
+  if (checkDestination && !["mother", "baby"].includes(field.destination)) errors.push("Choose Mother or Baby.");
+  if (checkDestination && isHemoglobinLabel(field.label) && field.destination === "baby") errors.push("Choose the mother’s record for this hemoglobin test.");
+  const group = field.ultrasound?.group;
+  if (checkDestination && (group === "biometry" && !/(?:cervical length|length of cervix)/i.test(field.ultrasound?.originalLabel ?? field.label) || group === "heartbeat" || group === "anatomy") && field.destination === "mother") errors.push("Choose the specific baby record for this fetal observation.");
+  if (checkDestination && (group === "pregnancy" || /(?:cervical length|length of cervix)/i.test(field.ultrasound?.originalLabel ?? field.label)) && field.destination === "baby") errors.push("Choose the mother’s record for this pregnancy observation.");
   if (!validDate(field.observedAt ?? defaultDate)) errors.push("Enter a valid observation date from the source or your own record.");
   if (field.reportDate && !validDate(field.reportDate)) errors.push("Correct the report date.");
   const numeric = parseNumeric(field.value);
@@ -33,3 +39,6 @@ export function fieldIssues(field: ExtractedReportField, defaultDate: string): {
   if (!field.sourceText && field.parsingReliability) warnings.push("No original source snippet is available for this field.");
   return { errors, warnings };
 }
+
+
+

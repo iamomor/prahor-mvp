@@ -13,7 +13,7 @@ const steps = [
 export function PothVisitPreparation() {
   const [checked, setChecked] = useState<boolean[]>(() => steps.map(() => false));
   return (
-    <section aria-labelledby="poth-preparation-title" className="mt-8 rounded-2xl border p-5 sm:p-7"
+    <section id="poth-visit-preparation" aria-labelledby="poth-preparation-title" className="mt-8 rounded-2xl border p-5 sm:p-7"
       style={{ borderColor: "var(--pro-border)", background: "var(--pro-surface)" }}>
       <h2 id="poth-preparation-title" className="mb-2 text-2xl font-bold">Visit preparation · সাক্ষাতের প্রস্তুতি</h2>
       <p className="mb-5 max-w-2xl">

@@ -8,3 +8,14 @@ export function parseSpeechDraft(transcript: string): Partial<ExtractedReportFie
   return { label: bp ? "Blood pressure" : "", value: bp ? `${bp[1]}/${bp[2]}` : transcript, rawValue: transcript,
     unit: "", observedAt: today ? date : "", destination: "", category: bp ? "vital_signs" : "general_notes", sourceText: transcript };
 }
+
+/** Split explicit clauses while preserving decimal punctuation and uncertain wording. */
+export function parseSpokenFields(transcript: string): Partial<ExtractedReportField>[] {
+  const clauses = transcript.trim().split(/\s*(?:[;\n।]+|[.!?](?=\s+[A-Za-z\u0980-\u09FF]))\s*|\s+(?:and|এবং)\s+(?=(?:my\s+)?(?:blood pressure|রক্তচাপ|প্রেসার|BPD|FL|AC|CRL|HC|EFW|AFI|FHR)\b)/i).filter(Boolean);
+  return clauses.map((clause) => {
+    const scan = clause.match(/^(BPD|FL|AC|CRL|HC|EFW|AFI|FHR)\s*(?:is|[:=])?\s*([+−-]?[0-9০-৯][0-9০-৯,.]*)\s*(mm|cm|g|kg|bpm)?\s*[.!]?$/i);
+    if (!scan) return parseSpeechDraft(clause);
+    const label = scan[1].toUpperCase();
+    return { label, value: scan[2], rawValue: scan[2], unit: scan[3] ?? "", destination: "", category: "ultrasound_report_notes", sourceText: clause, ultrasound: { group: label === "FHR" ? "heartbeat" : label === "AFI" ? "placenta" : "biometry", originalLabel: scan[1], originalUnit: scan[3] ?? "" } };
+  });
+}

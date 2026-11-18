@@ -14,12 +14,22 @@ export async function recognizeReportImage(file: File, onProgress: (status: stri
   try {
     if (signal.aborted) throw new Error("OCR cancelled.");
     await worker.setParameters({ preserve_interword_spaces: "1" });
-    const { data } = await worker.recognize(file);
+    const { data } = await worker.recognize(file, {}, { text: true, blocks: true });
     if (signal.aborted) throw new Error("OCR cancelled.");
     const confidence = Number.isFinite(data.confidence) ? data.confidence : undefined;
-    return { ...parseOcrText(data.text, `ocr-${sourceFileId}`, confidence), sourceFileId };
+    onProgress("matching results", 1);
+    const layout = data.blocks?.flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines)).map((line, index) => {
+      const gapThreshold = Math.max(10, (line.bbox.y1 - line.bbox.y0) * 0.75);
+      const spacedText = line.words.map((word, position) => {
+        const previous = line.words[position - 1];
+        return (previous ? word.bbox.x0 - previous.bbox.x1 > gapThreshold ? "  " : " " : "") + word.text;
+      }).join("");
+      return { text: /\s{2,}/.test(line.text.trim()) ? line.text.trim() : spacedText || line.text.trim(), location: { line: index + 1, page: 1, box: line.bbox } };
+    });
+    return { ...parseOcrText(data.text, `ocr-${sourceFileId}`, confidence, layout), sourceFileId };
   } finally {
     signal.removeEventListener("abort", cancel);
     await terminate().catch(() => undefined);
   }
 }
+

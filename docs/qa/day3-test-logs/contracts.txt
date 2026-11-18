@@ -11,7 +11,7 @@ At line:2 char:71
 +                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: ((node:7976) War... env being set.:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 (Use `node --trace-warnings ...` to show where the warning was created)
   ok   1 tests\contracts\api-registry.spec.ts:15:1 › current API catalog matches every real route method and source file (84ms)
   ok   2 tests\contracts\api-registry.spec.ts:28:1 › canonical documentation covers every current and proposed operation (15ms)

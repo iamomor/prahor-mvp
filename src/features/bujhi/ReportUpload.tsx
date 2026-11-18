@@ -93,5 +93,3 @@ export function ReportUpload({ onContinue, continueLabel = "Run local English OC
     <button type="button" disabled={!selected || validating || !previewReady || Boolean(error)} onClick={() => { if (selected && previewReady && !error) onContinue(selected.file, selected.kind); }} className={`${button} bg-pro-primary text-pro-on-primary disabled:text-pro-on-primary`}>{continueLabel}</button>
   </section>;
 }
-
-

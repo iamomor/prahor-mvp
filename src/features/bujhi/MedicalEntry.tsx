@@ -31,5 +31,3 @@ export function MedicalEntry() {
     </div>
   </div>;
 }
-
-

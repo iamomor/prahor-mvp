@@ -23,4 +23,3 @@ export async function recognizeReportImage(file: File, onProgress: (status: stri
     await terminate().catch(() => undefined);
   }
 }
-

@@ -33,6 +33,3 @@ export function fieldIssues(field: ExtractedReportField, defaultDate: string): {
   if (!field.sourceText && field.parsingReliability) warnings.push("No original source snippet is available for this field.");
   return { errors, warnings };
 }
-
-
-

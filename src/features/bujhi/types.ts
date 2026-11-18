@@ -21,4 +21,3 @@ export type ExtractedReport = {
 };
 
 export type AntenatalReportV2 = ExtractedReport & { schemaVersion: 2; documentType: DocumentType; sections: AntenatalSections; clinicianVerification: { status: "unverified"; documentedClaimOnly: boolean } };
-

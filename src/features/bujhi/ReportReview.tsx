@@ -157,12 +157,3 @@ export function ReportReview({ report }: { report: ExtractedReport }) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-

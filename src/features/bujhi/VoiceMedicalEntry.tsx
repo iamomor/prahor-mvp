@@ -40,6 +40,3 @@ export function VoiceMedicalEntry({ onDraft, active = true }: { active?: boolean
     {editable && <ManualMedicalEntry key={editable} method="voice" sourceText={editable} initial={parseSpeechDraft(editable)} onDraft={onDraft} />}
   </section>;
 }
-
-
-

@@ -23,4 +23,3 @@ export function DataJudgement({ fields, report, existing = [] }: { fields: Extra
     <p>Incomplete or uncertain extraction must be checked against the original report. No pregnancy diagnosis, gestational-age estimate, viability prediction, treatment decision, or safety judgement is made from Beta-hCG or any other value here.</p>
   </section>;
 }
-

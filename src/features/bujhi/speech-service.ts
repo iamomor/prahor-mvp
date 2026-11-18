@@ -44,4 +44,3 @@ export async function transcribeSpeech(options: SpeechOptions): Promise<SpeechSe
 
 export type SpeechProvider = { transcribe: typeof transcribeSpeech };
 export const browserSpeechProvider: SpeechProvider = { transcribe: transcribeSpeech };
-

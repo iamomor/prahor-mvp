@@ -30,4 +30,3 @@ export function ImageMedicalEntry({ onDraft, active = true }: { active?: boolean
     <p role="status" aria-atomic="true">{status}{busy ? ` (${progress}%, current engine stage)` : ""}</p><p role="alert" className="text-pro-danger">{error}</p>
   </section>;
 }
-

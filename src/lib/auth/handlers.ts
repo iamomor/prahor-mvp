@@ -1,9 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
 import { jsonNoStore } from "../api-response";
 import { safeAuthReturnPath } from "../routes";
 import { authDestination, readIdentity } from "./access";
 import { boundedJson, emailLinkSchema, sameOriginPost, signInSchema, signUpSchema, siteOrigin } from "./validation";
+import { authCookieOptions } from "./cookies";
 import { currentUserSchema } from "../contracts/platform";
 import { contractVersion } from "../contracts/common";
 import type { ApiResponse } from "../contracts/api";
@@ -33,8 +33,18 @@ export async function handleAuthPost(request: Request, action: AuthAction, depen
       if (!client) return jsonNoStore({ code: "unavailable" }, 503);
       const { error } = await client.auth.signOut({ scope: "local" });
       if (error) return jsonNoStore({ code: "signout-failed" }, 503);
-      const response = NextResponse.redirect(new URL("/sign-in?status=signed-out", origin), 303);
+      // Return JSON (not a redirect) so the browser applies Set-Cookie before
+      // the client does window.location.assign. fetch() does not reliably apply
+      // Set-Cookie from a followed 303 redirect — using manual JSON avoids that.
+      const response = jsonNoStore({ ok: true }, 200);
       response.headers.set("Cache-Control", "no-store");
+      const cookieHeader = request.headers.get("cookie") ?? "";
+      for (const item of cookieHeader.split(";")) {
+        const name = item.split("=")[0]?.trim();
+        if (name && (name.startsWith("sb-") || name.includes("auth") || name.startsWith("prohor-auth"))) {
+          response.cookies.set(name, "", { ...authCookieOptions(), maxAge: 0 });
+        }
+      }
       return response;
     }
     if (!request.headers.get("content-type")?.startsWith("application/json")) return jsonNoStore({ code: "invalid-input" }, 400);

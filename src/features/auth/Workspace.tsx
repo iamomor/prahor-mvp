@@ -11,10 +11,21 @@ export function Workspace({ profile }: { profile: OwnProfile }) {
   async function signOut() {
     setBusy(true); setFailed(false);
     try {
-      const response = await fetch("/auth/sign-out", { method: "POST", credentials: "same-origin" });
-      if (!response.ok) throw new Error("Sign-out failed");
-      window.location.replace("/sign-in?status=signed-out");
-    } catch { setFailed(true); setBusy(false); }
+      // Server returns JSON + Set-Cookie (not a redirect) so the browser applies
+      // the cookie-clearing headers before we navigate away.
+      const response = await fetch("/auth/sign-out", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Accept": "application/json" },
+      });
+      if (!response.ok && response.status !== 503) {
+        // Non-fatal: session may already be gone — still navigate away.
+      }
+    } catch {
+      // Network error — still navigate so user is not stuck on a protected page.
+    } finally {
+      window.location.assign("/sign-in?status=signed-out");
+    }
   }
   return <section className="pro-card space-y-5">
     <Link href="/account" className="inline-flex min-h-12 items-center underline">{t({ en: "Account and roles / switch workspace", bn: "অ্যাকাউন্ট ও পরিচয় / কর্মক্ষেত্র বদলান" })}</Link>

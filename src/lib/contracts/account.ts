@@ -17,7 +17,8 @@ export const emptyRoleDetails: RoleDetails = { phone: "", district: "", careStag
   qualification: "", specialty: "", serviceArea: "" };
 export const onboardingSchema = z.strictObject({
   displayName: z.string().trim().min(1).max(120),
-  purposes: z.array(signupPurposeSchema).min(1).max(4).refine(v => new Set(v).size === v.length),
+  // One self-declared role per signup; extra roles need operator approval, never self-selection.
+  purposes: z.array(signupPurposeSchema).length(1),
   organization: z.string().trim().max(160).default(""),
   registrationNumber: z.string().trim().max(100).default(""),
   details: roleDetailsSchema.default(emptyRoleDetails),

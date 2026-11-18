@@ -23,7 +23,25 @@ export function sameOriginPost(request: Request, expected: string | null): boole
 }
 
 export function sameOriginRequest(request: Request, expected: string | null): boolean {
-  return Boolean(expected && request.headers.get("origin") === expected);
+  if (!expected) return false;
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  if (origin === expected) return true;
+  try {
+    const oUrl = new URL(origin);
+    const eUrl = new URL(expected);
+    const loopbacks = ["localhost", "127.0.0.1", "[::1]"];
+    if (
+      loopbacks.includes(oUrl.hostname) &&
+      loopbacks.includes(eUrl.hostname) &&
+      (oUrl.port || (oUrl.protocol === "https:" ? "443" : "80")) ===
+        (eUrl.port || (eUrl.protocol === "https:" ? "443" : "80")) &&
+      oUrl.protocol === eUrl.protocol
+    ) {
+      return true;
+    }
+  } catch {}
+  return false;
 }
 
 export async function boundedJson(request: Request, maxBytes = 8192): Promise<unknown> {

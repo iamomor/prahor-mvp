@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { prepareSpeechText } from "./barta-spoken-text";
 import type { Language } from "./barta-education-copy";
+import { claimAudioSession, ownsAudioSession, releaseAudioSession } from "@/lib/audio-session";
 
 interface Recognition {
   lang: string;
@@ -26,6 +27,7 @@ export function useBartaAudio() {
   const [notice, setNotice] = useState<AudioNotice>();
   const activeSpeech = useRef<SpeechSynthesisUtterance | null>(null);
   const activeRecognition = useRef<Recognition | null>(null);
+  const owner = useRef(Symbol("barta-audio"));
   const cancelVoiceWait = useRef<(() => void) | null>(null);
   const voiceStartupTimer = useRef<number | undefined>(undefined);
 
@@ -40,28 +42,34 @@ export function useBartaAudio() {
     const recognition = activeRecognition.current;
     activeSpeech.current = null;
     activeRecognition.current = null;
-    if (speech) window.speechSynthesis.cancel();
+    if (speech && ownsAudioSession(owner.current)) window.speechSynthesis.cancel();
     recognition?.abort();
+    releaseAudioSession(owner.current);
   }, []);
 
-  function stopSpeaking() {
+  const stopSpeaking = useCallback(() => {
     cancelVoiceWait.current?.();
     window.clearTimeout(voiceStartupTimer.current);
     if (activeSpeech.current) {
       activeSpeech.current = null;
-      window.speechSynthesis.cancel();
+      if (ownsAudioSession(owner.current)) window.speechSynthesis.cancel();
     }
+    if (!activeRecognition.current) releaseAudioSession(owner.current);
     setSpeaking(undefined);
-  }
+  }, []);
 
-  function play(id: string, text: string, language: Language) {
+  const play = useCallback((id: string, text: string, language: Language) => {
     setNotice(undefined);
     const wasSpeaking = speaking === id;
     stopSpeaking();
     if (wasSpeaking) return;
+    activeRecognition.current?.abort();
+    activeRecognition.current = null; setListening(false);
+    claimAudioSession({ id: owner.current, stop: stopSpeaking });
 
     const synthesis = window.speechSynthesis;
     if (!synthesis || typeof SpeechSynthesisUtterance === "undefined") {
+      releaseAudioSession(owner.current);
       setNotice({ kind: "noVoice", language, replyId: id });
       return;
     }
@@ -78,12 +86,14 @@ export function useBartaAudio() {
       utterance.onend = () => {
         if (activeSpeech.current !== utterance) return;
         activeSpeech.current = null;
+        releaseAudioSession(owner.current);
         window.clearTimeout(voiceStartupTimer.current);
         setSpeaking(undefined);
       };
       utterance.onerror = () => {
         if (activeSpeech.current !== utterance) return;
         activeSpeech.current = null;
+        releaseAudioSession(owner.current);
         window.clearTimeout(voiceStartupTimer.current);
         setSpeaking(undefined);
         setNotice({ kind: "playError", language, replyId: id });
@@ -100,6 +110,7 @@ export function useBartaAudio() {
       } catch {
         window.clearTimeout(voiceStartupTimer.current);
         activeSpeech.current = null;
+        releaseAudioSession(owner.current);
         setSpeaking(undefined);
         setNotice({ kind: "playError", language, replyId: id });
       }
@@ -127,6 +138,7 @@ export function useBartaAudio() {
     };
     const timer = window.setTimeout(() => {
       cancelVoiceWait.current?.();
+      releaseAudioSession(owner.current);
       setSpeaking(undefined);
       setNotice({ kind: "noVoice", language, replyId: id });
     }, 2000);
@@ -137,9 +149,9 @@ export function useBartaAudio() {
     };
     synthesis.addEventListener("voiceschanged", checkVoices);
     checkVoices();
-  }
+  }, [speaking, stopSpeaking]);
 
-  function dictate(language: Language, noticeLanguage: Language, onText: (text: string) => void) {
+  const dictate = useCallback((language: Language, noticeLanguage: Language, onText: (text: string) => void) => {
     if (activeRecognition.current) {
       try {
         activeRecognition.current.stop();
@@ -183,12 +195,14 @@ export function useBartaAudio() {
     recognition.onend = () => {
       if (activeRecognition.current !== recognition) return;
       activeRecognition.current = null;
+      releaseAudioSession(owner.current);
       setListening(false);
       if (!receivedTranscript) setNotice({ kind: "noSpeech", language: noticeLanguage });
     };
     recognition.onerror = (event) => {
       if (activeRecognition.current !== recognition) return;
       activeRecognition.current = null;
+      releaseAudioSession(owner.current);
       setListening(false);
       const kind = event.error === "not-allowed" || event.error === "service-not-allowed" ? "micBlocked"
         : event.error === "audio-capture" ? "micUnavailable"
@@ -197,22 +211,27 @@ export function useBartaAudio() {
       setNotice({ kind, language: noticeLanguage });
     };
     activeRecognition.current = recognition;
+    claimAudioSession({ id: owner.current, stop: () => {
+      activeRecognition.current = null;
+      recognition.abort(); setListening(false);
+    } });
     try {
       setListening(true);
       recognition.start();
     } catch {
       recognition.onerror({ error: "unknown" });
     }
-  }
+  }, [stopSpeaking]);
 
-  function resetAudio() {
+  const resetAudio = useCallback(() => {
     const recognition = activeRecognition.current;
     activeRecognition.current = null;
     recognition?.abort();
     setListening(false);
     stopSpeaking();
+    releaseAudioSession(owner.current);
     setNotice(undefined);
-  }
+  }, [stopSpeaking]);
 
   return { speaking, listening, notice, play, dictate, stopSpeaking, resetAudio };
 }

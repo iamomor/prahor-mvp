@@ -1,0 +1,77 @@
+{
+  "label": "before",
+  "url": "http://127.0.0.1:3012",
+  "measuredAt": "2026-11-17T16:34:16.867Z",
+  "api": {
+    "exact": {
+      "firstMs": 225.64139999999998,
+      "medianMs": 13.538599999999974,
+      "p95Ms": 17.178499999999985,
+      "statuses": [
+        "grounded"
+      ]
+    },
+    "typo": {
+      "firstMs": 22.240999999999985,
+      "medianMs": 14.911399999999958,
+      "p95Ms": 19.430200000000013,
+      "statuses": [
+        "abstained"
+      ]
+    },
+    "unsupported": {
+      "firstMs": 11.440799999999854,
+      "medianMs": 15.098299999999881,
+      "p95Ms": 18.486499999999978,
+      "statuses": [
+        "abstained"
+      ]
+    }
+  },
+  "browser": {
+    "navigation": {
+      "ttfbMs": 93.39999999990687,
+      "domContentLoadedMs": 388,
+      "nextJsBytes": 223970,
+      "scriptCount": 10
+    },
+    "typingAt1Turns": {
+      "cpuSlowdown": 4,
+      "samples": [
+        {
+          "scriptMs": 317.42800000000005,
+          "taskMs": 774.4380000000001
+        },
+        {
+          "scriptMs": 250.04399999999998,
+          "taskMs": 674.0840000000002
+        },
+        {
+          "scriptMs": 276.164,
+          "taskMs": 752.445
+        }
+      ],
+      "medianScriptMs": 276.164,
+      "medianTaskMs": 752.445
+    },
+    "typingAt40Turns": {
+      "cpuSlowdown": 4,
+      "samples": [
+        {
+          "scriptMs": 1106.8310000000001,
+          "taskMs": 1990.0330000000022
+        },
+        {
+          "scriptMs": 1082.5529999999999,
+          "taskMs": 1936.4029999999984
+        },
+        {
+          "scriptMs": 1130.0099999999995,
+          "taskMs": 2128.1929999999998
+        }
+      ],
+      "medianScriptMs": 1106.8310000000001,
+      "medianTaskMs": 1990.0330000000022
+    }
+  }
+}

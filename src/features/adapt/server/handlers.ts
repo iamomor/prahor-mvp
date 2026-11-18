@@ -29,6 +29,11 @@ export async function handlePreferences(request: Request, dependencies: Preferen
     const identity = await readIdentity(client);
     if (identity.status === 401) return fail("unauthenticated", "Authentication required.", 401);
     if (identity.status !== 200 || !client) return fail("unavailable", "Preferences are unavailable.", 500);
+    // Restrict a UI snapshot to its verified account; this header grants no authority.
+    const expectedAccount = request.headers.get("x-prohor-account");
+    if (expectedAccount !== null && expectedAccount !== identity.profile.user_id) {
+      return fail("conflict", "Your signed-in account changed. Reload and review before saving.", 409);
+    }
     if (request.method === "GET") return saved(await loadPreferences(client, identity.profile.user_id));
     if (request.method !== "PATCH") return fail("invalid_request", "Unsupported method.", 405);
     const origin = siteOrigin(dependencies.siteUrl);

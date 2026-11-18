@@ -33,18 +33,19 @@ test("canonical documentation covers every current and proposed operation", () =
   expect(doc).toContain("**Mock:**");
 });
 
-test("current Barta and care request types preserve smaller live payloads", () => {
+test("current Barta accepts public education and legacy payloads while rejecting private context", () => {
   const current: CurrentApiRequest<"POST /api/ai/chat"> = { question: "Synthetic question" };
   const future: ProposedApiRequest<"POST /api/ai/chat"> = { ...current, language: "bn", retention: { mode: "ephemeral" } };
   expect(currentApiContracts["POST /api/ai/chat"].request.safeParse(current).success).toBe(true);
-  expect(currentApiContracts["POST /api/ai/chat"].request.safeParse(future).success).toBe(false);
+  expect(currentApiContracts["POST /api/ai/chat"].request.safeParse(future).success).toBe(true);
+  expect(currentApiContracts["POST /api/ai/chat"].request.safeParse({ ...future, diaryText: "Private context" }).success).toBe(false);
   expect(currentApiContracts["POST /api/care-requests"].request.safeParse({ message: "Synthetic request", method: "aac" }).success).toBe(true);
   expect(currentApiContracts["POST /api/care-requests"].request.safeParse({ message: "Synthetic request", method: "aac", status: "delivered" }).success).toBe(false);
 });
 
 test("current stub response variants cannot pretend to be completed domain services", () => {
   const barta = currentApiContracts["POST /api/ai/chat"];
-  expect(barta.status).toBe("Mock");
+  expect(barta.status).toBe("Limited");
   expect(barta.responses[501].safeParse({ message: "Not connected", status: "not_connected" }).success).toBe(true);
   expect(barta.responses[501].safeParse({ status: "grounded", answer: "Fabricated answer" }).success).toBe(false);
   expect(currentApiContracts["GET /api/health"].responses).not.toHaveProperty("200");

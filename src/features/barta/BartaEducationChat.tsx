@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, HeartHandshake, MessageCircle, Mic, ShieldCheck, Square, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
 import type { BartaAnswer } from "@/lib/contracts/barta";
 import { educationCopy, type Language } from "./barta-education-copy";
 import { educationTopics, type EducationTopic } from "./education-topics";
@@ -7,6 +7,7 @@ import { getBartaSpokenGuide } from "./barta-spoken-text";
 import { BartaAudioFile } from "./BartaAudioFile";
 import { useBartaAudio } from "./use-barta-audio";
 import styles from "./barta-education.module.css";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
 type Reply = { result: BartaAnswer; language: Language };
@@ -26,7 +27,7 @@ const additionalTopics = [
   "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
 ] as const satisfies readonly EducationTopic[];
 
-function QuestionOption({ prompt, onSelect, disabled }: {
+const QuestionOption = memo(function QuestionOption({ prompt, onSelect, disabled }: {
   prompt: string;
   onSelect: (question: string) => void;
   disabled: boolean;
@@ -37,7 +38,7 @@ function QuestionOption({ prompt, onSelect, disabled }: {
       <ArrowRight size={17} aria-hidden="true" />
     </button>
   );
-}
+});
 
 function shortPublisher(publisher: string, locale: Language): string {
   switch (publisher) {
@@ -47,7 +48,7 @@ function shortPublisher(publisher: string, locale: Language): string {
   }
 }
 
-function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking, onRead, playbackNotice }: {
+const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking, onRead, playbackNotice }: {
   result: BartaAnswer;
   locale: Language;
   turnId: string;
@@ -58,6 +59,7 @@ function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking,
   playbackNotice?: string;
   onRead: (id: string, text: string, language: Language) => void;
 }) {
+  const ready = useHydrated();
   const copy = educationCopy[locale];
   const audioTicket = result.status === "not_connected" ? undefined : result.audioTicket;
   const spokenText = result.status === "not_connected"
@@ -77,11 +79,19 @@ function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking,
         <strong lang={locale === "bn" ? "bn" : "en"}>{locale === "bn" ? "বার্তা" : "Barta"}</strong>
         {urgent && <strong className={styles.urgentLabel}>{copy.urgent}</strong>}
         {!audioTicket && (
-          <button type="button" className={styles.read} disabled={busy}
+          <button type="button" className={styles.read} disabled={!ready || busy}
             onClick={() => onRead(turnId, spokenText, locale)}>
             {speaking ? <Square size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
             {speaking ? copy.stopReading : copy.readAloud}
           </button>
+        )}
+        {audioTicket && (
+          <div className={styles.replyAudio}>
+            <BartaAudioFile key={audioTicket} ticket={audioTicket}
+              text={spokenText} language={locale}
+              disabled={!ready || busy} browserReading={speaking}
+              onBrowserRead={() => onRead(turnId, spokenText, locale)} />
+          </div>
         )}
       </header>
       {playbackNotice && <p role="status" className={styles.playbackNotice}>{playbackNotice}</p>}
@@ -129,23 +139,17 @@ function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking,
           </section>
         </>
       ) : <p className={styles.answerText} role={urgent && showOptions ? "alert" : undefined}>{result.message}</p>}
-      {audioTicket && (
-        <BartaAudioFile key={audioTicket} ticket={audioTicket}
-          text={spokenText} language={locale}
-          disabled={busy} browserReading={speaking}
-          onBrowserRead={() => onRead(turnId, spokenText, locale)} />
-      )}
       {options.length > 0 && (
         <section className={styles.next} aria-label={result.status === "clarification" ? copy.clarify : copy.followUp}>
           <h3>{result.status === "clarification" ? copy.clarify : copy.followUp}</h3>
           <ul>
-            {options.map((prompt) => <li key={prompt}><QuestionOption prompt={prompt} onSelect={onSelect} disabled={busy} /></li>)}
+            {options.map((prompt) => <li key={prompt}><QuestionOption prompt={prompt} onSelect={onSelect} disabled={!ready || busy} /></li>)}
           </ul>
         </section>
       )}
     </div>
   );
-}
+});
 
 export function BartaEducationChat({
   languageChoice, formLanguage, question, questionInput, turns, reply, error, busy,
@@ -166,9 +170,11 @@ export function BartaEducationChat({
   onClear: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  const ready = useHydrated();
   const copy = educationCopy[formLanguage];
   const audio = useBartaAudio();
-  const spokenGuide = getBartaSpokenGuide(formLanguage);
+  const playAudio = audio.play;
+  const spokenGuide = useMemo(() => getBartaSpokenGuide(formLanguage), [formLanguage]);
   const [voiceLanguage, setVoiceLanguage] = useState<Language | "auto">("auto");
   const micLanguage = voiceLanguage === "auto" ? formLanguage : voiceLanguage;
   const layout = useRef<HTMLDivElement>(null);
@@ -182,24 +188,20 @@ export function BartaEducationChat({
     if (reply || error) latest.current?.scrollIntoView({ block: "nearest" });
   }, [reply, error]);
 
-  function pauseAudio(except?: HTMLAudioElement) {
+  const pauseAudio = useCallback((except?: HTMLAudioElement) => {
     layout.current?.querySelectorAll("audio").forEach((player) => {
       if (player !== except && !player.paused) player.pause();
     });
-  }
+  }, []);
 
-  function readAnswer(id: string, text: string, language: Language) {
+  const readAnswer = useCallback((id: string, text: string, language: Language) => {
     pauseAudio();
-    audio.play(id, text, language);
-  }
+    playAudio(id, text, language);
+  }, [playAudio, pauseAudio]);
 
   return (
     <div ref={layout} className={styles.layout} onPlayCapture={(event) => {
       if (!(event.target instanceof HTMLAudioElement)) return;
-      if (audio.listening) {
-        event.target.pause();
-        return;
-      }
       audio.stopSpeaking();
       pauseAudio(event.target);
     }}>
@@ -240,19 +242,21 @@ export function BartaEducationChat({
           <div className={styles.composer}>
             <textarea id="barta-question" ref={questionInput} value={question}
               placeholder={copy.placeholder} aria-describedby="barta-privacy"
-              onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={busy} maxLength={1200} required />
+              onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
             <div className={styles.composerTools}>
-              <button type="button" className={styles.read} disabled={busy} aria-describedby="barta-voice-hint"
+              <button type="button" className={styles.read} disabled={!ready || busy} aria-describedby="barta-voice-hint"
                 onClick={() => {
                   pauseAudio();
-                  audio.dictate(micLanguage, formLanguage, onDictation);
+                  audio.dictate(micLanguage, formLanguage, (transcript) => {
+                    onDictation(transcript);
+                  });
                 }}>
                 {audio.listening ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}
                 {audio.listening ? copy.stopListening : copy.startListening}
               </button>
               <label className={styles.language}>
                 {copy.voiceLanguage}
-                <select value={voiceLanguage} disabled={busy || audio.listening} aria-describedby="barta-voice-hint"
+                <select value={voiceLanguage} disabled={!ready || busy || audio.listening} aria-describedby="barta-voice-hint"
                   onChange={(event) => {
                     const value = event.currentTarget.value;
                     if (value === "auto" || value === "bn" || value === "en") setVoiceLanguage(value);
@@ -267,7 +271,7 @@ export function BartaEducationChat({
           <div className={styles.chatPreferences}>
           <label className={styles.language}>
             <span>{copy.answerLanguage}</span>
-            <select value={languageChoice} disabled={busy || audio.listening}
+            <select value={languageChoice} disabled={!ready || busy || audio.listening}
               onChange={(event) => {
                 const selected = event.currentTarget.value;
                 onLanguage(selected === "en" || selected === "auto" ? selected : "bn");
@@ -278,7 +282,7 @@ export function BartaEducationChat({
             </select>
           </label>
           {(turns.length > 0 || reply || error) && (
-            <button type="button" className={styles.clear} disabled={busy} onClick={() => { audio.resetAudio(); onClear(); }} lang={formLanguage}>{copy.clear}</button>
+            <button type="button" className={styles.clear} disabled={!ready || busy} onClick={() => { audio.resetAudio(); onClear(); }} lang={formLanguage}>{copy.clear}</button>
           )}
           </div>
           <div className={styles.formFooter}>
@@ -291,7 +295,10 @@ export function BartaEducationChat({
             {voiceLanguage === "auto" && (
               <>{copy.voiceAutoHint} <span lang={micLanguage}>{micLanguage === "bn" ? "বাংলা" : "English"}</span>.{" "}</>
             )}
-            {copy.voicePrivacy}
+            {copy.voicePrivacy}{" "}
+            {formLanguage === "bn"
+              ? "মাইক্রোফোনের অনুমতি লাগবে। মাইক কাজ না করলে এখানেই টাইপ করুন।"
+              : "Microphone permission is required. If dictation is unavailable, type in this same field."}
           </p>
           <p role="status" lang={audio.notice?.language ?? formLanguage} className={styles.audioStatus}>
             {audio.notice && !audio.notice.replyId ? educationCopy[audio.notice.language][audio.notice.kind] : audio.listening ? copy.listening : ""}
@@ -307,22 +314,48 @@ export function BartaEducationChat({
               <h3>{copy[group.name]}</h3>
               <ul>
                 {group.topics.map((topic) => (
-                  <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={busy || audio.listening} /></li>
+                  <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={!ready || busy || audio.listening} /></li>
                 ))}
               </ul>
             </section>
           ))}
           <details className={styles.moreTopics}>
+            <summary>{formLanguage === "bn" ? "মাতৃসেবায় প্রবেশগম্যতা ও সহায়তা" : "Accessible maternity care"}<ChevronDown size={16} aria-hidden="true" /></summary>
+            <ul>
+              {(["accessVisit","accessWheelchair","accessHearing","accessVision","accessEasyRead","accessCommunication","accessSensory","accessBirthPlan","accessConsent","accessAfterBirth","accessSupportPerson","accessFollowUp"] as const).map(topic => (
+                <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={!ready || busy || audio.listening} /></li>
+              ))}
+            </ul>
+            <button type="button" className={`${styles.read} ${styles.collapseTopics}`}
+              onClick={(event) => {
+                const details = event.currentTarget.closest("details");
+                if (!details) return;
+                details.open = false;
+                details.querySelector("summary")?.focus();
+              }}>
+              {formLanguage === "bn" ? "সহায়তার তালিকা গুটিয়ে নিন" : "Collapse accessibility questions"}
+            </button>
+          </details>
+          <details className={styles.moreTopics}>
             <summary>{copy.moreTopics}<ChevronDown size={16} aria-hidden="true" /></summary>
             <ul>
               {additionalTopics.map((topic) => (
-                <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={busy || audio.listening} /></li>
+                <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={!ready || busy || audio.listening} /></li>
               ))}
             </ul>
+            <button type="button" className={`${styles.read} ${styles.collapseTopics}`}
+              onClick={(event) => {
+                const details = event.currentTarget.closest("details");
+                if (!details) return;
+                details.open = false;
+                details.querySelector("summary")?.focus();
+              }}>
+              {formLanguage === "bn" ? "প্রশ্নের তালিকা গুটিয়ে নিন" : "Collapse questions"}
+            </button>
           </details>
         </div>
         <BartaAudioFile key={formLanguage} guideLabel={copy.readGuide}
-          text={spokenGuide} language={formLanguage} disabled={busy || audio.listening}
+          text={spokenGuide} language={formLanguage} disabled={!ready || busy || audio.listening}
           browserReading={audio.speaking === "barta-guide"}
           onBrowserRead={() => readAnswer("barta-guide", spokenGuide, formLanguage)} />
         {playbackMessage("barta-guide") && (

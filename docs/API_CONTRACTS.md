@@ -8,7 +8,8 @@ Related: [data model](architecture/data-model.md), [security](architecture/secur
 
 | Existing route            | Current behavior (Mock status is explicit in the canonical table)                                      |
 | ------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `POST /api/ai/chat`       | Strict `{question}` validation; 400 for invalid/unknown fields, otherwise 501 `not_connected`          |
+| `POST /api/ai/chat`       | Limited public education: strict question/language/retention/context; legacy question-only compatibility; 200 cited answer/abstention/clarification, 400/501/503 errors; no saved transcript |
+| `POST /api/ai/barta-audio` | Optional signed-text or fixed-guide speech; binary WAV/MP3 success, JSON errors; requires server speech configuration |
 | `POST /api/care-requests` | Strict `{message,method}` validation; 400 for invalid/unknown fields, otherwise 501; always `not_sent` |
 | `GET /api/health`         | 503 when unavailable/unconfigured, 401 without valid auth, otherwise 501; no record persistence        |
 | `GET /api/me`             | Step 12: own `{id,displayName,role}` in the v1 envelope; 200/401/404/500, private/no-store; [details](API_ME.md) |

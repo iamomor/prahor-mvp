@@ -58,7 +58,7 @@ test("Barta preserves the cited turn and its context when switching answer langu
   await page.getByRole("textbox", { name: "আপনার প্রশ্ন" }).fill("নমুনা প্রশ্ন");
   await page.getByRole("button", { name: "বার্তাকে জিজ্ঞেস করুন" }).click();
   const notice = page.getByText("যাচাই করা সূত্রগুলো আপাতত পাওয়া যাচ্ছে না।");
-  await expect(notice).toHaveAttribute("lang", "bn");
+  expect(await notice.evaluate(element => element.closest("[lang]")?.getAttribute("lang"))).toBe("bn");
   await expect(citation).toHaveCount(1);
   expect(requests[1]).toEqual({
     question: "নমুনা প্রশ্ন",

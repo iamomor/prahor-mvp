@@ -1,5 +1,10 @@
 # PROHOR Barta · Day 1 source register
 
+> Historical candidate register. The current prototype's bundled project reference
+> checks are described in [the functional preview](PROHOR-Barta-Functional-Preview.md).
+> Those checks do not establish clinician approval. This document is not the runtime
+> corpus or the current deployment/setup instructions.
+
 Owner: Iftee. Sources checked 16 November 2026. Status: draft for review. This register contains four references and no approved retrieval passages.
 
 ## Initial scope

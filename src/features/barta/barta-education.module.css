@@ -271,3 +271,12 @@
 @media (max-width: 27rem) {
   .composerTools > * { width: 100%; }
 }
+
+.answerHeading:has(> .replyAudio) { align-items: flex-start; flex-wrap: wrap; }
+.replyAudio { margin-inline-start: auto; min-inline-size: 0; max-inline-size: 100%; align-self: flex-start; }
+.replyAudio .audioFile { margin: 0; flex-direction: column; align-items: flex-end; min-inline-size: 0; }
+.replyAudio .read { min-block-size: 2.75rem; max-inline-size: 100%; }
+.replyAudio audio { width: 17rem; max-width: 100%; min-width: 0; }
+.replyAudio p { margin: 0; text-align: end; }
+
+.collapseTopics { margin-block-start: 0.75rem; min-block-size: 2.75rem; }

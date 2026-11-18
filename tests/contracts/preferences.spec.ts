@@ -59,6 +59,15 @@ test("GET missing row returns documented defaults without writing", async () => 
   expect(setup.calls).toHaveLength(1);
 });
 
+test("a stale frontend account ID cannot read or save preferences in another session", async () => {
+  for (const method of ["GET", "PATCH"] as const) {
+    const setup = fixture();
+    const response = await run(method, method === "PATCH" ? { language: "en" } : undefined, setup,
+      { "X-Prohor-Account": "10000000-0000-4000-8000-000000000002" });
+    expect(response.status).toBe(409); expect(setup.calls).toEqual([]);
+  }
+});
+
 test("partial PATCH calls the atomic RLS RPC without a target user ID", async () => {
   const setup = fixture();
   const response = await run("PATCH", { textScale: "large" }, setup, { "if-match": JSON.stringify(at) });

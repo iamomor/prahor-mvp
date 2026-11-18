@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { AACComposer, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
 import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
 import { detectBartaLanguage } from "./chat-language";
 import { BartaEducationChat } from "./BartaEducationChat";
@@ -13,6 +14,10 @@ type ChatState =
   | { status: "error"; message: string; language: "en" | "bn" };
 
 type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
+const subscribeDraft = (callback: () => void) => {
+  window.addEventListener("prohor-aac-draft-change", callback);
+  return () => window.removeEventListener("prohor-aac-draft-change", callback);
+};
 
 function readErrorMessage(body: unknown): string {
   return body !== null && typeof body === "object" && "message" in body
@@ -23,11 +28,16 @@ function readErrorMessage(body: unknown): string {
 
 export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education" }) {
   const demo = mode === "demo";
+  const { prefs } = useAdaptPreferences();
+  const [aacOpen, setAacOpen] = useState<boolean | null>(null);
+  const [incoming, setIncoming] = useState("");
+  const storedDraft = useSyncExternalStore(subscribeDraft, getStoredAacDraft, () => null);
   const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
   const questionInput = useRef<HTMLTextAreaElement>(null);
+  const pendingRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
-  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? "bn" : answerLanguage;
+  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? prefs.language : answerLanguage;
   const [previousChunkId, setPreviousChunkId] = useState<string>();
   const [state, setState] = useState<ChatState>({ status: "idle" });
   const busy = state.status === "checking";
@@ -36,10 +46,32 @@ export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education
   const educationReply = state.status === "response" ? state : undefined;
   const educationError = state.status === "error" ? state : undefined;
 
-  function fillQuestion(text: string) {
-    setQuestion(text);
+  function insertText(text: string) {
+    const next = mergeAacText(question, text);
+    if (next.length > 1200) { setIncoming(text); return; }
+    setQuestion(next); setIncoming(""); clearStoredAacDraft();
     questionInput.current?.focus();
   }
+  const aacSection = <section className="pro-card mb-5 max-w-prose" aria-label="Alternative question input">
+    <details open={aacOpen ?? prefs.communication === "aac"} onToggle={event => setAacOpen(event.currentTarget.open)}>
+      <summary className="min-h-12 cursor-pointer font-semibold">Picture-and-text communication · ছবি ও লেখা (AAC)</summary>
+      <AACComposer onInsert={insertText} targetLabel="Insert into question / প্রশ্নে যুক্ত করুন" />
+    </details>
+    {storedDraft && <div className="mt-3 grid gap-2"><p>Saved AAC draft: {storedDraft}</p>
+      <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>Insert saved AAC draft</button>
+      <button type="button" className="pro-btn pro-btn-secondary" onClick={clearStoredAacDraft}>Dismiss saved AAC draft</button></div>}
+    {incoming && <div role="alert"><p>The combined question exceeds 1200 characters. Your draft is unchanged. Review this incoming text and shorten your question before inserting:</p><p className="whitespace-pre-wrap">{incoming}</p></div>}
+  </section>;
+
+  useEffect(() => () => {
+    pendingRequest.current?.abort();
+    pendingRequest.current = null;
+  }, []);
+
+  const fillQuestion = useCallback((text: string) => {
+    setQuestion(text);
+    questionInput.current?.focus();
+  }, []);
 
   function clearConversation() {
     setQuestion("");
@@ -52,12 +84,13 @@ export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = question.trim();
-    if (busy || !text) return;
+    if (busy || pendingRequest.current || !text) return;
 
     const detected = detectBartaLanguage(text);
     const requestedLanguage = answerLanguage === "auto" ? detected ?? formLanguage : answerLanguage;
     setState({ status: "checking" });
     const controller = new AbortController();
+    pendingRequest.current = controller;
     const timeout = window.setTimeout(() => controller.abort(), 60_000);
     try {
       const response = await fetch("/api/ai/chat", {
@@ -74,12 +107,19 @@ export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education
           }),
       });
       const body: unknown = await response.json();
+      if (pendingRequest.current !== controller) return;
       const parsed = bartaAnswerSchema.safeParse(body);
       if (!demo && parsed.success && parsed.data.status === "not_connected") {
         setState({ status: "error", message: parsed.data.message, language: requestedLanguage });
         return;
       }
-      if (parsed.success && (response.ok || parsed.data.status !== "grounded")) {
+      if (!demo && !response.ok) {
+        setState({ status: "error", language: requestedLanguage,
+          message: parsed.success && parsed.data.status !== "grounded"
+            ? parsed.data.message : educationCopy[requestedLanguage].failure });
+        return;
+      }
+      if (parsed.success && response.ok) {
         const result = parsed.data;
         const replyText = result.status === "grounded" ? result.answer : result.message;
         if (!demo) {
@@ -107,6 +147,7 @@ export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education
         language: demo ? "en" : requestedLanguage,
       });
     } catch {
+      if (pendingRequest.current !== controller) return;
       setState({
         status: "error",
         message: controller.signal.aborted
@@ -116,20 +157,18 @@ export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education
       });
     } finally {
       window.clearTimeout(timeout);
+      if (pendingRequest.current === controller) pendingRequest.current = null;
     }
   }
 
   if (!demo) {
     return (
-      <BartaEducationChat languageChoice={answerLanguage} formLanguage={formLanguage}
+      <>{aacSection}<BartaEducationChat languageChoice={answerLanguage} formLanguage={formLanguage}
         question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
         onLanguage={setAnswerLanguage}
         onQuestion={setQuestion}
-        onDictation={(text) => {
-          setQuestion((draft) => [draft.trimEnd(), text].filter(Boolean).join(" ").slice(0, 1200));
-          questionInput.current?.focus();
-        }}
-        onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} />
+        onDictation={insertText}
+        onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} /></>
     );
   }
 

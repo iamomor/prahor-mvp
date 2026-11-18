@@ -87,3 +87,9 @@ export type KnowledgeSource = z.infer<typeof knowledgeSourceSchema>;
 export type BartaRequest = z.infer<typeof bartaRequestSchema>;
 export type BartaAnswer = z.infer<typeof bartaAnswerSchema>;
 export type Citation = z.infer<typeof citationSchema>;
+
+/** Optional generated speech; tickets authorize the exact server-issued text. */
+export const bartaAudioRequestSchema = z.union([
+  z.strictObject({ text: z.string().min(1).max(4000), language: languageSchema, ticket: z.string().length(78) }),
+  z.strictObject({ language: languageSchema, help: z.literal(true) }),
+]);

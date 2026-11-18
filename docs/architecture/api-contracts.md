@@ -11,6 +11,7 @@ Read with [data model](data-model.md), [security](security.md), [team review](te
 ## Status and ownership
 
 - **Implemented:** real route and behavior in the current tree; infrastructure may still be required.
+- **Limited:** working educational prototype or optional service; not clinical validation or a deployed backend.
 - **Mock:** route exists but is an honest unavailable/501 stub. It does not invent success, records or AI answers.
 - **Planned:** no route handler; the existing shared domain schemas are an implementation proposal.
 - **Needs Review:** a naming, payload, security or cross-team adoption decision is unresolved. Do not build callers assuming approval.
@@ -31,7 +32,7 @@ The established schema home is `src/lib/contracts/`. It already centralizes stri
 Zod validators; a second `src/lib/validators/` tree would create competing sources
 and is deliberately not added. Domain files are preserved.
 
-- `current-api.ts`: the **eight actual /api method/path pairs**, source files, owners,
+- `current-api.ts`: the **eleven actual /api method/path pairs**, source files, owners,
   status, authentication level, current request validators and status-specific response schemas.
 - `transport.ts`: runtime v1 envelope/page validators and proposed path/pagination helpers.
 - `api.ts`: `CurrentApiOperations` takes precedence over overlapping future proposals.
@@ -66,13 +67,15 @@ of the contract, not merely the body type.**
 | `GET /api/auth/me` | Implemented; Step 11 compatibility; Omor + Apurbo | U; no target-user input | 200 `{profile:{user_id,display_name,role}}`; 401 `{code:'session-required'}`; 503 `{code:'unavailable'}` | Same Auth/profile lookup; preserve existing callers; use `/api/me` for new integrations |
 | `GET /api/auth/provider` | Implemented; role gate, not a patient queue; Omor + Samin | P; no target-user input | 200 own legacy profile; 401/403/503 bare-code errors (`session-required/access-denied/unavailable`) | Own profile only; no consent/assignment implementation and no patient records returned |
 | `GET /api/health` | Mock; unavailable record persistence; Ifty + Omor | Only Auth `getUser()` is currently checked; no filters consumed | 401/503 `{message}`; valid session -> 501 `{message}`; **no 200 record list** | No record query/write; backend, subject filters, mother/owner authorization and migrations pending |
-| `POST /api/ai/chat` | Mock; Barta unavailable; Iftee + Omor | Public stub; only strict `{question:string}` trimmed 1–1200; unknown fields rejected | 400 or 501 `{message,status:'not_connected'}`; no AI answer or citations | No DB, private context, retrieval or model invocation; depends on approved source RAG before adoption |
+| `POST /api/ai/chat` | Limited educational prototype; Iftee + Omor | Public; strict question/language/retention/optional previousChunkId, or legacy question-only input; JSON <=8 KiB | 200 grounded/abstained/clarification/conversation; 400 invalid or saved mode; 501 unavailable; 503 dependency failure | Bundled project-reference-checked corpus; clinical review pending; no DB or transcript persistence; optional development-only Gemini passage selection |
+| `POST /api/ai/barta-audio` | Limited optional speech; Iftee + Omor | Public guide request or exact text/language with signed ticket; JSON <=16,000 bytes | 200 binary WAV/MP3, represented as Uint8Array in the catalog; 400/403/429/502/503 JSON `{message}` | Optional local eSpeak or server-configured Azure; process-local throttle; no transcript persistence |
 | `POST /api/care-requests` | Mock; not sent; Omor + Samin | Public stub; strict `{message:string(1–1000),method:'text'|'aac'|'call'}`; no ownership accepted | 400 or 501 `{message,status:'not_sent'}`; no persisted/submitted/delivered success | No DB write or provider handoff; Auth, assignment, consent and queue backend pending |
 
 All current outcomes use `Cache-Control: no-store` (private canonical endpoints use
-`private, no-store`). The two public POST stubs parse JSON but do not currently
-require a Content-Type header or implement rate limiting; their 501 behavior is
-not authorization for a real write. GET-only routes have Next.js automatic HEAD;
+`private, no-store`). Public Barta and care requests do not require a Content-Type
+header. Barta bounds streamed request bodies; care requests remain an unavailable
+stub. Paid AI/speech services need deployment-level abuse controls before public
+use; audio's throttle is process-local. GET-only routes have Next.js automatic HEAD;
 unsupported methods receive framework 405. These framework responses are outside
 the application JSON schemas. No CORS wildcard/credentialed cross-origin access is added.
 
@@ -93,6 +96,31 @@ ETags. A stale version gives 409; clients reload/review, not silently retry.
 Unconditional partial writes merge under the row lock; same-field updates serialize.
 
 ## Naming conflicts and compatibility decisions
+
+### Day 3 integration candidate
+
+`GET /api/preferences` and `PATCH /api/preferences` accept the optional
+`X-Prohor-Account` header. A value different from the server-verified caller returns
+409 before any preferences read/write. This prevents a stale tab from applying one
+account's draft to a newly signed-in account. It grants no authorization and changes
+no database schema. New UI callers send it and continue to use exact ETag/If-Match.
+
+`POST /api/ai/chat` now retains Iftee's optional server-side OpenRouter selection
+of approved passages. Responses remain source-grounded, bounded and validated;
+medical diagnosis and unrestricted generation are not added. Optional generated
+audio retains signed tickets, a 4 MB response cap and a process-local throttle.
+`POST /api/ai/barta-audio` also supports Fish Speech and bundled clips; a configured
+bundled clip that is missing returns 404. Provider availability needs deployment
+verification; text remains available.
+
+| Method/path | Status | Inputs | Outcomes and limits |
+| --- | --- | --- | --- |
+| `GET /api/poth/facilities` | Limited; public | q <=120, district <=100, limit 1–100 | 200 `{facilities,sourceType:'reviewed-import',bookingAvailable:false}` or 400 `{error}`. The supplied reviewed dataset is empty; no invented entries or booking. |
+| `GET /api/poth/nearby` | Limited; public | explicit Bangladesh lat/lon and allowed radius 1–20 km | 200 `{places,truncated,source:'openstreetmap-unverified',cached}` or 400/429/503 `{error}`. Community data is separate from reviewed directory data; provider tags do not verify clinical services or accessibility. No booking. |
+
+These additions require Omor's contract review before promotion to `develop`.
+Record/review features remain explicitly synthetic local demos. No health record,
+report extraction, care delivery, wellness or provider backend is invented.
 
 No route is renamed, redirected or newly implemented by Step 14.
 
@@ -190,11 +218,11 @@ above (400/401/403/404/409/429/500/503; Bujhi additionally 413/415); GET success
 
 ## Barta and Shonket public information
 
-Status: POST /api/ai/chat is Mock today; its full schema below is Needs Review. GET safety guidance is Planned. Owners: Iftee + Omor for Barta; Samin + Omor for reviewed safety.
+Status: POST /api/ai/chat is a limited public educational prototype. Ephemeral requests are supported; saved retention is unavailable and rejected (fixed safety replies may precede that rejection). GET safety guidance remains Planned. Owners: Iftee + Omor for Barta; Samin + Omor for reviewed safety. No clinical approval is implied.
 
 | Method/path | Auth | Input | Proposed result |
 | --- | --- | --- | --- |
-| `POST /api/ai/chat` | Public if ephemeral; authenticated for saved mode | `bartaRequestSchema`: question, language, retention (defaults ephemeral) | `BartaAnswer`; 200 grounded/abstained, 501 not connected, 503 dependency failure |
+| `POST /api/ai/chat` | Public ephemeral only; saved mode unavailable | `bartaRequestSchema`: question, language, retention (defaults ephemeral), optional previousChunkId; legacy question-only compatibility | `BartaAnswer`; 200 grounded/abstained/clarification/conversation, 400 invalid/unsupported retention, 501 not connected, 503 dependency failure |
 | `GET /api/safety-guidance` | Public | Language `bn/en`, pagination | Page of clinician-reviewed approved `SafetyGuidance`; never generated on demand |
 
 Example proposed question payload (no patient context):
@@ -341,7 +369,7 @@ the existing Auth schemas; redirect input <=2048 and sanitized again server-side
 | Decision | State / responsible reviewers |
 | --- | --- |
 | Keep current paths/payloads and legacy profile compatibility | Source-verified baseline; no renames/removals performed |
-| Adopt full Barta language/retention + v1 responses on existing stub | Needs Review — Iftee + Omor; approved sources/evaluations/privacy/backend and caller rollout required |
+| Barta public language/context integration | Limited — Iftee + Omor; bundled corpus and ephemeral UI integrated. Clinical review, persistent conversation backend and production AI controls remain Needs Review |
 | Replace health stub with mother/baby list; add writes and complete CRUD/list coverage | Needs Review — Ifty + Omor; schemas/clinical dictionaries, parent authorization and migrations not approved by this document |
 | Report route family, supported fixture and upload/extraction/review engine boundary | Needs Review — Iftee + Ifty + Omor; neither documents/extract nor reports/extract exists |
 | Care submission, provider queue/projections/status actions | Needs Review — Omor + Samin; assignment/consent/evidence/audit/idempotency dependencies must exist before success |

@@ -1,5 +1,11 @@
 # PROHOR Barta API contract
 
+> Historical Day 1 handoff for `f9a2957`, retained for provenance. The route below
+> has since been integrated as a limited public education service. Use the
+> [canonical API contract](architecture/api-contracts.md#barta-and-shonket-public-information)
+> and `src/lib/contracts/current-api.ts` for current requests, statuses and optional
+> audio. Question-only requests remain a compatibility path, not the public chat UI.
+
 Implementation handoff · Iftee · Reviewed against the Barta files merged from Omor's main update (f9a2957, containing 07e8d83).
 
 ## What the current route does

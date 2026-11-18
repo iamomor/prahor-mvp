@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { claimAudioSession, ownsAudioSession, releaseAudioSession } from "@/lib/audio-session";
 import { copy } from "../home-content";
 import { useHome } from "../HomeContext";
 
@@ -8,19 +9,20 @@ export function useSampleSpeech(text: string) {
   const { t, locale } = useHome();
   const [speechStatus, setSpeechStatus] = useState("");
   const utterance = useRef<SpeechSynthesisUtterance | null>(null);
-  useEffect(
-    () => () => {
+  const owner = useRef(Symbol("homepage-sample"));
+  const stop = useCallback(() => {
       if (utterance.current) {
         utterance.current.onend = null;
         utterance.current.onerror = null;
-        window.speechSynthesis?.cancel();
+        if (ownsAudioSession(owner.current)) window.speechSynthesis?.cancel();
+        utterance.current = null;
       }
-    },
-    [],
-  );
+      releaseAudioSession(owner.current);
+  }, []);
+  useEffect(() => () => stop(), [stop]);
 
   function readAloud() {
-    if (!window.speechSynthesis) {
+    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
       setSpeechStatus(
         t(
           copy(
@@ -31,7 +33,7 @@ export function useSampleSpeech(text: string) {
       );
       return;
     }
-    window.speechSynthesis.cancel();
+    stop();
 
     const speech = new SpeechSynthesisUtterance(text);
     speech.lang = locale === "bn" ? "bn-BD" : "en-GB";
@@ -46,6 +48,7 @@ export function useSampleSpeech(text: string) {
     }
     speech.onend = () => {
       utterance.current = null;
+      releaseAudioSession(owner.current);
       setSpeechStatus(
         t(
           copy(
@@ -57,6 +60,7 @@ export function useSampleSpeech(text: string) {
     };
     speech.onerror = () => {
       utterance.current = null;
+      releaseAudioSession(owner.current);
       setSpeechStatus(
         t(
           copy(
@@ -66,6 +70,7 @@ export function useSampleSpeech(text: string) {
         ),
       );
     };
+    claimAudioSession({ id: owner.current, stop: () => { stop(); setSpeechStatus("Playback stopped. The text remains available."); } });
     utterance.current = speech;
     setSpeechStatus(
       t(

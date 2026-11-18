@@ -1,0 +1,380 @@
+[
+  {
+    "path": "docs/PROHOR-Barta-ANC-Review.md",
+    "bytes": 1229,
+    "lines": 13,
+    "kind": "document",
+    "testCases": 0
+  },
+  {
+    "path": "docs/PROHOR-Barta-API-Contract.md",
+    "bytes": 4394,
+    "lines": 47,
+    "kind": "document",
+    "testCases": 0
+  },
+  {
+    "path": "docs/PROHOR-Barta-Evaluation.md",
+    "bytes": 3751,
+    "lines": 31,
+    "kind": "document",
+    "testCases": 0
+  },
+  {
+    "path": "docs/PROHOR-Barta-Functional-Preview.md",
+    "bytes": 16300,
+    "lines": 139,
+    "kind": "document",
+    "testCases": 0
+  },
+  {
+    "path": "docs/PROHOR-Barta-Source-Register.md",
+    "bytes": 5379,
+    "lines": 46,
+    "kind": "document",
+    "testCases": 0
+  },
+  {
+    "path": "docs/PROHOR-Bujhi-Extraction-Handoff.md",
+    "bytes": 5339,
+    "lines": 81,
+    "kind": "document",
+    "testCases": 0
+  },
+  {
+    "path": "src/app/(marketing)/ask/page.tsx",
+    "bytes": 3820,
+    "lines": 84,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/app/(marketing)/barta-demo/page.tsx",
+    "bytes": 1229,
+    "lines": 39,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/app/api/ai/barta-audio/route.ts",
+    "bytes": 3554,
+    "lines": 85,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/app/api/ai/chat/route.ts",
+    "bytes": 6046,
+    "lines": 134,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/components/marketing/care/CompanionStory.tsx",
+    "bytes": 5093,
+    "lines": 126,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/BartaAudioFile.tsx",
+    "bytes": 3975,
+    "lines": 105,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/BartaChatStarter.tsx",
+    "bytes": 9904,
+    "lines": 214,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/BartaEducationChat.tsx",
+    "bytes": 17547,
+    "lines": 337,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/ai-intent-preview.ts",
+    "bytes": 4290,
+    "lines": 116,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/approved-corpus.ts",
+    "bytes": 2234,
+    "lines": 53,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/approved-knowledge.ts",
+    "bytes": 28494,
+    "lines": 531,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/audio-ticket.ts",
+    "bytes": 1851,
+    "lines": 39,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/barta-education-copy.ts",
+    "bytes": 7928,
+    "lines": 107,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/barta-education.module.css",
+    "bytes": 8966,
+    "lines": 274,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/barta-spoken-text.ts",
+    "bytes": 4044,
+    "lines": 51,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/bleeding-clarification.ts",
+    "bytes": 5154,
+    "lines": 60,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/chat-language.ts",
+    "bytes": 1178,
+    "lines": 12,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/conversation.ts",
+    "bytes": 5779,
+    "lines": 74,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/demo-questions.ts",
+    "bytes": 724,
+    "lines": 19,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/education-corpus.ts",
+    "bytes": 93495,
+    "lines": 998,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/education-topics.ts",
+    "bytes": 9011,
+    "lines": 61,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/local-speech.ts",
+    "bytes": 1882,
+    "lines": 49,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/question-bank-prompts.json",
+    "bytes": 100587,
+    "lines": 811,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/question-bank-routing.ts",
+    "bytes": 7560,
+    "lines": 119,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/question-matching.ts",
+    "bytes": 2062,
+    "lines": 36,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/safety-gate.ts",
+    "bytes": 10797,
+    "lines": 113,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/synthetic-demo.ts",
+    "bytes": 6446,
+    "lines": 128,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/features/barta/use-barta-audio.ts",
+    "bytes": 7881,
+    "lines": 219,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "src/lib/contracts/barta.ts",
+    "bytes": 4198,
+    "lines": 96,
+    "kind": "runtime",
+    "testCases": 0
+  },
+  {
+    "path": "tests/barta-audio.spec.ts",
+    "bytes": 8852,
+    "lines": 169,
+    "kind": "test",
+    "testCases": 5
+  },
+  {
+    "path": "tests/barta-conversation-flow.spec.ts",
+    "bytes": 5310,
+    "lines": 99,
+    "kind": "test",
+    "testCases": 4
+  },
+  {
+    "path": "tests/barta-education.spec.ts",
+    "bytes": 3041,
+    "lines": 70,
+    "kind": "test",
+    "testCases": 1
+  },
+  {
+    "path": "tests/barta-everyday-care.spec.ts",
+    "bytes": 2198,
+    "lines": 32,
+    "kind": "test",
+    "testCases": 1
+  },
+  {
+    "path": "tests/barta-safety-api.spec.ts",
+    "bytes": 1690,
+    "lines": 34,
+    "kind": "test",
+    "testCases": 2
+  },
+  {
+    "path": "tests/contracts/barta-ai-retrieval.spec.ts",
+    "bytes": 3533,
+    "lines": 74,
+    "kind": "test",
+    "testCases": 2
+  },
+  {
+    "path": "tests/contracts/barta-bleeding.spec.ts",
+    "bytes": 1837,
+    "lines": 26,
+    "kind": "test",
+    "testCases": 2
+  },
+  {
+    "path": "tests/contracts/barta-conversation.spec.ts",
+    "bytes": 1287,
+    "lines": 25,
+    "kind": "test",
+    "testCases": 3
+  },
+  {
+    "path": "tests/contracts/barta-demo.spec.ts",
+    "bytes": 4076,
+    "lines": 88,
+    "kind": "test",
+    "testCases": 5
+  },
+  {
+    "path": "tests/contracts/barta-education-corpus.spec.ts",
+    "bytes": 3633,
+    "lines": 60,
+    "kind": "test",
+    "testCases": 4
+  },
+  {
+    "path": "tests/contracts/barta-everyday-care.spec.ts",
+    "bytes": 4561,
+    "lines": 75,
+    "kind": "test",
+    "testCases": 5
+  },
+  {
+    "path": "tests/contracts/barta-expanded-education.spec.ts",
+    "bytes": 1946,
+    "lines": 37,
+    "kind": "test",
+    "testCases": 2
+  },
+  {
+    "path": "tests/contracts/barta-hackathon.spec.ts",
+    "bytes": 4505,
+    "lines": 72,
+    "kind": "test",
+    "testCases": 5
+  },
+  {
+    "path": "tests/contracts/barta-knowledge.spec.ts",
+    "bytes": 7022,
+    "lines": 163,
+    "kind": "test",
+    "testCases": 9
+  },
+  {
+    "path": "tests/contracts/barta-question-bank.spec.ts",
+    "bytes": 2470,
+    "lines": 41,
+    "kind": "test",
+    "testCases": 3
+  },
+  {
+    "path": "tests/contracts/barta-resilience.spec.ts",
+    "bytes": 2823,
+    "lines": 50,
+    "kind": "test",
+    "testCases": 4
+  },
+  {
+    "path": "tests/contracts/barta-safety.spec.ts",
+    "bytes": 2118,
+    "lines": 53,
+    "kind": "test",
+    "testCases": 5
+  },
+  {
+    "path": "tests/contracts/barta-spoken-text.spec.ts",
+    "bytes": 2327,
+    "lines": 47,
+    "kind": "test",
+    "testCases": 3
+  },
+  {
+    "path": "tests/contracts/barta-supplied-prompts.spec.ts",
+    "bytes": 1712,
+    "lines": 28,
+    "kind": "test",
+    "testCases": 2
+  }
+]

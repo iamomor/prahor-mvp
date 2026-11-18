@@ -1,3 +1,4 @@
+import { getBartaQuickReply } from "./chat-small-talk";
 import { bartaAnswerSchema, type BartaAnswer, type BartaRequest } from "@/lib/contracts/barta";
 
 const greetings = new Set([
@@ -29,6 +30,8 @@ const voiceHelp = new Set([
 ]);
 
 export function getBartaGreeting(question: string, language: BartaRequest["language"]): BartaAnswer | undefined {
+  const quickReply = getBartaQuickReply(question, language);
+  if (quickReply) return quickReply;
   const text = question.normalize("NFKC").toLowerCase().trim()
     .replace(/[!.?।]+$/u, "").trim().replace(/\s+/gu, " ");
   const simple = text.replace(/[,،;]+/gu, "").replace(/\s+/gu, " ");

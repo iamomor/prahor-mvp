@@ -1,0 +1,28 @@
+✔ decimal and grouped thousands normalization is exact and never rounded (14.2243ms)
+✔ notes remain valid without numeric values; dates and missing units are checked (1.7862ms)
+✔ OCR parser preserves numerical strings, unicode units, source snippets and real confidence (1.4405ms)
+✔ OCR never promotes a reference-only range to a patient result (0.398ms)
+✔ A-J context is optional for simple reports and incomplete ANC is identified (0.9884ms)
+✔ legacy maternal/baby records and extracted audit metadata survive module reload (5.5517ms)
+✔ report batches use one write; retries with new observation IDs do not duplicate fields (1.5587ms)
+✔ failed batch preserves existing data and supports a safe retry (1.0825ms)
+✔ invalid destinations or unreviewed extractions reject the entire batch (0.8086ms)
+✔ corrupt existing storage is never overwritten by a save (10.7154ms)
+✔ self-reported writes enforce destination and reviewed input-method provenance (1.0622ms)
+✔ dating is calendar-correct, source-preserving, and clinician EDD remains authoritative (220.421ms)
+✔ multiple pregnancy episodes and twin histories remain independent after reload (57.1177ms)
+✔ legacy Bujhi source identity stays pinned and retries never duplicate (37.2586ms)
+✔ corrections preserve exact original/updated values, actor, reason and atomic audit (34.7783ms)
+✔ workspace stale writes, malformed data, and quota failure do not overwrite data (38.9789ms)
+✔ conditions, medicines, immunization and appointments preserve provenance and dates (36.952ms)
+✔ Barta context requires per-record and per-observation consent and revocation takes effect (320.5507ms)
+✔ quality warnings retain discrepancies and incompatible units instead of diagnosing (23.4654ms)
+✔ fictional provider confirmation is explicit and immutable to maternal corrections (28.603ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1383.488

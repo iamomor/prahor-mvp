@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 test("dictation fills an editable draft and read aloud waits for an explicit action", async ({ page }) => {
   await page.addInitScript(() => {
+    class UtteranceStub { constructor(public text: string) {} }
+    Object.defineProperty(window, "SpeechSynthesisUtterance", { value: UtteranceStub });
     const tracker = { read: "", spokenLocale: "", startedLocale: "" };
     Object.defineProperty(window, "bartaAudioTest", { value: tracker });
     class RecognitionStub {
@@ -19,6 +21,7 @@ test("dictation fills an editable draft and read aloud waits for an explicit act
     Object.defineProperty(window, "speechSynthesis", {
       value: {
         getVoices: () => [{ localService: true, lang: "en-GB" }],
+        addEventListener: () => {}, removeEventListener: () => {},
         cancel: () => {},
         speak: (utterance: SpeechSynthesisUtterance) => {
           tracker.read = utterance.text;
@@ -53,6 +56,8 @@ test("dictation fills an editable draft and read aloud waits for an explicit act
 
 test("read aloud waits for an available Bengali voice and preserves the chat", async ({ page }) => {
   await page.addInitScript(() => {
+    class UtteranceStub { constructor(public text: string) {} }
+    Object.defineProperty(window, "SpeechSynthesisUtterance", { value: UtteranceStub });
     const tracker = { read: "", rate: 0, lang: "" };
     Object.defineProperty(window, "bartaAudioTest", { value: tracker });
     const synthesis = new EventTarget();
@@ -158,7 +163,7 @@ test("a temporary Barta error keeps a question editable for retry", async ({ pag
   const draft = page.getByRole("textbox", { name: "Your question" });
   await draft.fill("What does ANC mean?");
   await page.getByRole("button", { name: "Ask Barta" }).click();
-  await expect(page.getByRole("alert")).toContainText("Reviewed sources are not ready.");
+  await expect(page.getByRole("region", { name: "Barta conversation" }).getByRole("alert")).toContainText("Reviewed sources are not ready.");
   await expect(draft).toHaveValue("What does ANC mean?");
   await expect(draft).toBeEditable();
 });

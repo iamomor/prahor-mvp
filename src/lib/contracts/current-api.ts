@@ -11,6 +11,7 @@ import {
 import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt";
 import { apiSuccessSchema, currentUserResponseSchema, pageSchema } from "./transport";
 import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
+import { createBabyRequestSchema, createMaternalConditionRequestSchema, createObservationRequestSchema, createPregnancyRequestSchema, createSymptomNoteRequestSchema } from "./health";
 
 // Derived from the existing feature schemas; no second domain validation system.
 export const starterBartaRequestSchema = bartaRequestSchema.pick({ question: true });
@@ -67,6 +68,34 @@ export const currentApiContracts = {
   "GET /api/health": {
     source: "src/app/api/health/route.ts", status: "Mock", owners: ["Ifty", "Omor"], auth: "session-only-stub",
     request: z.undefined(), responses: { 401: starterHealthResponseSchema, 501: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/jibonrekha": {
+    source: "src/app/api/jibonrekha/route.ts", status: "Limited", owners: ["Ifty", "Omor"], auth: "mother",
+    request: z.undefined(), responses: {
+      200: z.strictObject({
+        pregnancies: z.array(z.object({ id: z.uuid(), label: z.string() })),
+        babies: z.array(z.object({ id: z.uuid(), label: z.string() })),
+        observations: z.array(z.object({ id: z.uuid(), subject: z.enum(["mother", "baby"]), kind: z.string(), value: z.string() })),
+        conditions: z.array(z.object({ id: z.uuid(), label: z.string() })),
+        symptomNotes: z.array(z.object({ id: z.uuid(), note: z.string() })),
+        visits: z.array(z.object({ id: z.uuid(), subject: z.enum(["mother", "baby"]) })),
+        corrections: z.array(z.object({ id: z.uuid(), old_observation_id: z.uuid(), new_observation_id: z.uuid() })),
+      }),
+      401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema,
+    },
+  },
+  "POST /api/jibonrekha": {
+    source: "src/app/api/jibonrekha/route.ts", status: "Limited", owners: ["Ifty", "Omor"], auth: "mother",
+    request: z.discriminatedUnion("type", [
+      z.strictObject({ type: z.literal("pregnancy"), record: createPregnancyRequestSchema }),
+      z.strictObject({ type: z.literal("baby"), record: createBabyRequestSchema }),
+      z.strictObject({ type: z.literal("observation"), record: createObservationRequestSchema }),
+      z.strictObject({ type: z.literal("condition"), record: createMaternalConditionRequestSchema }),
+      z.strictObject({ type: z.literal("symptom_note"), record: createSymptomNoteRequestSchema }),
+      z.strictObject({ type: z.literal("visit"), record: z.strictObject({ subject: z.enum(["mother", "baby"]), parentId: z.uuid().nullable(), occurredAt: z.iso.datetime({ offset: true }), placeNote: z.string().trim().min(1).max(300).nullable(), note: z.string().trim().min(1).max(2000).nullable() }) }),
+      z.strictObject({ type: z.literal("correction"), record: z.strictObject({ subject: z.enum(["mother", "baby"]), observationId: z.uuid(), value: z.string().trim().min(1).max(2000), unit: z.string().trim().max(20).nullable(), reason: z.string().trim().min(1).max(500) }) }),
+    ]),
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
   },
   "POST /api/reports/commit": {
     source: "src/app/api/reports/commit/route.ts", status: "Limited", owners: ["Ifty", "Omor"], auth: "mother",

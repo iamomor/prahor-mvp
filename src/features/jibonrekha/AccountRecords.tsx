@@ -47,6 +47,7 @@ export function AccountRecords() {
   const [babyId, setBabyId] = useState("");
   const [task, setTask] = useState<Task>("home");
   const taskHeading = useRef<HTMLHeadingElement>(null);
+  const errorFocus = useRef<HTMLDivElement>(null);
   const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   function openTask(next: Task) {
@@ -61,7 +62,7 @@ export function AccountRecords() {
       setRecords(next);
       setBabyId(previous => previous || next.babies[0]?.id || "");
       setError("");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Account records could not be loaded."); }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Account records could not be loaded."); requestAnimationFrame(() => errorFocus.current?.focus()); }
     finally { setLoading(false); }
   }, []);
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
@@ -79,7 +80,7 @@ export function AccountRecords() {
       setCorrectingId(null);
       await load();
       openTask("records");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Nothing was saved. Check your connection and try again."); }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Nothing was saved. Check your connection and try again."); requestAnimationFrame(() => errorFocus.current?.focus()); }
     finally { setBusy(false); }
   }
   function selectSubject(next: "mother" | "baby") { setSubject(next); setKind("weight"); setUnit("kg"); }
@@ -105,7 +106,7 @@ export function AccountRecords() {
     <header className="grid gap-2"><p className="font-semibold text-pro-primary">PROHOR · My records</p><h1 className="text-3xl font-semibold" lang="bn">জীবনরেখা</h1><p>What would you like to do with your records?</p><AccessPreferencesControl /></header>
     <aside className="rounded-field border border-pro-border bg-pro-surface px-4 py-3 text-sm"><strong>Fictional demo data only.</strong> Account saves need a connection. Entries are not clinician-verified.</aside>
     {message && <p role="status" className={`${box} text-pro-success`}>{message}</p>}
-    {error && <div role="alert" className={box}><p className="text-pro-danger">{error}</p><button type="button" className={action} onClick={() => void load()}>Retry loading</button></div>}
+    {error && <div ref={errorFocus} tabIndex={-1} role="alert" className={`${box} focus-visible:outline-3 focus-visible:outline-pro-focus`}><p className="text-pro-danger">{error}</p><button type="button" className={action} onClick={() => void load()}>Reload records</button></div>}
     {loading ? <p role="status">Loading account records…</p> : records && <>
       <nav aria-label="Jibonrekha quick actions" className="grid gap-2 sm:grid-cols-2">
         {task !== "home" && <button type="button" onClick={() => openTask("home")} className="min-h-12 rounded-field border border-pro-border bg-pro-bg px-4 py-2 text-left font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus sm:col-span-2">← All options</button>}

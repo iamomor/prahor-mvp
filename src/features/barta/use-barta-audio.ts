@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { prepareSpeechText } from "./barta-spoken-text";
 import type { Language } from "./barta-education-copy";
 
@@ -44,7 +44,7 @@ export function useBartaAudio() {
     recognition?.abort();
   }, []);
 
-  function stopSpeaking() {
+  const stopSpeaking = useCallback(() => {
     cancelVoiceWait.current?.();
     window.clearTimeout(voiceStartupTimer.current);
     if (activeSpeech.current) {
@@ -52,9 +52,9 @@ export function useBartaAudio() {
       window.speechSynthesis.cancel();
     }
     setSpeaking(undefined);
-  }
+  }, []);
 
-  function play(id: string, text: string, language: Language) {
+  const play = useCallback((id: string, text: string, language: Language) => {
     setNotice(undefined);
     const wasSpeaking = speaking === id;
     stopSpeaking();
@@ -137,9 +137,9 @@ export function useBartaAudio() {
     };
     synthesis.addEventListener("voiceschanged", checkVoices);
     checkVoices();
-  }
+  }, [speaking, stopSpeaking]);
 
-  function dictate(language: Language, noticeLanguage: Language, onText: (text: string) => void) {
+  const dictate = useCallback((language: Language, noticeLanguage: Language, onText: (text: string) => void) => {
     if (activeRecognition.current) {
       try {
         activeRecognition.current.stop();
@@ -203,16 +203,16 @@ export function useBartaAudio() {
     } catch {
       recognition.onerror({ error: "unknown" });
     }
-  }
+  }, [stopSpeaking]);
 
-  function resetAudio() {
+  const resetAudio = useCallback(() => {
     const recognition = activeRecognition.current;
     activeRecognition.current = null;
     recognition?.abort();
     setListening(false);
     stopSpeaking();
     setNotice(undefined);
-  }
+  }, [stopSpeaking]);
 
   return { speaking, listening, notice, play, dictate, stopSpeaking, resetAudio };
 }

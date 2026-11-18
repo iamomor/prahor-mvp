@@ -970,12 +970,12 @@ export const bartaEducationCorpus: BartaCorpus = {
       en: {
         chunkId: "07e4ddd7-06b5-4f5b-8bb3-ab2edbb049bb",
         questions: ["What does postnatal care mean?", "Who is postnatal care for?", "What is care after childbirth called?", "What is care after birth?"],
-        text: "Postnatal care is health care and support after childbirth for both the person who gave birth and the newborn. It can be given at a health facility or in the community. In the first weeks, ask your care team about recovery, emotional well-being, feeding support and when the baby and you should be seen again. Find out who to contact if a concern comes up between visits. In the first weeks, ask your care team about recovery, emotional well-being, feeding support and when the baby and you should be seen again. Find out who to contact if a concern comes up between visits.",
+        text: "Postnatal care is health care and support after childbirth for both the person who gave birth and the newborn. It can be given at a health facility or in the community. In the first weeks, ask your care team about recovery, emotional well-being, feeding support and when the baby and you should be seen again. Find out who to contact if a concern comes up between visits.",
       },
       bn: {
         chunkId: "95833c18-92de-420e-b046-adacb585ba0e",
         questions: ["প্রসব-পরবর্তী সেবা কী?", "প্রসবের পরের সেবা কাদের জন্য?", "postnatal care mane ki?", "deliveryr porer sheba ki?"],
-        text: "প্রসবের পরের সেবা হলো যিনি সন্তান জন্ম দিয়েছেন এবং নবজাতক, দুজনেরই স্বাস্থ্যসেবা ও সহায়তা। এই সেবা স্বাস্থ্যকেন্দ্রে বা স্থানীয় পর্যায়ে দেওয়া যায়। প্রথম কয়েক সপ্তাহে নিজের সুস্থ হয়ে ওঠা, মানসিক অবস্থা ও শিশুকে খাওয়ানোর সহায়তা নিয়ে কথা বলুন। মা ও শিশুর পরের চেকআপ কবে এবং মাঝখানে সমস্যা হলে কোথায় যোগাযোগ করবেন, তা জেনে নিন। প্রথম কয়েক সপ্তাহে নিজের সুস্থ হয়ে ওঠা, মানসিক অবস্থা ও শিশুকে খাওয়ানোর সহায়তা নিয়ে কথা বলুন। মা ও শিশুর পরের চেকআপ কবে এবং মাঝখানে সমস্যা হলে কোথায় যোগাযোগ করবেন, তা জেনে নিন।",
+        text: "প্রসবের পরের সেবা হলো যিনি সন্তান জন্ম দিয়েছেন এবং নবজাতক, দুজনেরই স্বাস্থ্যসেবা ও সহায়তা। এই সেবা স্বাস্থ্যকেন্দ্রে বা স্থানীয় পর্যায়ে দেওয়া যায়। প্রথম কয়েক সপ্তাহে নিজের সুস্থ হয়ে ওঠা, মানসিক অবস্থা ও শিশুকে খাওয়ানোর সহায়তা নিয়ে কথা বলুন। মা ও শিশুর পরের চেকআপ কবে এবং মাঝখানে সমস্যা হলে কোথায় যোগাযোগ করবেন, তা জেনে নিন।",
       },
     }),
     ...pair(newborn, {

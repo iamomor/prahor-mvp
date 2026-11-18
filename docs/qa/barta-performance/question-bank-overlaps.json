@@ -1,0 +1,98 @@
+[
+  {
+    "first": "BQ-0025",
+    "next": "BARTA-0009",
+    "topics": [
+      "Diet",
+      "Healthy diet"
+    ],
+    "expectations": [
+      "ANSWER",
+      "Educational"
+    ]
+  },
+  {
+    "first": "BQ-0032",
+    "next": "BARTA-0010",
+    "topics": [
+      "Foods to avoid",
+      "Foods to avoid"
+    ],
+    "expectations": [
+      "ANSWER",
+      "Educational"
+    ]
+  },
+  {
+    "first": "BQ-0227",
+    "next": "BARTA-0014",
+    "topics": [
+      "Anemia",
+      "Anemia"
+    ],
+    "expectations": [
+      "ANSWER + SEE",
+      "Educational"
+    ]
+  },
+  {
+    "first": "BQ-0058",
+    "next": "BARTA-0031",
+    "topics": [
+      "Constipation",
+      "Constipation"
+    ],
+    "expectations": [
+      "ANSWER",
+      "Symptom assessment"
+    ]
+  },
+  {
+    "first": "BQ-0119",
+    "next": "BARTA-0098",
+    "topics": [
+      "When to go",
+      "কখন হাসপাতালে যেতে হবে?"
+    ],
+    "expectations": [
+      "ANSWER",
+      "Facility / rights information"
+    ]
+  },
+  {
+    "first": "BARTA-0042",
+    "next": "BARTA-0115",
+    "topics": [
+      "Postpartum fever",
+      "Fever"
+    ],
+    "expectations": [
+      "Urgent assessment",
+      "Educational"
+    ]
+  },
+  {
+    "first": "BQ-0178",
+    "next": "BARTA-0130",
+    "topics": [
+      "Jaundice",
+      "Jaundice"
+    ],
+    "expectations": [
+      "ANSWER + SEE",
+      "Educational"
+    ]
+  },
+  {
+    "first": "BARTA-0009",
+    "next": "BARTA-0164",
+    "topics": [
+      "Healthy diet",
+      "Typo / variant"
+    ],
+    "expectations": [
+      "Educational",
+      "Context-dependent"
+    ]
+  }
+]

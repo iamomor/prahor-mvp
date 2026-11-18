@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, HeartHandshake, MessageCircle, Mic, ShieldCheck, Square, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
 import type { BartaAnswer } from "@/lib/contracts/barta";
 import { educationCopy, type Language } from "./barta-education-copy";
 import { educationTopics, type EducationTopic } from "./education-topics";
@@ -26,7 +26,7 @@ const additionalTopics = [
   "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
 ] as const satisfies readonly EducationTopic[];
 
-function QuestionOption({ prompt, onSelect, disabled }: {
+const QuestionOption = memo(function QuestionOption({ prompt, onSelect, disabled }: {
   prompt: string;
   onSelect: (question: string) => void;
   disabled: boolean;
@@ -37,7 +37,7 @@ function QuestionOption({ prompt, onSelect, disabled }: {
       <ArrowRight size={17} aria-hidden="true" />
     </button>
   );
-}
+});
 
 function shortPublisher(publisher: string, locale: Language): string {
   switch (publisher) {
@@ -47,7 +47,7 @@ function shortPublisher(publisher: string, locale: Language): string {
   }
 }
 
-function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking, onRead, playbackNotice }: {
+const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking, onRead, playbackNotice }: {
   result: BartaAnswer;
   locale: Language;
   turnId: string;
@@ -145,7 +145,7 @@ function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking,
       )}
     </div>
   );
-}
+});
 
 export function BartaEducationChat({
   languageChoice, formLanguage, question, questionInput, turns, reply, error, busy,
@@ -168,7 +168,8 @@ export function BartaEducationChat({
 }) {
   const copy = educationCopy[formLanguage];
   const audio = useBartaAudio();
-  const spokenGuide = getBartaSpokenGuide(formLanguage);
+  const playAudio = audio.play;
+  const spokenGuide = useMemo(() => getBartaSpokenGuide(formLanguage), [formLanguage]);
   const [voiceLanguage, setVoiceLanguage] = useState<Language | "auto">("auto");
   const micLanguage = voiceLanguage === "auto" ? formLanguage : voiceLanguage;
   const layout = useRef<HTMLDivElement>(null);
@@ -182,16 +183,16 @@ export function BartaEducationChat({
     if (reply || error) latest.current?.scrollIntoView({ block: "nearest" });
   }, [reply, error]);
 
-  function pauseAudio(except?: HTMLAudioElement) {
+  const pauseAudio = useCallback((except?: HTMLAudioElement) => {
     layout.current?.querySelectorAll("audio").forEach((player) => {
       if (player !== except && !player.paused) player.pause();
     });
-  }
+  }, []);
 
-  function readAnswer(id: string, text: string, language: Language) {
+  const readAnswer = useCallback((id: string, text: string, language: Language) => {
     pauseAudio();
-    audio.play(id, text, language);
-  }
+    playAudio(id, text, language);
+  }, [playAudio, pauseAudio]);
 
   return (
     <div ref={layout} className={styles.layout} onPlayCapture={(event) => {

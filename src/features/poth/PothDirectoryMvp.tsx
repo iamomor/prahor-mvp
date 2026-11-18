@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -85,6 +85,13 @@ export function PothDirectoryMvp() {
             )}
           </p>
         </section>
+
+        <nav aria-label="Poth care navigation" className="mb-7 flex flex-wrap gap-2">
+          <a href="#poth-sos" className="min-h-11 rounded-lg border px-4 py-3 font-semibold underline" style={{ borderColor: "var(--pro-control-border)" }}>Emergency 999 · জরুরি</a>
+          <a href="#poth-nearby-map" className="min-h-11 rounded-lg border px-4 py-3 underline" style={{ borderColor: "var(--pro-control-border)" }}>Nearby care map · কাছের সেবা</a>
+          <a href="#poth-reviewed-directory" className="min-h-11 rounded-lg border px-4 py-3 underline" style={{ borderColor: "var(--pro-control-border)" }}>Source-linked directory</a>
+          <a href="#poth-visit-preparation" className="min-h-11 rounded-lg border px-4 py-3 underline" style={{ borderColor: "var(--pro-control-border)" }}>Visit preparation · প্রস্তুতি</a>
+        </nav>
 
         <section aria-labelledby="poth-filters" className="mb-8 rounded-2xl border p-5 sm:p-7" style={{ borderColor: "var(--pro-border)", background: "var(--pro-elevated)" }}>
           <h2 id="poth-filters" className="mb-5 text-xl font-bold">{label("Search and location", "খোঁজ ও অবস্থান")}</h2>

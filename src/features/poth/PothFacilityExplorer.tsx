@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Search, MapPin, ExternalLink, ShieldAlert } from "lucide-react";
 import type { Facility } from "@/lib/contracts/poth";
+import { bdDistricts } from "./bdDistricts";
 
 type ApiResponse = {
   facilities: Facility[];
@@ -12,6 +13,9 @@ type ApiResponse = {
 
 export function PothFacilityExplorer() {
   const [query, setQuery] = useState("");
+  const [district, setDistrict] = useState("");
+  const [retry, setRetry] = useState(0);
+  const districts = Object.values(bdDistricts).flatMap((items) => [...items]).sort();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -19,7 +23,7 @@ export function PothFacilityExplorer() {
     const controller = new AbortController();
     const id = window.setTimeout(() => {
       setStatus("loading");
-      fetch(`/api/poth/facilities?q=${encodeURIComponent(query.trim())}`, {
+      fetch(`/api/poth/facilities?q=${encodeURIComponent(query.trim())}&district=${encodeURIComponent(district)}&limit=100`, {
         signal: controller.signal,
         cache: "no-store",
       })
@@ -40,10 +44,10 @@ export function PothFacilityExplorer() {
       window.clearTimeout(id);
       controller.abort();
     };
-  }, [query]);
+  }, [query, district, retry]);
 
   return (
-    <section aria-labelledby="poth-reviewed-heading" className="mt-10 rounded-2xl border p-5 sm:p-7"
+    <section id="poth-reviewed-directory" aria-labelledby="poth-reviewed-heading" className="mt-10 rounded-2xl border p-5 sm:p-7"
       style={{ background: "var(--pro-elevated)", borderColor: "var(--pro-border)" }}>
       <h2 id="poth-reviewed-heading" className="mb-2 text-2xl font-bold">Source-linked facility records · উৎস-সংযুক্ত তথ্য</h2>
       <p className="mb-5 max-w-2xl leading-relaxed">
@@ -61,9 +65,20 @@ export function PothFacilityExplorer() {
           style={{ color: "var(--pro-text)", background: "var(--pro-bg)", borderColor: "var(--pro-control-border)" }}
           placeholder="Facility name / প্রতিষ্ঠানের নাম" />
       </div>
+      <div className="mt-3 flex flex-wrap items-end gap-3">
+        <label htmlFor="poth-reviewed-district" className="font-semibold">District · জেলা
+          <select id="poth-reviewed-district" value={district} onChange={(event) => setDistrict(event.target.value)}
+            className="mt-1 block min-h-12 rounded-lg border bg-transparent px-3" style={{ borderColor: "var(--pro-control-border)" }}>
+            <option value="" className="text-black">All districts</option>
+            {districts.map((item) => <option key={item} value={item} className="text-black">{item}</option>)}
+          </select>
+        </label>
+        <button type="button" onClick={() => { setQuery(""); setDistrict(""); setRetry((value) => value + 1); }}
+          className="min-h-11 rounded-lg border px-4 underline" style={{ borderColor: "var(--pro-control-border)" }}>Clear / retry</button>
+      </div>
       <div aria-live="polite" aria-atomic="true" className="mt-5">
         {status === "loading" && <p role="status">Loading directory · তথ্য লোড হচ্ছে…</p>}
-        {status === "error" && <p role="alert">Directory unavailable. Please retry later. · তথ্য পাওয়া যাচ্ছে না।</p>}
+        {status === "error" && <p role="alert">Directory unavailable. <button type="button" onClick={() => setRetry((value) => value + 1)} className="underline">Retry search</button> · তথ্য পাওয়া যাচ্ছে না।</p>}
         {status === "ready" && facilities.length === 0 && (
           <p role="status" className="rounded-xl border p-4" style={{ borderColor: "var(--pro-border)" }}>
             No imported records match this search yet. This does NOT mean care is unavailable.
@@ -71,6 +86,7 @@ export function PothFacilityExplorer() {
           </p>
         )}
       </div>
+      {status === "ready" && facilities.length > 0 && <p role="status" className="mt-4 text-sm">Showing {facilities.length} source-reviewed records (up to the API limit). Care services and accessibility still require separate evidence.</p>}
       {status === "ready" && <div className="mt-4 grid gap-3">
         {facilities.map((facility) => (
           <article key={facility.id} className="rounded-xl border p-4"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Compass, MapPin, Navigation, Phone, Search, ShieldAlert, SlidersHorizontal } from "lucide-react";
 import { ALLOWED_RADII, type CareCategory, type CarePlace, type GeoPoint } from "./nearbyCore";
 
@@ -98,6 +98,23 @@ export function PothNearbyMap() {
   const [manualLat, setManualLat] = useState("");
   const [manualLon, setManualLon] = useState("");
   const [truncated, setTruncated] = useState(false);
+  const searchController = useRef<AbortController | null>(null);
+  const searchRevision = useRef(0);
+  const locationRevision = useRef(0);
+  useEffect(() => () => {
+    searchRevision.current += 1;
+    searchController.current?.abort();
+  }, []);
+  function invalidateSearch() {
+    searchRevision.current += 1;
+    searchController.current?.abort();
+    searchController.current = null;
+    setBusy(false);
+    setPlaces([]);
+    setSelected(null);
+    setTruncated(false);
+    setShowCount(MAX_PAGE);
+  }
   const matched = useMemo(() => {
     const q = query.trim().toLocaleLowerCase();
     return places.filter(p => (filter === "all" || p.kind === filter) &&
@@ -107,8 +124,9 @@ export function PothNearbyMap() {
   const shown = matched.slice(0, showCount);
   function selectCity(index: number) {
     const next = cities[index]; if (!next) return;
+    locationRevision.current += 1;
     setCenter({ lat: next.lat, lon: next.lon }); setCity(`${next.name} city centre (approximate)`);
-    setPlaces([]); setSelected(null); setGps(false); setShowCount(MAX_PAGE);
+    invalidateSearch(); setGps(false);
     setMessage(`Location changed to ${next.name}. Select Search to fetch new results.`);
   }
   function applyManualPoint() {
@@ -116,41 +134,57 @@ export function PothNearbyMap() {
     if (!manualLat.trim() || !manualLon.trim() || !Number.isFinite(lat) || !Number.isFinite(lon) || lat < 20.5 || lat > 26.8 || lon < 88 || lon > 92.8) {
       setMessage("Enter valid Bangladesh coordinates (latitude 20.5–26.8, longitude 88–92.8)."); return;
     }
+    locationRevision.current += 1;
     setCenter({ lat, lon }); setCity("Manually selected coordinates (not a verified facility)");
-    setGps(false); setPlaces([]); setSelected(null); setShowCount(MAX_PAGE);
+    setGps(false); invalidateSearch();
     setMessage("Manual location set. Select Search to discover surrounding community-mapped facilities.");
   }
   function locate() {
     if (!navigator.geolocation) { setMessage("GPS unavailable. Select a division city."); return; }
     setMessage("Waiting for GPS consent...");
+    const revision = ++locationRevision.current;
     navigator.geolocation.getCurrentPosition(({ coords }) => {
+      if (revision !== locationRevision.current) return;
       const p = { lat: coords.latitude, lon: coords.longitude };
       if (p.lat < 20.5 || p.lat > 26.8 || p.lon < 88 || p.lon > 92.8) {
         setMessage("GPS point appears outside Bangladesh; select a city."); return;
       }
       setCenter(p); setCity(`Approximate GPS location (accuracy ±${Math.round(coords.accuracy)} m)`);
-      setGps(true); setPlaces([]); setSelected(null); setShowCount(MAX_PAGE);
+      setGps(true); invalidateSearch();
       setMessage("GPS set. Select Search to request nearby community map records.");
-    }, () => setMessage("GPS denied or unavailable. Choose a city instead."),
+    }, () => { if (revision === locationRevision.current) setMessage("GPS denied or unavailable. Choose a city instead."); },
     { maximumAge: 60000, timeout: 12000, enableHighAccuracy: false });
   }
   async function search() {
-    setBusy(true); setPlaces([]); setSelected(null); setShowCount(MAX_PAGE);
-    setMessage("Loading community-mapped facilities; search may be limited by provider capacity...");
+    invalidateSearch();
+    const revision = searchRevision.current;
+    const controller = new AbortController();
+    searchController.current = controller;
+    setBusy(true);
+    setMessage("Loading community-mapped facilities; results depend on an external map provider...");
+    const timeout = window.setTimeout(() => controller.abort(), 25000);
     try {
       const params = new URLSearchParams({ lat: String(center.lat), lon: String(center.lon), radius: String(radius) });
-      const response = await fetch("/api/poth/nearby?" + params.toString(), { cache: "no-store" });
+      const response = await fetch("/api/poth/nearby?" + params.toString(), { cache: "no-store", signal: controller.signal });
       const data = await response.json() as ResponseData;
+      if (controller.signal.aborted || searchRevision.current !== revision) return;
       if (!response.ok || !Array.isArray(data.places)) throw new Error(data.error || "Nearby search unavailable");
-      setPlaces(data.places); setTruncated(Boolean(data.truncated));
-      setMessage(`${data.places.length} mapped entries within ${radius / 1000} km. These locations, addresses, phones, opening hours and services are NOT independently verified.${data.truncated ? " Provider capped results; coverage may be incomplete." : ""}`);
-    } catch (e) { setMessage(e instanceof Error ? e.message : "Nearby search failed. Try again or visit the external map."); }
-    finally { setBusy(false); }
+      setPlaces(data.places);
+      setTruncated(Boolean(data.truncated));
+      setMessage(`${data.places.length} mapped entries returned within ${radius / 1000} km. These are NOT independently verified care facilities.${data.truncated ? " Results are capped; search coverage is incomplete. Try a smaller radius." : " No results is not evidence that no facilities exist."}`);
+    } catch (error) {
+      if (searchRevision.current !== revision) return;
+      setMessage(controller.signal.aborted ? "Search timed out. Try a smaller radius or use the external map." :
+        error instanceof Error ? error.message : "Nearby search failed. Try again or visit the external map.");
+    } finally {
+      window.clearTimeout(timeout);
+      if (searchRevision.current === revision) { setBusy(false); searchController.current = null; }
+    }
   }
   const external = "https://www.openstreetmap.org/#map=12/" + center.lat + "/" + center.lon;
   const coverage = kinds.map(k => ({ ...k, count: k.key === "all" ? places.length : places.filter(p => p.kind === k.key).length }));
   return (
-    <section aria-labelledby="poth-nearby-heading" className="mt-10 rounded-2xl border p-4 sm:p-7" style={{ background: "var(--pro-elevated)", borderColor: "var(--pro-border)" }}>
+    <section id="poth-nearby-map" aria-labelledby="poth-nearby-heading" className="mt-10 rounded-2xl border p-4 sm:p-7" style={{ background: "var(--pro-elevated)", borderColor: "var(--pro-border)" }}>
       <h2 id="poth-nearby-heading" className="text-2xl font-bold">Healthcare coverage map · হাসপাতাল ও মাতৃসেবা মানচিত্র</h2>
       <p className="mt-3 leading-relaxed">Search hospitals, clinics, maternity-tagged locations, midwives, doctors and pharmacies throughout Bangladesh. <strong>These are community OpenStreetMap entries, not verified clinical listings.</strong> Check addresses, telephone numbers, care availability and accessible entrances directly before travelling.</p>
       <p lang="bn" className="mt-2 text-sm">জরুরি চিকিৎসার জন্য শুধু মানচিত্রের তথ্যের উপর নির্ভর করবেন না। জাতীয় জরুরি সহায়তা: ৯৯৯।</p>
@@ -161,7 +195,7 @@ export function PothNearbyMap() {
           </select>
         </label>
         <label className="font-semibold">Exact radius · ব্যাসার্ধ
-          <select value={radius} onChange={e => { setRadius(Number(e.target.value)); setPlaces([]); setSelected(null); }} className="mt-2 min-h-12 w-full rounded-lg border bg-transparent px-3" style={{ borderColor: "var(--pro-control-border)" }}>
+          <select value={radius} onChange={e => { invalidateSearch(); setRadius(Number(e.target.value)); setMessage("Radius changed. Search again for current results."); }} className="mt-2 min-h-12 w-full rounded-lg border bg-transparent px-3" style={{ borderColor: "var(--pro-control-border)" }}>
             {ALLOWED_RADII.map(r => <option key={r} value={r} className="text-black">{r / 1000} km</option>)}
           </select>
         </label>

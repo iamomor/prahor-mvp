@@ -1,0 +1,7 @@
+
+> prohor@0.1.0 test:db
+> node scripts/test-database-foundation.mjs
+
+PASS: fresh migration, exactly two tables, backfill, constraints, two-account RLS and atomic preference patches
+PASS: legacy migration, exactly two tables, backfill, constraints, two-account RLS and atomic preference patches
+PASS: invalid legacy data rolls back without loss

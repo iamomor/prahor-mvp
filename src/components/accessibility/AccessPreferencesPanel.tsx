@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  DEFAULT_PROHOR_PREFERENCES,
-  applyPreferences,
-  readLocalPreferences,
-  saveLocalPreferences,
-  type ProhorAccessPreferences,
-  type ProhorTheme,
-} from "../../lib/access-preferences";
+import type { ProhorAccessPreferences, ProhorTheme } from "../../lib/access-preferences";
+import { useAdaptPreferences } from "@/features/adapt/hooks/useAdaptPreferences";
+import { CloudSyncSection } from "@/features/adapt/components/CloudSyncSection";
+import { ContrastPreferenceControl } from "./ContrastPreferenceControl";
 
 const THEME_LABELS: Record<ProhorTheme, string> = {
   "quiet-garden": "Quiet Garden",
@@ -21,47 +16,23 @@ const THEME_LABELS: Record<ProhorTheme, string> = {
  * Hydrates preferences after mount; production apps should also apply saved theme before first paint
  * using a safe server-rendered preference or a minimal pre-paint script to avoid a flash.
  */
-export function AccessPreferencesPanel() {
-  const [prefs, setPrefs] = useState<ProhorAccessPreferences>(
-    DEFAULT_PROHOR_PREFERENCES,
-  );
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const saved = readLocalPreferences();
-    applyPreferences(saved);
-    // Use requestAnimationFrame or timeout to separate hydration from render cycle
-    const timer = setTimeout(() => {
-      setPrefs(saved);
-      setReady(true);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
+export function AccessPreferencesPanel({ titleId = "access-title" }: { titleId?: string }) {
+  const { prefs, updatePref, resetAll } = useAdaptPreferences();
 
   function update<K extends keyof ProhorAccessPreferences>(
     key: K,
     value: ProhorAccessPreferences[K],
   ) {
-    const next = { ...prefs, [key]: value };
-    setPrefs(next);
-    applyPreferences(next);
-    saveLocalPreferences(next);
+    updatePref(key, value);
   }
-
-  if (!ready)
-    return (
-      <div role="status" className="rounded-xl border border-pro-border p-5">
-        Loading your preferences…
-      </div>
-    );
 
   return (
     <section
-      aria-labelledby="access-title"
+      aria-labelledby={titleId}
       className="space-y-6 rounded-2xl border border-pro-border bg-pro-elevated p-5 text-pro-text sm:p-7"
     >
       <div className="space-y-2">
-        <h2 id="access-title" className="text-2xl font-semibold">
+        <h2 id={titleId} className="text-2xl font-semibold">
           Adjust how you use PROHOR
         </h2>
         <p className="max-w-prose text-pro-muted">
@@ -92,6 +63,7 @@ export function AccessPreferencesPanel() {
         </div>
       </fieldset>
 
+      <ContrastPreferenceControl value={prefs.highContrast} onChange={value => update("highContrast", value)} compact />
       <fieldset className="space-y-3">
         <legend className="font-semibold">Reading and layout</legend>
         <label className="flex flex-wrap items-center justify-between gap-3">
@@ -113,7 +85,6 @@ export function AccessPreferencesPanel() {
         </label>
         {(
           [
-            ["highContrast", "Stronger contrast"],
             ["spaciousLayout", "More space between controls"],
             ["reducedMotion", "Reduce animation"],
             ["simplifiedContent", "Reviewed simpler wording where available"],
@@ -182,14 +153,13 @@ export function AccessPreferencesPanel() {
       <button
         type="button"
         onClick={() => {
-          setPrefs(DEFAULT_PROHOR_PREFERENCES);
-          applyPreferences(DEFAULT_PROHOR_PREFERENCES);
-          saveLocalPreferences(DEFAULT_PROHOR_PREFERENCES);
+          resetAll();
         }}
         className="min-h-12 rounded-xl border border-pro-control-border px-4 font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus"
       >
         Restore default preferences
       </button>
+      <CloudSyncSection />
     </section>
   );
 }

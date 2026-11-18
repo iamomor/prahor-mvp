@@ -1,0 +1,22 @@
+
+> prohor@0.1.0 check:contrast
+> node scripts/check-color-contrast.mjs
+
+PASS quiet-garden body: 12.66:1 (target 4.5)
+PASS quiet-garden muted: 6.37:1 (target 4.5)
+PASS quiet-garden on surface: 11.27:1 (target 4.5)
+PASS quiet-garden on primary: 6.26:1 (target 4.5)
+PASS quiet-garden on accent: 8.29:1 (target 4.5)
+PASS quiet-garden control border: 4.93:1 (target 3)
+PASS original-rose body: 11.84:1 (target 4.5)
+PASS original-rose muted: 6.73:1 (target 4.5)
+PASS original-rose on surface: 9.96:1 (target 4.5)
+PASS original-rose on primary: 7.88:1 (target 4.5)
+PASS original-rose on accent: 7.43:1 (target 4.5)
+PASS original-rose control border: 5.31:1 (target 3)
+PASS morning-mist body: 12.17:1 (target 4.5)
+PASS morning-mist muted: 6.28:1 (target 4.5)
+PASS morning-mist on surface: 10.69:1 (target 4.5)
+PASS morning-mist on primary: 7.77:1 (target 4.5)
+PASS morning-mist on accent: 7.07:1 (target 4.5)
+PASS morning-mist control border: 5.41:1 (target 3)

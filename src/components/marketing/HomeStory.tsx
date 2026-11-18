@@ -87,7 +87,7 @@ function QuickPreferences() {
       <legend className="sr-only">{t(copy("Working page appearance controls", "পাতার কার্যকর চেহারার নিয়ন্ত্রণ"))}</legend>
       <div><label htmlFor="preview-theme">{t(copy("Theme", "থিম"))}</label><select id="preview-theme" value={prefs.theme} onChange={e => update("theme", e.target.value as ProhorAccessPreferences["theme"])}><option value="quiet-garden">Quiet Garden</option><option value="original-rose">Original Rose</option><option value="morning-mist">Morning Mist</option></select></div>
       <div><label htmlFor="preview-text-size">{t(copy("Text size", "লেখার আকার"))}</label><select id="preview-text-size" value={prefs.textScale} onChange={e => update("textScale", e.target.value as ProhorAccessPreferences["textScale"])}><option value="default">{t(copy("Default", "সাধারণ"))}</option><option value="large">{t(copy("Large", "বড়"))}</option><option value="extra-large">{t(copy("Extra large", "আরও বড়"))}</option></select></div>
-      <label className="home-quick-contrast"><input type="checkbox" checked={prefs.highContrast} onChange={e => update("highContrast", e.target.checked)} />{t(copy("Higher contrast", "বেশি কনট্রাস্ট"))}</label>
+      <label className="home-quick-contrast"><input type="checkbox" checked={prefs.highContrast === true} onChange={e => update("highContrast", e.target.checked)} />{t(copy("Higher contrast", "বেশি কনট্রাস্ট"))}</label>
     </fieldset>
   );
 }

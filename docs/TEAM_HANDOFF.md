@@ -1,5 +1,9 @@
 # PROHOR team handoff — Day 1
 
+Day 2 coordination: [team assignments, API dependencies, copy-ready messages and
+Day 3 readiness](sprint/day-2-team-assignments.md). This supplements the historical
+Day 1 record; it does not imply teammate contact or approval.
+
 Step 7 architecture review: [data model](architecture/data-model.md), [API contracts](architecture/api-contracts.md), [security](architecture/security.md), and [owner/deliverable review record](architecture/team-contracts.md). The latest confirmed team-role mapping (14 November 2026 handbook) supersedes the historical assignments; existing branch names may be retained until the team agrees to rename them. Shared DTOs and validators live in `src/lib/contracts/`.
 
 | Owner      | Modules/Work                                                       | Day 1 deliverable                                                         | Files to avoid editing without approval                                     |
@@ -16,7 +20,11 @@ The canonical roster is **Omor, Apurbo, Iftee, Ifty, Samin**. “Apubo” in old
 
 ## Branch convention
 
-`main` (protected release) <- `develop` (protected integration) <- `omor-platform`, `iftee-frontend`, `ifty-ai`, `apubo-health`, `samin-services`.
+The earlier role-suffixed names were a proposal. Actual member branches verified
+17 November 2026 are `omor`, `apurbo`, `iftee`, `ifty`, `samin`. Required workflow:
+member branch -> PR into `develop` -> reviewed release into `main`.
+`develop` exists locally but was absent from remote heads at inspection; Omor must
+resolve this before integration PRs. Remote protections/PR targets are Not Verified.
 
 ## Start commands
 
@@ -28,7 +36,8 @@ npm run lint
 npm run typecheck
 ```
 
-**No npm lockfile is included** in this generated kit: run `npm install` once in an internet-connected environment, commit the produced `package-lock.json`, and all members thereafter run `npm ci`.
+`package-lock.json` is now present. Use `npm ci` for the committed baseline;
+coordinate intentional dependency/lockfile updates with Omor.
 
 ## PR requirements
 

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { homepagePreferenceBootstrap } from "@/components/marketing/preference-bootstrap";
+import { PreferenceRuntime } from "@/features/adapt/components/PreferenceRuntime";
 
 export const metadata: Metadata = {
   title: { default: "PROHOR | Your care, your way", template: "%s | PROHOR" },
@@ -34,7 +36,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body>{children}</body>
+      <body><script dangerouslySetInnerHTML={{ __html: homepagePreferenceBootstrap }} /><PreferenceRuntime />{children}</body>
     </html>
   );
 }

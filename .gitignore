@@ -10,3 +10,7 @@ playwright-report/
 test-results/
 .DS_Store
 *.tsbuildinfo
+/tmp/hero-regression-final/
+/tmp/hero-regression-results/
+/tmp/hero-test-results/
+/tmp/hero-verification/

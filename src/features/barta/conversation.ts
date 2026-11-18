@@ -29,8 +29,10 @@ const voiceHelp = new Set([
   "mic kivabe use korbo", "mic kivabe chalabo",
 ]);
 
-export function getBartaGreeting(question: string, language: BartaRequest["language"]): BartaAnswer | undefined {
-  const quickReply = getBartaQuickReply(question, language);
+export function getBartaGreeting(question: string, language: BartaRequest["language"], hasPreviousAnswer = false): BartaAnswer | undefined {
+  const withoutGreeting = stripOpeningGreeting(question);
+  const quickReply = getBartaQuickReply(question, language, hasPreviousAnswer)
+    ?? (withoutGreeting !== question ? getBartaQuickReply(withoutGreeting, language, hasPreviousAnswer) : undefined);
   if (quickReply) return quickReply;
   const text = question.normalize("NFKC").toLowerCase().trim()
     .replace(/[!.?।]+$/u, "").trim().replace(/\s+/gu, " ");
@@ -69,8 +71,11 @@ export function getBartaGreeting(question: string, language: BartaRequest["langu
 }
 
 export function stripOpeningGreeting(question: string): string {
-  const opening = question.match(/^([^,،\n]{1,30})[,،\n]\s*([\s\S]+)$/u);
-  if (!opening) return question;
-  const prefix = opening[1].normalize("NFKC").toLowerCase().trim().replace(/\s+/gu, " ");
-  return greetings.has(prefix) ? opening[2] : question;
+  const text = question.trim();
+  const opening = text.match(/^([^,،\n]{1,35})[,،\n]\s*([\s\S]+)$/u);
+  const prefix = opening?.[1].normalize("NFKC").toLowerCase().trim().replace(/\s+/gu, " ");
+  if (opening && prefix && greetings.has(prefix)) return opening[2];
+
+  const informal = text.match(/^(?:hi+|he+y+|hello+|heya|hiya|yo+|হ্যালো|হাই|সালাম|নমস্কার|assalamu alaikum|আসসালামু আলাইকুম)(?:\s+(?:barta|prohor|বার্তা|প্রহর))?[\s,،!.?।:]+(\S[\s\S]*)$/iu);
+  return informal?.[1] ?? question;
 }

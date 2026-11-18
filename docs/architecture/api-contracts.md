@@ -267,7 +267,7 @@ All steps require owner auth. Only the proposed `prohor-synthetic-lab-v1` PDF te
 | `POST /api/reports/extract` | `startExtractionRequestSchema` with owned document UUID | `{extractionId,status:"queued"}`, 202; only after verified upload bytes exist |
 | `GET /api/reports/extractions/:id` | Owned extraction path UUID | `ExtractionResult`, 200; bounded failure codes, no raw engine stack |
 | `POST /api/reports/extractions/:id/reviews` | `reviewExtractionRequestSchema` | Immutable review `{reviewId,revision,destination}`, 201 |
-| `POST /api/reports/commit` | `commitDocumentReviewRequestSchema` | `{reviewId,records:[HealthObservation...]}`, 201 for first commit, 200 for replay |
+| `POST /api/reports/commit` | Current limited synthetic hemoglobin request uses report/pregnancy UUIDs, SHA-256 source hash, raw field, reviewed value and date, and `confirmSave:true` | `{saved:true,observationId}`, 200 for first commit or identical retry. A broader document review contract remains proposed. |
 
 Uploading bytes uses Supabase authenticated Storage with owner/path policies, not an invented multipart endpoint. Metadata request does not mean upload succeeded. Extraction state is `queued / processing / review_required / failed`; only completed reviewable extraction returns fields. Field output preserves raw label/value/unit, nullable typed measurement, nullable confidence, uncertainty reasons, page/locator, and `verification:"unverified"`. Confidence is an engine signal, never clinical correctness.
 

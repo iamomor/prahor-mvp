@@ -1,5 +1,7 @@
 ﻿import { parseOcrText } from "./ocr-parser";
 
+import { VALUE_WORD_MIN_CONFIDENCE, valueTokenConfidence } from "./ocr-word-confidence";
+
 /** Runs Tesseract in a browser worker. CDN requests fetch engine/language assets, never the image. */
 export async function recognizeReportImage(file: File, onProgress: (status: string, progress: number) => void, signal: AbortSignal) {
   const { createWorker } = await import("tesseract.js");
@@ -26,7 +28,15 @@ export async function recognizeReportImage(file: File, onProgress: (status: stri
       }).join("");
       return { text: /\s{2,}/.test(line.text.trim()) ? line.text.trim() : spacedText || line.text.trim(), location: { line: index + 1, page: 1, box: line.bbox } };
     });
-    return { ...parseOcrText(data.text, `ocr-${sourceFileId}`, confidence, layout), sourceFileId };
+    const report = parseOcrText(data.text, `ocr-${sourceFileId}`, confidence, layout);
+    const lines = data.blocks?.flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines)) ?? [];
+    for (const field of report.fields) {
+      const valueConfidence = valueTokenConfidence(lines, field.sourceText ?? "", field.value);
+      if (valueConfidence === null || valueConfidence < VALUE_WORD_MIN_CONFIDENCE) {
+        field.parsingReliability = "uncertain";
+      }
+    }
+    return { ...report, sourceFileId };
   } finally {
     signal.removeEventListener("abort", cancel);
     await terminate().catch(() => undefined);

@@ -1,0 +1,2 @@
+*.pdf -text -diff
+*.xlsx -text -diff

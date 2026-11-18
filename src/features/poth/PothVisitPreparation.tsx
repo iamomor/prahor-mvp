@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PothSavedVisitQuestions } from "./PothSavedVisitQuestions";
 
 const steps = [
   { en: "Write down questions you want to ask the care provider.", bn: "স্বাস্থ্যকর্মীকে যা জানতে চান, তা লিখে রাখুন।" },
@@ -17,9 +18,10 @@ export function PothVisitPreparation() {
       style={{ borderColor: "var(--pro-border)", background: "var(--pro-surface)" }}>
       <h2 id="poth-preparation-title" className="mb-2 text-2xl font-bold">Visit preparation · সাক্ষাতের প্রস্তুতি</h2>
       <p className="mb-5 max-w-2xl">
-        Optional checklist. Nothing is saved or shared; closing the page clears your choices.
-        · এটি ঐচ্ছিক। এখানে কোনো তথ্য সংরক্ষণ বা শেয়ার করা হয় না।
+        Optional checklist. Leaving this page clears your check marks.
+        {" · "}<span lang="bn">এটি ঐচ্ছিক। এই পাতা থেকে বের হলে টিক চিহ্নগুলো মুছে যাবে।</span>
       </p>
+      <PothSavedVisitQuestions />
       <div className="grid gap-3">
         {steps.map((step, index) => (
           <label key={step.en} className="flex min-h-12 items-start gap-3 rounded-xl border p-3"

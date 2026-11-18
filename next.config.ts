@@ -3,6 +3,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Preserve the repository's hand-maintained PROHOR instructions during next dev.
   agentRules: false,
+  // These routes locate bundled recordings by a hash computed at runtime.
+  outputFileTracingIncludes: {
+    "/api/ai/chat": ["./public/barta-voice/*.mp3"],
+    "/api/ai/barta-audio": ["./public/barta-voice/*.mp3"],
+  },
   // Bound static-generation workers on developer machines with limited memory.
   experimental: { cpus: 2 },
 };

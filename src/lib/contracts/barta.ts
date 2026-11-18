@@ -31,10 +31,12 @@ export const bartaRequestSchema = z.strictObject({
 const audioTicket = z.string().regex(/^\d{13}\.[a-f0-9]{64}$/u).optional();
 
 const audioText = nonEmptyText(4000).optional();
+const audioClipUrl = z.string().regex(/^\/barta-voice\/[a-f0-9]{64}\.mp3$/u).optional();
 
 const decisionFields = {
   audioText,
   audioTicket,
+  audioClipUrl,
   action_level: z.enum(["info", "see_provider", "urgent"]).optional(),
   abstained: z.boolean().optional(),
   confidence: z.enum(["source_supported", "high", "medium", "low"]).optional(),
@@ -76,6 +78,7 @@ export const bartaAnswerSchema = z.discriminatedUnion("status", [
     status: z.literal("conversation"),
     audioTicket,
     audioText,
+    audioClipUrl,
     answer: z.null(),
     citations: z.array(z.never()).length(0),
     message: nonEmptyText(500),

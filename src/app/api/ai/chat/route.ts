@@ -1,5 +1,6 @@
 import { buildBartaSpeechText, maxSpeechText } from "@/features/barta/barta-spoken-text";
 import { issueAudioTicket } from "@/features/barta/audio-ticket";
+import { getBundledSpeechUrl } from "@/features/barta/bundled-speech";
 import { getBartaBleedingClarification, getUsualPeriodQuestion } from "@/features/barta/bleeding-clarification";
 import { approvedBartaCorpus } from "@/features/barta/approved-corpus";
 import { bartaFollowUpQuestion, getBartaKnowledgeAnswer, prepareBartaKnowledge, resolveBartaKnowledgeAnswer } from "@/features/barta/approved-knowledge";
@@ -32,10 +33,12 @@ function getKnowledge() {
   return preparedKnowledge;
 }
 
-function decisionReply(answer: BartaAnswer, language: BartaRequest["language"], status: number) {
+async function decisionReply(answer: BartaAnswer, language: BartaRequest["language"], status: number) {
   const speech = answer.status === "not_connected" ? undefined : buildBartaSpeechText(answer, language);
-  const ticket = speech ? issueAudioTicket(speech, language) : undefined;
-  const audio = speech && speech.length <= maxSpeechText ? { audioText: speech, ...(ticket && { audioTicket: ticket }) } : {};
+  const audioText = speech && speech.length <= maxSpeechText ? speech : undefined;
+  const audioTicket = audioText ? issueAudioTicket(audioText, language) : undefined;
+  const audioClipUrl = audioText && !audioTicket ? await getBundledSpeechUrl(audioText, language) : undefined;
+  const audio = { audioText, audioTicket, audioClipUrl };
   if (answer.status === "grounded") {
     return jsonNoStore(bartaAnswerSchema.parse({
       ...answer,

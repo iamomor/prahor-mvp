@@ -62,6 +62,8 @@ const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSel
   const ready = useHydrated();
   const copy = educationCopy[locale];
   const audioTicket = result.status === "not_connected" ? undefined : result.audioTicket;
+  const audioClipUrl = result.status === "not_connected" ? undefined : result.audioClipUrl;
+  const hasAudioFile = Boolean(audioTicket || audioClipUrl);
   const spokenText = result.status === "not_connected"
     ? result.message
     : result.audioText ?? (result.status === "grounded" ? result.answer : result.message);
@@ -78,16 +80,16 @@ const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSel
         <span className={styles.mark}><HeartHandshake size={18} aria-hidden="true" /></span>
         <strong lang={locale === "bn" ? "bn" : "en"}>{locale === "bn" ? "বার্তা" : "Barta"}</strong>
         {urgent && <strong className={styles.urgentLabel}>{copy.urgent}</strong>}
-        {!audioTicket && (
+        {!hasAudioFile && (
           <button type="button" className={styles.read} disabled={!ready || busy}
             onClick={() => onRead(turnId, spokenText, locale)}>
             {speaking ? <Square size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
             {speaking ? copy.stopReading : copy.readAloud}
           </button>
         )}
-        {audioTicket && (
+        {hasAudioFile && (
           <div className={styles.replyAudio}>
-            <BartaAudioFile key={audioTicket} ticket={audioTicket}
+            <BartaAudioFile key={audioTicket ?? audioClipUrl} ticket={audioTicket} clipUrl={audioClipUrl}
               text={spokenText} language={locale}
               disabled={!ready || busy} browserReading={speaking}
               onBrowserRead={() => onRead(turnId, spokenText, locale)} />

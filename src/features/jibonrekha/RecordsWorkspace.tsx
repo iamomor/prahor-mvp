@@ -1,4 +1,5 @@
-﻿"use client";
+"use client";
+import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { HealthDashboard } from "./HealthDashboard";
@@ -23,8 +24,8 @@ export function RecordsWorkspace() {
   const change:WorkspaceChange=(next,target,action,reason)=>{const saved=saveDemoWorkspace(next,target,action,reason);setState(saved);};
   function navigate(next:Screen){setVisited(current=>new Set([...current,next]));setScreen(next);requestAnimationFrame(()=>heading.current?.focus());}
   function selectEpisode(id:string){setEpisodeId(id);setBabyId(state.babies.find(b=>b.pregnancyId===id)?.id??"");}
-  return <div className="mx-auto grid w-full min-w-0 max-w-6xl gap-6 px-4 py-6 text-base text-pro-text [overflow-wrap:anywhere] sm:px-6 sm:py-10">
-    <header className="grid gap-3"><p className="text-pro-muted">PROHOR · Structured health memory</p><h1 className="text-3xl font-semibold">জীবনরেখা · Jibonrekha</h1><p>এক জায়গায় আপনার ও শিশুর নথি · Separate, linked records with dates, sources, and history.</p><Link href="/accessibility" className="inline-flex min-h-12 items-center font-semibold text-pro-primary underline">Adjust how you use PROHOR</Link></header>
+  return <div className="mx-auto grid w-full min-w-0 grid-cols-1 max-w-6xl gap-6 px-4 py-6 text-base text-pro-text [overflow-wrap:anywhere] sm:px-6 sm:py-10">
+    <header className="grid gap-3"><p className="text-pro-muted">PROHOR · Structured health memory</p><h1 className="text-3xl font-semibold">জীবনরেখা · Jibonrekha</h1><p>এক জায়গায় আপনার ও শিশুর নথি · Separate, linked records with dates, sources, and history.</p><AccessPreferencesControl /></header>
     <aside className="rounded-field border border-pro-border bg-pro-surface p-4" aria-label="Demo information"><p className="font-semibold">Fictional demo only — saved on this device, not sent.</p><p>No secure backend, authentication, provider acknowledgement, or scheduled notifications. Do not enter real patient information. {online?"Local edits do not require a server after the page is loaded.":"Offline: local fictional records can be edited if this page is already loaded. No synchronization is available."}</p></aside>
     {error&&<div className={card}><p role="alert" className="text-pro-danger">{error}</p><button className={button} onClick={()=>window.location.reload()}>Retry loading without deleting records</button></div>}
     {!loaded&&!error&&<p role="status">Loading fictional records…</p>}

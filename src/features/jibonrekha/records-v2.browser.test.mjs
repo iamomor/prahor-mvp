@@ -1,8 +1,8 @@
 ﻿import { test } from "node:test";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
-const url="http://localhost:3000/jibonrekha";
-async function open() { const browser=await chromium.launch({channel:"chrome"});const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(error.message));await page.goto(url);await expect(page.getByRole("navigation",{name:"Jibonrekha sections"})).toBeVisible();return {browser,context,page,errors}; }
+const url=(process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/jibonrekha";
+async function open() { const browser=await chromium.launch({channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge"});const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(error.message));await page.goto(url);await expect(page.getByRole("navigation",{name:"Jibonrekha sections"})).toBeVisible();return {browser,context,page,errors}; }
 async function section(page,name){const button=page.getByRole("navigation",{name:"Jibonrekha sections"}).getByRole("button",{name});await button.focus();await page.keyboard.press("Enter");await expect(button).toHaveAttribute("aria-pressed","true");}
 async function save(form){await form.getByRole("button",{name:/Save on this device/}).click();await expect(form.getByRole("status")).toContainText("Saved on this device");}
 async function maternal(page,name,value="60.00",unit="kg") {const form=page.getByRole("form",{name:/Add maternal observation/});await form.getByLabel("Observation name (required)",{exact:true}).fill(name);await form.getByLabel("Value or note (required)",{exact:true}).fill(value);await form.getByLabel("Unit (optional)",{exact:true}).fill(unit);await form.getByLabel("Observation date (required)",{exact:true}).fill("2026-11-18");await form.getByRole("button",{name:"Save maternal observation",exact:true}).click();await expect(form.getByRole("status")).toContainText("Saved to Mother's record");}

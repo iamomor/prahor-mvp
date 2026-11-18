@@ -1,6 +1,5 @@
-﻿"use client";
-
-import Link from "next/link";
+"use client";
+import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import {
   demoBaby,
@@ -132,7 +131,7 @@ export function HealthDashboard({ records, onSaved, episode, baby, motherName = 
       <header>
         <h1 className="text-3xl font-semibold leading-snug sm:text-4xl">Jibonrekha — <span lang="bn">জীবনরেখা</span></h1>
         <p className="mt-3 text-pro-muted">Your pregnancy journey and linked health records.</p>
-        <Link href="/accessibility" className="mt-3 inline-flex min-h-12 items-center rounded-control font-semibold text-pro-primary underline">Adjust how you use PROHOR</Link>
+        <AccessPreferencesControl />
       </header></>}
 
       <section className="min-w-0 rounded-hero border border-pro-border bg-pro-surface p-[var(--pro-pad-card)] sm:p-8" aria-labelledby={`${id}-overview`}>
@@ -162,9 +161,3 @@ export function HealthDashboard({ records, onSaved, episode, baby, motherName = 
 }
 
 export default HealthDashboard;
-
-
-
-
-
-

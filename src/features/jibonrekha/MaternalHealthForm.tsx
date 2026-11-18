@@ -120,4 +120,3 @@ export function MaternalHealthForm({ onSaved, disabled = false, pregnancyId, mot
     </form>
   );
 }
-

@@ -1,8 +1,8 @@
 ﻿import { test } from "node:test";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
-const url = "http://localhost:3000/bujhi";
-const options = { channel: "chrome" };
+const url = (process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/bujhi";
+const options = { channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge" };
 
 const reviewStatus = (page) => page.locator("main:visible > p[role=status]");
 async function openSave(page) {

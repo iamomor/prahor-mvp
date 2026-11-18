@@ -2,7 +2,7 @@ import { test } from "node:test";
 import { chromium, expect } from "@playwright/test";
 
 test("Bujhi validates image signatures and revokes local preview URLs on removal", async () => {
-  const browser = await chromium.launch({ channel: "chrome" });
+  const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge" });
   try {
     const context = await browser.newContext({ viewport: { width: 320, height: 900 } });
     await context.addInitScript(() => {
@@ -11,7 +11,7 @@ test("Bujhi validates image signatures and revokes local preview URLs on removal
       URL.revokeObjectURL = (url) => { window.revokedUrls.push(url); revoke(url); };
     });
     const page = await context.newPage();
-    await page.goto("http://localhost:3000/bujhi");
+    await page.goto((process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/bujhi");
     const gallery = page.waitForEvent("filechooser");
     await page.getByRole("button", { name: /Gallery/ }).click();
     await (await gallery).setFiles([]);

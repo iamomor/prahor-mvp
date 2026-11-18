@@ -1,0 +1,17 @@
+
+> prohor@0.1.0 test:rls:guards
+> node --test tests/rls/session-safety.test.mjs
+
+✔ only the configured loopback Supabase ports are accepted (1.1735ms)
+✔ service and secret keys are rejected without echoing their values (0.5501ms)
+✔ missing session configuration cannot fall back to application or service credentials (0.1911ms)
+✔ every request rejects remote origins and admin routes before network access (22.6511ms)
+✔ allowed requests disable redirects and have a bounded timeout (2.0037ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 114.9472

@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   DEFAULT_PROHOR_PREFERENCES, themeIds, type ProhorAccessPreferences,
 } from "../access-preferences";
-import { timestampSchema } from "./common";
+import { contractVersion, timestampSchema } from "./common";
 
 /** Existing settings are reused; new controls are proposed, not rendered by this change. */
 export const accessPreferencesSchema = z.strictObject({
@@ -19,8 +19,22 @@ export const accessPreferencesSchema = z.strictObject({
 });
 
 export type AccessPreferences = z.infer<typeof accessPreferencesSchema>;
+export const patchAccessPreferencesSchema = accessPreferencesSchema.partial()
+  .refine(value => Object.values(value).some(item => item !== undefined), "Provide at least one preference.");
+export type PatchAccessPreferences = z.infer<typeof patchAccessPreferencesSchema>;
+export const preferencesResponseSchema = z.strictObject({
+  data: accessPreferencesSchema,
+  schemaVersion: z.literal(2),
+  updatedAt: timestampSchema.nullable(),
+  requestId: z.uuid(),
+  contractVersion: z.literal(contractVersion),
+});
+export type PreferencesResponse = z.infer<typeof preferencesResponseSchema>;
 export const DEFAULT_ACCESS_PREFERENCES = {
-  ...DEFAULT_PROHOR_PREFERENCES,
+  theme: DEFAULT_PROHOR_PREFERENCES.theme,
+  highContrast: false,
+  textScale: "default", spaciousLayout: false, reducedMotion: false,
+  simplifiedContent: false, communication: "text", language: "bn",
   textSpacing: "default",
   readAloud: false,
 } satisfies AccessPreferences;
@@ -33,7 +47,13 @@ export const saveAccessPreferencesRequestSchema = z.strictObject({
 });
 
 export function fromLocalPreferences(settings: ProhorAccessPreferences): AccessPreferences {
-  return accessPreferencesSchema.parse({ ...DEFAULT_ACCESS_PREFERENCES, ...settings });
+  return accessPreferencesSchema.parse({
+    ...DEFAULT_ACCESS_PREFERENCES, theme: settings.theme,
+    highContrast: settings.highContrast ?? DEFAULT_ACCESS_PREFERENCES.highContrast,
+    textScale: settings.textScale, spaciousLayout: settings.spaciousLayout,
+    reducedMotion: settings.reducedMotion, simplifiedContent: settings.simplifiedContent,
+    communication: settings.communication, language: settings.language,
+  });
 }
 
 export type SaveAccessPreferencesRequest = z.infer<typeof saveAccessPreferencesRequestSchema>;

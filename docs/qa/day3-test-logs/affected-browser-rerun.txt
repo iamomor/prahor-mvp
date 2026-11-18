@@ -1,0 +1,39 @@
+
+Running 23 tests using 2 workers
+
+
+npx.cmd : (node:22460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:151
++ ... .0.1:3051'; npx.cmd playwright test tests/day3-integration.spec.ts te ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:22460) Wa... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/23] tests\barta-integration.spec.ts:4:1 › homepage opens public Barta; keyboard settings and help preserve the conversation
+[2/23] tests\day3-integration.spec.ts:36:1 › compact panel saves through server identity, preserves readAloud and survives refresh
+[3/23] tests\barta-integration.spec.ts:31:1 › Barta reflows and remains discoverable with saved appearance and access combinations
+[4/23] tests\day3-integration.spec.ts:54:1 › Cancel/Escape, repeated conflicts and failed saves preserve choices and report honestly
+[5/23] tests\day3-integration.spec.ts:77:1 › sync-off then sign-out/sign-in restores anonymous choices for separate accounts
+[6/23] tests\day3-integration.spec.ts:95:1 › settings preserve Barta drafts, explicit standard contrast and keyboard focus
+[7/23] tests\day3-integration.spec.ts:108:1 › denied browser storage keeps settings functional without React update loops
+[8/23] tests\day3-integration.spec.ts:120:1 › AAC inserts once without sending; over-limit incoming text remains available
+[9/23] tests\barta-integration.spec.ts:49:1 › public chat contract matches the handler and rejects oversized requests
+[10/23] tests\day3-integration.spec.ts:135:1 › public record/report modules mount at 320px and settings preserve an unfinished entry
+[11/23] tests\homepage.spec.ts:21:1 › exact product counts, seven phones, eight modules and all 24 capabilities
+[12/23] tests\homepage.spec.ts:48:1 › roadmap totals, filters, shared mapping and ARIA keyboard tabs
+[13/23] tests\day3-integration.spec.ts:150:1 › AAC speech and Barta microphone/read-aloud stop the previous owner; dictation inserts once
+[14/23] tests\homepage.spec.ts:80:1 › refined lines, compact cards, matching phones and footer navigation
+[15/23] tests\day3-integration.spec.ts:202:1 › Barta dictation inserts once and Adapt read-aloud stops microphone ownership
+[16/23] tests\homepage.spec.ts:104:1 › Default has real Fraunces italic and three desktop lines; other presets keep their roles
+[17/23] tests\homepage.spec.ts:120:1 › keyboard completes the question and restores visible modal focus
+[18/23] tests\homepage.spec.ts:135:1 › complete phrases never duplicate and drafts survive live controls, language and preferences
+[19/23] tests\homepage.spec.ts:160:1 › practice inputs become editable only after their shared state initializes
+[20/23] tests\homepage.spec.ts:177:1 › facility filtering, check-in and consent stay local and truthful
+[21/23] tests\homepage.spec.ts:186:1 › 320–1440px reflow includes 200% Bangla, spacious layout and relaxed spacing
+[22/23] tests\homepage.spec.ts:195:1 › axe checks all themes, independent contrast, Bangla and both dialogs
+[23/23] tests\homepage.spec.ts:205:1 › mobile menu, offline feedback, reduced motion and forced colors stay usable
+  23 passed (40.6s)

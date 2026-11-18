@@ -22,7 +22,7 @@ const button = "min-h-12 whitespace-normal rounded-control border border-pro-pri
 
 const primary = button + " inline-flex items-center justify-center bg-pro-primary text-pro-on-primary";
 
-export function ReportReview({ report, source, onNew }: { report: ExtractedReport; source?: File; onNew?: () => void }) {
+export function ReportReview({ report, source, recordsHref, onNew }: { report: ExtractedReport; source?: File; recordsHref: string; onNew?: () => void }) {
   const id = useId();
   const [stage, setStage] = useState<"check" | "learn" | "save" | "done">("check");
   const [answerLanguage, setAnswerLanguage] = useState<AnswerLanguage>("auto");
@@ -306,7 +306,7 @@ export function ReportReview({ report, source, onNew }: { report: ExtractedRepor
       {stage === "done" && <section aria-label="Save reviewed information" className={card} lang={language}>
         <p className="!mt-0 flex items-center gap-2"><Check aria-hidden="true" className="size-6 shrink-0 text-pro-primary" />{w("এই ডিভাইসে সংরক্ষিত। তথ্য কোথাও পাঠানো হয়নি।", "Saved to Jibonrekha on this device.")}</p>
         <ul className="my-4 list-disc pl-5">{existingRecords.filter((entry) => entry.sourceReportId === report.id).map((entry) => <li key={entry.id}>{entry.label} · {entry.value} {entry.unit} · {entry.recordType === "mother" ? w("মা", "Mother") : workspace?.babies.find((baby) => baby.id === entry.recordId)?.label ?? w("শিশু", "Baby")}</li>)}</ul>
-        <div className="flex flex-wrap items-center gap-3"><Link href="/jibonrekha" className={primary}>{w("জীবনরেখা দেখুন", "View Jibonrekha health timeline")}</Link>{onNew && <button type="button" onClick={onNew} className={button}>{w("নতুন রিপোর্ট", "New report")}</button>}</div>
+        <div className="flex flex-wrap items-center gap-3"><Link href={recordsHref} className={primary}>{w("জীবনরেখা দেখুন", "View Jibonrekha health timeline")}</Link>{onNew && <button type="button" onClick={onNew} className={button}>{w("নতুন রিপোর্ট", "New report")}</button>}</div>
       </section>}
       <p role="status" aria-atomic="true" className={feedback?.error ? "text-pro-danger" : "text-pro-text"} lang="en">{feedback?.message}</p>
     </main>

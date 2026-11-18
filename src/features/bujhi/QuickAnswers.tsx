@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { claimAudioSession, ownsAudioSession, releaseAudioSession } from "@/lib/audio-session";
 import { BookOpen, Volume2, VolumeX } from "lucide-react";
 import { abbreviationHelp } from "./ultrasound";
 import type { ExtractedReportField } from "./types";
@@ -32,6 +33,7 @@ function printedComparison(field: ExtractedReportField) {
 export function QuickAnswers({ fields, language }: { fields: ExtractedReportField[]; language: Language }) {
   const [fieldId, setFieldId] = useState("");
   const [question, setQuestion] = useState<"what" | "meaning" | "next">("meaning");
+  const audioOwner = useRef(Symbol("bujhi-quick-answers"));
   const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
   const [speaking, setSpeaking] = useState(false);
   const [audioError, setAudioError] = useState(false);
@@ -55,14 +57,16 @@ export function QuickAnswers({ fields, language }: { fields: ExtractedReportFiel
   useEffect(() => {
     if (!("speechSynthesis" in window)) return;
     const speech = window.speechSynthesis;
+    const owner = audioOwner.current;
     const match = () => setVoice(speech.getVoices().find((item) => item.localService && item.lang.toLowerCase().split(/[-_]/)[0] === language) ?? null);
     match();
     void Promise.resolve().then(() => { setSpeaking(false); setAudioError(false); });
     speech.addEventListener("voiceschanged", match);
-    return () => { speech.removeEventListener("voiceschanged", match); speech.cancel(); };
+    return () => { speech.removeEventListener("voiceschanged", match); if (ownsAudioSession(owner)) speech.cancel(); releaseAudioSession(owner); };
   }, [language]);
   function stop() {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    if (ownsAudioSession(audioOwner.current)) window.speechSynthesis.cancel();
+    releaseAudioSession(audioOwner.current);
     setSpeaking(false);
     setAudioError(false);
   }
@@ -72,10 +76,12 @@ export function QuickAnswers({ fields, language }: { fields: ExtractedReportFiel
     const utterance = new SpeechSynthesisUtterance([field.label, field.value, field.unit, verdict, answers[question]].filter(Boolean).join(". "));
     utterance.voice = voice;
     utterance.lang = voice.lang;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = (event) => { setSpeaking(false); if (event.error !== "canceled" && event.error !== "interrupted") setAudioError(true); };
+    const owner = audioOwner.current;
+    utterance.onend = () => { releaseAudioSession(owner); setSpeaking(false); };
+    utterance.onerror = (event) => { releaseAudioSession(owner); setSpeaking(false); if (event.error !== "canceled" && event.error !== "interrupted") setAudioError(true); };
     setAudioError(false);
     setSpeaking(true);
+    claimAudioSession({ id: owner, stop });
     window.speechSynthesis.speak(utterance);
   }
   if (!field) return null;

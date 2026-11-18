@@ -34,8 +34,10 @@ test("hero copy, pill buttons and decorative sample semantics", async ({ page })
   }
   const lines = await page.locator("h1").evaluate(element => element.clientHeight / parseFloat(getComputedStyle(element).lineHeight));
   expect(lines).toBeLessThan(3.1);
-  await page.getByRole("link", { name: "Explore PROHOR", exact: true }).first().click();
-  await expect(page).toHaveURL(/#features$/);
+  await page.getByRole("link", { name: "Ask Barta", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/ask$/);
+  await expect(page.getByRole("heading", { name: "Ask Barta", exact: true })).toBeVisible();
+  await page.goto("/");
   await page.locator("main").focus();
   await page.keyboard.press("Tab");
   await expect(page.locator(".story-hero .home-button").first()).toBeFocused();

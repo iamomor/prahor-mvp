@@ -1,4 +1,5 @@
 ﻿export type SpeechLanguage = "en-US" | "bn-BD";
+import { claimAudioSession, ownsAudioSession, releaseAudioSession } from "@/lib/audio-session";
 type Recognition = {
   lang: string; continuous: boolean; interimResults: boolean; processLocally?: boolean;
   onresult: ((event: { results: { [index: number]: { [index: number]: { transcript: string } } } }) => void) | null;
@@ -25,14 +26,21 @@ export async function transcribeSpeech(options: SpeechOptions): Promise<SpeechSe
   if (!local && /Edg\//.test(navigator.userAgent)) throw new Error("Remote speech in Microsoft Edge is not enabled here. Use on-device recognition or type the transcript.");
   if ("processLocally" in recognition) recognition.processLocally = local;
   recognition.lang = options.language; recognition.continuous = false; recognition.interimResults = false;
-  recognition.onresult = (event) => options.onText(event.results[0]?.[0]?.transcript ?? "");
-  recognition.onerror = (event) => options.onError(event.error === "not-allowed" ? "Microphone permission was denied. You can type the same information below." : `Speech could not complete (${event.error}). Retry or type your information.`);
-  recognition.onend = options.onEnd;
+  const owner = Symbol("bujhi-microphone");
+  const cleanup = () => { releaseAudioSession(owner); options.signal?.removeEventListener("abort", cancel); };
+  const cancel = () => {
+    recognition.onresult = null; recognition.onerror = null; recognition.onend = null;
+    recognition.abort(); cleanup(); options.onEnd();
+  };
+  recognition.onresult = (event) => { if (ownsAudioSession(owner)) options.onText(event.results[0]?.[0]?.transcript ?? ""); };
+  recognition.onerror = (event) => { cleanup(); options.onError(event.error === "not-allowed" ? "Microphone permission was denied. You can type the same information below." : `Speech could not complete (${event.error}). Retry or type your information.`); };
+  recognition.onend = () => { cleanup(); options.onEnd(); };
   if (options.signal?.aborted) throw new Error("Speech cancelled before microphone start.");
-  recognition.start();
-  return { stop: () => recognition.stop(), cancel: () => { recognition.onresult = null; recognition.onerror = null; recognition.onend = null; recognition.abort(); } };
+  claimAudioSession({ id: owner, stop: cancel });
+  options.signal?.addEventListener("abort", cancel, { once: true });
+  try { recognition.start(); } catch (error) { cleanup(); throw error; }
+  return { stop: () => { if (ownsAudioSession(owner)) recognition.stop(); }, cancel };
 }
 
 export type SpeechProvider = { transcribe: typeof transcribeSpeech };
 export const browserSpeechProvider: SpeechProvider = { transcribe: transcribeSpeech };
-

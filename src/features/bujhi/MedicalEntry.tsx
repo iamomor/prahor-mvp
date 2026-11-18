@@ -1,5 +1,5 @@
 ﻿"use client";
-import Link from "next/link";
+import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import { ArrowRight, Camera, FileText, Images, Mic, PencilLine, ScanLine } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ManualMedicalEntry } from "./ManualMedicalEntry";
@@ -19,7 +19,7 @@ const entryMethods = [
   ["voice", "কথা বলে বলুন", "Speak Information", Mic],
 ] as const;
 
-export function MedicalEntry() {
+export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref?: string }) {
   const [method, setMethod] = useState<Method | null>(null), [drafts, setDrafts] = useState<ExtractedReport[]>([]), [activeId, setActiveId] = useState("");
   const [sources, setSources] = useState<Record<string, File>>({});
   const [draftError, setDraftError] = useState("");
@@ -56,7 +56,7 @@ export function MedicalEntry() {
     <header className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-pro-border pb-3">
         <h1 id="bujhi-title" tabIndex={-1} className="flex items-center gap-3 text-2xl font-semibold tracking-tight"><FileText aria-hidden="true" className="size-5 text-pro-primary" />Bujhi · <span lang="bn">বুঝি</span></h1>
-        <Link href="/accessibility" className="inline-flex min-h-12 items-center text-pro-primary underline">Adjust how you use PROHOR</Link>
+        <AccessPreferencesControl />
       </div>
       <div className={method === null ? "mt-4 rounded-card border border-pro-border bg-pro-surface p-5 sm:p-7" : "pt-4"}>
         {method === null && <div className="mb-5 grid gap-4"><WorkflowProgress current="add" language="bn" /><p className="max-w-[60ch] text-2xl font-semibold tracking-tight" lang="bn">সহজ ভাষায় রিপোর্ট বুঝুন</p><p className="mt-1 text-pro-muted">Check the results, read a plain-language explanation, and choose what to save.</p><p className="mt-2 text-pro-muted">Development demo · Synthetic data only.</p></div>}
@@ -78,7 +78,7 @@ export function MedicalEntry() {
     </main></div>
     <div hidden={method !== "review"} ref={reviewFocus} tabIndex={-1} aria-label="Draft review">
       {drafts.length > 1 && <nav aria-label="Choose draft" className="mx-auto flex max-w-4xl flex-wrap gap-3 p-4">{drafts.map((report) => <button key={report.id} onClick={() => setActiveId(report.id)} aria-pressed={activeId === report.id} className="min-h-12 rounded-control border border-pro-primary p-3">{report.name}</button>)}</nav>}
-      {drafts.map((report) => <div key={report.id} hidden={activeId !== report.id}><ReportReview report={report} source={sources[report.id]} onNew={() => { setMethod(null); requestAnimationFrame(() => document.getElementById("bujhi-title")?.focus()); }} /></div>)}
+      {drafts.map((report) => <div key={report.id} hidden={activeId !== report.id}><ReportReview report={report} recordsHref={recordsHref} source={sources[report.id]} onNew={() => { setMethod(null); requestAnimationFrame(() => document.getElementById("bujhi-title")?.focus()); }} /></div>)}
     </div>
   </div>;
 }

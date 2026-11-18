@@ -157,6 +157,3 @@ export function BabyHealthRecord({ observations, onSaved, loading = false, baby 
     </section>
   );
 }
-
-
-

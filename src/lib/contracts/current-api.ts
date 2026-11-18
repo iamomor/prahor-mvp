@@ -68,6 +68,21 @@ export const currentApiContracts = {
     source: "src/app/api/health/route.ts", status: "Mock", owners: ["Ifty", "Omor"], auth: "session-only-stub",
     request: z.undefined(), responses: { 401: starterHealthResponseSchema, 501: starterHealthResponseSchema, 503: starterHealthResponseSchema },
   },
+  "POST /api/reports/commit": {
+    source: "src/app/api/reports/commit/route.ts", status: "Limited", owners: ["Ifty", "Omor"], auth: "mother",
+    request: z.strictObject({
+      reportId: z.string().uuid(), pregnancyId: z.string().uuid(),
+      sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
+      rawLabel: z.string().min(1).max(120), rawValue: z.string().max(40), rawUnit: z.string().max(20),
+      reviewedValue: z.string().regex(/^[0-9]{1,3}(\.[0-9]{1,2})?$/),
+      reviewedUnit: z.literal("g/dL"), observedOn: z.iso.date(), confirmSave: z.literal(true),
+    }),
+    responses: {
+      200: z.strictObject({ saved: z.literal(true), observationId: z.string().uuid() }),
+      400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema,
+      409: starterHealthResponseSchema, 503: starterHealthResponseSchema,
+    },
+  },
   "POST /api/ai/chat": {
     source: "src/app/api/ai/chat/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
     request: currentBartaRequestSchema,

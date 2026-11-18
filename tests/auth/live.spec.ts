@@ -114,7 +114,7 @@ test("mother sign-in persists across page refresh and sign-out removes access", 
   expect(cookies.length).toBeGreaterThan(0);
   expect(cookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
   const out = await page.request.post("/auth/sign-out", { headers: { origin }, maxRedirects: 0 });
-  expect(out.status()).toBe(303);
+  expect(out.status()).toBe(200);
   expect((await page.request.get("/api/auth/me")).status()).toBe(401);
 });
 

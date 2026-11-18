@@ -184,8 +184,8 @@ test("CSRF rejects cross-site and absent origins before touching Auth, including
 test("sign-out confirms termination before a safe fixed redirect", async () => {
   const setup = fixture();
   const response = await post("sign-out", credentials, setup);
-  expect(response.status).toBe(303);
-  expect(response.headers.get("location")).toBe("http://localhost:3000/sign-in?status=signed-out");
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ ok: true });
   expect(setup.calls).toEqual([{ method: "signOut", args: { scope: "local" } }]);
   expect((await post("sign-out", credentials, fixture({ signoutFailure: true }))).status).toBe(503);
 });
@@ -260,4 +260,12 @@ test("private routes reject missing canonical site configuration before contacti
       if (value === undefined) delete process.env[name!]; else process.env[name!] = value;
     }
   }
+});
+
+test("self-service sign-up accepts exactly one role", async () => {
+  const { onboardingSchema } = await import("../../src/lib/contracts/account");
+  const base = { displayName: "Synthetic", organization: "Clinic", registrationNumber: "R1" };
+  expect(onboardingSchema.safeParse({ ...base, purposes: ["mother"] }).success).toBe(true);
+  expect(onboardingSchema.safeParse({ ...base, purposes: ["mother", "doctor"] }).success).toBe(false);
+  expect(onboardingSchema.safeParse({ ...base, purposes: [] }).success).toBe(false);
 });

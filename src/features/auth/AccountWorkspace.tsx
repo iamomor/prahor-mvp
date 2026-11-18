@@ -50,7 +50,7 @@ export function AccountWorkspace({ supporter = false }: { supporter?: boolean })
         .map(r => r.role as "mother" | "supporter");
       if (snapshot.account.provider) purposes.push(...snapshot.account.provider.kinds);
       setProfile(previous => previous.displayName || previous.purposes.length ? previous : {
-        displayName: snapshot.account.displayName, purposes,
+        displayName: snapshot.account.displayName, purposes: purposes.slice(0, 1),
         organization: snapshot.account.provider?.organization ?? "", registrationNumber: snapshot.account.provider?.registrationNumber ?? "",
         details: snapshot.account.details,
       });
@@ -175,7 +175,26 @@ export function AccountWorkspace({ supporter = false }: { supporter?: boolean })
     <nav aria-label={t({ en: "Account links", bn: "অ্যাকাউন্টের লিংক" })} className="flex flex-wrap gap-4">
       {supporter && <Link href="/account" className="underline">{t({ en: "Account and roles", bn: "অ্যাকাউন্ট ও পরিচয়" })}</Link>}
       <Link href="/" className="underline">{t({ en: "Public home", bn: "সবার জন্য মূল পৃষ্ঠা" })}</Link>
-      <form action="/auth/sign-out" method="post"><button className="underline">{t({ en: "Sign out", bn: "সাইন আউট" })}</button></form>
+      <button
+        type="button"
+        className="underline cursor-pointer"
+        onClick={async () => {
+          try {
+            // Server returns JSON + Set-Cookie — await so cookies clear before navigate.
+            await fetch("/auth/sign-out", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Accept": "application/json" },
+            });
+          } catch {
+            // Network error — still navigate away.
+          } finally {
+            window.location.assign("/sign-in?status=signed-out");
+          }
+        }}
+      >
+        {t({ en: "Sign out", bn: "সাইন আউট" })}
+      </button>
     </nav>
   </div>;
 }

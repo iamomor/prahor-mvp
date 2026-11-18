@@ -16,6 +16,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run test:contracts
       - run: npm run build
       - run: npm run check:contrast
 # npm ci requires committed package-lock.json, produced on Day 1 after npm install.

@@ -1,12 +1,15 @@
 import { buildBartaSpeechText, maxSpeechText } from "@/features/barta/barta-spoken-text";
 import { issueAudioTicket } from "@/features/barta/audio-ticket";
+import { getBundledSpeechUrl } from "@/features/barta/bundled-speech";
 import { getBartaBleedingClarification, getUsualPeriodQuestion } from "@/features/barta/bleeding-clarification";
 import { approvedBartaCorpus } from "@/features/barta/approved-corpus";
 import { bartaFollowUpQuestion, getBartaKnowledgeAnswer, prepareBartaKnowledge, resolveBartaKnowledgeAnswer } from "@/features/barta/approved-knowledge";
 import { getBartaOpenRouterSelector } from "@/features/barta/openrouter-intent";
 import { getBartaGreeting, stripOpeningGreeting } from "@/features/barta/conversation";
+import { getBartaCoverage } from "@/features/barta/conversation-coverage";
+import { educationTopics } from "@/features/barta/education-topics";
 import { getBankSafety, getQuestionBankIntent } from "@/features/barta/question-bank-routing";
-import { getBartaSafetyResponse } from "@/features/barta/safety-gate";
+import { getBartaRouteResponse, getBartaSafetyResponse } from "@/features/barta/safety-gate";
 import { getBartaDemoLanguage } from "@/features/barta/demo-questions";
 import { getSyntheticBartaAnswer } from "@/features/barta/synthetic-demo";
 import { jsonNoStore } from "@/lib/api-response";
@@ -32,10 +35,12 @@ function getKnowledge() {
   return preparedKnowledge;
 }
 
-function decisionReply(answer: BartaAnswer, language: BartaRequest["language"], status: number) {
+async function decisionReply(answer: BartaAnswer, language: BartaRequest["language"], status: number) {
   const speech = answer.status === "not_connected" ? undefined : buildBartaSpeechText(answer, language);
-  const ticket = speech ? issueAudioTicket(speech, language) : undefined;
-  const audio = speech && speech.length <= maxSpeechText ? { audioText: speech, ...(ticket && { audioTicket: ticket }) } : {};
+  const audioText = speech && speech.length <= maxSpeechText ? speech : undefined;
+  const audioTicket = audioText ? issueAudioTicket(audioText, language) : undefined;
+  const audioClipUrl = audioText && !audioTicket ? await getBundledSpeechUrl(audioText, language) : undefined;
+  const audio = { audioText, audioTicket, audioClipUrl };
   if (answer.status === "grounded") {
     return jsonNoStore(bartaAnswerSchema.parse({
       ...answer,
@@ -77,17 +82,44 @@ export async function POST(request: Request) {
   const requestData = bartaRequestSchema.safeParse(body);
   if (requestData.success) {
     const { question, language, retention, previousChunkId } = requestData.data;
-    const safetyResponse = getBankSafety(question, language) ?? getBartaSafetyResponse(question, language);
+    const questionWithoutGreeting = stripOpeningGreeting(question);
+    const safetyResponse = getBankSafety(question, language) ?? getBartaSafetyResponse(question, language)
+      ?? (questionWithoutGreeting !== question
+        ? getBankSafety(questionWithoutGreeting, language) ?? getBartaSafetyResponse(questionWithoutGreeting, language)
+        : undefined);
+    if (safetyResponse?.status === "abstained"
+      && (safetyResponse.reason === "urgent_care" || safetyResponse.reason === "crisis_support")) {
+      return decisionReply(safetyResponse, language, 200);
+    }
+    const hasPreviousAnswer = Boolean(previousChunkId);
+    const coverage = getBartaCoverage(question, { hasPreviousAnswer });
+    if (coverage?.type === "route") {
+      return decisionReply(getBartaRouteResponse(coverage.route, language), language, 200);
+    }
     if (safetyResponse) return decisionReply(safetyResponse, language, 200);
 
     if (retention.mode !== "ephemeral") {
       return jsonNoStore({ message: "Saved Barta conversations are unavailable." }, 400);
     }
 
-    const bleeding = getBartaBleedingClarification(question, language);
+    if (coverage?.type === "reply" && coverage.id === "pii") {
+      return decisionReply({ status: "conversation", answer: null, citations: [], message: coverage[language] }, language, 200);
+    }
+    const bleeding = getBartaBleedingClarification(questionWithoutGreeting, language);
     if (bleeding) return decisionReply(bleeding, language, 200);
 
-    const greeting = getBartaGreeting(question, language);
+    if (coverage?.type === "reply") {
+      const message = coverage[language];
+      const answer: BartaAnswer = coverage.topics
+        ? {
+          status: "clarification", answer: null, citations: [], message,
+          suggestions: [educationTopics.anc[language], educationTopics.newborn[language], educationTopics.breastfeeding[language]],
+        }
+        : { status: "conversation", answer: null, citations: [], message };
+      return decisionReply(answer, language, 200);
+    }
+
+    const greeting = getBartaGreeting(question, language, hasPreviousAnswer);
     if (greeting) return decisionReply(greeting, language, 200);
 
     const knowledge = getKnowledge();
@@ -100,7 +132,7 @@ export async function POST(request: Request) {
           : "Barta’s reviewed sources are not ready yet.",
       }, 501);
     }
-    const query = bartaFollowUpQuestion(knowledge, stripOpeningGreeting(question), language, previousChunkId);
+    const query = bartaFollowUpQuestion(knowledge, questionWithoutGreeting, language, previousChunkId);
     // A reviewed literal question takes priority over test-bank aliases and model routing.
     const exact = knowledge ? getBartaKnowledgeAnswer(knowledge, query, language) : undefined;
     if (exact?.status === "grounded") return decisionReply(exact, language, 200);

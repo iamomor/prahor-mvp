@@ -84,7 +84,7 @@ export function normalizeOsm(elements: OsmEntry[], origin: GeoPoint, radiusMetre
     const kind = categoryFromTags(e.tags);
     if (!kind) continue;
     const distanceKm = distanceInKm(origin, { lat, lon });
-    if (distanceKm * 1000 > radiusMetres + 10) continue;
+    if (distanceKm * 1000 > radiusMetres) continue;
     const id = `${e.type}/${e.id}`;
     if (seen.has(id)) continue;
     seen.add(id);

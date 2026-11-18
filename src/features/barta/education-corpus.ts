@@ -506,12 +506,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "9ff66837-63dd-5921-a969-063bde0b3818",
-        questions: ["How should a baby sleep safely?", "Can a baby sleep with a pillow?", "What is a safe sleeping position for a newborn?", "Should newborns sleep on their backs?", "Can I leave stuffed toys in my baby's cot?"],
+        questions: ["How should a baby sleep safely?", "Can a baby sleep with a pillow?", "What is a safe sleeping position for a newborn?", "Should newborns sleep on their backs?", "Can I leave stuffed toys in my baby's cot?", "How can I make my newborn’s cot safe for sleep?"],
         text: "For naps and night sleep, put your baby down on their back on a firm, flat mattress. Use a separate cot in the room where you sleep for at least the first six months. Keep the cot clear of pillows, stuffed toys, cot bumpers and loose blankets that could cover the face. Keep the sleeping space smoke-free, and never fall asleep with your baby on a sofa or armchair.",
       },
       bn: {
         chunkId: "a8584a2e-90be-51ab-a392-942ed604156a",
-        questions: ["বাচ্চাকে কীভাবে ঘুম পাড়াব?", "শিশুকে চিত করে ঘুম পাড়ানো উচিত কি?", "baby ke kivabe ghum parabo?", "bacchar ghum er jayga kemon hobe?", "শিশুর খাটে নরম খেলনা রাখা নিরাপদ কি?", "baby ke chit kore ghum parabo?"],
+        questions: ["বাচ্চাকে কীভাবে ঘুম পাড়াব?", "শিশুকে চিত করে ঘুম পাড়ানো উচিত কি?", "baby ke kivabe ghum parabo?", "bacchar ghum er jayga kemon hobe?", "শিশুর খাটে নরম খেলনা রাখা নিরাপদ কি?", "baby ke chit kore ghum parabo?", "নবজাতককে ঘুমের সময় কীভাবে শোয়াব?", "baccha ke ghum er shomoy kivabe shoabo?"],
         text: "দিনে ও রাতে ঘুমের সময় শিশুকে চিত করে শক্ত ও সমতল গদিতে শোয়ান। অন্তত প্রথম ছয় মাস নিজের ঘরেই শিশুর জন্য আলাদা খাট রাখুন। মুখ ঢেকে যেতে পারে এমন বালিশ, নরম খেলনা, খাটের পাশের প্যাড বা আলগা কম্বল খাটে রাখবেন না। ঘুমের জায়গা ধোঁয়ামুক্ত রাখুন এবং শিশুকে নিয়ে সোফা বা আরামকেদারায় ঘুমিয়ে পড়বেন না।",
       },
     }),
@@ -536,12 +536,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "5f6d50b9-a0a7-5ba2-a810-8d43527b35aa",
-        questions: ["How do I care for the umbilical cord?", "Should I put ointment on the newborn cord?", "How do I keep the cord stump dry?", "Should I use cream on my baby's cord stump?"],
+        questions: ["How do I care for the umbilical cord?", "Should I put ointment on the newborn cord?", "How do I keep the cord stump dry?", "Should I use cream on my baby's cord stump?", "How should I care for my newborn’s belly button before the cord falls off?"],
         text: "Keep the remaining piece of cord dry. Wash your hands with soap and clean water before handling the baby. For routine care, leave the cord uncovered by creams, oils or home remedies. If your maternity team gave a specific instruction, ask them to explain what to use and when.",
       },
       bn: {
         chunkId: "367ffb34-7b53-509b-a7de-6b416b4a864c",
-        questions: ["নাভির যত্ন কীভাবে নেব?", "শিশুর নাভিতে তেল দেব কি?", "nabhir jotno kivabe nibo?", "baby nabhi te oil debo?", "নাভির গোড়া শুকনো রাখব কীভাবে?", "baby r nabhi shukna kivabe rakhbo?"],
+        questions: ["নাভির যত্ন কীভাবে নেব?", "শিশুর নাভিতে তেল দেব কি?", "nabhir jotno kivabe nibo?", "baby nabhi te oil debo?", "নাভির গোড়া শুকনো রাখব কীভাবে?", "baby r nabhi shukna kivabe rakhbo?", "নাভির অংশ পড়ে যাওয়ার আগ পর্যন্ত কীভাবে যত্ন নেব?", "nabhi porar age kivabe jotno nebo?"],
         text: "নাভির সঙ্গে লেগে থাকা শুকাতে থাকা অংশটি শুকনো রাখুন। শিশুকে ধরার আগে সাবান ও পরিষ্কার পানি দিয়ে হাত ধুয়ে নিন। সাধারণ যত্নে নাভিতে ক্রিম, তেল বা ঘরোয়া কিছু লাগাবেন না। সেবাদানকারী দল বিশেষ কোনো নির্দেশনা দিয়ে থাকলে, কী ব্যবহার করবেন ও কখন করবেন, তা তাঁদের কাছে জেনে নিন।",
       },
     }),
@@ -866,12 +866,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "322b1711-4f3e-4267-947d-1b90818dd774",
-        questions: ["When is an ultrasound done?", "Why is an ultrasound performed?", "When is an ultrasond done?"],
+        questions: ["When is an ultrasound done?", "Why is an ultrasound performed?", "When is an ultrasond done?", "What does an early pregnancy ultrasound check?"],
         text: "An early ultrasound can help estimate how far along the pregnancy is and check whether there is more than one baby. WHO recommends one ultrasound before 24 weeks. Your maternity team can explain what to arrange for your care.",
       },
       bn: {
         chunkId: "704d585a-4c67-4d0f-a79b-3541f6f8ef45",
-        questions: ["আল্ট্রাসাউন্ড কখন করানো হয়?", "আল্ট্রাসাউন্ড কেন করা হয়?", "ultrasound keno kora hoy?", "ultrasound kokhon kora hoy?", "altrasound kokhon kora hoy?"],
+        questions: ["আল্ট্রাসাউন্ড কখন করানো হয়?", "আল্ট্রাসাউন্ড কেন করা হয়?", "ultrasound keno kora hoy?", "ultrasound kokhon kora hoy?", "altrasound kokhon kora hoy?", "গর্ভাবস্থার শুরুর আল্ট্রাসাউন্ডে কী দেখা হয়?", "early ultrasound e ki dekhe?"],
         text: "শুরুর দিকের আল্ট্রাসাউন্ডে গর্ভাবস্থা কত সপ্তাহ চলছে এবং একাধিক শিশু আছে কি না, তা বোঝা যায়। বিশ্ব স্বাস্থ্য সংস্থা ২৪ সপ্তাহের আগে একটি আল্ট্রাসাউন্ডের পরামর্শ দেয়। আপনার জন্য কী ব্যবস্থা দরকার, তা মাতৃসেবা দলের কাছে জেনে নিন।",
       },
     }),
@@ -926,12 +926,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "da1faefa-8a70-41ad-8f8c-156ffdc7e239",
-        questions: ["What should I eat during pregnancy?", "What foods can I eat in pregnancy?", "What foods should I eat in pregnancy?", "My wife is pregnant, what should she eat?", "What counts as balanced pregnancy meals?"],
+        questions: ["What should I eat during pregnancy?", "What foods can I eat in pregnancy?", "What foods should I eat in pregnancy?", "My wife is pregnant, what should she eat?", "What counts as balanced pregnancy meals?", "What can I include in a balanced meal while pregnant?", "What does a varied diet during pregnancy look like?"],
         text: "Choose a variety of foods during pregnancy. Rice or roti, lentils, vegetables and fruit are examples. Fish or eggs can also be part of meals. Drink safe water.",
       },
       bn: {
         chunkId: "df5b438f-5e4c-4dd8-b914-aa9455feb224",
-        questions: ["গর্ভাবস্থায় কী খাওয়া উচিত?", "গর্ভাবস্থায় কী কী খাবার খাওয়া উচিত?", "pregnancy te ki ki khabo?", "গর্ভাবস্থায় কী খাব?", "pregnancy te ki ki khawa uchit?", "pregnancy te ki khabo?", "gorbhobosthay ki khawa uchit?"],
+        questions: ["গর্ভাবস্থায় কী খাওয়া উচিত?", "গর্ভাবস্থায় কী কী খাবার খাওয়া উচিত?", "pregnancy te ki ki khabo?", "গর্ভাবস্থায় কী খাব?", "pregnancy te ki ki khawa uchit?", "pregnancy te ki khabo?", "gorbhobosthay ki khawa uchit?", "গর্ভাবস্থায় সুষম খাবার বলতে কী বোঝায়?", "গর্ভাবস্থায় খাবারের তালিকায় কী রাখতে পারি?", "gorbhobosthay shushomo khabar ki ki?"],
         text: "গর্ভাবস্থায় নানা ধরনের খাবার খান। ভাত বা রুটি, ডাল, শাকসবজি ও ফল এর উদাহরণ। খাবারে মাছ বা ডিমও রাখতে পারেন। নিরাপদ পানি পান করুন।",
       },
     }),
@@ -986,12 +986,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "3a195fa5-514f-44a2-a0d0-f48a56f94d09",
-        questions: ["What goes in a birth plan?", "How can I plan for childbirth?", "What should I plan before giving birth?"],
+        questions: ["What goes in a birth plan?", "How can I plan for childbirth?", "What should I plan before giving birth?", "How should I plan where to give birth and how to get there?"],
         text: "Write down where you plan to give birth and how you will get there. Include how to reach the health workers and who can come with you or help.",
       },
       bn: {
         chunkId: "2e68370e-057b-4e13-9133-d78ef77c9992",
-        questions: ["প্রসব পরিকল্পনায় কী রাখব?", "deliveryr age ki prostuti nibo?", "baccha howar age ki prostuti nibo?"],
+        questions: ["প্রসব পরিকল্পনায় কী রাখব?", "deliveryr age ki prostuti nibo?", "baccha howar age ki prostuti nibo?", "প্রসবের আগে হাসপাতাল ও যাতায়াতের পরিকল্পনা কীভাবে করব?", "delivery er age jawar plan kivabe korbo?"],
         text: "কোথায় প্রসবের পরিকল্পনা করছেন এবং সেখানে কীভাবে যাবেন, তা লিখে রাখুন। স্বাস্থ্যকর্মীদের সঙ্গে যোগাযোগের উপায় এবং কে সঙ্গে যাবেন বা সাহায্য করবেন, তাও লিখুন।",
       },
     }),
@@ -1001,12 +1001,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "5fb06b54-29aa-424c-968f-bcea163c636a",
-        questions: ["What happens during antenatal care?", "Why are ANC visits important?", "What are antenatal appointments for?", "What are ANC visits for?", "What happens at an antenatal appointment?"],
+        questions: ["What happens during antenatal care?", "Why are ANC visits important?", "What are antenatal appointments for?", "What are ANC visits for?", "What happens at an antenatal appointment?", "What checks are done at antenatal appointments?", "What tests do they do at a pregnancy checkup?"],
         text: "Antenatal visits are a chance to ask questions and get support during pregnancy. At the first visit, the care team can confirm the pregnancy and offer routine blood tests. At later visits, they can check your blood pressure and weight and monitor the baby’s growth. Depending on the stage of pregnancy, they may talk about food, warning signs and plans for birth. Before leaving, ask which checks you need, what the results mean and when to come back.",
       },
       bn: {
         chunkId: "b1452c85-a9ee-4409-9f63-af1517f03e4f",
-        questions: ["গর্ভকালীন চেকআপে কী হয়?", "ANC ভিজিটে কী হয়?", "গর্ভকালীন সেবা কেন জরুরি?", "anc visit e ki hoy?", "gorbokalin checkup e ki hoy?"],
+        questions: ["গর্ভকালীন চেকআপে কী হয়?", "ANC ভিজিটে কী হয়?", "গর্ভকালীন সেবা কেন জরুরি?", "anc visit e ki hoy?", "gorbokalin checkup e ki hoy?", "গর্ভাবস্থায় চেকআপে কী কী পরীক্ষা করা হয়?", "গর্ভকালীন চেকআপে ডাক্তার কী দেখেন?", "pregnancy checkup e ki ki test kore?"],
         text: "গর্ভকালীন চেকআপে প্রশ্ন করতে ও সহায়তা পেতে পারেন। প্রথম সাক্ষাতে সেবা দল গর্ভধারণ নিশ্চিত করতে ও নিয়মিত রক্ত পরীক্ষার প্রস্তাব দিতে পারে। পরের সাক্ষাৎগুলোতে রক্তচাপ ও ওজন দেখা এবং শিশুর বৃদ্ধি পর্যবেক্ষণ করা হতে পারে। গর্ভাবস্থার ধাপ অনুযায়ী স্বাস্থ্যকর খাবার, বিপদের লক্ষণ ও প্রসবের পরিকল্পনা নিয়ে কথা হতে পারে। ফেরার আগে জেনে নিন আপনার কোন পরীক্ষা দরকার, ফলের অর্থ কী ও আবার কখন আসবেন।",
       },
     }),
@@ -1031,12 +1031,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "52ac151f-159b-4537-ac06-c18ef32f1d74",
-        questions: ["What is exclusive breastfeeding?", "What does exclusively breastfeeding mean?", "What does feeding only breast milk mean?"],
+        questions: ["What is exclusive breastfeeding?", "What does exclusively breastfeeding mean?", "What does feeding only breast milk mean?", "What counts as exclusive breastfeeding?", "What does exclusively breastfed mean?"],
         text: "Exclusive breastfeeding means feeding a baby breast milk without other foods or drinks. WHO recommends it for the first six months. In everyday practice, offer the breast when your baby shows signs of hunger, during the day and at night. For an exclusively breastfed baby under six months, extra water is unnecessary even in hot weather. If you are unsure that your baby is getting enough milk, ask a trained health worker to check how the baby attaches and how they are growing. At around six months, start offering suitable foods alongside breast milk.",
       },
       bn: {
         chunkId: "b1c0ab8d-03ad-4adf-959f-1ab5e777c529",
-        questions: ["একচেটিয়া বুকের দুধ খাওয়ানো কী?", "শুধু বুকের দুধ দেওয়া মানে কী?", "shudhu buker dudh khaowano mane ki?", "exclusive breastfeeding mane ki?"],
+        questions: ["একচেটিয়া বুকের দুধ খাওয়ানো কী?", "শুধু বুকের দুধ দেওয়া মানে কী?", "shudhu buker dudh khaowano mane ki?", "exclusive breastfeeding mane ki?", "একচেটিয়া স্তন্যপান বলতে কী বোঝায়?", "shudhu buker dudh dewa mane ki?"],
         text: "শুধু বুকের দুধ খাওয়ানোর অর্থ শিশুকে অন্য খাবার বা পানীয় ছাড়াই বুকের দুধ দেওয়া। বিশ্ব স্বাস্থ্য সংস্থা প্রথম ছয় মাস এভাবে খাওয়ানোর পরামর্শ দেয়। প্রতিদিনের যত্নে শিশু ক্ষুধার ইঙ্গিত দিলে দিনে ও রাতে বুকের দুধ দিন। শুধু বুকের দুধ খাওয়া ছয় মাসের কম বয়সী শিশুকে গরমেও আলাদা পানি দেওয়ার প্রয়োজন হয় না। শিশু পর্যাপ্ত দুধ পাচ্ছে কি না বুঝতে না পারলে, সে কীভাবে স্তন ধরছে এবং তার বৃদ্ধি কেমন, তা স্বাস্থ্যকর্মীকে দেখে দিতে বলুন। প্রায় ছয় মাসে বুকের দুধের পাশাপাশি উপযোগী খাবার শুরু করুন।",
       },
     }),
@@ -1046,12 +1046,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "07e4ddd7-06b5-4f5b-8bb3-ab2edbb049bb",
-        questions: ["What does postnatal care mean?", "Who is postnatal care for?", "What is care after childbirth called?", "What is care after birth?"],
+        questions: ["What does postnatal care mean?", "Who is postnatal care for?", "What is care after childbirth called?", "What is care after birth?", "What can I ask my care team about after giving birth?"],
         text: "Postnatal care is health care and support after childbirth for both the person who gave birth and the newborn. It can be given at a health facility or in the community. In the first weeks, ask your care team about recovery, emotional well-being, feeding support and when the baby and you should be seen again. Find out who to contact if a concern comes up between visits.",
       },
       bn: {
         chunkId: "95833c18-92de-420e-b046-adacb585ba0e",
-        questions: ["প্রসব-পরবর্তী সেবা কী?", "প্রসবের পরের সেবা কাদের জন্য?", "postnatal care mane ki?", "deliveryr porer sheba ki?"],
+        questions: ["প্রসব-পরবর্তী সেবা কী?", "প্রসবের পরের সেবা কাদের জন্য?", "postnatal care mane ki?", "deliveryr porer sheba ki?", "প্রসবের পরে মা ও শিশুর জন্য কী কী সহায়তা পাওয়া যায়?", "delivery er por ma ar bacchar care ki?"],
         text: "প্রসবের পরের সেবা হলো যিনি সন্তান জন্ম দিয়েছেন এবং নবজাতক, দুজনেরই স্বাস্থ্যসেবা ও সহায়তা। এই সেবা স্বাস্থ্যকেন্দ্রে বা স্থানীয় পর্যায়ে দেওয়া যায়। প্রথম কয়েক সপ্তাহে নিজের সুস্থ হয়ে ওঠা, মানসিক অবস্থা ও শিশুকে খাওয়ানোর সহায়তা নিয়ে কথা বলুন। মা ও শিশুর পরের চেকআপ কবে এবং মাঝখানে সমস্যা হলে কোথায় যোগাযোগ করবেন, তা জেনে নিন।",
       },
     }),
@@ -1061,12 +1061,12 @@ export const bartaEducationCorpus: BartaCorpus = {
     }, {
       en: {
         chunkId: "52c7e800-08dd-4e02-8f35-668ec6a2ce79",
-        questions: ["What does routine newborn care include?", "What does essential newborn care include?", "What is basic newborn care?"],
+        questions: ["What does routine newborn care include?", "What does essential newborn care include?", "What is basic newborn care?", "What are the basics of caring for a newborn?"],
         text: "Essential newborn care starts at birth and continues through the newborn period. It includes checks by the care team, keeping the baby warm, supporting breast milk feeding and preventing infection. Ask your care team to demonstrate practical steps you can repeat at home and to tell you when the baby needs prompt help. You can also ask about the first bath, caring for the cord or keeping the baby clean.",
       },
       bn: {
         chunkId: "3a730cce-6dfb-4f04-9bea-4d7fead127db",
-        questions: ["নবজাতকের মৌলিক যত্নে কী থাকে?", "নবজাতকের সাধারণ যত্ন কী?", "nobojatoker moulik jotno ki?", "newborn care e ki thake?"],
+        questions: ["নবজাতকের মৌলিক যত্নে কী থাকে?", "নবজাতকের সাধারণ যত্ন কী?", "nobojatoker moulik jotno ki?", "newborn care e ki thake?", "জন্মের পরপর শিশুর প্রাথমিক যত্নে কী করা হয়?", "jonmer por baby r prothom jotno ki?"],
         text: "নবজাতকের মৌলিক যত্ন জন্মের সময় শুরু হয় এবং নবজাতককাল জুড়ে চলে। এর মধ্যে আছে সেবাদানকারী দলের পরীক্ষা, শিশুকে উষ্ণ রাখা, বুকের দুধ খাওয়াতে সহায়তা করা ও সংক্রমণ প্রতিরোধ। বাড়িতে করার মতো কাজগুলো দেখিয়ে দিতে এবং কখন দ্রুত সাহায্য নিতে হবে তা জানাতে স্বাস্থ্যকর্মীকে বলুন। প্রথম গোসল, নাভির যত্ন বা শিশুকে পরিষ্কার রাখার বিষয়েও জিজ্ঞেস করতে পারেন।",
       },
     }),

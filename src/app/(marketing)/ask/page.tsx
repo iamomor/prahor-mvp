@@ -76,6 +76,19 @@ export default function AskBartaPage() {
             চ্যাটের উত্তরের জন্য অপেক্ষা করবেন না। এই প্রোটোটাইপ চিকিৎসকের কাছে
             অনুরোধ বা বার্তা পাঠায় না।
           </p>
+          <div className="flex flex-wrap gap-2">
+            <a href="tel:999" className="pro-btn pro-btn-secondary">
+              Call 999 in Bangladesh · <span lang="bn">বাংলাদেশে ৯৯৯-এ কল করুন</span>
+            </a>
+            <Link href="/find-care" className="pro-btn pro-btn-secondary">
+              Find care · <span lang="bn">সেবা খুঁজুন</span>
+            </Link>
+          </div>
+          <p className="text-sm">
+            <a className="underline" href="https://www.police.gov.bd/en/hot_line_number">
+              Bangladesh Police hotline list · <span lang="bn">বাংলাদেশ পুলিশের হটলাইন তালিকা</span>
+            </a>
+          </p>
         </section>
       </main>
     </>

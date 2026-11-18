@@ -1,4 +1,5 @@
 import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, HeartHandshake, MessageCircle, Mic, ShieldCheck, Square, Volume2 } from "lucide-react";
+import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from "react";
 import type { BartaAnswer } from "@/lib/contracts/barta";
 import { educationCopy, type Language } from "./barta-education-copy";
@@ -8,6 +9,7 @@ import { BartaAudioFile } from "./BartaAudioFile";
 import { useBartaAudio } from "./use-barta-audio";
 import styles from "./barta-education.module.css";
 import { useHydrated } from "@/lib/use-hydrated";
+import { saveVisitQuestion, visitQuestionsHref } from "@/features/shared/visit-questions";
 
 type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
 type Reply = { result: BartaAnswer; language: Language };
@@ -48,9 +50,10 @@ function shortPublisher(publisher: string, locale: Language): string {
   }
 }
 
-const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking, onRead, playbackNotice }: {
+const Answer = memo(function Answer({ result, locale, question, turnId, showOptions, onSelect, busy, speaking, onRead, playbackNotice }: {
   result: BartaAnswer;
   locale: Language;
+  question?: string;
   turnId: string;
   showOptions: boolean;
   onSelect: (question: string) => void;
@@ -61,12 +64,17 @@ const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSel
 }) {
   const ready = useHydrated();
   const copy = educationCopy[locale];
+  const [saveStatus, setSaveStatus] = useState<ReturnType<typeof saveVisitQuestion>>();
   const audioTicket = result.status === "not_connected" ? undefined : result.audioTicket;
+  const audioClipUrl = result.status === "not_connected" ? undefined : result.audioClipUrl;
+  const hasAudioFile = Boolean(audioTicket || audioClipUrl);
   const spokenText = result.status === "not_connected"
     ? result.message
     : result.audioText ?? (result.status === "grounded" ? result.answer : result.message);
   const urgent = result.status === "abstained"
     && (result.reason === "urgent_care" || result.reason === "crisis_support");
+  const careHandoff = urgent || (result.status === "abstained"
+    && (result.reason === "outside_education_scope" || result.reason === "mental_health_support"));
   const options = showOptions
     ? result.status === "clarification" ? result.suggestions
       : result.status === "grounded" && result.followUp ? [result.followUp] : []
@@ -78,16 +86,16 @@ const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSel
         <span className={styles.mark}><HeartHandshake size={18} aria-hidden="true" /></span>
         <strong lang={locale === "bn" ? "bn" : "en"}>{locale === "bn" ? "বার্তা" : "Barta"}</strong>
         {urgent && <strong className={styles.urgentLabel}>{copy.urgent}</strong>}
-        {!audioTicket && (
+        {!hasAudioFile && (
           <button type="button" className={styles.read} disabled={!ready || busy}
             onClick={() => onRead(turnId, spokenText, locale)}>
             {speaking ? <Square size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
             {speaking ? copy.stopReading : copy.readAloud}
           </button>
         )}
-        {audioTicket && (
+        {hasAudioFile && (
           <div className={styles.replyAudio}>
-            <BartaAudioFile key={audioTicket} ticket={audioTicket}
+            <BartaAudioFile key={audioTicket ?? audioClipUrl} ticket={audioTicket} clipUrl={audioClipUrl}
               text={spokenText} language={locale}
               disabled={!ready || busy} browserReading={speaking}
               onBrowserRead={() => onRead(turnId, spokenText, locale)} />
@@ -132,6 +140,7 @@ const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSel
                     <summary>{copy.referenceDetails}</summary>
                     <p lang="en" id={`${turnId}-source-${index + 1}-title`}>{citation.title}</p>
                     <p>{citation.locator}{citation.page ? ` · ${copy.page} ${citation.page}` : ""}</p>
+                    <p>{copy.sourceVersion} <bdi>{citation.sourceVersion}</bdi></p>
                   </details>
                 </li>
               ))}
@@ -139,6 +148,28 @@ const Answer = memo(function Answer({ result, locale, turnId, showOptions, onSel
           </section>
         </>
       ) : <p className={styles.answerText} role={urgent && showOptions ? "alert" : undefined}>{result.message}</p>}
+      {careHandoff && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {urgent && <a href="tel:999" className={styles.read}>{copy.callEmergency}</a>}
+          <Link href="/find-care" className={styles.read}>{copy.findCare}</Link>
+        </div>
+      )}
+      {result.status === "grounded" && question && (
+        <div className="mt-3 space-y-2">
+          <p id={`${turnId}-visit-privacy`}>{copy.visitQuestionPrivacy}</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={styles.read} disabled={!ready}
+              aria-describedby={`${turnId}-visit-privacy`}
+              onClick={() => setSaveStatus(saveVisitQuestion(question))}>
+              {copy.saveVisitQuestion}
+            </button>
+            {(saveStatus === "saved" || saveStatus === "full") && (
+              <Link href={visitQuestionsHref} className={styles.read}>{copy.reviewVisitQuestions}</Link>
+            )}
+          </div>
+          <p role="status">{saveStatus && copy.visitQuestionStatus[saveStatus]}</p>
+        </div>
+      )}
       {options.length > 0 && (
         <section className={styles.next} aria-label={result.status === "clarification" ? copy.clarify : copy.followUp}>
           <h3>{result.status === "clarification" ? copy.clarify : copy.followUp}</h3>
@@ -215,7 +246,7 @@ export function BartaEducationChat({
                   <span>{educationCopy[turn.language].you}</span>
                   <p lang={turn.questionLanguage}>{turn.question}</p>
                 </div>
-                <Answer result={turn.result} locale={turn.language} turnId={`barta-turn-${index}`}
+                <Answer result={turn.result} locale={turn.language} question={turn.question} turnId={`barta-turn-${index}`}
                   showOptions={reply?.result === turn.result} onSelect={onSelect} busy={busy || audio.listening}
                   speaking={audio.speaking === `barta-turn-${index}`} playbackNotice={playbackMessage(`barta-turn-${index}`)} onRead={readAnswer} />
               </div>

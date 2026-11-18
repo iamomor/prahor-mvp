@@ -32,7 +32,7 @@ The established schema home is `src/lib/contracts/`. It already centralizes stri
 Zod validators; a second `src/lib/validators/` tree would create competing sources
 and is deliberately not added. Domain files are preserved.
 
-- `current-api.ts`: the **nine actual /api method/path pairs**, source files, owners,
+- `current-api.ts`: the **eleven actual /api method/path pairs**, source files, owners,
   status, authentication level, current request validators and status-specific response schemas.
 - `transport.ts`: runtime v1 envelope/page validators and proposed path/pagination helpers.
 - `api.ts`: `CurrentApiOperations` takes precedence over overlapping future proposals.
@@ -96,6 +96,31 @@ ETags. A stale version gives 409; clients reload/review, not silently retry.
 Unconditional partial writes merge under the row lock; same-field updates serialize.
 
 ## Naming conflicts and compatibility decisions
+
+### Day 3 integration candidate
+
+`GET /api/preferences` and `PATCH /api/preferences` accept the optional
+`X-Prohor-Account` header. A value different from the server-verified caller returns
+409 before any preferences read/write. This prevents a stale tab from applying one
+account's draft to a newly signed-in account. It grants no authorization and changes
+no database schema. New UI callers send it and continue to use exact ETag/If-Match.
+
+`POST /api/ai/chat` now retains Iftee's optional server-side OpenRouter selection
+of approved passages. Responses remain source-grounded, bounded and validated;
+medical diagnosis and unrestricted generation are not added. Optional generated
+audio retains signed tickets, a 4 MB response cap and a process-local throttle.
+`POST /api/ai/barta-audio` also supports Fish Speech and bundled clips; a configured
+bundled clip that is missing returns 404. Provider availability needs deployment
+verification; text remains available.
+
+| Method/path | Status | Inputs | Outcomes and limits |
+| --- | --- | --- | --- |
+| `GET /api/poth/facilities` | Limited; public | q <=120, district <=100, limit 1–100 | 200 `{facilities,sourceType:'reviewed-import',bookingAvailable:false}` or 400 `{error}`. The supplied reviewed dataset is empty; no invented entries or booking. |
+| `GET /api/poth/nearby` | Limited; public | explicit Bangladesh lat/lon and allowed radius 1–20 km | 200 `{places,truncated,source:'openstreetmap-unverified',cached}` or 400/429/503 `{error}`. Community data is separate from reviewed directory data; provider tags do not verify clinical services or accessibility. No booking. |
+
+These additions require Omor's contract review before promotion to `develop`.
+Record/review features remain explicitly synthetic local demos. No health record,
+report extraction, care delivery, wellness or provider backend is invented.
 
 No route is renamed, redirected or newly implemented by Step 14.
 

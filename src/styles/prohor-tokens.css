@@ -415,3 +415,18 @@ html[data-text-scale="extra-large"] {
     outline-color: Highlight;
   }
 }
+
+/* ── 10. Focused view (P1): reduce decorative / non-essential elements.
+      Components opt in by using .prohor-decorative or .prohor-secondary-panel.
+      Core content, navigation, and interactive controls are never hidden. */
+:root[data-focused="true"] .prohor-decorative {
+  display: none !important;
+}
+:root[data-focused="true"] .prohor-secondary-panel {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+:root[data-focused="true"] .prohor-marketing-flourish {
+  display: none !important;
+}

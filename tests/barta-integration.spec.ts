@@ -34,11 +34,11 @@ test("Barta reflows and remains discoverable with saved appearance and access co
   for (const theme of ["quiet-garden", "original-rose", "morning-mist"]) {
     for (const highContrast of [false, true]) {
       await page.evaluate(({ theme, highContrast }) => localStorage.setItem("prohor-access-preferences-v1", JSON.stringify({
-        theme, highContrast, textScale: "extra-large", spaciousLayout: true, reducedMotion: true, language: "en",
+        _schemaVersion: 3, theme, highContrast, textScale: "extra-large", spaciousLayout: true, reducedMotion: true, language: "en",
       })), { theme, highContrast });
       await page.reload();
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-      await expect(page.locator("html")).toHaveAttribute("data-contrast", highContrast ? "more" : "normal");
+      await expect(page.locator("html")).toHaveAttribute("data-contrast", highContrast ? "more" : "standard");
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
       const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
       expect(result.violations).toEqual([]);

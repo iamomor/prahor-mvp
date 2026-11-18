@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 test("Adapt works by keyboard without changing the page or losing a draft", async ({ page }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/");
   const draft = page.locator("#visit-question-touch");
   await draft.fill("Synthetic appointment question");
   const preview = page.locator(".care-adapt-preview");
@@ -29,7 +29,7 @@ test("Adapt works by keyboard without changing the page or losing a draft", asyn
 
 test("default typography, four alternate tag roles and equal bento heights", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator(".care-card")).toHaveCount(4);
   await expect(page.locator(".care-support-steps > li")).toHaveCount(4);
@@ -53,9 +53,9 @@ test("default typography, four alternate tag roles and equal bento heights", asy
 
 test("read-aloud fallback is announced and preview actions cannot send or call", async ({ page }) => {
   const calls: string[] = [];
-  page.on("request", request => { if (request.url().includes("/api/")) calls.push(request.url()); });
+  page.on("request", request => { if (request.url().includes("/api/") && !["GET", "HEAD"].includes(request.method())) calls.push(request.url()); });
   await page.addInitScript(() => { Object.defineProperty(window, "speechSynthesis", { value: undefined, configurable: true }); });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/");
   await page.locator(".care-read-button").click();
   await expect(page.locator(".care-speech-status")).toContainText("unavailable");
   for (const selector of [".care-card-barta", ".care-card-shonket", ".care-card-bondhon"]) {
@@ -69,7 +69,7 @@ test("read-aloud fallback is announced and preview actions cannot send or call",
 
 test("all themes, contrast combinations, local previews and Bangla reflow pass scoped axe", async ({ page }) => {
   test.setTimeout(120000);
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/");
   const scan = async () => (await new AxeBuilder({ page }).include(".care-companion").include(".care-support").withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze()).violations;
   for (const theme of ["quiet-garden", "original-rose", "morning-mist"]) for (const contrast of ["normal", "more"]) {
     await page.evaluate(({ theme, contrast }) => { document.documentElement.dataset.theme = theme; document.documentElement.dataset.contrast = contrast; }, { theme, contrast });
@@ -90,7 +90,7 @@ test("all themes, contrast combinations, local previews and Bangla reflow pass s
 
 test("support reveals once; reduced motion and forced colors stay visible", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/");
   const panel = page.locator(".care-support-panel");
   await expect(panel).toHaveAttribute("data-reveal", "ready");
   await panel.scrollIntoViewIfNeeded();

@@ -4,6 +4,9 @@ import { synthesizeLocalSpeech } from "@/features/barta/local-speech";
 import { jsonNoStore } from "@/lib/api-response";
 import { boundedJson } from "@/lib/auth/validation";
 import { bartaAudioRequestSchema } from "@/lib/contracts/barta";
+import { fishAudioMode, getBartaFishSpeech, getBartaFishVoice } from "@/features/barta/fish-speech";
+import { bundledSpeechId, readBundledSpeech } from "@/features/barta/bundled-speech";
+import { boundedResponseBytes } from "@/lib/bounded-response";
 
 export const runtime = "nodejs";
 
@@ -13,7 +16,7 @@ const voices = {
 };
 
 const maxRequestsPerMinute = 12;
-const maxAudioBytes = 2_000_000;
+const maxAudioBytes = 4_000_000;
 let windowStart = 0;
 let requestCount = 0;
 
@@ -44,20 +47,46 @@ export async function POST(request: Request) {
     windowStart = now;
     requestCount = 0;
   }
-  if (requestCount >= maxRequestsPerMinute) return jsonNoStore({ message: "Try audio again in a minute." }, 429);
+  if (requestCount >= maxRequestsPerMinute) {
+    const response = jsonNoStore({ message: "Try audio again in a minute." }, 429);
+    response.headers.set("Retry-After", "60"); return response;
+  }
   requestCount++;
+
+  const id = bundledSpeechId(text, language);
+  const mp3 = (bytes: Uint8Array<ArrayBuffer>, source: string) => new Response(bytes, { headers: {
+    "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-Barta-Audio-Id": id, "X-Barta-Audio-Source": source,
+  } });
+  const mode = fishAudioMode();
+  const voice = mode ? getBartaFishVoice(language) : undefined;
+  if (voice) {
+    const bytes = await readBundledSpeech(text, language, voice);
+    if (bytes) return mp3(bytes, "fish-bundled");
+  }
+  if (mode === "prefer") {
+    const bytes = await getBartaFishSpeech(text, language);
+    if (bytes) return mp3(bytes, "fish");
+  }
+  const bundled = await readBundledSpeech(text, language);
+  if (bundled) return mp3(bundled, "bundled");
+  if (mode === "fallback") {
+    const bytes = await getBartaFishSpeech(text, language);
+    if (bytes) return mp3(bytes, "fish");
+  }
+  if (config.provider === "bundled") return jsonNoStore({ message: "No hosted recording is available for this reply." }, 404);
 
   if (config.provider === "local") {
     try {
       const wav = await synthesizeLocalSpeech(config.executable, text, language, request.signal);
+      if (wav.byteLength > maxAudioBytes) throw new Error("audio_too_large");
       return new Response(wav, { headers: { "Content-Type": "audio/wav", "Cache-Control": "no-store" } });
     } catch {
       return jsonNoStore({ message: "The local speech engine could not create audio." }, 502);
     }
   }
 
-  const voice = voices[language];
-  const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${voice.locale}"><voice name="${voice.name}"><prosody rate="-10%">${escapeXml(text)}</prosody></voice></speak>`;
+  const azureVoice = voices[language];
+  const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${azureVoice.locale}"><voice name="${azureVoice.name}"><prosody rate="-10%">${escapeXml(text)}</prosody></voice></speak>`;
   try {
     const result = await fetch(`https://${config.region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: "POST",
@@ -73,10 +102,7 @@ export async function POST(request: Request) {
       signal: AbortSignal.timeout(12_000),
     });
     if (!result.ok) return jsonNoStore({ message: "The speech service could not load the audio." }, 502);
-    const bytes = await result.arrayBuffer();
-    if (bytes.byteLength === 0 || bytes.byteLength > maxAudioBytes) {
-      return jsonNoStore({ message: "The speech service returned invalid audio." }, 502);
-    }
+    const bytes = await boundedResponseBytes(result, maxAudioBytes);
     return new Response(bytes, { headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" } });
   } catch {
     return jsonNoStore({ message: "The speech service could not load the audio." }, 502);

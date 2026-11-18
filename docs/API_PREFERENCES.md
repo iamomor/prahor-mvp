@@ -245,3 +245,18 @@ Modified: `src/lib/contracts/adapt.ts`, `src/lib/contracts/api.ts`,
 `tests/auth/offline.spec.ts`, `tests/auth/live.spec.ts`, and API documentation.
 The API documentation updates are `docs/API_CONTRACTS.md`,
 `docs/architecture/api-contracts.md`, and `supabase/README.md`.
+# Day 3 integration note
+
+The integration candidate keeps the strict ten-field account payload and existing
+database schema. New UI requests include optional `X-Prohor-Account` with the
+identity previously read from `/api/me`. A mismatch with the server-verified caller
+returns 409 before reading or writing preferences. The header grants no authority.
+Clients still send the exact latest ETag through If-Match, reload on conflict, and
+require another explicit review before saving. Omor must review this addition
+before promotion to `develop`.
+
+Compact density, focused view, typeface and nullable system-following contrast are
+device-only preferences. Applying account choices preserves them; saving never
+adds these unsupported fields or silently changes the saved `readAloud` value.
+Loading compares local/account choices without writing. An explicit review selects
+which choices to apply/save. Turning off sync does not delete account settings.

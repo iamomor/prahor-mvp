@@ -1,0 +1,68 @@
+
+> prohor@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.4.6 (webpack)
+✓ Running next.config.ts took 26ms
+- Experiments (use with caution):
+  · cpus: 2
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.7s
+  Running TypeScript ...
+  Finished TypeScript in 2.3s ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/30) ...
+  Generating static pages using 2 workers (7/30) 
+  Generating static pages using 2 workers (14/30) 
+  Generating static pages using 2 workers (22/30) 
+✓ Generating static pages using 2 workers (30/30) in 997ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ○ /accessibility
+├ ƒ /api/ai/barta-audio
+├ ƒ /api/ai/chat
+├ ƒ /api/auth/me
+├ ƒ /api/auth/provider
+├ ƒ /api/care-requests
+├ ƒ /api/health
+├ ƒ /api/me
+├ ƒ /api/poth/facilities
+├ ƒ /api/poth/nearby
+├ ƒ /api/preferences
+├ ƒ /app
+├ ƒ /app/bujhi
+├ ƒ /app/jibonrekha
+├ ○ /ask
+├ ƒ /auth/[action]
+├ ƒ /auth/callback
+├ ○ /auth/denied
+├ ○ /barta-demo
+├ ○ /bujhi
+├ ○ /demo/bujhi
+├ ○ /demo/jibonrekha
+├ ○ /faq
+├ ○ /features
+├ ○ /for-mothers
+├ ○ /for-providers
+├ ○ /how-it-works
+├ ○ /jibonrekha
+├ ○ /manifest.webmanifest
+├ ○ /offline
+├ ○ /poth
+├ ƒ /provider
+├ ƒ /sign-in
+├ ƒ /sign-up
+└ ○ /trust
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

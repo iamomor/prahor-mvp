@@ -133,7 +133,7 @@ test("keyboard completes the question and restores visible modal focus", async (
 });
 
 test("complete phrases never duplicate and drafts survive live controls, language and preferences", async ({ page }) => {
-  const calls: string[] = []; page.on("request", request => { if (request.url().includes("/api/")) calls.push(request.url()); }); await page.goto("/");
+  const calls: string[] = []; page.on("request", request => { if (request.url().includes("/api/") && !["GET", "HEAD"].includes(request.method())) calls.push(request.url()); }); await page.goto("/");
   const input = page.locator("#visit-question-touch"); const original = await input.inputValue();
   await page.getByRole("button", { name: "About my visit", exact: true }).click(); await page.getByRole("button", { name: "About my visit", exact: true }).click();
   await expect(input).toHaveValue(original); await expect(page.locator(".story-question-gloss")).toHaveText(Array(3).fill("How can I prepare for my next visit?"));
@@ -145,7 +145,7 @@ test("complete phrases never duplicate and drafts survive live controls, languag
   await input.fill("Synthetic visit question");
   const dialog = await openPreferences(page);
   await dialog.getByRole("radio", { name: "Original Rose", exact: true }).check();
-  await dialog.getByRole("checkbox", { name: /^Higher contrast.*independent of theme$/ }).check();
+  await dialog.locator('input[type="radio"][value="more"]').check();
   await dialog.getByLabel("Text size", { exact: true }).selectOption("extra-large");
   await dialog.getByLabel("Typeface", { exact: true }).selectOption("rubik");
   await dialog.getByLabel("Layout", { exact: true }).selectOption("spacious");
@@ -175,7 +175,7 @@ test("practice inputs become editable only after their shared state initializes"
 });
 
 test("facility filtering, check-in and consent stay local and truthful", async ({ page }) => {
-  const calls: string[] = []; page.on("request", request => { if (request.url().includes("/api/")) calls.push(request.url()); }); await page.goto("/");
+  const calls: string[] = []; page.on("request", request => { if (request.url().includes("/api/") && !["GET", "HEAD"].includes(request.method())) calls.push(request.url()); }); await page.goto("/");
   const search = page.getByLabel("Find a facility", { exact: true }); await search.fill("Mitford"); await expect(page.locator(".story-facility-list > a")).toHaveCount(1); await expect(page.locator(".story-facility-list > a")).toHaveAttribute("href", /facilities\/52\/profile/);
   await search.fill("no example matches"); await expect(page.getByRole("status").filter({ hasText: "No match in these examples" })).toBeVisible();
   await page.getByRole("radio", { name: "Tired", exact: true }).check(); await expect(page.getByRole("radio", { name: "Tired", exact: true })).toBeChecked();

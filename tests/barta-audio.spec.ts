@@ -21,6 +21,7 @@ test("dictation fills an editable draft and read aloud waits for an explicit act
     Object.defineProperty(window, "speechSynthesis", {
       value: {
         getVoices: () => [{ localService: true, lang: "en-GB" }],
+        addEventListener: () => {}, removeEventListener: () => {},
         cancel: () => {},
         speak: (utterance: SpeechSynthesisUtterance) => {
           tracker.read = utterance.text;

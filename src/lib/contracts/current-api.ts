@@ -5,6 +5,7 @@ import { bartaRequestSchema, bartaAnswerSchema, bartaAudioRequestSchema } from "
 import { createSupportRequestRequestSchema } from "./bondhon";
 import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt";
 import { currentUserResponseSchema } from "./transport";
+import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
 
 // Derived from the existing feature schemas; no second domain validation system.
 export const starterBartaRequestSchema = bartaRequestSchema.pick({ question: true });
@@ -38,7 +39,7 @@ export const currentApiContracts = {
   },
   "GET /api/preferences": {
     source: "src/app/api/preferences/route.ts", status: "Implemented", owners: ["Omor", "Apurbo"], auth: "confirmed-user",
-    request: z.undefined(), responses: { 200: preferencesResponseSchema, 401: apiErrorSchema, 403: apiErrorSchema, 500: apiErrorSchema },
+    request: z.undefined(), responses: { 200: preferencesResponseSchema, 401: apiErrorSchema, 403: apiErrorSchema, 409: apiErrorSchema, 500: apiErrorSchema },
   },
   "PATCH /api/preferences": {
     source: "src/app/api/preferences/route.ts", status: "Implemented", owners: ["Omor", "Apurbo"], auth: "confirmed-user",
@@ -65,7 +66,15 @@ export const currentApiContracts = {
   "POST /api/ai/barta-audio": {
     source: "src/app/api/ai/barta-audio/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
     request: bartaAudioRequestSchema,
-    responses: { 200: z.instanceof(Uint8Array), 400: bartaErrorSchema, 403: bartaErrorSchema, 429: bartaErrorSchema, 502: bartaErrorSchema, 503: bartaErrorSchema },
+    responses: { 200: z.instanceof(Uint8Array), 400: bartaErrorSchema, 403: bartaErrorSchema, 404: bartaErrorSchema, 429: bartaErrorSchema, 502: bartaErrorSchema, 503: bartaErrorSchema },
+  },
+  "GET /api/poth/facilities": {
+    source: "src/app/api/poth/facilities/route.ts", status: "Limited", owners: ["Iftee", "Samin", "Omor"], auth: "public",
+    request: directoryQuerySchema, responses: { 200: directoryResponseSchema, 400: pothErrorSchema },
+  },
+  "GET /api/poth/nearby": {
+    source: "src/app/api/poth/nearby/route.ts", status: "Limited", owners: ["Iftee", "Samin", "Omor"], auth: "public",
+    request: nearbyQuerySchema, responses: { 200: nearbyResponseSchema, 400: pothErrorSchema, 429: pothErrorSchema, 503: pothErrorSchema },
   },
   "POST /api/care-requests": {
     source: "src/app/api/care-requests/route.ts", status: "Mock", owners: ["Omor", "Samin"], auth: "public-stub",

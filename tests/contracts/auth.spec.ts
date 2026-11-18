@@ -22,6 +22,17 @@ function fixture({ role = "mother", expired = false, missing = false, foreign = 
       signInWithOtp: async (args: unknown) => { record("otp", args); return { error: rateLimited ? { code: "email_send_rate_limited" } : null }; },
       signOut: async (args: unknown) => { record("signOut", args); return { error: signoutFailure ? {} : null }; },
     },
+    rpc: async (name: string) => {
+      record("rpc", name);
+      if (name === "prohor_role_profile_ready") return { data: 1, error: null };
+      if (name === "prohor_save_role_profile") return { data: null, error: null };
+      if (name === "prohor_account_access") return { data: {
+        userId: id, displayName: "Synthetic Ayesha", activeRole: role,
+        onboarded: true, roles: role === "provider" ? [{ role: "provider", status: "approved" }] : [{ role: "mother", status: "approved" }],
+        provider: null,
+      }, error: null };
+      throw new Error(`Unexpected RPC: ${name}`);
+    },
     from: (table: string) => {
       record("from", table);
       return { select: (columns: string) => {
@@ -41,7 +52,9 @@ function request(action: AuthAction, data: unknown = {}, origin = "http://localh
     method: "POST", headers: { origin, "content-type": "application/json" }, body: JSON.stringify(data),
   });
 }
-const credentials = { email: "ayesha-rls@example.invalid", password: "Synthetic-passphrase-123!", next: "/app" };
+const credentials = { email: "ayesha-rls@example.invalid", password: "Synthetic-passphrase-123!", next: "/app",
+  profile: { displayName: "Synthetic Ayesha", purposes: ["mother"] } };
+const signInCredentials = { email: credentials.email, password: credentials.password, next: credentials.next };
 function post(action: AuthAction, data: unknown = credentials, setup = fixture(), origin?: string) {
   return handleAuthPost(request(action, data, origin), action, { createClient: async () => setup.client, siteUrl: "http://localhost:3000" });
 }
@@ -74,7 +87,7 @@ test("registration without a session does not claim dashboard access", async () 
   const response = await post("sign-up", credentials, setup);
   expect(response.status).toBe(503);
   expect(await response.json()).toEqual({ code: "registration-pending" });
-  expect(setup.calls).toEqual([{ method: "signUp", args: {
+  expect(setup.calls).toEqual([{ method: "rpc", args: "prohor_role_profile_ready" }, { method: "signUp", args: {
     email: credentials.email, password: credentials.password,
     options: { emailRedirectTo: "http://localhost:3000/auth/callback" },
   } }]);
@@ -99,7 +112,7 @@ test("email rate limit is explicit and does not claim a confirmation was sent", 
 });
 
 test("sign-in validates server identity and preserves permitted destination", async () => {
-  const response = await post("sign-in", { ...credentials, next: "/app?visit=prepare" });
+  const response = await post("sign-in", { ...signInCredentials, next: "/app?visit=prepare" });
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ redirectTo: "/app?visit=prepare" });
   expect(response.headers.get("cache-control")).toBe("no-store");
@@ -111,14 +124,14 @@ test("automatic confirmation still requires the provisioned profile", async () =
 });
 
 test("invalid credentials return a generic error and no redirect", async () => {
-  const response = await post("sign-in", credentials, fixture({ invalid: true }));
+  const response = await post("sign-in", signInCredentials, fixture({ invalid: true }));
   expect(response.status).toBe(400);
   expect(await response.json()).toEqual({ code: "authentication-failed" });
 });
 
 test("valid password with unconfirmed email gives a confirmation path and no session", async () => {
   const setup = fixture({ unconfirmedSignIn: true });
-  const response = await post("sign-in", credentials, setup);
+  const response = await post("sign-in", signInCredentials, setup);
   expect(response.status).toBe(403);
   expect(await response.json()).toEqual({ code: "confirmation-required" });
   expect(setup.calls).toEqual([{ method: "signIn", args: {

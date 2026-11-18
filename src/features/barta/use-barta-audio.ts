@@ -68,7 +68,11 @@ export function useBartaAudio() {
 
     function speak(voice: SpeechSynthesisVoice) {
       const utterance = new SpeechSynthesisUtterance(prepareSpeechText(text, language));
-      utterance.voice = voice;
+      try {
+        utterance.voice = voice;
+      } catch {
+        // Mock environments where voice is a plain object instead of a SpeechSynthesisVoice instance
+      }
       utterance.lang = voice.lang;
       utterance.rate = language === "bn" ? 0.84 : 0.9;
       utterance.volume = 1;

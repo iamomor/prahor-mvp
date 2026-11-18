@@ -48,6 +48,14 @@ test("default typography, four alternate tag roles and equal bento heights", asy
   expect(metrics.headingLines).toBeLessThanOrEqual(2.01);
   for (const preset of ["rubik", "google-sans", "noto-serif", "roboto-slab"]) {
     await page.evaluate(value => { document.documentElement.dataset.font = value; }, preset);
+    const debug = await page.locator(".care-module-tag").first().evaluate(element => ({
+      fontFamily: getComputedStyle(element).fontFamily,
+      proFontTag: getComputedStyle(element).getPropertyValue("--pro-font-tag"),
+      fontRubik: getComputedStyle(element).getPropertyValue("--font-rubik"),
+      fontGoogleSans: getComputedStyle(element).getPropertyValue("--font-google-sans"),
+      docDataFont: document.documentElement.getAttribute("data-font"),
+    }));
+    console.log("DEBUG PRESET", preset, debug);
     expect(await page.locator(".care-module-tag").first().evaluate(element => getComputedStyle(element).fontFamily)).not.toContain("JetBrains");
   }
 });

@@ -24,7 +24,17 @@ export async function readIdentity(client: SupabaseClient | null): Promise<Ident
   } catch { return { status: 503 }; }
 }
 
+const publicAppRoutes = new Set([
+  "/app/adapt",
+  "/app/shonket",
+  "/app/bondhon",
+  "/app/shusthota",
+  "/app/bujhi",
+  "/app/jibonrekha",
+]);
+
 export function workspaceRole(pathname: string): WorkspaceRole | null {
+  if (publicAppRoutes.has(pathname)) return null;
   if (pathname === "/app" || pathname.startsWith("/app/")) return "mother";
   if (pathname === "/provider" || pathname.startsWith("/provider/")) return "provider";
   return null;

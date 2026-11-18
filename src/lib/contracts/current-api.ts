@@ -12,6 +12,7 @@ export const starterCareRequestSchema = createSupportRequestRequestSchema.pick({
 export const starterBartaResponseSchema = z.strictObject({ message: nonEmptyText(500), status: z.literal("not_connected") });
 export const starterCareResponseSchema = z.strictObject({ message: nonEmptyText(500), status: z.literal("not_sent") });
 export const starterHealthResponseSchema = z.strictObject({ message: nonEmptyText(500) });
+export const starterAudioResponseSchema = z.strictObject({ message: nonEmptyText(500) });
 export const legacyIdentityResponseSchema = z.strictObject({ profile: z.strictObject({
   user_id: currentUserSchema.shape.id, display_name: currentUserSchema.shape.displayName,
   role: currentUserSchema.shape.role,
@@ -57,6 +58,10 @@ export const currentApiContracts = {
   "POST /api/ai/chat": {
     source: "src/app/api/ai/chat/route.ts", status: "Mock", owners: ["Iftee", "Omor"], auth: "public-stub",
     request: starterBartaRequestSchema, responses: { 400: starterBartaResponseSchema, 501: starterBartaResponseSchema },
+  },
+  "POST /api/ai/barta-audio": {
+    source: "src/app/api/ai/barta-audio/route.ts", status: "Implemented", owners: ["Iftee", "Omor"], auth: "public-stub",
+    request: z.unknown(), responses: { 400: starterAudioResponseSchema, 403: starterAudioResponseSchema, 503: starterAudioResponseSchema },
   },
   "POST /api/care-requests": {
     source: "src/app/api/care-requests/route.ts", status: "Mock", owners: ["Omor", "Samin"], auth: "public-stub",

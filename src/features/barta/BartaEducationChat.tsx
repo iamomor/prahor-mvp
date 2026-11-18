@@ -6,6 +6,7 @@ import { educationTopics, type EducationTopic } from "./education-topics";
 import { getBartaSpokenGuide } from "./barta-spoken-text";
 import { BartaAudioFile } from "./BartaAudioFile";
 import { useBartaAudio } from "./use-barta-audio";
+import { ReadAloudButton } from "@/features/adapt/components/ReadAloudButton";
 import styles from "./barta-education.module.css";
 
 type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
@@ -128,7 +129,7 @@ function Answer({ result, locale, turnId, showOptions, onSelect, busy, speaking,
             </ul>
           </section>
         </>
-      ) : <p className={styles.answerText} role={urgent && showOptions ? "alert" : undefined}>{result.message}</p>}
+      ) : <p className={styles.answerText} lang={locale} role={urgent && showOptions ? "alert" : undefined}>{result.message}</p>}
       {audioTicket && (
         <BartaAudioFile key={audioTicket} ticket={audioTicket}
           text={spokenText} language={locale}
@@ -167,6 +168,10 @@ export function BartaEducationChat({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const copy = educationCopy[formLanguage];
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const audio = useBartaAudio();
   const spokenGuide = getBartaSpokenGuide(formLanguage);
   const [voiceLanguage, setVoiceLanguage] = useState<Language | "auto">("auto");
@@ -224,7 +229,14 @@ export function BartaEducationChat({
                 speaking={audio.speaking === "barta-current"} playbackNotice={playbackMessage("barta-current")} onRead={readAnswer} />
             </div>}
             {busy && <p className={styles.notice} lang={formLanguage}>{copy.checking}</p>}
-            {error && <div ref={latest}><p className={styles.notice} lang={error.language} role="alert">{error.message}</p></div>}
+            {error && (
+              <div ref={latest} className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className={styles.notice} lang={error.language} role="alert">{error.message}</p>
+                  <ReadAloudButton text={error.message} language={error.language} label="Read response aloud" />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -240,9 +252,9 @@ export function BartaEducationChat({
           <div className={styles.composer}>
             <textarea id="barta-question" ref={questionInput} value={question}
               placeholder={copy.placeholder} aria-describedby="barta-privacy"
-              onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={busy} maxLength={1200} required />
+              onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!mounted || busy} maxLength={1200} required />
             <div className={styles.composerTools}>
-              <button type="button" className={styles.read} disabled={busy} aria-describedby="barta-voice-hint"
+              <button type="button" className={styles.read} disabled={!mounted || busy} aria-describedby="barta-voice-hint"
                 onClick={() => {
                   pauseAudio();
                   audio.dictate(micLanguage, formLanguage, onDictation);
@@ -252,7 +264,7 @@ export function BartaEducationChat({
               </button>
               <label className={styles.language}>
                 {copy.voiceLanguage}
-                <select value={voiceLanguage} disabled={busy || audio.listening} aria-describedby="barta-voice-hint"
+                <select value={voiceLanguage} disabled={!mounted || busy || audio.listening} aria-describedby="barta-voice-hint"
                   onChange={(event) => {
                     const value = event.currentTarget.value;
                     if (value === "auto" || value === "bn" || value === "en") setVoiceLanguage(value);
@@ -267,7 +279,7 @@ export function BartaEducationChat({
           <div className={styles.chatPreferences}>
           <label className={styles.language}>
             <span>{copy.answerLanguage}</span>
-            <select value={languageChoice} disabled={busy || audio.listening}
+            <select value={languageChoice} disabled={!mounted || busy || audio.listening}
               onChange={(event) => {
                 const selected = event.currentTarget.value;
                 onLanguage(selected === "en" || selected === "auto" ? selected : "bn");
@@ -283,7 +295,7 @@ export function BartaEducationChat({
           </div>
           <div className={styles.formFooter}>
             <p id="barta-privacy">{copy.privacy}</p>
-            <button type="submit" className="pro-btn pro-btn-primary" disabled={busy || audio.listening || !question.trim()}>
+            <button type="submit" className="pro-btn pro-btn-primary" aria-label={formLanguage === "bn" ? copy.submit : "Ask Barta — Ask PROHOR"} disabled={busy || audio.listening || !question.trim()}>
               {copy.submit}<ArrowUp size={18} aria-hidden="true" />
             </button>
           </div>

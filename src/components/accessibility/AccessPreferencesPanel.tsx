@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useId } from "react";
 import {
   DEFAULT_PROHOR_PREFERENCES,
   applyPreferences,
@@ -10,6 +10,7 @@ import {
   type ProhorAccessPreferences,
   type ProhorTheme,
 } from "../../lib/access-preferences";
+import { ContrastPreferenceControl } from "./ContrastPreferenceControl";
 
 const THEME_LABELS: Record<ProhorTheme, string> = {
   "quiet-garden": "Quiet Garden",
@@ -27,6 +28,7 @@ export function AccessPreferencesPanel() {
     DEFAULT_PROHOR_PREFERENCES,
   );
   const [ready, setReady] = useState(false);
+  const uid = useId();
 
   useEffect(() => {
     const saved = readLocalPreferences();
@@ -54,6 +56,11 @@ export function AccessPreferencesPanel() {
     key: K,
     value: ProhorAccessPreferences[K],
   ) {
+    if (key === "spaciousLayout") {
+      const layoutDensity = value ? "spacious" : "comfortable";
+      commit({ ...prefs, spaciousLayout: Boolean(value), layoutDensity });
+      return;
+    }
     commit({ ...prefs, [key]: value });
   }
 
@@ -73,11 +80,11 @@ export function AccessPreferencesPanel() {
 
   return (
     <section
-      aria-labelledby="access-title"
+      aria-labelledby={`${uid}-title`}
       className="space-y-6 rounded-2xl border border-pro-border bg-pro-elevated p-5 text-pro-text sm:p-7"
     >
       <div className="space-y-2">
-        <h2 id="access-title" className="text-2xl font-semibold">
+        <h2 id={`${uid}-title`} className="text-2xl font-semibold">
           Adjust how you use PROHOR
         </h2>
         <p className="max-w-prose text-pro-muted">
@@ -97,7 +104,7 @@ export function AccessPreferencesPanel() {
               >
                 <input
                   type="radio"
-                  name="prohor-theme"
+                  name={`${uid}-theme`}
                   value={id}
                   checked={prefs.theme === id}
                   onChange={() => update("theme", id)}
@@ -108,6 +115,12 @@ export function AccessPreferencesPanel() {
           )}
         </div>
       </fieldset>
+
+      <ContrastPreferenceControl
+        compact
+        value={prefs.highContrast}
+        onChange={(val) => update("highContrast", val)}
+      />
 
       <fieldset className="space-y-3">
         <legend className="font-semibold">Reading and layout</legend>
@@ -148,11 +161,10 @@ export function AccessPreferencesPanel() {
             >
               <input
                 type="radio"
-                name="prohor-text-scale-radio"
+                name={`${uid}-text-scale-radio`}
                 value={value}
                 checked={prefs.textScale === value}
                 onChange={() => update("textScale", value)}
-                className="sr-only"
               />
               <span>{label}</span>
             </label>
@@ -178,16 +190,6 @@ export function AccessPreferencesPanel() {
             <span>{label}</span>
           </label>
         ))}
-        {/* Supporting radio control for test suites asserting on data-contrast radio selector */}
-        <div className="sr-only" aria-hidden="true">
-          <input
-            type="radio"
-            name="prohor-contrast-radio-more"
-            value="more"
-            checked={prefs.highContrast === true}
-            onChange={() => update("highContrast", true)}
-          />
-        </div>
       </fieldset>
 
       <fieldset className="space-y-2">
@@ -199,7 +201,7 @@ export function AccessPreferencesPanel() {
         <label className="flex items-center gap-2">
           <input
             type="radio"
-            name="communication"
+            name={`${uid}-communication`}
             checked={prefs.communication === "text"}
             onChange={() => update("communication", "text")}
           />{" "}
@@ -208,7 +210,7 @@ export function AccessPreferencesPanel() {
         <label className="flex items-center gap-2">
           <input
             type="radio"
-            name="communication"
+            name={`${uid}-communication`}
             checked={prefs.communication === "aac"}
             onChange={() => update("communication", "aac")}
           />{" "}

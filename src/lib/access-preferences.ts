@@ -114,7 +114,7 @@ export function readLocalPreferences(): ProhorAccessPreferences {
     }
     return lastSnapshot;
   } catch {
-    if (transientPreferences) return { ...transientPreferences };
+    if (transientPreferences) return { ...(transientPreferences as ProhorAccessPreferences) };
     // Keep the fallback referentially stable for useSyncExternalStore.
     lastSnapshotKey = undefined;
     lastSnapshot = DEFAULT_PROHOR_PREFERENCES;

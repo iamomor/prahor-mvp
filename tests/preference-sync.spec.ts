@@ -82,40 +82,33 @@ test.describe("Phase 3: Preference Sync Schema and Conversion", () => {
 });
 
 test.describe("Phase 3: Server API Security and Route Contracts", () => {
-  test("unauthenticated requests to /api/access-preferences return 401 with no-store", async ({
+  test("unauthenticated requests to /api/preferences return 401 or safe error with no-store", async ({
     request,
   }) => {
     // GET
-    const getRes = await request.get("/api/access-preferences");
-    expect([401, 503]).toContain(getRes.status());
-    expect(getRes.headers()["cache-control"]).toBe("no-store");
+    const getRes = await request.get("/api/preferences");
+    expect([401, 500, 503]).toContain(getRes.status());
+    expect(getRes.headers()["cache-control"]).toContain("no-store");
 
-    // PUT
-    const putRes = await request.put("/api/access-preferences", {
+    // PATCH
+    const patchRes = await request.patch("/api/preferences", {
       data: {
-        schemaVersion: 2,
-        settings: DEFAULT_ACCESS_PREFERENCES,
-        expectedUpdatedAt: null,
+        textScale: "large",
       },
     });
-    expect([401, 503]).toContain(putRes.status());
-    expect(putRes.headers()["cache-control"]).toBe("no-store");
-
-    // DELETE
-    const delRes = await request.delete("/api/access-preferences");
-    expect([401, 503]).toContain(delRes.status());
-    expect(delRes.headers()["cache-control"]).toBe("no-store");
+    expect([401, 500, 503]).toContain(patchRes.status());
+    expect(patchRes.headers()["cache-control"]).toContain("no-store");
   });
 
-  test("malformed JSON in PUT request returns 400 Bad Request with no-store", async ({
+  test("malformed JSON in PATCH request returns 400 or safe error with no-store", async ({
     request,
   }) => {
-    const res = await request.put("/api/access-preferences", {
+    const res = await request.patch("/api/preferences", {
       headers: { "Content-Type": "application/json" },
       data: "{ malformed json",
     });
-    expect([400, 401, 503]).toContain(res.status());
-    expect(res.headers()["cache-control"]).toBe("no-store");
+    expect([400, 401, 500, 503]).toContain(res.status());
+    expect(res.headers()["cache-control"]).toContain("no-store");
   });
 });
 

@@ -180,6 +180,13 @@ async function openAacComposerOnAdapt(page: Page) {
     return;
   }
 
+  try {
+    await expect(aacSection).toBeVisible({ timeout: 2000 });
+    return;
+  } catch {
+    // Not yet visible after hydration; toggle accordion
+  }
+
   const isExpanded = await accordionBtn.getAttribute("aria-expanded");
   if (isExpanded !== "true") {
     await accordionBtn.click();

@@ -5,7 +5,7 @@ import {
 import { contractVersion, timestampSchema } from "./common";
 
 /** Existing settings are reused; new controls are proposed, not rendered by this change. */
-export const accessPreferencesSchema = z.strictObject({
+export const rawAccessPreferencesSchema = z.strictObject({
   theme: z.enum(themeIds),
   highContrast: z.boolean().nullable(),
   textScale: z.enum(["default", "large", "extra-large"]),
@@ -20,7 +20,13 @@ export const accessPreferencesSchema = z.strictObject({
   focusedView: z.boolean().optional(),
   textSpacing: z.enum(["default", "increased"]),
   readAloud: z.boolean(),
-}).superRefine((settings, context) => {
+});
+
+export const patchAccessPreferencesSchema = rawAccessPreferencesSchema.partial()
+  .refine((value: Record<string, unknown>) => Object.values(value).some(item => item !== undefined), "Provide at least one preference.");
+export type PatchAccessPreferences = z.infer<typeof patchAccessPreferencesSchema>;
+
+export const accessPreferencesSchema = rawAccessPreferencesSchema.superRefine((settings, context) => {
   if (
     settings.layoutDensity !== undefined &&
     settings.spaciousLayout !== (settings.layoutDensity === "spacious")
@@ -38,9 +44,6 @@ export const accessPreferencesSchema = z.strictObject({
 }));
 
 export type AccessPreferences = z.infer<typeof accessPreferencesSchema>;
-export const patchAccessPreferencesSchema = accessPreferencesSchema.partial()
-  .refine(value => Object.values(value).some(item => item !== undefined), "Provide at least one preference.");
-export type PatchAccessPreferences = z.infer<typeof patchAccessPreferencesSchema>;
 export const preferencesResponseSchema = z.strictObject({
   data: accessPreferencesSchema,
   schemaVersion: z.literal(2),

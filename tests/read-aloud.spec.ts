@@ -122,7 +122,15 @@ async function installSpeechMock(
 
 async function openAdaptReadAloud(page: Page) {
   await page.goto("/app/adapt", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /Read-aloud|পড়ে শোনানো/i }).click();
+  const sectionBtn = page.getByRole("button", { name: /Read-aloud|পড়ে শোনানো/i });
+  await expect(sectionBtn).toBeVisible();
+  await expect(async () => {
+    const isExpanded = await sectionBtn.getAttribute("aria-expanded");
+    if (isExpanded !== "true") {
+      await sectionBtn.click();
+    }
+    expect(await sectionBtn.getAttribute("aria-expanded")).toBe("true");
+  }).toPass({ timeout: 5000 });
 }
 
 const bengaliVoice: MockVoice = { name: "Bangla Device Voice", lang: "bn-BD", voiceURI: "bn-bd" };

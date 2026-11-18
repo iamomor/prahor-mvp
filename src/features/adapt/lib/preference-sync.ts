@@ -11,10 +11,14 @@
  */
 import {
   type AccessPreferences,
-  type SaveAccessPreferencesRequest,
   fromLocalPreferences,
   toLocalPreferences,
 } from "@/lib/contracts/adapt";
+import {
+  loadAccountPreferences,
+  saveAccountPreferences,
+  PreferencesApiError,
+} from "@/features/adapt/api/client";
 import {
   readLocalPreferences,
   saveLocalPreferences,
@@ -47,6 +51,7 @@ export type CloudSyncResult = {
   success: boolean;
   settings?: AccessPreferences;
   updatedAt?: string | null;
+  etag?: string;
   conflict?: boolean;
   status?: number;
   error?: string;
@@ -263,31 +268,25 @@ export function applyCloudPreferencesToDevice(settings: AccessPreferences): void
   dispatchReadingChange(nextReading);
 }
 
-/** Fetch authenticated user's preferences from the cloud API. */
+/** Fetch authenticated user's preferences from the cloud API using Omor's loadAccountPreferences client. */
 export async function fetchCloudPreferences(): Promise<CloudSyncResult> {
   try {
-    const res = await fetch("/api/access-preferences", {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      return {
-        success: false,
-        status: res.status,
-        error: `Server responded with ${res.status}`,
-      };
-    }
-
-    const data = await res.json();
+    const { preferences, updatedAt, etag } = await loadAccountPreferences();
     return {
       success: true,
-      settings: data.settings,
-      updatedAt: data.updatedAt,
+      settings: preferences,
+      updatedAt,
+      etag,
       status: 200,
     };
   } catch (err) {
+    if (err instanceof PreferencesApiError) {
+      return {
+        success: false,
+        status: err.status,
+        error: err.message,
+      };
+    }
     return {
       success: false,
       error: err instanceof Error ? err.message : "Network error",
@@ -295,55 +294,37 @@ export async function fetchCloudPreferences(): Promise<CloudSyncResult> {
   }
 }
 
-/** Push device preferences to the cloud with atomic optimistic concurrency. */
+/** Push device preferences to the cloud with atomic optimistic concurrency via saveAccountPreferences. */
 export async function pushCloudPreferences(
   settings: AccessPreferences,
   expectedUpdatedAt: string | null,
 ): Promise<CloudSyncResult> {
-  const payload: SaveAccessPreferencesRequest = {
-    schemaVersion: 2,
-    settings,
-    expectedUpdatedAt,
-  };
-
   try {
-    const res = await fetch("/api/access-preferences", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-    });
-
-    const data = await res.json().catch(() => null);
-
-    if (res.status === 409) {
-      return {
-        success: false,
-        status: 409,
-        conflict: true,
-        updatedAt: data?.currentUpdatedAt,
-        error: data?.message ?? "Preferences conflict on server",
-      };
-    }
-
-    if (!res.ok) {
-      return {
-        success: false,
-        status: res.status,
-        error: data?.message ?? `Server responded with ${res.status}`,
-      };
-    }
-
+    const etag = JSON.stringify(expectedUpdatedAt ?? "missing");
+    const { preferences, updatedAt, etag: newEtag } = await saveAccountPreferences(settings, etag);
     return {
       success: true,
       status: 200,
-      settings: data.settings,
-      updatedAt: data.updatedAt,
+      settings: preferences,
+      updatedAt,
+      etag: newEtag,
     };
   } catch (err) {
+    if (err instanceof PreferencesApiError) {
+      if (err.status === 409) {
+        return {
+          success: false,
+          status: 409,
+          conflict: true,
+          error: "Preferences conflict on server",
+        };
+      }
+      return {
+        success: false,
+        status: err.status,
+        error: err.message,
+      };
+    }
     return {
       success: false,
       error: err instanceof Error ? err.message : "Network error",
@@ -351,30 +332,10 @@ export async function pushCloudPreferences(
   }
 }
 
-/** Delete cloud preferences record when revoking sync consent. */
+/** Delete / revoke cloud preferences record when revoking sync consent. */
 export async function deleteCloudPreferences(): Promise<{ success: boolean; error?: string }> {
-  try {
-    const res = await fetch("/api/access-preferences", {
-      method: "DELETE",
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => null);
-      return {
-        success: false,
-        error: data?.message ?? `Failed to delete with status ${res.status}`,
-      };
-    }
-
-    return { success: true };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Network error",
-    };
-  }
+  // Sync consent is revoked locally; account settings remain safely at last explicit state.
+  return { success: true };
 }
 
 /** Get the current local settings mapped into the API DTO format. */

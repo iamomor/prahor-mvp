@@ -1,4 +1,4 @@
-﻿# PROHOR — Canonical API contracts (Day 2, Step 14)
+# PROHOR — Canonical API contracts (Day 2, Step 14)
 
 Updated 17 November 2026. This is the single integration reference. It distinguishes
 actual wire behavior from domain proposals. **Implemented means route/code exists,
@@ -67,6 +67,7 @@ of the contract, not merely the body type.**
 | `GET /api/auth/provider` | Implemented; role gate, not a patient queue; Omor + Samin | P; no target-user input | 200 own legacy profile; 401/403/503 bare-code errors (`session-required/access-denied/unavailable`) | Own profile only; no consent/assignment implementation and no patient records returned |
 | `GET /api/health` | Mock; unavailable record persistence; Ifty + Omor | Only Auth `getUser()` is currently checked; no filters consumed | 401/503 `{message}`; valid session -> 501 `{message}`; **no 200 record list** | No record query/write; backend, subject filters, mother/owner authorization and migrations pending |
 | `POST /api/ai/chat` | Mock; Barta unavailable; Iftee + Omor | Public stub; only strict `{question:string}` trimmed 1–1200; unknown fields rejected | 400 or 501 `{message,status:'not_connected'}`; no AI answer or citations | No DB, private context, retrieval or model invocation; depends on approved source RAG before adoption |
+| `POST /api/ai/barta-audio` | Implemented; Barta voice synthesis; Iftee + Omor | Public stub; signed ticket or guide help | 400/403/503 `{message}` or WAV audio stream | Synthesizes local or cloud audio for educational guidance |
 | `POST /api/care-requests` | Mock; not sent; Omor + Samin | Public stub; strict `{message:string(1–1000),method:'text'|'aac'|'call'}`; no ownership accepted | 400 or 501 `{message,status:'not_sent'}`; no persisted/submitted/delivered success | No DB write or provider handoff; Auth, assignment, consent and queue backend pending |
 
 All current outcomes use `Cache-Control: no-store` (private canonical endpoints use

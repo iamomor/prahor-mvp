@@ -16,7 +16,7 @@ test("current API catalog matches every real route method and source file", () =
   const root = resolve("src/app/api");
   const found: Record<string,string> = {};
   for (const file of routeFiles(root)) {
-    const path = `/api/${relative(root, file).replaceAll("\\", "/").replace(/\/route\.ts$/, "")}`;
+    const path = `/api/${relative(root, file).replaceAll("\\", "/").replace(/\/route\.ts$/, "").replace(/\[([^\]]+)\]/g, ":$1")}`;
     for (const match of readFileSync(file, "utf8").matchAll(/export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE)\b/g)) {
       found[`${match[1]} ${path}`] = relative(resolve("."), file).replaceAll("\\", "/");
     }
@@ -39,7 +39,11 @@ test("current Barta accepts public education and legacy payloads while rejecting
   expect(currentApiContracts["POST /api/ai/chat"].request.safeParse(current).success).toBe(true);
   expect(currentApiContracts["POST /api/ai/chat"].request.safeParse(future).success).toBe(true);
   expect(currentApiContracts["POST /api/ai/chat"].request.safeParse({ ...future, diaryText: "Private context" }).success).toBe(false);
-  expect(currentApiContracts["POST /api/care-requests"].request.safeParse({ message: "Synthetic request", method: "aac" }).success).toBe(true);
+  expect(currentApiContracts["POST /api/care-requests"].request.safeParse({ message: "Synthetic request", method: "aac" }).success).toBe(false);
+  expect(currentApiContracts["POST /api/care-requests"].request.safeParse({
+    recipientUserId: ids.provider, message: "Synthetic request", method: "aac", purpose: "Synthetic support",
+    consentGrantIds: [], reviewConfirmed: true,
+  }).success).toBe(true);
   expect(currentApiContracts["POST /api/care-requests"].request.safeParse({ message: "Synthetic request", method: "aac", status: "delivered" }).success).toBe(false);
 });
 
@@ -49,7 +53,10 @@ test("current stub response variants cannot pretend to be completed domain servi
   expect(barta.responses[501].safeParse({ message: "Not connected", status: "not_connected" }).success).toBe(true);
   expect(barta.responses[501].safeParse({ status: "grounded", answer: "Fabricated answer" }).success).toBe(false);
   expect(currentApiContracts["GET /api/health"].responses).not.toHaveProperty("200");
-  expect(currentApiContracts["POST /api/care-requests"].responses[501].safeParse({ status: "delivered", message: "False delivery" }).success).toBe(false);
+  const care = currentApiContracts["POST /api/care-requests"];
+  expect(care.status).toBe("Limited");
+  expect(care.responses[503].safeParse({ status: "delivered", message: "False delivery" }).success).toBe(false);
+  expect(care.responses[201].safeParse({ status: "delivered", message: "False delivery" }).success).toBe(false);
 });
 
 test("shared success/error/page validators match the approved envelopes", () => {

@@ -3,7 +3,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   // Auth suites require their isolated local server/config; RLS guards use node:test.
-  testIgnore: ["**/contracts/**", "**/auth/**", "**/rls/**"],
+  testIgnore: ["**/contracts/**", "**/auth/**", "**/rls/**", "**/database/**", "**/config/**"],
   use: {
     baseURL: process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000",
     channel: process.env.PLAYWRIGHT_CHANNEL,

@@ -3,7 +3,7 @@ import type { AccessPreferences, PatchAccessPreferences } from "@/lib/contracts/
 import { loadAccountPreferences, saveAccountPreferences, PreferencesApiError, type AccountPreferences } from "../api/client";
 import { accountPatch, applyAccount, type DevicePreferences } from "./account-mapping";
 
-export type AccountIdentity = { id: string; displayName: string; role: "mother" | "provider" };
+export type AccountIdentity = import("@/lib/contracts/platform").CurrentUser;
 export type SyncPhase = "guest" | "loading" | "review" | "ready" | "saving" | "error";
 export type SyncState = {
   identity: AccountIdentity | null; phase: SyncPhase; account: AccessPreferences | null;

@@ -7,7 +7,8 @@ test("all current API wire responses match their centralized schemas", async ({ 
   // Eight distinct route modules may compile on first use in the isolated dev server.
   test.setTimeout(90_000);
   for (const [operation, contract] of Object.entries(currentApiContracts)) {
-    const [method, path] = operation.split(" ");
+    const [method, template] = operation.split(" ");
+    const path = template.replace(":id", "e3000000-0000-4000-8000-000000000010");
     const data = path === "/api/ai/chat" ? { question: "Synthetic contract check" } : path === "/api/care-requests"
       ? { message: "Synthetic not-sent contract check", method: "text" } : { textScale: "large" };
     const response = await request.fetch(path, { method, headers: { origin: "http://127.0.0.1:3007" },
@@ -19,11 +20,35 @@ test("all current API wire responses match their centralized schemas", async ({ 
   }
   for (const [path, data] of [["/api/ai/chat", { question: "Synthetic question", diaryText: "Rejected context" }],
     ["/api/care-requests", { message: "Synthetic request", method: "text", status: "delivered" }]] as const) {
-    const response = await request.post(path, { data });
+    const response = await request.post(path, { data, headers: { origin: "http://127.0.0.1:3007" } });
     expect(response.status()).toBe(400);
     const schema = path === "/api/ai/chat" ? currentApiContracts["POST /api/ai/chat"].responses[400] : currentApiContracts["POST /api/care-requests"].responses[400];
     expect(schema.safeParse(await response.json()).success).toBe(true);
   }
+});
+
+test("care routes fail closed without storage and never turn the legacy form into a sent request", async ({ request }) => {
+  const id = "e3000000-0000-4000-8000-000000000010";
+  const headers = { origin: "http://127.0.0.1:3007", "Idempotency-Key": id, "X-Prohor-Account": id };
+  for (const path of ["/api/care-recipients", `/api/care-requests/${id}`, `/api/care-requests/${id}/events`, "/api/provider/requests"]) {
+    const response = await request.get(path, { headers });
+    expect(response.status(), path).toBe(503);
+    expect(response.headers()["cache-control"]).toBe("private, no-store");
+    const body = await response.json();
+    expect(body.error.code).toBe("unavailable");
+    expect(body.data).toBeUndefined();
+  }
+  const response = await request.post("/api/care-requests", { headers, data: {
+    recipientUserId: id, message: "Synthetic reviewed message", method: "aac", purpose: "Synthetic support",
+    consentGrantIds: [], reviewConfirmed: true,
+  } });
+  expect(response.status()).toBe(503);
+  expect((await response.json()).error.message).toContain("could not be confirmed");
+  const legacy = await request.post("/api/care-requests", { headers: { origin: headers.origin }, data: { message: "Synthetic draft", method: "text" } });
+  expect(legacy.status()).toBe(400);
+  expect((await legacy.json()).data).toBeUndefined();
+  const denied = await request.post("/api/care-requests", { headers: { ...headers, origin: "https://foreign.invalid" }, data: {} });
+  expect(denied.status()).toBe(403);
 });
 
 test("preferences route returns safe non-cacheable errors when account storage is unconfigured", async ({ request }) => {
@@ -122,12 +147,11 @@ test("changing appearance preserves the language selected outside the access pan
   await expect(page.getByRole("heading", { name: "সাইন ইন", exact: true })).toBeVisible();
 });
 
-test("email-link validation does not mark an unused password invalid", async ({ page }) => {
+test("MVP sign-in does not offer an email-only action that requires SMTP", async ({ page }) => {
   await page.goto("/sign-in");
   await page.getByRole("button", { name: "English", exact: true }).click();
-  await page.getByRole("button", { name: "Email me a sign-in link instead", exact: true }).click();
-  await expect(page.locator("#email")).toBeFocused();
-  await expect(page.locator("#password")).not.toHaveAttribute("aria-invalid", "true");
+  await expect(page.getByRole("button", { name: "Email me a sign-in link instead" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Resend confirmation email" })).toHaveCount(0);
 });
 
 for (const mode of ["blocked", "quota-exceeded"] as const) {
@@ -170,7 +194,7 @@ test("large-text, contrast and theme combinations preserve the auth form at 320p
   for (const theme of ["Quiet Garden", "Original Rose", "Morning Mist"]) {
     await page.getByRole("radio", { name: theme, exact: true }).check();
     for (const contrast of [false, true]) {
-      await page.getByLabel("Stronger contrast", { exact: true }).setChecked(contrast);
+      await page.getByRole("radio", { name: contrast ? "Higher contrast" : "Standard contrast", exact: true }).check();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${theme}, contrast=${contrast}`).toBe(true);
       await expect(page.locator("#email")).toHaveValue("ayesha-rls@example.invalid");
       expect((await new AxeBuilder({ page }).analyze()).violations, `${theme}, contrast=${contrast}`).toEqual([]);

@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { onboardingSchema } from "../contracts/account";
 
 const email = z.string().trim().toLowerCase().max(254).email();
 const next = z.string().max(2048).optional();
 export const signInSchema = z.strictObject({ email, password: z.string().min(1).max(128), next });
-export const signUpSchema = z.strictObject({ email, password: z.string().min(12).max(128), next });
+export const signUpSchema = z.strictObject({ email, password: z.string().min(12).max(128), next,
+  profile: onboardingSchema });
 export const emailLinkSchema = z.strictObject({ email, next });
 
 export function siteOrigin(value: string | undefined): string | null {

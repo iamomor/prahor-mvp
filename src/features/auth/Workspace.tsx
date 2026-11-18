@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/i18n/use-language";
 import type { OwnProfile } from "@/lib/auth/access";
 
@@ -16,6 +17,7 @@ export function Workspace({ profile }: { profile: OwnProfile }) {
     } catch { setFailed(true); setBusy(false); }
   }
   return <section className="pro-card space-y-5">
+    <Link href="/account" className="inline-flex min-h-12 items-center underline">{t({ en: "Account and roles / switch workspace", bn: "অ্যাকাউন্ট ও পরিচয় / কর্মক্ষেত্র বদলান" })}</Link>
     <h1 className="text-3xl font-semibold">{profile.role === "mother" ? t({ en: "Your PROHOR dashboard", bn: "আপনার প্রহর ড্যাশবোর্ড" }) : t({ en: "Simulated provider workspace", bn: "সিমুলেটেড সেবাদাতার কর্মক্ষেত্র" })}</h1>
     {profile.display_name && <p>{profile.display_name}</p>}
     <p>{profile.role === "mother" ? t({ en: "You are signed in to your own account. Health-record features are not connected yet.", bn: "আপনার নিজের অ্যাকাউন্টে সাইন ইন করা আছে। স্বাস্থ্যতথ্যের সুবিধা এখনো যুক্ত হয়নি।" }) : t({ en: "Your provider access is authorized. No maternal records are shared here; consent and assignment workflows are not connected yet.", bn: "আপনার সেবাদাতার প্রবেশাধিকার অনুমোদিত। এখানে মায়েদের তথ্য শেয়ার হয়নি; সম্মতি ও দায়িত্ব বণ্টনের ব্যবস্থা এখনো যুক্ত হয়নি।" })}</p>

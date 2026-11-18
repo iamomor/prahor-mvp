@@ -10,20 +10,25 @@ export function inferDocumentType(report: ExtractedReport): DocumentType {
   return "observation";
 }
 export function resultStructure(field: ExtractedReportField): StructuredResult {
-  if (field.structuredResult?.original === field.value) return field.structuredResult;
   const numeric = parseNumeric(field.value);
-  if (numeric.kind === "number") return { type: "numeric", original: field.value, normalizedCandidate: numeric.normalized };
-  const pressure = field.value.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (numeric.kind === "number") return { type: "numeric", original: field.value, normalizedCandidate: field.normalizedValue };
+  if (field.structuredResult?.original === field.value && field.structuredResult.type !== "numeric") return field.structuredResult;
+  const pressure = (field.observationCode === "blood_pressure" || /blood pressure|রক্তচাপ|প্রেসার/i.test(field.label)) && field.value.match(/^(\d+)\s*\/\s*(\d+)$/);
   if (pressure) return { type: "compound", original: field.value, components: [{ label: "systolic", original: pressure[1] }, { label: "diastolic", original: pressure[2] }] };
   return { type: /^(?:positive|negative|reactive|non[- ]?reactive|detected|not detected|trace|[ABO]+[+-]|[<>≤≥]\s*\d)/i.test(field.value) ? "qualitative" : "textual", original: field.value };
 }
 export function normalizeReport(report: ExtractedReport): AntenatalReportV2 {
-  let sections: AntenatalSections = { ...report.sections };
+  const sections: AntenatalSections = { ...report.sections };
+  const observationSections = { vitals: [] as string[], laboratory: [] as string[], ultrasound: [] as string[] };
   const fields = report.fields.map((field) => {
-    const section: ReportSection = field.section ?? (field.category === "laboratory_tests" ? "laboratory" : field.category === "ultrasound_report_notes" ? "ultrasound" : field.category === "vital_signs" || field.category === "fetal_movement" ? "vitals" : "vitals");
-    if (section === "laboratory" || section === "vitals" || section === "ultrasound") sections = { ...sections, [section]: { ...sections[section], fieldIds: report.fields.filter((candidate) => (candidate.section ?? (candidate.category === "laboratory_tests" ? "laboratory" : candidate.category === "ultrasound_report_notes" ? "ultrasound" : "vitals")) === section).map((item) => item.id) } };
-    return { ...field, section, structuredResult: resultStructure(field), laboratory: section === "laboratory" ? { originalTestLabel: field.rawValue !== undefined ? field.label : field.label, ...field.laboratory } : field.laboratory };
+    const section: ReportSection = field.section ?? (field.category === "laboratory_tests" ? "laboratory" : field.category === "ultrasound_report_notes" ? "ultrasound" : "vitals");
+    if (section === "vitals" || section === "laboratory" || section === "ultrasound") observationSections[section].push(field.id);
+    return { ...field, section, structuredResult: resultStructure(field), laboratory: section === "laboratory" ? { originalTestLabel: field.label, ...field.laboratory } : field.laboratory };
   });
+  for (const section of ["vitals", "laboratory", "ultrasound"] as const) {
+    const fieldIds = observationSections[section];
+    if (fieldIds.length || sections[section]) sections[section] = { ...sections[section], fieldIds };
+  }
   return { ...report, schemaVersion: 2, documentType: inferDocumentType(report), fields, sections, clinicianVerification: { status: "unverified", documentedClaimOnly: Boolean(sections.provider?.name?.value || sections.provider?.signatureOrStamp?.value) } };
 }
 /** Estimate only; never overwrites an explicitly documented EDD. No other clinical calculations are performed. */

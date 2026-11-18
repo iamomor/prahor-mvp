@@ -2,9 +2,14 @@ import { z } from "zod";
 import { apiErrorSchema, nonEmptyText } from "./common";
 import { currentUserSchema } from "./platform";
 import { bartaRequestSchema, bartaAnswerSchema, bartaAudioRequestSchema } from "./barta";
-import { createSupportRequestRequestSchema } from "./bondhon";
+import {
+  careRecipientsSchema, closeSupportRequestRequestSchema, consentGrantSchema, createConsentGrantRequestSchema,
+  createSupportRequestRequestSchema, providerAcknowledgeRequestSchema, providerRequestSchema,
+  providerRequestSummarySchema, providerRespondRequestSchema, revokeConsentResponseSchema,
+  supportRequestEventSummarySchema, supportRequestSchema,
+} from "./bondhon";
 import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt";
-import { currentUserResponseSchema } from "./transport";
+import { apiSuccessSchema, currentUserResponseSchema, pageSchema } from "./transport";
 import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
 
 // Derived from the existing feature schemas; no second domain validation system.
@@ -26,12 +31,17 @@ type CurrentRoute = {
   source: string;
   status: "Implemented" | "Limited" | "Mock";
   owners: readonly string[];
-  auth: "confirmed-user" | "provider" | "session-only-stub" | "public-stub" | "public";
+  auth: "confirmed-user" | "mother" | "request-participant" | "provider" | "session-only-stub" | "public-stub" | "public";
   request: z.ZodType;
   responses: Readonly<Record<number, z.ZodType>>;
 };
 
-/** Actual exported /api route methods, not a promise that planned services exist. */
+const careErrorResponses = {
+  400: apiErrorSchema, 401: apiErrorSchema, 403: apiErrorSchema,
+  404: apiErrorSchema, 409: apiErrorSchema, 503: apiErrorSchema,
+} as const;
+
+/** Actual exported /api route methods; care uses a simulated queue with separate UI acceptance. */
 export const currentApiContracts = {
   "GET /api/me": {
     source: "src/app/api/me/route.ts", status: "Implemented", owners: ["Omor", "Apurbo"], auth: "confirmed-user",
@@ -76,9 +86,45 @@ export const currentApiContracts = {
     source: "src/app/api/poth/nearby/route.ts", status: "Limited", owners: ["Iftee", "Samin", "Omor"], auth: "public",
     request: nearbyQuerySchema, responses: { 200: nearbyResponseSchema, 400: pothErrorSchema, 429: pothErrorSchema, 503: pothErrorSchema },
   },
+  "GET /api/care-recipients": {
+    source: "src/app/api/care-recipients/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(careRecipientsSchema), ...careErrorResponses },
+  },
+  "POST /api/consents": {
+    source: "src/app/api/consents/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: createConsentGrantRequestSchema, responses: { 201: apiSuccessSchema(consentGrantSchema), ...careErrorResponses },
+  },
+  "POST /api/consents/:id/revoke": {
+    source: "src/app/api/consents/[id]/revoke/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(revokeConsentResponseSchema), ...careErrorResponses },
+  },
   "POST /api/care-requests": {
-    source: "src/app/api/care-requests/route.ts", status: "Mock", owners: ["Omor", "Samin"], auth: "public-stub",
-    request: starterCareRequestSchema, responses: { 400: starterCareResponseSchema, 501: starterCareResponseSchema },
+    source: "src/app/api/care-requests/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: createSupportRequestRequestSchema, responses: { 201: apiSuccessSchema(supportRequestSchema), ...careErrorResponses },
+  },
+  "GET /api/care-requests/:id": {
+    source: "src/app/api/care-requests/[id]/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(z.union([supportRequestSchema, providerRequestSchema])), ...careErrorResponses },
+  },
+  "GET /api/care-requests/:id/events": {
+    source: "src/app/api/care-requests/[id]/events/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(pageSchema(supportRequestEventSummarySchema)), ...careErrorResponses },
+  },
+  "GET /api/provider/requests": {
+    source: "src/app/api/provider/requests/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "provider",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(pageSchema(providerRequestSummarySchema)), ...careErrorResponses },
+  },
+  "POST /api/provider/requests/:id/acknowledge": {
+    source: "src/app/api/provider/requests/[id]/acknowledge/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "provider",
+    request: providerAcknowledgeRequestSchema, responses: { 200: apiSuccessSchema(providerRequestSchema), ...careErrorResponses },
+  },
+  "POST /api/provider/requests/:id/respond": {
+    source: "src/app/api/provider/requests/[id]/respond/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "provider",
+    request: providerRespondRequestSchema, responses: { 200: apiSuccessSchema(providerRequestSchema), ...careErrorResponses },
+  },
+  "POST /api/care-requests/:id/close": {
+    source: "src/app/api/care-requests/[id]/close/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
+    request: closeSupportRequestRequestSchema, responses: { 200: apiSuccessSchema(z.union([supportRequestSchema, providerRequestSchema])), ...careErrorResponses },
   },
 } as const satisfies Record<string, CurrentRoute>;
 

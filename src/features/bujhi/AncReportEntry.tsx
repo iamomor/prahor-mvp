@@ -1,14 +1,13 @@
 ﻿"use client";
 import { useRef, useState } from "react";
-import { demoMother } from "@/features/jibonrekha/demo-health";
 import { ReportContextEditor } from "./ReportContextEditor";
-import { datum, sectionLabels, type AntenatalSections, type ReportSection } from "./report-schema";
+import { readDatum, sectionFields, sectionLabels, type AntenatalSections, type ReportSection } from "./report-schema";
 import { normalizeReport } from "./report-normalization";
 import type { ExtractedReport, ExtractedReportField } from "./types";
 const control = "w-full min-w-0 rounded-field border border-pro-control-border bg-pro-bg p-3";
 export function AncReportEntry({ onDraft }: { onDraft: (report: ExtractedReport) => void }) {
   const id = useRef<string | null>(null);
-  const [sections, setSections] = useState<AntenatalSections>({ patient: { name: datum(demoMother.name, "profile") }, dating: { edd: datum(demoMother.estimatedDueDate, "profile"), eddConfirmationSource: datum("Existing fictional pregnancy profile; source needs review", "profile") } });
+  const [sections, setSections] = useState<AntenatalSections>({});
   const [fields, setFields] = useState<ExtractedReportField[]>([]);
   const filled = Object.values(sections).filter((section) => Object.values(section ?? {}).some((item) => typeof item === "object" && item !== null && "value" in item && Boolean(item.value))).length;
   function add(section: "vitals" | "laboratory" | "ultrasound") {
@@ -19,7 +18,12 @@ export function AncReportEntry({ onDraft }: { onDraft: (report: ExtractedReport)
   function update(fieldId: string, patch: Partial<ExtractedReportField>) { setFields((current) => current.map((field) => field.id === fieldId ? { ...field, ...patch, reviewStatus: "pending" } : field)); }
   function keepDraft() {
     id.current ??= crypto.randomUUID();
-    onDraft(normalizeReport({ id: id.current, name: "গর্ভকালীন রিপোর্ট · ANC draft", status: "needs_review", source: "self_reported", inputMethod: "manual", documentType: "anc", observedAt: "", sections, fields: fields.map((field) => ({ ...field, rawValue: field.rawValue ?? field.value })) }));
+    const contextFields = (Object.keys(sectionFields) as ReportSection[]).flatMap((section) => sectionFields[section].flatMap(({ key, label }) => {
+      const item = readDatum(sections, section, key);
+      if (!item?.value?.trim() || item.source === "profile" || item.source === "calculated") return [];
+      return [{ id: "context-" + section + "-" + key, section, label, value: item.value, rawValue: item.original ?? item.value, unit: "", destination: "mother" as const, observedAt: "", reviewStatus: "pending" as const }];
+    }));
+    onDraft(normalizeReport({ id: id.current, name: "গর্ভকালীন রিপোর্ট · ANC draft", status: "needs_review", source: "self_reported", inputMethod: "manual", documentType: "anc", observedAt: "", sections, fields: [...contextFields, ...fields].map((field) => ({ ...field, rawValue: field.rawValue ?? field.value })) }));
   }
   return <section aria-label="Complete antenatal report entry" className="grid min-w-0 gap-5 rounded-card border border-pro-border bg-pro-elevated p-[var(--pro-pad-card)]">
     <h2 className="text-2xl font-semibold">গর্ভকালীন রিপোর্ট · Complete antenatal report</h2><p>যে অংশ দরকার শুধু সেটি খুলুন। This is an optional report draft, not a clinical assessment. You may keep it incomplete.</p>

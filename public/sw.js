@@ -1,13 +1,23 @@
 /* Public offline shell only. Never cache health, auth, API or Next.js bundles. */
 const CACHE_PREFIX = "prohor-public-shell-";
-const CACHE = `${CACHE_PREFIX}v2`;
+const CACHE = `${CACHE_PREFIX}v3`;
 const INSTALL_ASSETS = ["/offline", "/icon-192.png", "/icon-512.png"];
 const PUBLIC_NAVIGATIONS = new Set(["/", "/accessibility", "/offline"]);
+function mayCachePublicAsset(response) {
+  return response.ok && !/\b(private|no-store|no-cache)\b/i.test(response.headers.get("Cache-Control") || "");
+}
 
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE)
-      .then(cache => cache.addAll(INSTALL_ASSETS))
+      .then(async cache => {
+        for (const asset of INSTALL_ASSETS) {
+          // Install only anonymous public assets; never carry account cookies.
+          const response = await fetch(asset, { credentials: "omit", cache: "no-store" });
+          if (!mayCachePublicAsset(response)) throw new Error("Public offline shell unavailable");
+          await cache.put(asset, response);
+        }
+      })
       .then(() => self.skipWaiting()),
   );
 });
@@ -49,7 +59,9 @@ self.addEventListener("fetch", event => {
       const cached = await cache.match(request);
       if (cached) return cached;
       const response = await fetch(request);
-      if (response.ok) await cache.put(request, response.clone());
+      if (mayCachePublicAsset(response)) {
+        await cache.put(request, response.clone());
+      }
       return response;
     }),
   );

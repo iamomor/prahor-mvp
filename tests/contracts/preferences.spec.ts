@@ -22,6 +22,10 @@ function fixture(options: { missing?: boolean; unauthenticated?: boolean; dbErro
         data: options.missing ? null : options.unknownStoredKey ? { ...row, settings: { ...settings, unknown: true } } : row }) };
     } }) }),
     rpc: async (name: string, args: { p_patch: object }) => {
+      if (name === "prohor_account_access") return { error: null, data: {
+        userId: id, displayName: "Ayesha", activeRole: "mother", onboarded: true,
+        roles: [{ role: "mother", status: "approved" }], provider: null,
+      } };
       calls.push({ name, args });
       return { error: options.dbError ? { code: options.dbError, message: "synthetic-private-SQL" } : null,
         data: options.badSave ? [] : [{ ...row, settings: { ...settings, ...args.p_patch } }] };

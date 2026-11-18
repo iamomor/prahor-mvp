@@ -1,16 +1,17 @@
 import { z } from "zod";
 import { idSchema, nonEmptyText, timestampSchema } from "./common";
+import { activeRoleSchema } from "./account";
 
 export const profileSchema = z.strictObject({
   userId: idSchema, displayName: nonEmptyText(100).nullable(),
   createdAt: timestampSchema, updatedAt: timestampSchema, dataMode: z.literal("synthetic"),
 });
 export const userRoleSchema = z.enum(["mother", "provider", "supporter"]);
-/** Implemented Day 2 identity projection; roles match the two-table foundation. */
+/** Active workspace. Full memberships and approval states are returned by /auth/account. */
 export const currentUserSchema = z.strictObject({
   id: idSchema,
   displayName: z.string().max(120),
-  role: z.enum(["mother", "provider"]),
+  role: activeRoleSchema,
 });
 export type CurrentUser = z.infer<typeof currentUserSchema>;
 export const providerProfileSchema = z.strictObject({

@@ -11,6 +11,18 @@ import type { ApiResponse } from "../contracts/api";
 export type AuthAction = "sign-in" | "sign-up" | "email-link" | "sign-out";
 export type AuthDependencies = { createClient: () => Promise<SupabaseClient | null>; siteUrl: string | undefined };
 
+function emailRateLimited(error: { code?: string; status?: number } | null) {
+  return error?.status === 429 || ["email_send_rate_limited", "over_email_send_rate_limit"].includes(error?.code ?? "");
+}
+
+function checkEmail(next: string, origin: string) {
+  const response = jsonNoStore({ code: "check-email" }, 200);
+  response.cookies.set("prohor-auth-next", next, {
+    path: "/", httpOnly: true, sameSite: "lax", secure: origin.startsWith("https:"), maxAge: 3600,
+  });
+  return response;
+}
+
 export async function handleAuthPost(request: Request, action: AuthAction, dependencies: AuthDependencies) {
   const origin = siteOrigin(dependencies.siteUrl);
   if (!origin) return jsonNoStore({ code: "unavailable" }, 503);
@@ -33,28 +45,43 @@ export async function handleAuthPost(request: Request, action: AuthAction, depen
     if (!parsed.success) return jsonNoStore({ code: "invalid-input" }, 400);
     const client = await dependencies.createClient();
     if (!client) return jsonNoStore({ code: "unavailable" }, 503);
+    if (action === "sign-up") {
+      const version = await client.rpc("prohor_role_profile_ready");
+      if (version.error || version.data !== 1) return jsonNoStore({ code: "roles-unavailable" }, 503);
+    }
     const next = safeAuthReturnPath(parsed.data.next ?? "/app");
     const callback = new URL("/auth/callback", origin);
-    callback.searchParams.set("next", next);
     if (action === "email-link") {
       const { error } = await client.auth.signInWithOtp({ email: parsed.data.email,
         options: { shouldCreateUser: false, emailRedirectTo: callback.href } });
+      if (emailRateLimited(error)) return jsonNoStore({ code: "email-rate-limited" }, 429);
       if (error && !["otp_disabled", "user_not_found", "signups_not_allowed"].includes(error.code ?? "")) return jsonNoStore({ code: "authentication-failed" }, 400);
-      return jsonNoStore({ code: "check-email" }, 200);
+      return checkEmail(next, origin);
     }
     const credentials = parsed.data as { email: string; password: string };
     if (action === "sign-up") {
       const { data, error } = await client.auth.signUp({ email: credentials.email, password: credentials.password,
         options: { emailRedirectTo: callback.href } });
-      if (error && !["user_already_exists", "email_exists"].includes(error.code ?? "")) return jsonNoStore({ code: "registration-failed" }, 400);
-      if (error || !data.session) return jsonNoStore({ code: "check-email" }, 200);
+      if (emailRateLimited(error)) return jsonNoStore({ code: "email-rate-limited" }, 429);
+      if (["user_already_exists", "email_exists"].includes(error?.code ?? ""))
+        return jsonNoStore({ code: "account-already-exists" }, 409);
+      if (error) return jsonNoStore({ code: "registration-failed" }, 400);
+      if (!data.session) return jsonNoStore({ code: "registration-pending" }, 503);
+      const signup = signUpSchema.parse(parsed.data);
+      const profile = signup.profile;
+      const saved = await client.rpc("prohor_save_role_profile", { p_name: profile.displayName,
+        p_purposes: profile.purposes, p_organization: profile.organization, p_registration: profile.registrationNumber,
+        p_details: profile.details });
+      if (saved.error) return jsonNoStore({ code: "profile-pending", accountId: data.user?.id }, 503);
     } else {
-      const { error } = await client.auth.signInWithPassword(credentials);
+      const { error } = await client.auth.signInWithPassword({ email: credentials.email, password: credentials.password });
+      if (["email_not_confirmed", "email_unconfirmed"].includes(error?.code ?? ""))
+        return jsonNoStore({ code: "confirmation-required" }, 403);
       if (error) return jsonNoStore({ code: "authentication-failed" }, 400);
     }
     const identity = await readIdentity(client);
     if (identity.status !== 200) return jsonNoStore({ code: "profile-unavailable" }, identity.status);
-    return jsonNoStore({ redirectTo: authDestination(next, identity.profile.role) }, 200);
+    return jsonNoStore({ redirectTo: authDestination(next, identity.profile.role, identity.profile.onboarded) }, 200);
   } catch { return jsonNoStore({ code: "unavailable" }, 503); }
 }
 
@@ -62,7 +89,8 @@ export async function handleIdentityGet(client: SupabaseClient | null, providerO
   const identity = await readIdentity(client);
   if (identity.status !== 200) return jsonNoStore({ code: identity.status === 401 ? "session-required" : "unavailable" }, identity.status);
   if (providerOnly && identity.profile.role !== "provider") return jsonNoStore({ code: "access-denied" }, 403);
-  return jsonNoStore({ profile: identity.profile }, 200);
+  const { user_id, display_name, role } = identity.profile;
+  return jsonNoStore({ profile: { user_id, display_name, role } }, 200);
 }
 
 /** Canonical Step 12 API adapter; shares authentication/RLS lookup with Step 11. */

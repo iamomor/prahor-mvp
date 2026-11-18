@@ -24,6 +24,15 @@ function fixture(options: {
         user_metadata: { role: "provider", userId: nusrat },
       } } };
     } },
+    rpc: async (name: string) => {
+      if (name !== "prohor_account_access") throw new Error(`Unexpected RPC: ${name}`);
+      const role = options.role ?? "mother";
+      return { error: null, data: {
+        userId: options.id ?? ayesha, displayName: options.displayName ?? "Ayesha",
+        activeRole: role, onboarded: true,
+        roles: [{ role, status: "approved" }], provider: null,
+      } };
+    },
     from: (table: string) => ({ select: (columns: string) => ({ eq: (column: string, value: string) => {
       queries.push({ table, columns, column, value });
       return { maybeSingle: async () => {

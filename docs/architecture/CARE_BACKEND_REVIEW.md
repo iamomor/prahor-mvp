@@ -1,5 +1,16 @@
 # Care backend candidate for review
 
+> **Current status, 19 November 2026:** The candidate status and adoption steps
+> below are historical. Read-only inspection of the Supabase project configured
+> by this checkout confirms all eight migrations `20261118000000`–`20261118070000`,
+> ten care tables with forced RLS, ten authenticated care RPCs, one active
+> simulated provider approval, and `20261119000000` applied. A prior live run
+> passed 23 targeted checks through all ten care HTTP operations; this inspection
+> did not rerun those HTTP checks. The source is in `develop` at `23206dd` and
+> remains a simulated backend; Shonket form/status/provider UI is not connected.
+> Use the [current API contract](api-contracts.md#consent-and-bondhon-simulated-provider-workflow)
+> for integration. Do not reapply the shared database migrations.
+
 Version `care-backend-v1`, 18 November 2026; source baseline
 `a6eb84746af12d6fc8ebb00223fb4f3496e7a91a`, branch `omor-day3-backend`.
 **Limited local implementation: SQL/adapter tests pass, ten HTTP operations are wired;

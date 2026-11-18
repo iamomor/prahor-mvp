@@ -1,5 +1,17 @@
 # Omor: care backend handoff and next steps
 
+> **Current handoff, 19 November 2026:** This file records the earlier pre-activation
+> work order. Its statements below that care SQL is unapplied, HTTP is only local,
+> or account-role approval is unfinished are superseded. Read-only inspection of
+> the Supabase project configured by this checkout confirms all eight migrations
+> `20261118000000`–`20261118070000`, ten `prohor_care` tables with forced RLS,
+> ten authenticated care RPCs, one active simulated care approval, and
+> `20261119000000` applied. The previous authenticated hosted HTTP run passed 23
+> targeted checks across ten operations; this inspection did not repeat that run.
+> Current frontend contract and integration steps are in
+> [api-contracts.md](../architecture/api-contracts.md#consent-and-bondhon-simulated-provider-workflow).
+> Apurbo owns the Shonket connection; this backend does not provide its UI.
+
 18 November 2026, Bangladesh time. Workspace `D:/prohor-omor-day3`, branch
 `omor-day3-backend`, source HEAD `a6eb847`; this continuation is uncommitted.
 The operator confirmed another session is writing account roles in the same tree.

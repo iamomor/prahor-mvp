@@ -294,18 +294,21 @@ No diary text field is accepted on a check-in. Activity/rest notes are consolida
 
 ## Consent and Bondhon simulated provider workflow
 
-Status: **Working simulated backend against hosted Supabase; application source
-uncommitted, connected UI/shared preview acceptance pending.** All routes below
+Status: **Working simulated backend against hosted Supabase; source present in
+`develop` at `23206dd`, connected UI/shared preview acceptance pending.** All routes below
 call the existing cookie-bound care adapter. Forward migrations through
 `20261118070000` are applied to the operator-selected app backend: private records,
 care tables/RPCs, account-role approval integration, deferred status evidence and
 explicit HTTP conflict errors. The proposal files remain historical candidates.
-Targeted verification passed all ten HTTP operations with actual hosted Auth and
+Read-only inspection on 19 November confirmed eight care-chain migrations,
+ten forced-RLS care tables, ten authenticated care RPCs, one active simulated
+provider approval, and the subsequent `20261119000000` migration. Targeted prior
+verification passed all ten HTTP operations with actual hosted Auth and
 database persistence (23 checks), including foreign-owner/pending-provider denial,
 retry deduplication and revoke. This is a simulated app queue, not clinician
 delivery. Omor owns backend/security; the delegated care UI writer consumes this
-contract (Apurbo's Shonket work per the operator's latest instruction). No merged
-handoff SHA or deployed application preview is claimed.
+contract (Apurbo's Shonket work per the operator's latest instruction). No deployed
+application preview or completed connected UI is claimed.
 
 ### Teammate integration prerequisites
 

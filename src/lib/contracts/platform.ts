@@ -6,6 +6,13 @@ export const profileSchema = z.strictObject({
   createdAt: timestampSchema, updatedAt: timestampSchema, dataMode: z.literal("synthetic"),
 });
 export const userRoleSchema = z.enum(["mother", "provider", "supporter"]);
+/** Implemented Day 2 identity projection; roles match the two-table foundation. */
+export const currentUserSchema = z.strictObject({
+  id: idSchema,
+  displayName: z.string().max(120),
+  role: z.enum(["mother", "provider"]),
+});
+export type CurrentUser = z.infer<typeof currentUserSchema>;
 export const providerProfileSchema = z.strictObject({
   userId: idSchema, displayName: nonEmptyText(100), mode: z.literal("simulated"),
   approval: z.discriminatedUnion("status", [

@@ -1,26 +1,36 @@
 "use client";
 
-/**
- * BartaChatStarter — accessible Barta AI question-and-response panel.
- *
- * Integrates with Adapt preferences & AAC communication:
- *   - Text scaling / contrast / layout  → inherited via CSS data attributes on <html>
- *   - Read-aloud                        → ReadAloudButton rendered on AI response
- *   - AAC symbol composer               → AACComposer available inline or via AAC mode
- *   - AAC insert contract               → list of composed phrases inserted cleanly
- *                                         via mergeAacText; never auto-submits
- *   - Screen reader announcements       → role="status" live regions for insertion and response
- *   - Keyboard                          → all controls keyboard reachable, focus-visible
- *
- * Owner: Iftee (Barta AI logic). Accessibility integration: Apurbo.
- * Status: Prototype — no real AI is connected. Returns a demo response.
- */
-
-import { useState, useId, useRef, useEffect, useSyncExternalStore } from "react";
-import { MessageSquareDot, Sparkles, AlertCircle } from "lucide-react";
+import { useRef, useState, useEffect, useSyncExternalStore, type FormEvent } from "react";
+import { MessageSquareDot, Sparkles } from "lucide-react";
+import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
+import { detectBartaLanguage } from "./chat-language";
+import { BartaEducationChat } from "./BartaEducationChat";
+import { educationCopy, type Language } from "./barta-education-copy";
+import { bartaDemoQuestions, getBartaDemoLanguage } from "./demo-questions";
 import { ReadAloudButton } from "@/features/adapt/components/ReadAloudButton";
-import { useAdaptPreferences, AACComposer, AAC_INSERT_EVENT, mergeAacText, getStoredAacDraft, clearStoredAacDraft } from "@/features/adapt";
+import {
+  useAdaptPreferences,
+  AACComposer,
+  AAC_INSERT_EVENT,
+  mergeAacText,
+  getStoredAacDraft,
+  clearStoredAacDraft,
+} from "@/features/adapt";
 import { InlineLiveRegion } from "@/components/accessibility/LiveRegion";
+
+type ChatState =
+  | { status: "idle" | "checking" }
+  | { status: "response"; result: BartaAnswer; language: "bn" | "en" }
+  | { status: "error"; message: string; language: "en" | "bn" };
+
+type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
+
+function readErrorMessage(body: unknown): string {
+  return body !== null && typeof body === "object" && "message" in body
+    && typeof body.message === "string" && body.message.trim()
+    ? body.message
+    : "Barta is unavailable. Try again.";
+}
 
 function subscribeDraft(callback: () => void): () => void {
   if (typeof window === "undefined") return () => {};
@@ -40,11 +50,15 @@ function getServerDraftSnapshot(): string | null {
   return null;
 }
 
-export function BartaChatStarter() {
+export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education" }) {
+  const demo = mode === "demo";
+  const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
+  const questionInput = useRef<HTMLTextAreaElement>(null);
   const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? "bn" : answerLanguage;
+  const [previousChunkId, setPreviousChunkId] = useState<string>();
+  const [state, setState] = useState<ChatState>({ status: "idle" });
   const [announcement, setAnnouncement] = useState("");
 
   const { prefs } = useAdaptPreferences();
@@ -58,11 +72,6 @@ export function BartaChatStarter() {
   const [userAacToggle, setUserAacToggle] = useState<boolean | null>(null);
   const showAacComposer = userAacToggle ?? (prefs.communication === "aac");
 
-  const textareaId = useId();
-  const errorId = useId();
-  const responseId = useId();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   /* ── AAC insert listener ─────────────────────────────────────────── */
   useEffect(() => {
     function handleAACInsert(event: Event) {
@@ -71,8 +80,7 @@ export function BartaChatStarter() {
       const textToInsert = e.detail.text;
       setQuestion((prev) => mergeAacText(prev, textToInsert));
       setAnnouncement("AAC message inserted into your question field. You can review and edit below.");
-      // Return focus to the textarea so the user can review and edit
-      textareaRef.current?.focus();
+      questionInput.current?.focus();
     }
 
     window.addEventListener(AAC_INSERT_EVENT, handleAACInsert);
@@ -84,7 +92,7 @@ export function BartaChatStarter() {
     setAnnouncement("AAC message inserted into your question field. You can review and edit below.");
     clearStoredAacDraft();
     setDismissedDraft(text);
-    textareaRef.current?.focus();
+    questionInput.current?.focus();
   }
 
   function handleConsumeDraft() {
@@ -94,7 +102,7 @@ export function BartaChatStarter() {
     clearStoredAacDraft();
     setDismissedDraft(consumed);
     setAnnouncement("Saved AAC draft inserted into your question field.");
-    textareaRef.current?.focus();
+    questionInput.current?.focus();
   }
 
   function handleDismissDraft() {
@@ -104,73 +112,103 @@ export function BartaChatStarter() {
     setAnnouncement("Saved draft dismissed.");
   }
 
-  /* ── Form submit ─────────────────────────────────────────────────── */
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const busy = state.status === "checking";
+  const reply = state.status === "response" ? state.result : undefined;
+  const language = state.status === "response" ? state.language : undefined;
+  const educationReply = state.status === "response" ? state : undefined;
+  const educationError = state.status === "error" ? state : undefined;
+
+  function fillQuestion(text: string) {
+    setQuestion(text);
+    questionInput.current?.focus();
+  }
+
+  function clearConversation() {
+    setQuestion("");
+    setState({ status: "idle" });
+    setTurns([]);
+    setPreviousChunkId(undefined);
+    questionInput.current?.focus();
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!question.trim()) return;
+    const text = question.trim();
+    if (busy || !text) return;
 
-    setErrorMsg("");
-    setResponse("");
-    setBusy(true);
-
+    const detected = detectBartaLanguage(text);
+    const requestedLanguage = answerLanguage === "auto" ? detected ?? formLanguage : answerLanguage;
+    setState({ status: "checking" });
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 60_000);
     try {
-      const res = await fetch("/api/ai/chat", {
+      const response = await fetch("/api/ai/chat", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify(demo
+          ? { question: text }
+          : {
+            question: text,
+            language: requestedLanguage,
+            retention: { mode: "ephemeral" },
+            ...(previousChunkId && { previousChunkId }),
+          }),
       });
-      const data = (await res.json()) as { message?: string };
-      setResponse(
-        data.message ??
-          "The AI service did not return a response. Please try again."
-      );
+      const body: unknown = await response.json();
+      const parsed = bartaAnswerSchema.safeParse(body);
+      if (!demo && parsed.success && parsed.data.status === "not_connected") {
+        setState({ status: "error", message: parsed.data.message, language: requestedLanguage });
+        return;
+      }
+      if (parsed.success && (response.ok || parsed.data.status !== "grounded")) {
+        const result = parsed.data;
+        const replyText = result.status === "grounded" ? result.answer : result.message;
+        if (!demo) {
+          // Keep the thread in memory for this tab. Send only the current
+          // question and an optional public chunk ID to the API.
+          const questionLanguage = /[\u0980-\u09ff]/u.test(text) ? "bn" : detected === "bn" ? "bn-Latn" : detected;
+          setTurns((history) => [...history, { question: text, questionLanguage, result, language: requestedLanguage }]);
+          if (result.status !== "grounded" && result.status !== "conversation" && result.status !== "clarification") {
+            setPreviousChunkId(undefined);
+          }
+          if (result.status === "grounded") setPreviousChunkId(result.citations[0].chunkId);
+          setQuestion("");
+        }
+        setState({
+          status: "response",
+          result,
+          language: demo ? getBartaDemoLanguage(replyText) : requestedLanguage,
+        });
+        return;
+      }
+
+      setState({
+        status: "error",
+        message: demo && !response.ok ? readErrorMessage(body) : educationCopy[demo ? "en" : requestedLanguage].failure,
+        language: demo ? "en" : requestedLanguage,
+      });
     } catch {
-      setErrorMsg(
-        "Connection failed. No AI answer was generated. Please check your connection and try again."
-      );
+      setState({
+        status: "error",
+        message: controller.signal.aborted
+          ? educationCopy[demo ? "en" : requestedLanguage].timeout
+          : educationCopy[demo ? "en" : requestedLanguage].failure,
+        language: demo ? "en" : requestedLanguage,
+      });
     } finally {
-      setBusy(false);
+      window.clearTimeout(timeout);
     }
   }
 
-  const hasError = Boolean(errorMsg);
-  const charCount = question.length;
-  const maxChars = 1200;
-  const nearLimit = charCount > maxChars * 0.9;
-
-  return (
-    <section aria-labelledby="barta-heading" className="max-w-3xl space-y-6">
-      {/* Heading */}
-      <div>
-        <h1 id="barta-heading" className="text-2xl font-semibold text-pro-text">
-          Ask Barta
-          <span className="ml-2 text-base font-normal text-pro-muted" lang="bn">
-            বার্তাকে জিজ্ঞেস করুন
-          </span>
-        </h1>
-        <p className="mt-1 text-sm text-pro-muted">
-          Evidence-grounded maternal guidance in Bangla and English.
-        </p>
-      </div>
-
-      {/* Prototype notice */}
-      <div
-        role="note"
-        className="rounded-card border border-pro-info-soft bg-pro-info-soft px-4 py-3"
-      >
-        <p className="text-sm text-pro-info">
-          <strong>Prototype:</strong> Barta AI is not connected in this MVP.
-          This form demonstrates the integration contract, not a working medical
-          assistant. Never rely on AI responses for medical decisions.
-        </p>
-      </div>
-
+  const aacSection = (
+    <>
       {/* Saved draft recovery banner */}
       {pendingDraft && (
         <div
           role="region"
           aria-label="Pending AAC draft notice"
-          className="rounded-card border border-pro-primary bg-pro-surface p-3.5 space-y-2"
+          className="mb-4 rounded-card border border-pro-primary bg-pro-surface p-3.5 space-y-2"
         >
           <div className="flex items-start gap-2">
             <Sparkles size={18} className="text-pro-primary shrink-0 mt-0.5" aria-hidden="true" />
@@ -203,7 +241,7 @@ export function BartaChatStarter() {
       )}
 
       {/* AAC Composer Toggle */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-4 space-y-3">
         <button
           type="button"
           onClick={() => setUserAacToggle(!showAacComposer)}
@@ -219,157 +257,102 @@ export function BartaChatStarter() {
           <MessageSquareDot size={16} aria-hidden="true" />
           <span>
             {showAacComposer
-              ? "Hide AAC Symbol Board"
-              : "Use AAC Symbol Board / ছবি ও প্রতীক দিয়ে লিখুন"}
+              ? (prefs.language === "bn" ? "প্রতীক বোর্ড লুকান" : "Hide AAC Symbol Board")
+              : (prefs.language === "bn" ? "প্রতীক বোর্ড ব্যবহার করুন" : "Use AAC Symbol Board")}
           </span>
         </button>
 
-        {prefs.communication === "aac" && (
-          <span className="text-xs text-pro-muted">
-            AAC communication mode active
-          </span>
+        {showAacComposer && (
+          <div className="rounded-card border border-pro-border bg-pro-elevated p-3 sm:p-4">
+            <AACComposer onInsert={handleDirectAacInsert} />
+          </div>
         )}
       </div>
 
-      {/* Inline AAC Composer */}
-      {showAacComposer && (
-        <div className="pt-1">
-          <AACComposer
-            targetLabel="Insert into question / প্রশ্নে যুক্ত করুন"
-            onInsert={handleDirectAacInsert}
-          />
-        </div>
-      )}
-
-      {/* Question form */}
-      <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        <fieldset className="space-y-3 border-0 p-0 m-0">
-          <legend className="sr-only">Ask a maternal health question</legend>
-
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor={textareaId}
-              className="text-sm font-semibold text-pro-text"
-            >
-              Your question
-              <span className="ml-1 font-normal text-pro-muted" lang="bn">
-                (বাংলা বা ইংরেজি)
-              </span>
-            </label>
-            <p id={`${textareaId}-hint`} className="text-xs text-pro-muted">
-              Type your question, or use the AAC symbol board above to compose natural phrases.
-              You can freely edit the text before sending.
-            </p>
-            <textarea
-              id={textareaId}
-              ref={textareaRef}
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              maxLength={maxChars}
-              placeholder="Type your question here… / আপনার প্রশ্ন এখানে লিখুন…"
-              required
-              rows={5}
-              aria-describedby={`${textareaId}-hint${hasError ? ` ${errorId}` : ""}`}
-              aria-invalid={hasError || undefined}
-              className={[
-                "w-full rounded-field border bg-pro-elevated px-3 py-2.5 text-pro-text",
-                "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
-                "resize-y leading-[var(--pro-leading-body)]",
-                hasError ? "border-pro-danger" : "border-pro-control-border",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            />
-            <p
-              className={[
-                "text-right text-xs",
-                nearLimit ? "text-pro-warning font-semibold" : "text-pro-muted",
-              ].join(" ")}
-              aria-live="polite"
-              aria-label={`Character count: ${charCount} of ${maxChars}`}
-            >
-              {charCount}/{maxChars}
-            </p>
-          </div>
-
-          {/* Error */}
-          {hasError && (
-            <p
-              id={errorId}
-              role="alert"
-              className="inline-flex items-center gap-1.5 rounded-field border border-pro-danger-soft bg-pro-danger-soft px-3 py-2 text-sm font-medium text-pro-danger"
-            >
-              <AlertCircle size={14} aria-hidden="true" className="shrink-0" />
-              {errorMsg}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={busy || !question.trim()}
-            className={[
-              "inline-flex min-h-12 items-center justify-center gap-2 rounded-pill px-6",
-              "bg-pro-primary text-pro-on-primary font-semibold",
-              "hover:bg-pro-primary-hover active:scale-[0.98]",
-              "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
-              "disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150",
-            ].join(" ")}
-          >
-            {busy ? (
-              <>
-                <span
-                  className="inline-block h-4 w-4 rounded-full border-2 border-pro-on-primary/40 border-t-pro-on-primary animate-spin"
-                  aria-hidden="true"
-                />
-                Checking…
-              </>
-            ) : (
-              "Ask PROHOR"
-            )}
-          </button>
-        </fieldset>
-      </form>
-
-      {/* Screen reader announcement for insertion events */}
       <InlineLiveRegion message={announcement} />
+    </>
+  );
 
-      {/* AI response — live region for screen readers */}
-      {response && (
-        <div
-          className="rounded-card border border-pro-border bg-pro-elevated p-[var(--pro-pad-card)] space-y-3"
-          aria-labelledby={`${responseId}-label`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2
-              id={`${responseId}-label`}
-              className="text-sm font-semibold text-pro-text"
-            >
-              Barta&rsquo;s response
-              <span className="ml-2 font-normal text-pro-muted" lang="bn">
-                বার্তার উত্তর
-              </span>
-            </h2>
-            <ReadAloudButton
-              text={response}
-              label="Read response aloud"
-            />
-          </div>
+  if (!demo) {
+    return (
+      <div className="space-y-4">
+        {aacSection}
+        <BartaEducationChat languageChoice={answerLanguage} formLanguage={formLanguage}
+          question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
+          onLanguage={setAnswerLanguage}
+          onQuestion={setQuestion}
+          onDictation={(text) => {
+            setQuestion((draft) => [draft.trimEnd(), text].filter(Boolean).join(" ").slice(0, 1200));
+            questionInput.current?.focus();
+          }}
+          onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} />
+      </div>
+    );
+  }
 
-          <p
-            role="status"
-            id={responseId}
-            className="text-sm text-pro-text leading-[var(--pro-leading-body)]"
-          >
-            {response}
-          </p>
-
-          <p className="text-xs text-pro-muted border-t border-pro-border pt-3">
-            <strong>Important:</strong> AI responses are not verified medical
-            advice. Always consult a qualified health worker for medical
-            decisions.
-          </p>
+  return (
+    <section className="max-w-3xl rounded-2xl border border-pro-border bg-pro-elevated p-4 sm:p-6">
+      {aacSection}
+      <form onSubmit={submit} className="grid gap-4">
+        <div className="grid gap-2" lang="en">
+          <label htmlFor="barta-question" className="font-semibold">Your question (Bangla or English)</label>
+          <details className="text-pro-muted">
+            <summary className="w-fit cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-pro-focus">
+              Choose a sample question
+            </summary>
+            <ul className="mt-2 space-y-1">
+              {Object.values(bartaDemoQuestions).flatMap((examples) =>
+                (["en", "bn"] as const).map((locale) => (
+                  <li key={examples[locale]}>
+                    <button type="button" lang={locale}
+                      className="min-h-11 rounded px-2 text-start text-pro-primary underline focus-visible:outline-2 focus-visible:outline-pro-focus"
+                      disabled={busy} onClick={(event) => {
+                        setQuestion(examples[locale]);
+                        setState({ status: "idle" });
+                        event.currentTarget.form?.querySelector<HTMLTextAreaElement>("#barta-question")?.focus();
+                      }}>
+                      {examples[locale]}
+                    </button>
+                  </li>
+                )),
+              )}
+            </ul>
+          </details>
+          <textarea id="barta-question" ref={questionInput} readOnly={busy}
+            className="min-h-32 w-full rounded-xl border border-pro-control-border bg-pro-bg p-3 text-pro-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
+            value={question} onChange={(event) => {
+              setQuestion(event.currentTarget.value);
+              setState({ status: "idle" });
+            }}
+            maxLength={1200} required />
         </div>
-      )}
+        <button type="submit" className="pro-btn pro-btn-primary w-fit" disabled={busy || !question.trim()} lang="en">
+          {busy ? "Checking…" : "Ask PROHOR"}
+        </button>
+      </form>
+      <div role="status" aria-atomic="true">
+        {busy && <p lang="en" className="mt-6 text-pro-muted">Checking the demo source…</p>}
+        {state.status === "error" && <p lang={state.language} className="mt-6">{state.message}</p>}
+        {reply && reply.status !== "grounded" && <p lang={language} className="mt-6">{reply.message}</p>}
+        {reply?.status === "grounded" && (
+          <div className="mt-6 space-y-3 border-t border-pro-border pt-5">
+            <div className="flex items-center justify-between gap-2">
+              <h2 lang="en" className="text-lg font-semibold">Sample answer</h2>
+              <ReadAloudButton text={reply.answer} language={language ?? "en"} />
+            </div>
+            <p lang={language}>{reply.answer}</p>
+            <h3 lang="en" className="font-semibold">Synthetic source</h3>
+            <ul className="list-disc space-y-1 ps-5">
+              {reply.citations.map((citation) => (
+                <li key={citation.chunkId}>{citation.title}. {citation.locator}.</li>
+              ))}
+            </ul>
+            <ul lang={language} className="list-disc space-y-1 ps-5 text-pro-muted">
+              {reply.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+            </ul>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

@@ -4,7 +4,6 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link
       href="/"
-      aria-label="PROHOR home"
       className="inline-flex items-center gap-3 font-bold tracking-tight text-pro-text transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-pro-focus"
     >
       {/* Sleek rounded icon */}

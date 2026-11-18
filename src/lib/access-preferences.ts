@@ -41,6 +41,9 @@ const KEY = ACCESS_PREFERENCES_KEY;
 const PREFERENCES_SCHEMA_VERSION = 3;
 let lastSnapshotKey: string | null | undefined;
 let lastSnapshot = DEFAULT_PROHOR_PREFERENCES;
+// Browser-only fallback when storage is blocked or a write exceeds quota.
+// Server reads always return defaults; account preferences never live here.
+let transientPreferences: ProhorAccessPreferences | null = null;
 const isTheme = (v: unknown): v is ProhorTheme => themeIds.includes(v as ProhorTheme);
 const isTextScale = (v: unknown): v is ProhorTextScale =>
   v === "default" || v === "large" || v === "extra-large";
@@ -79,6 +82,7 @@ export function sanitizePreferences(value: unknown): ProhorAccessPreferences {
 
 export function readLocalPreferences(): ProhorAccessPreferences {
   if (typeof window === "undefined") return DEFAULT_PROHOR_PREFERENCES;
+  if (transientPreferences) return { ...transientPreferences };
   try {
     const storedValue = localStorage.getItem(KEY);
     let legacyReadingDensity: ProhorLayoutDensity | null = null;
@@ -110,6 +114,7 @@ export function readLocalPreferences(): ProhorAccessPreferences {
     }
     return lastSnapshot;
   } catch {
+    if (transientPreferences) return { ...transientPreferences };
     // Keep the fallback referentially stable for useSyncExternalStore.
     lastSnapshotKey = undefined;
     lastSnapshot = DEFAULT_PROHOR_PREFERENCES;
@@ -155,22 +160,26 @@ export function applyPreferences(preferences: ProhorAccessPreferences): void {
 
 export function saveLocalPreferences(preferences: ProhorAccessPreferences): void {
   if (typeof window === "undefined") return;
+  const sanitized = {
+    ...sanitizePreferences(preferences),
+    // This is a current typed in-memory value, not an unversioned legacy
+    // record. In particular, preserve `false` as explicit standard contrast.
+    highContrast: preferences.highContrast,
+  };
+  const canonicalPreferences: Partial<ProhorAccessPreferences> = { ...sanitized };
+  delete canonicalPreferences.spaciousLayout;
+  const storedValue = JSON.stringify({
+    ...canonicalPreferences,
+    _schemaVersion: PREFERENCES_SCHEMA_VERSION,
+  });
   try {
-    const sanitized = {
-      ...sanitizePreferences(preferences),
-      // This is a current typed in-memory value, not an unversioned legacy
-      // record. In particular, preserve `false` as explicit standard contrast.
-      highContrast: preferences.highContrast,
-    };
-    const canonicalPreferences: Partial<ProhorAccessPreferences> = { ...sanitized };
-    delete canonicalPreferences.spaciousLayout;
-    const storedValue = JSON.stringify({
-      ...canonicalPreferences,
-      _schemaVersion: PREFERENCES_SCHEMA_VERSION,
-    });
     localStorage.setItem(KEY, storedValue);
+    transientPreferences = null;
     lastSnapshotKey = `${storedValue}\u0000<unset>`;
     lastSnapshot = sanitized;
+  } catch {
+    // Storage may be unavailable, blocked, or quota-exceeded; continue with in-memory transient preferences.
+    transientPreferences = sanitized;
+    lastSnapshot = sanitized;
   }
-  catch { /* Storage may be unavailable; continue with in-memory preferences. */ }
 }

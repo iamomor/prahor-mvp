@@ -1,4 +1,4 @@
-﻿import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 const widths = [320, 360, 390, 430, 768, 1024, 1280, 1440];
 const themes = ["quiet-garden", "original-rose", "morning-mist"];
@@ -41,7 +41,7 @@ test("exact product counts, seven phones, eight modules and all 24 capabilities"
   await expect(page.locator(".roadmap-panel .story-status-future")).toHaveCount(23);
   expect(await page.locator(".story-status").evaluateAll(elements => elements.every(element => element.closest("#roadmap")))).toBe(true);
   const signIn = page.getByRole("button", { name: "Sign in", exact: true }).first();
-  await signIn.click(); await expect(page.getByRole("dialog", { name: "Sign in is coming." })).toBeVisible();
+  await signIn.click(); await expect(page.getByRole("dialog", { name: "Sign in to PROHOR" })).toBeVisible();
   await page.keyboard.press("Escape"); await expect(signIn).toBeFocused();
 });
 
@@ -206,5 +206,15 @@ test("mobile menu, offline feedback, reduced motion and forced colors stay usabl
   const errors: string[] = []; page.on("pageerror", error => errors.push(error.message)); await page.setViewportSize({ width: 390, height: 844 }); await page.goto("/");
   await page.getByRole("button", { name: "Open navigation" }).click(); await page.getByRole("navigation", { name: "Mobile primary" }).getByRole("link", { name: "Features", exact: true }).click(); await expect(page.getByRole("button", { name: "Open navigation" })).toHaveAttribute("aria-expanded", "false");
   await page.emulateMedia({ reducedMotion: "reduce", forcedColors: "active" }); await expect(page.locator(".home-button").first()).toHaveCSS("transition-duration", "0s"); await expect(await openPreferences(page)).toBeVisible(); await page.keyboard.press("Escape");
-  await context.setOffline(true); await expect(page.getByRole("status").filter({ hasText: "You’re offline" })).toBeVisible(); await context.setOffline(false); await expect(page.locator(".home-offline")).toHaveCount(0); expect(errors).toEqual([]);
+  console.log("Initial on page load, navigator.onLine:", await page.evaluate(() => navigator.onLine));
+  console.log("Initial home-offline count:", await page.locator(".home-offline").count());
+  await context.setOffline(true);
+  await expect(page.getByRole("status").filter({ hasText: "You’re offline" })).toBeVisible();
+  console.log("Before setOffline(false), navigator.onLine:", await page.evaluate(() => navigator.onLine));
+  await context.setOffline(false);
+  console.log("Immediately after setOffline(false), navigator.onLine:", await page.evaluate(() => navigator.onLine));
+  await page.waitForTimeout(500);
+  console.log("After 500ms, navigator.onLine:", await page.evaluate(() => navigator.onLine));
+  await expect(page.locator(".home-offline")).toHaveCount(0);
+  expect(errors).toEqual([]);
 });

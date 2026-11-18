@@ -1,4 +1,4 @@
-/** Proposed shared domain contracts. No secrets, database clients or UI imports. */
+/** Shared contracts; current wire behavior and future-domain proposals are explicitly separate. */
 export * from "./common";
 export * from "./platform";
 export * from "./adapt";
@@ -10,3 +10,5 @@ export * from "./poth";
 export * from "./shonket";
 export * from "./bondhon";
 export * from "./api";
+export * from "./transport";
+export * from "./current-api";

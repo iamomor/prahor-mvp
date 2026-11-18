@@ -1,0 +1,13 @@
+{
+  "source": "OpenStreetMap contributors (ODbL)",
+  "sourceUrl": "https://www.openstreetmap.org/copyright",
+  "compiledAt": "2026-11-18T21:00:14.347Z",
+  "totalTiles": 42,
+  "completedTiles": 42,
+  "failedThisRun": 0,
+  "fetchedThisRun": 3,
+  "reusedThisRun": 39,
+  "mappedElements": 7535,
+  "verifiedClinicalFacilities": 0,
+  "warning": "Community geographic coverage only. No professional, maternal, accessibility or emergency capability verified."
+}

@@ -10,15 +10,16 @@ import { NextRequest } from "next/server";
 
 const id = "d2000000-0000-4000-8000-000000000001";
 function fixture({ role = "mother", expired = false, missing = false, foreign = false,
-  duplicate = false, invalid = false, signoutFailure = false, confirmation = true, unverified = false } = {}) {
+  duplicate = false, invalid = false, rateLimited = false, unconfirmedSignIn = false,
+  signoutFailure = false, confirmation = true, unverified = false } = {}) {
   const calls: Array<{ method: string; args: unknown }> = [];
   const record = (method: string, args: unknown) => { calls.push({ method, args }); };
   const client = {
     auth: {
       getUser: async () => ({ data: { user: expired ? null : { id, email: "ayesha-rls@example.invalid", email_confirmed_at: unverified ? null : "2026-11-16T00:00:00Z", user_metadata: { role: "provider" } } }, error: expired ? { status: 401 } : null }),
-      signUp: async (args: unknown) => { record("signUp", args); return { data: { session: confirmation ? null : {} }, error: duplicate ? { code: "user_already_exists" } : null }; },
-      signInWithPassword: async (args: unknown) => { record("signIn", args); return { error: invalid ? { code: "invalid_credentials", message: "sensitive provider error" } : null }; },
-      signInWithOtp: async (args: unknown) => { record("otp", args); return { error: null }; },
+      signUp: async (args: unknown) => { record("signUp", args); return { data: { session: confirmation ? null : {} }, error: rateLimited ? { code: "over_email_send_rate_limit", status: 429 } : duplicate ? { code: "user_already_exists" } : null }; },
+      signInWithPassword: async (args: unknown) => { record("signIn", args); return { error: unconfirmedSignIn ? { code: "email_not_confirmed" } : invalid ? { code: "invalid_credentials", message: "sensitive provider error" } : null }; },
+      signInWithOtp: async (args: unknown) => { record("otp", args); return { error: rateLimited ? { code: "email_send_rate_limited" } : null }; },
       signOut: async (args: unknown) => { record("signOut", args); return { error: signoutFailure ? {} : null }; },
     },
     from: (table: string) => {
@@ -41,7 +42,7 @@ function request(action: AuthAction, data: unknown = {}, origin = "http://localh
   });
 }
 const credentials = { email: "ayesha-rls@example.invalid", password: "Synthetic-passphrase-123!", next: "/app" };
-function post(action: AuthAction, data = credentials, setup = fixture(), origin?: string) {
+function post(action: AuthAction, data: unknown = credentials, setup = fixture(), origin?: string) {
   return handleAuthPost(request(action, data, origin), action, { createClient: async () => setup.client, siteUrl: "http://localhost:3000" });
 }
 
@@ -68,22 +69,33 @@ test("oversized and malformed request bodies are rejected before Auth calls", as
   expect(setup.calls).toHaveLength(0);
 });
 
-test("registration uses Auth trigger provisioning and waits for email confirmation", async () => {
+test("registration without a session does not claim dashboard access", async () => {
   const setup = fixture();
   const response = await post("sign-up", credentials, setup);
-  expect(response.status).toBe(200);
-  expect(await response.json()).toEqual({ code: "check-email" });
+  expect(response.status).toBe(503);
+  expect(await response.json()).toEqual({ code: "registration-pending" });
   expect(setup.calls).toEqual([{ method: "signUp", args: {
     email: credentials.email, password: credentials.password,
-    options: { emailRedirectTo: "http://localhost:3000/auth/callback?next=%2Fapp" },
+    options: { emailRedirectTo: "http://localhost:3000/auth/callback" },
   } }]);
 });
 
-test("duplicate registration does not disclose account existence", async () => {
-  const created = await post("sign-up");
+test("duplicate registration gives a usable MVP recovery path", async () => {
+  const created = await post("sign-up", credentials, fixture({ confirmation: false }));
   const duplicate = await post("sign-up", credentials, fixture({ duplicate: true }));
-  expect(duplicate.status).toBe(created.status);
-  expect(await duplicate.json()).toEqual(await created.json());
+  expect(created.status).toBe(200);
+  expect(await created.json()).toEqual({ redirectTo: "/app" });
+  expect(duplicate.status).toBe(409);
+  expect(await duplicate.json()).toEqual({ code: "account-already-exists" });
+});
+
+test("email rate limit is explicit and does not claim a confirmation was sent", async () => {
+  const response = await post("sign-up", credentials, fixture({ rateLimited: true }));
+  expect(response.status).toBe(429);
+  expect(await response.json()).toEqual({ code: "email-rate-limited" });
+  const linkResponse = await post("email-link", { email: credentials.email, next: "/app" }, fixture({ rateLimited: true }));
+  expect(linkResponse.status).toBe(429);
+  expect(await linkResponse.json()).toEqual({ code: "email-rate-limited" });
 });
 
 test("sign-in validates server identity and preserves permitted destination", async () => {
@@ -93,7 +105,7 @@ test("sign-in validates server identity and preserves permitted destination", as
   expect(response.headers.get("cache-control")).toBe("no-store");
 });
 
-test("registration without email confirmation still requires the provisioned profile", async () => {
+test("automatic confirmation still requires the provisioned profile", async () => {
   expect((await post("sign-up", credentials, fixture({ confirmation: false }))).status).toBe(200);
   expect((await post("sign-up", credentials, fixture({ confirmation: false, missing: true }))).status).toBe(503);
 });
@@ -102,6 +114,16 @@ test("invalid credentials return a generic error and no redirect", async () => {
   const response = await post("sign-in", credentials, fixture({ invalid: true }));
   expect(response.status).toBe(400);
   expect(await response.json()).toEqual({ code: "authentication-failed" });
+});
+
+test("valid password with unconfirmed email gives a confirmation path and no session", async () => {
+  const setup = fixture({ unconfirmedSignIn: true });
+  const response = await post("sign-in", credentials, setup);
+  expect(response.status).toBe(403);
+  expect(await response.json()).toEqual({ code: "confirmation-required" });
+  expect(setup.calls).toEqual([{ method: "signIn", args: {
+    email: credentials.email, password: credentials.password,
+  } }]);
 });
 
 test("expired sessions are rejected before any profile query", async () => {

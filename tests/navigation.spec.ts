@@ -12,6 +12,6 @@ test("Existing disconnected services report their actual state", async ({ reques
   expect(answer.status()).toBe(501);
   expect((await answer.json()).status).toBe("not_connected");
   const care = await request.post("/api/care-requests", { data: { message: "Synthetic integration check", method: "text" } });
-  expect(care.status()).toBe(501);
-  expect((await care.json()).status).toBe("not_sent");
+  expect(care.status()).toBe(403);
+  expect((await care.json()).error.code).toBe("forbidden");
 });

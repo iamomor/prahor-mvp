@@ -34,10 +34,10 @@ async function queryOverpass(lat: number, lon: number, radius: number) {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   if (!url.searchParams.has("lat") || !url.searchParams.has("lon"))
-    return NextResponse.json({ error: "Choose a location first." }, { status: 400 });
+    return NextResponse.json({ error: "Choose a location first." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   const result = paramsSchema.safeParse({ lat: url.searchParams.get("lat"), lon: url.searchParams.get("lon"), radius: url.searchParams.get("radius") || "5000" });
   if (!result.success || !insideBangladesh(result.data))
-    return NextResponse.json({ error: "Choose a Bangladesh location and radius from 1–20 km." }, { status: 400 });
+    return NextResponse.json({ error: "Choose a Bangladesh location and radius from 1–20 km." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   const { lat, lon, radius } = result.data;
   const key = `${lat.toFixed(3)}:${lon.toFixed(3)}:${radius}`;
   const now = Date.now();

@@ -4,6 +4,14 @@ import {
   revisionSchema, rowShape, timestampSchema,
 } from "./common";
 import { shareableRecordSchema, sharedRecordProjectionSchema } from "./sharing";
+/** Approved simulated recipients only; no email, credentials or patient directory. */
+export const careRecipientSchema = z.strictObject({
+  id: idSchema, displayName: z.string().max(120), providerMode: z.literal("simulated"),
+});
+export const careRecipientsSchema = z.array(careRecipientSchema).refine(
+  values => new Set(values.map(value => value.id)).size === values.length, "Recipients must be unique.",
+);
+export const revokeConsentResponseSchema = z.strictObject({ id: idSchema, revokedAt: timestampSchema });
 // Preserve existing imports while keeping field rules in one place.
 export { shareableRecordSchema, sharedRecordProjectionSchema } from "./sharing";
 export type { ShareableRecord, SharedRecordProjection } from "./sharing";

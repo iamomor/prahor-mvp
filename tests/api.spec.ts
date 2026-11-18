@@ -4,8 +4,6 @@ test("API validation and unavailable responses never permit caching", async ({ r
   for (const [url, data] of [
     ["/api/ai/chat", {}],
     ["/api/ai/chat", { question: "Synthetic integration question" }],
-    ["/api/care-requests", {}],
-    ["/api/care-requests", { message: "Synthetic integration check", method: "aac" }],
   ] as const) {
     const response = await request.post(url, { data });
     expect([400, 501]).toContain(response.status());
@@ -16,7 +14,7 @@ test("API validation and unavailable responses never permit caching", async ({ r
   expect(health.headers()["cache-control"]).toBe("no-store");
 });
 
-test("starter APIs reject unknown fields instead of silently discarding them", async ({ request }) => {
+test("starter Barta rejects unknown fields and care rejects requests without its reviewed submission headers", async ({ request }) => {
   const answer = await request.post("/api/ai/chat", {
     data: { question: "Synthetic integration question", diaryText: "Synthetic forbidden context" },
   });
@@ -24,16 +22,17 @@ test("starter APIs reject unknown fields instead of silently discarding them", a
   const care = await request.post("/api/care-requests", {
     data: { message: "Synthetic integration check", method: "text", status: "delivered" },
   });
-  expect(care.status()).toBe(400);
+  expect(care.status()).toBe(403);
+  expect(care.headers()["cache-control"]).toBe("private, no-store");
 });
 
-test("malformed JSON keeps care explicitly not sent", async ({ request }) => {
+test("care without an Origin fails before parsing or persistence", async ({ request }) => {
   const response = await request.post("/api/care-requests", {
     headers: { "Content-Type": "application/json" }, data: "{",
   });
-  expect(response.status()).toBe(400);
-  expect(response.headers()["cache-control"]).toBe("no-store");
-  expect(await response.json()).toMatchObject({ status: "not_sent" });
+  expect(response.status()).toBe(403);
+  expect(response.headers()["cache-control"]).toBe("private, no-store");
+  expect(await response.json()).toMatchObject({ error: { code: "forbidden" } });
 });
 
 test("missing auth callback code fails closed or redirects to sign-in without caching", async ({ request }) => {

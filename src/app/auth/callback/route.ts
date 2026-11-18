@@ -9,6 +9,8 @@ function redirect(origin: string, path: string) {
   const response = NextResponse.redirect(new URL(path, origin));
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
+  response.cookies.set("prohor-auth-next", "", { path: "/", httpOnly: true,
+    sameSite: "lax", secure: origin.startsWith("https:"), maxAge: 0 });
   return response;
 }
 
@@ -18,7 +20,8 @@ export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const token_hash = request.nextUrl.searchParams.get("token_hash");
   const type = request.nextUrl.searchParams.get("type");
-  const next = safeAuthReturnPath(request.nextUrl.searchParams.get("next"));
+  const next = safeAuthReturnPath(request.nextUrl.searchParams.get("next") ??
+    request.cookies.get("prohor-auth-next")?.value ?? null);
   if (code || (token_hash && (type === "signup" || type === "email" || type === "magiclink"))) {
     try {
       const client = await createServerSupabase();
@@ -27,7 +30,7 @@ export async function GET(request: NextRequest) {
           await client.auth.verifyOtp({ token_hash: token_hash!, type: type as "signup" | "email" | "magiclink" });
         if (!error) {
           const identity = await readIdentity(client);
-          if (identity.status === 200) return redirect(origin, authDestination(next, identity.profile.role));
+          if (identity.status === 200) return redirect(origin, authDestination(next, identity.profile.role, identity.profile.onboarded));
           return redirect(origin, "/sign-in?error=profile-unavailable");
         }
       }

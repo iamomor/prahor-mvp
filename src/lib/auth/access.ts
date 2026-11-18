@@ -1,8 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { safeAuthReturnPath } from "../routes";
+import { accountAccessSchema, type ActiveRole, type WorkspaceRole } from "../contracts/account";
 
-export type WorkspaceRole = "mother" | "provider";
-export type OwnProfile = { user_id: string; display_name: string; role: WorkspaceRole };
+export type { WorkspaceRole } from "../contracts/account";
+export type OwnProfile = { user_id: string; display_name: string; role: ActiveRole; roles?: WorkspaceRole[]; onboarded?: boolean };
 export type IdentityResult = { status: 200; profile: OwnProfile } | { status: 401 } |
   { status: 503; reason?: "profile_missing" };
 
@@ -19,23 +20,33 @@ export async function readIdentity(client: SupabaseClient | null): Promise<Ident
     if (result.error) return { status: 503 };
     if (!profile) return { status: 503, reason: "profile_missing" };
     if (profile.user_id !== data.user.id ||
-        !["mother", "provider"].includes(profile.role) || typeof profile.display_name !== "string") return { status: 503 };
-    return { status: 200, profile: profile as OwnProfile };
+        !["mother", "provider", "supporter", "member"].includes(profile.role) || typeof profile.display_name !== "string") return { status: 503 };
+    const { data: access, error: accessError } = await client.rpc("prohor_account_access");
+    // Preserve existing deployed mother/provider accounts before the forward migration.
+    if (accessError?.code === "PGRST202" && ["mother", "provider"].includes(profile.role))
+      return { status: 200, profile: profile as OwnProfile };
+    const parsed = accountAccessSchema.safeParse(access);
+    if (accessError || !parsed.success || parsed.data.userId !== data.user.id) return { status: 503 };
+    return { status: 200, profile: { user_id: data.user.id, display_name: parsed.data.displayName,
+      role: parsed.data.activeRole, onboarded: parsed.data.onboarded,
+      roles: parsed.data.roles.filter(r => r.status === "approved").map(r => r.role) } };
   } catch { return { status: 503 }; }
 }
 
 export function workspaceRole(pathname: string): WorkspaceRole | null {
   if (pathname === "/app" || pathname.startsWith("/app/")) return "mother";
   if (pathname === "/provider" || pathname.startsWith("/provider/")) return "provider";
+  if (pathname === "/supporter" || pathname.startsWith("/supporter/")) return "supporter";
   return null;
 }
 
-export function authDestination(value: string | null, role: WorkspaceRole): string {
+export function authDestination(value: string | null, role: ActiveRole, onboarded = true): string {
+  if (!onboarded || role === "member") return "/account";
   const path = safeAuthReturnPath(value);
   const pathname = new URL(path, "https://prohor.invalid").pathname;
   const required = workspaceRole(pathname);
   if (path === "/" || pathname.startsWith("/auth/") || pathname === "/sign-in" ||
-      pathname === "/sign-up" || (required && required !== role)) return role === "provider" ? "/provider" : "/app";
+      pathname === "/sign-up" || (required && required !== role)) return role === "provider" ? "/provider" : role === "supporter" ? "/supporter" : "/app";
   return path;
 }
 

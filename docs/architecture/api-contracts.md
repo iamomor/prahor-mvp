@@ -1,6 +1,6 @@
 ﻿# PROHOR — Canonical API contracts (Day 2, Step 14)
 
-Updated 17 November 2026. This is the single integration reference. It distinguishes
+Updated 18 November 2026. This is the single integration reference. It distinguishes
 actual wire behavior from domain proposals. **Implemented means route/code exists,
 not deployed or verified against live Supabase.** Domain-owner sign-offs below are
 pending; this document does not invent approvals, clinical validation or delivery.
@@ -21,8 +21,8 @@ Final task-confirmed owners (historical AGENTS assignments are not rewritten):
 | Developer | Responsibility |
 | --- | --- |
 | Omor | Shared platform, Auth, database/RLS, API coordination, consent and care-request backend |
-| Apurbo | Frontend, Adapt, shared UI and accessibility |
-| Iftee | Barta RAG and Bujhi extraction engine |
+| Apurbo | Functional regression, synthetic fixtures, documentation and integration support (starter V3) |
+| Iftee | Adapt and all accessibility; shared Barta/AI/audio/extraction interface work (starter V3) |
 | Ifty | Jibonrekha maternal/baby records and Bujhi review interface |
 | Samin | Wellness, directory, Shonket/Bondhon interfaces and provider workflow UI |
 
@@ -32,7 +32,7 @@ The established schema home is `src/lib/contracts/`. It already centralizes stri
 Zod validators; a second `src/lib/validators/` tree would create competing sources
 and is deliberately not added. Domain files are preserved.
 
-- `current-api.ts`: the **eleven actual /api method/path pairs**, source files, owners,
+- `current-api.ts`: the actual /api method/path pairs, source files, owners,
   status, authentication level, current request validators and status-specific response schemas.
 - `transport.ts`: runtime v1 envelope/page validators and proposed path/pagination helpers.
 - `api.ts`: `CurrentApiOperations` takes precedence over overlapping future proposals.
@@ -69,12 +69,12 @@ of the contract, not merely the body type.**
 | `GET /api/health` | Mock; unavailable record persistence; Ifty + Omor | Only Auth `getUser()` is currently checked; no filters consumed | 401/503 `{message}`; valid session -> 501 `{message}`; **no 200 record list** | No record query/write; backend, subject filters, mother/owner authorization and migrations pending |
 | `POST /api/ai/chat` | Limited educational prototype; Iftee + Omor | Public; strict question/language/retention/optional previousChunkId, or legacy question-only input; JSON <=8 KiB | 200 grounded/abstained/clarification/conversation; 400 invalid or saved mode; 501 unavailable; 503 dependency failure | Bundled project-reference-checked corpus; clinical review pending; no DB or transcript persistence; optional development-only Gemini passage selection |
 | `POST /api/ai/barta-audio` | Limited optional speech; Iftee + Omor | Public guide request or exact text/language with signed ticket; JSON <=16,000 bytes | 200 binary WAV/MP3, represented as Uint8Array in the catalog; 400/403/429/502/503 JSON `{message}` | Optional local eSpeak or server-configured Azure; process-local throttle; no transcript persistence |
-| `POST /api/care-requests` | Mock; not sent; Omor + Samin | Public stub; strict `{message:string(1–1000),method:'text'|'aac'|'call'}`; no ownership accepted | 400 or 501 `{message,status:'not_sent'}`; no persisted/submitted/delivered success | No DB write or provider handoff; Auth, assignment, consent and queue backend pending |
+| `POST /api/care-requests` | Limited simulated care backend; Omor + care UI writer | Confirmed mother; reviewed full Bondhon DTO; exact Origin, JSON <=8 KiB, UUID Idempotency-Key | 201 v1 SupportRequest only after persisted simulated queue receipt; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; hosted migrations applied and targeted Auth/DB/API checks passed; connected UI and shared preview acceptance pending |
 
 All current outcomes use `Cache-Control: no-store` (private canonical endpoints use
-`private, no-store`). Public Barta and care requests do not require a Content-Type
-header. Barta bounds streamed request bodies; care requests remain an unavailable
-stub. Paid AI/speech services need deployment-level abuse controls before public
+`private, no-store`). Public Barta does not require a Content-Type header.
+Care mutations require JSON, exact configured Origin and bounded bodies; absent
+RPCs fail closed with 503. Paid AI/speech services need deployment-level abuse controls before public
 use; audio's throttle is process-local. GET-only routes have Next.js automatic HEAD;
 unsupported methods receive framework 405. These framework responses are outside
 the application JSON schemas. No CORS wildcard/credentialed cross-origin access is added.
@@ -292,13 +292,65 @@ No diary text field is accepted on a check-in. Activity/rest notes are consolida
 
 ## Consent and Bondhon simulated provider workflow
 
-Status: Planned. POST /api/care-requests is currently Mock; its authenticated submission payload below is Needs Review before adoption. Owners: Omor + Samin; Omor leads consent. No queue/delivery/response handler exists.
+Status: **Working simulated backend against hosted Supabase; application source
+uncommitted, connected UI/shared preview acceptance pending.** All routes below
+call the existing cookie-bound care adapter. Forward migrations through
+`20261118070000` are applied to the operator-selected app backend: private records,
+care tables/RPCs, account-role approval integration, deferred status evidence and
+explicit HTTP conflict errors. The proposal files remain historical candidates.
+Targeted verification passed all ten HTTP operations with actual hosted Auth and
+database persistence (23 checks), including foreign-owner/pending-provider denial,
+retry deduplication and revoke. This is a simulated app queue, not clinician
+delivery. Omor owns backend/security; the delegated care UI writer consumes this
+contract (Apurbo's Shonket work per the operator's latest instruction). No merged
+handoff SHA or deployed application preview is claimed.
 
-| Method/path | Input/auth | Proposed result |
+### Teammate integration prerequisites
+
+1. Receive the reviewed merged source SHA, install its locked dependencies, and
+   use the same approved development Supabase URL/public key privately supplied by
+   Omor. Do not copy his complete environment file or use service-role credentials.
+2. Set `NEXT_PUBLIC_SITE_URL` to the exact local app origin (normally
+   `http://localhost:3000`) and restart the app after environment changes. Call
+   relative `/api/...` paths on that app; sessions are HttpOnly cookies. Another
+   developer cannot call Omor's localhost. Do not add wildcard CORS or move tokens
+   into localStorage. Hosted migrations are already applied; do not reapply/reset
+   the shared database.
+3. Use a synthetic mother account for submission and a separately approved
+   simulated provider for the queue. One provider is already operator-approved;
+   obtain its login access privately from its owner, or have Omor approve the
+   teammate's exact provider application. No new provider is required merely to
+   consume the API. Use separate browser profiles/private contexts for the two
+   roles. A doctor/CHW signup remains pending until trusted approval.
+4. As mother, load `/api/care-recipients`; select the returned UUID rather than
+   hardcoding an email/UUID. The request transaction creates its assignment to that
+   selected approved provider. There is no manual assignment setup or generic
+   patient-access endpoint. Provider must use the provider workspace.
+5. Start with an explicitly reviewed message and `consentGrantIds:[]`. This shares
+   the submitted message only. Record sharing additionally requires real owned
+   saved record IDs, finite reviewed grants and matching recipient/purpose.
+   Health/wellness HTTP persistence remains separate unfinished domain work;
+   do not send browser-demo record IDs as though they exist in the database.
+6. Keep one UUID retry key for an identical reviewed submission/action. Retain
+   draft/key on network timeout or unknown failure; retry the identical payload to
+   reconcile. Changed content requires a new reviewed action/key. Validate v1
+   response DTOs, use returned revisions, display simulated delivery honestly and
+   handle loading/empty/expired/denied/conflict/unconfirmed states.
+
+The frontend work is recipient/purpose/message review and submit, optional scoped
+record grants, mother detail/events/status/close/revoke, and assigned provider
+list/detail/acknowledgement. A stored provider response is supported, but the
+current detail DTO does not return response message text; do not promise a message
+thread. Revocation blocks future provider reads and actions; it cannot erase what
+was already viewed. Keep urgent reviewed help accessible independently of this
+non-emergency simulated request path. Full connected-UI QA follows integration.
+
+| Method/path | Input/auth | Local result after database setup |
 | --- | --- | --- |
+| `GET /api/care-recipients` | Confirmed mother; no body/query | 200 v1 array of `{id,displayName,providerMode:"simulated"}` from trusted current provider approvals; empty array means none configured |
 | `POST /api/consents` | Owner; `createConsentGrantRequestSchema` | Created exact record/field grant, 201; reject foreign record, self-grant, unknown fields or unusable recipient |
 | `POST /api/consents/:id/revoke` | Owner; UUID, no body | `{id,revokedAt}`, 200; repeat returns original timestamp |
-| `POST /api/care-requests` | Owner; `createSupportRequestRequestSchema` | Persisted request, 201, initially `submitted`; never claim delivered from client intent |
+| `POST /api/care-requests` | Owner; `createSupportRequestRequestSchema` | 201 persisted `delivered`/revision 2 only after submitted + delivery events and actual simulated queue receipt in one transaction |
 | `GET /api/care-requests/:id` | Owner or active assigned approved provider | Owned DTO or restricted assigned-request projection; provider attached fields require fresh grant checks |
 | `GET /api/care-requests/:id/events` | Same request authorization; pagination | Safe event history page; receipt IDs do not authorize access |
 | `GET /api/provider/requests` | Active approved provider; pagination | Assigned simulated requests only; no global mother's-record search |
@@ -308,14 +360,35 @@ Status: Planned. POST /api/care-requests is currently Mock; its authenticated su
 
 Mother explicitly chooses recipient, message, purpose, exact record fields and finite consent expiry, reviews them, then sends. A grant is one resource with a typed field allowlist. No `all_records`, raw document, diary or AI scope exists in v1. A request can contain zero grant IDs when only its mother-approved message is sent. Grant IDs must belong to that mother and recipient, be active, and have matching purposes; the request grant join enforces integrity. Expired/revoked grants must not be replaced by copied snapshots.
 
-The server creates the assignment only to an active approved simulated provider selected by the mother, records submitted status/event, and verifies actual queue persistence before a later delivered event. Assignment alone is not acknowledgement. Delivered receipt, acknowledgement actor/assignment and response-message existence are validated in a locked transaction; arbitrary PATCH/event insertion is unavailable. A backend failure returns an error; the caller keeps its draft with **Not sent** unless the server confirms the existing idempotent request.
+The server creates the assignment only to an active approved simulated provider selected by the mother, records submitted status/event, and verifies queue persistence before the delivered event in the same transaction. Assignment alone is not acknowledgement. Delivered receipt, acknowledgement actor/assignment and response-message existence are validated in a locked transaction; arbitrary PATCH/event insertion is unavailable. Confirmed pre-write validation/authorization rejection may say **Not sent**. Network loss, invalid persistence responses or unknown 5xx mean **Submission unconfirmed**: preserve draft/key and reconcile by identical retry.
+
+All care results use v1 success/error envelopes, `private, no-store` and
+`Referrer-Policy: no-referrer`. Errors: 400 invalid input, 401 missing session,
+403 role/Origin denial, 404 unavailable or foreign resource, 409 account/revision/
+retry conflict, 503 unavailable/unconfirmed. Care POSTs require exact configured
+Origin. Creates, acknowledge/respond/close require `Idempotency-Key: <UUID>`;
+revoke has no body and retains its first timestamp. `X-Prohor-Account` optionally
+detects stale account drafts; it grants no access. IDs are UUIDs. Provider/events
+lists accept `limit=1..50` (default 20) and the previous opaque `cursor`; other
+care routes reject all query keys, and duplicate keys are rejected. Retry
+payloads are compared to immutable original rows; changed target/payload/revision
+returns 409. Provider replays recheck current assignment and grants. Closing a
+request withdraws message-only access; revoking any attached grant blocks future
+provider list/read/actions. The owner can still reconcile the original request.
+
+The old `{message,method}` care form remains a non-sending UI prototype and must
+not be connected as the new submission form. Samin adds explicit recipient,
+purpose, exact grant review, retained retry key, status and revocation UI after
+reviewed backend adoption. See [care handoff](CARE_BACKEND_REVIEW.md) for examples,
+SQL dependencies, simulated provider administration and pending acceptance.
 
 `SupportRequest` is the owner/internal model. `ProviderRequestSummary` returns only request ID, timestamps, revision, status, simulated mode, communication method and the explicitly submitted message. `ProviderRequest` adds typed `consentedRecords` containing only exact selected fields; neither includes `ownerUserId` or grant IDs. `sharedRecordProjectionSchema` rejects unknown fields and unsafe provenance payloads. Event history returns `SupportRequestEventSummary`, excluding actor UUIDs and internal receipt/assignment evidence. The server still verifies each returned field against active grants. Sharing only `provenance` returns source/verification/time labels, never raw source notes or file references. No full health objects are embedded by default. See the [authorization algorithm](security.md#consent-and-provider-access-algorithm).
 
 
 ## Proposed request field dictionary
 
-These are existing schema definitions, **not current handlers**. Except fields
+These are schema definitions; care now has local handlers as documented above,
+while private health/wellness/report handlers remain proposals. Except fields
 explicitly marked optional/defaulted, listed fields are required even when nullable.
 Unknown keys are rejected. Open the linked domain source before adopting a proposal.
 
@@ -411,3 +484,16 @@ npm.cmd run build
 See [Step 14 verification](../qa/DAY2_CODE_REVIEW.md#step-14-contract-verification-historical-evidence) for actual PASS/FAIL/NOT RUN
 results and the exact changed-file list. No feature route, UI, database table,
 production migration or deployed resource is introduced by this contract step.
+
+## 18 November care continuation — hosted backend activated
+
+[care-backend-v1](CARE_BACKEND_REVIEW.md) supplies isolated SQL transactions and
+`src/lib/care` adapters using the existing Bondhon validators. Its new
+SQL/adapter tests are implementation evidence in disposable PostgreSQL with
+injected identity. Ten local HTTP operations now import the adapter and the
+current catalog records the deliberate replacement of the 501 care stub. Forward
+SQL is now applied and targeted hosted Auth/database/HTTP checks passed. The
+connected frontend remains unfinished. The current consent section above
+supersedes earlier candidate documents saying the SQL is unapplied. Application
+publication, shared preview, complete UI acceptance and a merged handoff SHA
+remain pending. No clinical validation or real-provider delivery is claimed.

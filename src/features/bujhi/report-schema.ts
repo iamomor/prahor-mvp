@@ -1,5 +1,5 @@
 ﻿/** Versioned report context. Presence, user review, and professional authenticity are distinct. */
-export type DocumentType = "anc" | "laboratory" | "ultrasound" | "clinical_note" | "vital_sign" | "observation";
+export type DocumentType = "anc" | "laboratory" | "ultrasound" | "clinical_note" | "vital_sign" | "observation" | "unknown";
 export type Presence = "provided" | "not_provided" | "not_applicable" | "not_reviewed" | "unreadable" | "conflicting";
 export type ReportSection = "patient" | "dating" | "history" | "vitals" | "laboratory" | "ultrasound" | "supplements" | "risk" | "carePlan" | "provider";
 export type UserReview = "pending" | "verified" | "rejected";
@@ -50,8 +50,9 @@ export type LaboratoryDetails = {
   originalTestLabel: string; referenceIntervalUnit?: string; specimen?: string; collectionDate?: string;
   facility?: string; method?: string; sampleTiming?: { type: "fasting" | "timed" | "unspecified"; minutes?: number; original: string };
 };
-export type SourceLocation = { line?: number; page?: number; description?: string };
+export type SourceLocation = { line?: number; page?: number; description?: string; box?: { x0: number; y0: number; x1: number; y1: number } };
 export const documentLabels: Record<DocumentType, string> = {
+  unknown: "ধরন অজানা · Other or unknown",
   anc: "সম্পূর্ণ গর্ভকালীন রিপোর্ট · Complete ANC report", laboratory: "পরীক্ষার রিপোর্ট · Laboratory report",
   ultrasound: "আল্ট্রাসাউন্ড · Ultrasound", clinical_note: "চিকিৎসার নোট · Clinical note",
   vital_sign: "প্রেসার বা পরিমাপ · Vital sign", observation: "নিজের তথ্য · Observation",

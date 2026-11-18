@@ -139,6 +139,7 @@ test("public record/report modules mount at 320px and settings preserve an unfin
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.goto("/demo/bujhi");
   await expect(page.getByRole("heading", { level: 1, name: /Bujhi/ })).toBeVisible();
+  await page.getByRole("button", { name: /Enter Information/ }).click();
   const editable = page.getByLabel(/Test or observation name \(required\)/).first(); await editable.fill("Synthetic unsaved entry");
   await page.getByRole("button", { name: "Adjust how you use PROHOR", exact: true }).first().press("Enter");
   await page.keyboard.press("Escape"); await expect(editable).toHaveValue("Synthetic unsaved entry");

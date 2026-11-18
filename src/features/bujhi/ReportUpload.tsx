@@ -7,7 +7,7 @@ const control = "w-full min-w-0 max-w-full rounded-field border border-pro-contr
 const button = "min-h-12 whitespace-normal rounded-control border border-pro-primary px-4 py-3 font-semibold focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus disabled:opacity-60";
 
 type SelectedMedia = { file: File; kind: ReportMediaKind; url: string };
-export function ReportUpload({ onContinue, continueLabel = "Run local English OCR" }: { onContinue: (file: File, kind: ReportMediaKind) => void; continueLabel?: string }) {
+export function ReportUpload({ onContinue, autoContinue = false, continueLabel = "Run local English OCR" }: { onContinue: (file: File, kind: ReportMediaKind) => void; autoContinue?: boolean; continueLabel?: string }) {
   const id = useId();
   const [selected, setSelected] = useState<SelectedMedia | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +16,8 @@ export function ReportUpload({ onContinue, continueLabel = "Run local English OC
   const [message, setMessage] = useState("No file selected. Choose a fictional or non-sensitive file to start.");
   const activeUrl = useRef<string | null>(null);
   const request = useRef(0);
+  const autoStarted = useRef("");
+  const cameraInput = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
 
 
@@ -66,15 +68,28 @@ export function ReportUpload({ onContinue, continueLabel = "Run local English OC
     setError("Your browser could not preview this file. It may be damaged or use an unsupported encoding. Replace or remove it to continue.");
     setMessage("Preview unavailable.");
   }
-  function ready() { setPreviewReady(true); setError(null); setMessage("Preview ready. Check your selection before running local OCR."); }
+  function ready() {
+    setPreviewReady(true);
+    setError(null);
+    setMessage("Preview ready. Check your selection before running local OCR.");
+
+  }
+
+  useEffect(() => {
+    if (!selected || !previewReady || !autoContinue || autoStarted.current === selected.url) return;
+    autoStarted.current = selected.url;
+    void Promise.resolve().then(() => onContinue(selected.file, selected.kind));
+  }, [autoContinue, onContinue, previewReady, selected]);
 
   return <section aria-labelledby={`${id}-heading`} className="grid min-w-0 grid-cols-1 gap-[var(--pro-gap-field)] rounded-card border border-pro-border bg-pro-elevated p-[var(--pro-pad-card)]">
     <h2 id={`${id}-heading`} className="text-2xl font-semibold">Choose a photo</h2>
     <p id={`${id}-privacy`} className="text-pro-muted">Use synthetic or non-sensitive files only. Selection and preview stay in this browser. Nothing is sent to a server or stored in localStorage. Returning here preserves your current review corrections.</p>
+    <button type="button" className={button + " justify-self-start text-pro-primary"} onClick={() => cameraInput.current?.click()}>ছবি তুলুন · Take a photo</button>
+    <input id="bujhi-photo-camera" ref={cameraInput} type="file" hidden capture="environment" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => void choose(event, "photo")} />
     <div className="grid min-w-0 gap-2">
-      <label htmlFor={`${id}-photo`} className="font-semibold">Photo Upload · <span lang="bn">ছবি নির্বাচন</span></label>
+      <label htmlFor="bujhi-photo-gallery" className="font-semibold">Photo Upload · <span lang="bn">ছবি নির্বাচন</span></label>
       <p id={`${id}-photo-hint`} className="text-pro-muted">JPG/JPEG, PNG, or WebP · Maximum 10 MiB. Selecting another file replaces the current preview.</p>
-      <input ref={photoInput} id={`${id}-photo`} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" className={control} onChange={(event) => void choose(event, "photo")} aria-describedby={`${id}-photo-hint ${id}-privacy ${id}-error`} aria-invalid={Boolean(error)} />
+      <input ref={photoInput} id="bujhi-photo-gallery" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" className={control} onChange={(event) => void choose(event, "photo")} aria-describedby={`${id}-photo-hint ${id}-privacy ${id}-error`} aria-invalid={Boolean(error)} />
     </div>
     <p role="status" aria-atomic="true">{message}</p>
     <p id={`${id}-error`} role="alert" className="text-pro-danger">{error}</p>
@@ -93,3 +108,5 @@ export function ReportUpload({ onContinue, continueLabel = "Run local English OC
     <button type="button" disabled={!selected || validating || !previewReady || Boolean(error)} onClick={() => { if (selected && previewReady && !error) onContinue(selected.file, selected.kind); }} className={`${button} bg-pro-primary text-pro-on-primary disabled:text-pro-on-primary`}>{continueLabel}</button>
   </section>;
 }
+
+

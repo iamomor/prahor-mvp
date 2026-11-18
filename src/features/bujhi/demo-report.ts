@@ -1,14 +1,17 @@
-﻿import type { ExtractedReport } from "./types";
+import type { ExtractedReport } from "./types";
 
-/** Synthetic fixture, not an AI call or an actual patient's report. */
+/** Fixed fictional example of the workflow. It never represents OCR output. */
 export const demoReport: ExtractedReport = {
-  id: "demo-report-001",
-  name: "Fictional Maternal Health Report",
+  id: "sample-bujhi-hemoglobin",
+  name: "নমুনা রিপোর্ট · Sample report",
   status: "needs_review",
-  source: "document_extracted",
-  observedAt: "2026-11-16T06:00:00.000Z",
-  fields: [
-    { id: "hemoglobin", label: "Hemoglobin", value: "11.2", unit: "g/dL", destination: "mother", reviewStatus: "pending" },
-    { id: "fetal-heart-rate", label: "Fetal Heart Rate", value: "145", unit: "bpm", destination: "baby", reviewStatus: "pending" },
-  ],
+  source: "self_reported",
+  inputMethod: "manual",
+  documentType: "laboratory",
+  observedAt: "2026-11-14",
+  fields: [{
+    id: "hemoglobin", label: "Hemoglobin", value: "10.2", rawValue: "10.2", unit: "g/dL",
+    destination: "mother", reviewStatus: "pending", category: "laboratory_tests", observedAt: "2026-11-14",
+    referenceRange: "11.0–14.0 g/dL", sourceText: "Fictional sample · Hemoglobin 10.2 g/dL · Printed interval: 11.0–14.0 g/dL",
+  }],
 };

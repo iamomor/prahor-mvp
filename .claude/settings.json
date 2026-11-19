@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Stop-Process -Id 27280 -Force -Confirm:$false; $p = \\(Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue\\).OwningProcess | Select-Object -Unique; foreach \\($id in $p\\) { Stop-Process -Id $id -Force -Confirm:$false }; \"stopped\")",
+      "Bash(grep -E \"^\\\\s+[0-9]+\\\\\\) |›.*\\(─|$\\)|violations|\\\\\"id\\\\\"|\\\\\"help\\\\\"|target|Received|Expected\")",
+      "Bash(git stash *)",
+      "Bash(gh auth *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ]
+  }
+}

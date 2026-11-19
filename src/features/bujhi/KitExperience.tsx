@@ -9,8 +9,8 @@ import { explainKit, retestWindow, type KitPick, type Timing, type Window } from
 
 type Step = "start" | "context" | "reading" | "mark" | "result" | "guide" | "states" | "text" | "note" | "saved";
 type KitType = "strip" | "digital";
-const primary = "inline-flex min-h-12 items-center justify-center rounded-field bg-pro-primary px-5 py-3 text-center font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus disabled:opacity-55";
-const secondary = "inline-flex min-h-12 items-center justify-center rounded-field border border-pro-control-border bg-pro-elevated px-5 py-3 text-center font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus";
+const primary = "inline-flex min-h-12 max-w-full items-center justify-center rounded-field bg-pro-primary px-5 py-3 text-center font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus disabled:opacity-55";
+const secondary = "inline-flex min-h-12 max-w-full items-center justify-center rounded-field border border-pro-control-border bg-pro-elevated px-5 py-3 text-center font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus";
 const card = "rounded-card border border-pro-border bg-pro-elevated p-5";
 const field = "min-h-12 w-full rounded-field border border-pro-control-border bg-pro-bg px-3 py-2 text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus";
 const sourceTest = "https://www.nhs.uk/pregnancy/trying-for-a-baby/doing-a-pregnancy-test/";
@@ -43,7 +43,7 @@ function KitSketch({ pick }: { pick: KitPick }) {
 }
 
 function UrgentHelp({ prominent = false }: { prominent?: boolean }) {
-  return <aside aria-label="জরুরি লক্ষণ ও সাহায্য" className={`grid gap-3 rounded-card border p-5 ${prominent ? "border-pro-danger bg-pro-danger-soft" : "border-pro-control-border bg-pro-surface"}`}>
+  return <aside aria-label="জরুরি লক্ষণ ও সাহায্য" className={`grid min-w-0 gap-3 rounded-card border p-5 [overflow-wrap:anywhere] ${prominent ? "border-pro-danger bg-pro-danger-soft" : "border-pro-control-border bg-pro-surface"}`}>
     <h2 className="text-xl font-semibold">জরুরি লক্ষণ থাকলে অপেক্ষা করবেন না</h2>
     <p>এক পাশে তীব্র তলপেট ব্যথা, বেশি রক্তপাত, অজ্ঞান লাগা বা অজ্ঞান হওয়া, অথবা কাঁধের আগায় ব্যথা থাকলে কিটের ফল যা-ই দেখাক, দ্রুত জরুরি চিকিৎসা নিন।</p>
     <div className="flex flex-wrap gap-2"><a href="tel:999" className={primary}>বাংলাদেশে জরুরি সেবা ৯৯৯</a><Link href="/safety" className={secondary}>সহায়তার তথ্য</Link></div>
@@ -104,12 +104,12 @@ export function KitExperience({ mode = "demo" }: { mode?: "demo" | "account" }) 
   }
 
   const title: Record<Step, string> = { start: "কিটের ফল বুঝি", context: "কোন কিট, কখন পরীক্ষা?", reading: "কখন পড়েছেন, কোনো জরুরি লক্ষণ আছে?", mark: "কিটে কী দেখেছেন?", result: "আপনি যা দেখেছেন", guide: "কিট বোঝার ছোট গাইড", states: "সব অবস্থার ব্যাখ্যা", text: "লেখায় কিটের চিহ্ন", note: "নিজের নোট রাখবেন?", saved: "নোট রাখার ফল" };
-  return <div lang="bn" className="min-h-dvh bg-pro-bg text-pro-text">
-    <header className="border-b border-pro-border px-4 py-3"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 font-semibold"><Link href="/" className="text-lg text-pro-primary">প্রহর</Link><span className="border-l border-pro-border pl-2">বুঝি · কিট</span></div><div className="flex flex-wrap items-center gap-2"><AccessPreferencesControl compact /><Link href="/safety" className={`${secondary} text-sm`}>জরুরি সহায়তা</Link></div></div></header>
+  return <div lang="bn" className={mode === "demo" ? "min-h-dvh bg-pro-bg text-pro-text" : "text-pro-text"}>
+    {mode === "demo" && <header className="border-b border-pro-border px-4 py-3"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 font-semibold"><Link href="/" className="text-lg text-pro-primary">প্রহর</Link><span className="border-l border-pro-border pl-2">বুঝি · কিট</span></div><div className="flex flex-wrap items-center gap-2"><AccessPreferencesControl compact /><Link href="/safety" className={`${secondary} text-sm`}>জরুরি সহায়তা</Link></div></div></header>}
     {mode === "demo" && <p className="border-b border-pro-info bg-pro-info-soft px-4 py-2 text-center text-sm font-semibold text-pro-info">কাল্পনিক ডেমো · এখানে আসল রোগীর তথ্য লিখবেন না</p>}
-    <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 pb-20 sm:px-6">
+    <div className={mode === "demo" ? "mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 pb-20 sm:px-6" : "mx-auto grid w-full max-w-6xl gap-6 pb-10"}>
       <nav aria-label="বুঝি-তে ফিরে যান" className="flex flex-wrap gap-4"><Link href={mode === "demo" ? "/demo/bujhi" : "/app/bujhi"} className="inline-flex min-h-11 items-center font-semibold text-pro-primary underline">← রিপোর্ট বুঝি</Link>{step !== "start" && <button type="button" onClick={restart} className="min-h-11 font-semibold text-pro-primary underline">আবার শুরু</button>}</nav>
-      <div className="mx-auto grid w-full max-w-2xl gap-5">
+      <div className="mx-auto grid min-w-0 w-full max-w-2xl gap-5 [grid-template-columns:minmax(0,1fr)]">
         <Progress step={step} />
         <div><p className="font-semibold text-pro-primary">বুঝি · ঘরে করা pregnancy kit</p><h1 ref={heading} tabIndex={-1} className="mt-1 text-3xl font-semibold leading-tight">{title[step]}</h1></div>
         {!online && <p role="status" className="rounded-field border border-pro-warning bg-pro-warning-soft p-4 text-pro-warning">ইন্টারনেট নেই। নির্দেশনা পড়া যায়; ডেমো নোট শুধু এই ডিভাইসে রাখা যায়। কোনো reminder পাঠানো হবে না।</p>}
@@ -138,6 +138,6 @@ export function KitExperience({ mode = "demo" }: { mode?: "demo" | "account" }) 
         {(step === "context" || step === "note" || step === "saved") && <UrgentHelp />}
         <p className="border-t border-pro-border pt-4 text-sm text-pro-muted">এটি তথ্যভিত্তিক সহায়তা; কিটের ছবি পড়া, গর্ভাবস্থা নির্ণয়, চিকিৎসক নিশ্চিতকরণ বা স্বয়ংক্রিয় reminder নয়।</p>
       </div>
-    </main>
+    </div>
   </div>;
 }

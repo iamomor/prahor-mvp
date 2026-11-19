@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+
 type Pregnancy = {
   id: string;
   label: string;
@@ -99,6 +100,7 @@ const choices = {
   ],
 } as const;
 
+
 const unitOptions: Record<string, string[]> = {
   weight: ["kg", "g"],
   temperature: ["Cel", "[degF]"],
@@ -140,12 +142,14 @@ export function AccountRecords() {
   const [babyId, setBabyId] = useState("");
   const [task, setTask] = useState<Task>("home");
   const taskHeading = useRef<HTMLHeadingElement>(null);
+  const homeHeading = useRef<HTMLHeadingElement>(null);
+  const guideHeading = useRef<HTMLHeadingElement>(null);
   const errorFocus = useRef<HTMLDivElement>(null);
   const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   function openTask(next: Task) {
     setTask(next);
-    requestAnimationFrame(() => taskHeading.current?.focus());
+    requestAnimationFrame(() => (next === "home" ? homeHeading : next === "guide" ? guideHeading : taskHeading).current?.focus());
   }
   const load = useCallback(async () => {
     try {
@@ -218,6 +222,7 @@ export function AccountRecords() {
     setKind("weight");
     setUnit("kg");
   }
+
   const visibleBabies =
     records?.babies.filter(
       (baby) => !pregnancyId || baby.pregnancy_id === pregnancyId,
@@ -256,6 +261,7 @@ export function AccountRecords() {
     }
     return history;
   }
+
 
         </div>
       )}

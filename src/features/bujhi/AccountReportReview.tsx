@@ -87,6 +87,7 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
   }
 
   const control = "min-h-12 w-full rounded-field border border-pro-control-border bg-pro-bg px-3 text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus";
+
   return <div className="grid gap-5 text-pro-text">
     <header className="module-hero">
       <p>Understand your reports · রিপোর্ট বুঝুন</p>

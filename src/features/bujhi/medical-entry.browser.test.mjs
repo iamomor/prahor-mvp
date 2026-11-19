@@ -1,4 +1,5 @@
-﻿import { test } from "node:test";
+import { readFile } from "node:fs/promises";
+import { test } from "node:test";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
 const url = (process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/bujhi/legacy";
@@ -291,4 +292,40 @@ test("an explicitly kept draft restores corrections and exclusions after refresh
   } finally {
     await browser.close();
   }
+});
+
+test("downloadable PNG goes through local OCR and keeps the original optional", { timeout: 240000 }, async () => {
+  const browser = await chromium.launch(options);
+  try {
+    const page = await browser.newPage({ viewport: { width: 320, height: 720 } });
+    await page.goto(url.replace(/\/legacy$/, ""));
+    await page.getByRole("button", { name: "ছবি স্ক্যান করি" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Bujhi · বুঝি" })).toBeFocused();
+
+    const scanner = page.getByRole("region", { name: "Image OCR entry" });
+    const sample = scanner.getByRole("link", { name: "Download sample report (PNG)" });
+    const download = page.waitForEvent("download");
+    await sample.focus();
+    await page.keyboard.press("Enter");
+    const downloaded = await download;
+    expect(downloaded.suggestedFilename()).toBe("prohor-synthetic-lab-v1.png");
+    await scanner.getByLabel(/Allow downloads/).check();
+    await scanner.getByLabel(/Photo Upload/).setInputFiles({
+      name: downloaded.suggestedFilename(),
+      mimeType: "image/png",
+      buffer: await readFile(await downloaded.path()),
+    });
+
+    await expect(page.getByRole("heading", { name: "Check what was read" })).toBeVisible({ timeout: 180000 });
+    const hemoglobin = page.getByRole("group", { name: "Hemoglobin", exact: true });
+    await expect(hemoglobin).toContainText("11.2");
+    await expect(hemoglobin).toContainText("g/dL");
+    const original = page.getByText(/View original/);
+    await expect(original.locator("..")).not.toHaveAttribute("open", "");
+    await original.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("img", { name: /Original uploaded report/ })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  } finally { await browser.close(); }
 });

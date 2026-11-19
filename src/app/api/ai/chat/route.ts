@@ -1,3 +1,4 @@
+import { getBartaChatRetryAfter } from "@/features/barta/chat-rate-limit";
 import { buildBartaSpeechText, maxSpeechText } from "@/features/barta/barta-spoken-text";
 import { issueAudioTicket } from "@/features/barta/audio-ticket";
 import { getBundledSpeechUrl } from "@/features/barta/bundled-speech";
@@ -38,17 +39,6 @@ function getKnowledge() {
   return preparedKnowledge;
 }
 
-// shortcut: per-instance memory, so limits reset on cold start and are per serverless instance; move to a shared store if abuse appears.
-const chatHits = new Map<string, { start: number; count: number }>();
-const chatLimitPerMinute = 20;
-function overChatLimit(request: Request, now = Date.now()) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
-  if (chatHits.size > 5000) chatHits.clear();
-  const hit = chatHits.get(ip);
-  if (!hit || now - hit.start >= 60_000) { chatHits.set(ip, { start: now, count: 1 }); return false; }
-  return ++hit.count > chatLimitPerMinute;
-}
-
 async function decisionReply(answer: BartaAnswer, language: BartaRequest["language"], status: number) {
   const speech = answer.status === "not_connected" ? undefined : buildBartaSpeechText(answer, language);
   const audioText = speech && speech.length <= maxSpeechText ? speech : undefined;
@@ -86,6 +76,13 @@ async function decisionReply(answer: BartaAnswer, language: BartaRequest["langua
   return jsonNoStore({ ...answer, ...audio }, status);
 }
 
+function stripBartaCourtesy(question: string) {
+  return question.normalize("NFKC").replace(
+    /^(?:please(?: tell me)?|can you (?:please )?tell me|could you (?:please )?tell me|দয়া করে(?: বলুন)?|অনুগ্রহ করে(?: বলুন)?)[,،\s]+(?=(?:what|which|when|why|where|how|does|can|is|are)\b|[\p{Script=Bengali}])/iu,
+    "",
+  );
+}
+
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -97,9 +94,13 @@ export async function POST(request: Request) {
   if (requestData.success) {
     const { question, language, retention, previousChunkId, followUpContext } = requestData.data;
     const questionWithoutGreeting = stripOpeningGreeting(stripBartaSocialSuffix(question));
+    const questionWithoutCourtesy = stripBartaCourtesy(questionWithoutGreeting);
     const safetyResponse = getBankSafety(question, language) ?? getBartaSafetyResponse(question, language)
       ?? (questionWithoutGreeting !== question
         ? getBankSafety(questionWithoutGreeting, language) ?? getBartaSafetyResponse(questionWithoutGreeting, language)
+        : undefined)
+      ?? (questionWithoutCourtesy !== questionWithoutGreeting
+        ? getBankSafety(questionWithoutCourtesy, language) ?? getBartaSafetyResponse(questionWithoutCourtesy, language)
         : undefined);
     if (safetyResponse?.status === "abstained"
       && (safetyResponse.reason === "urgent_care" || safetyResponse.reason === "crisis_support")) {
@@ -111,12 +112,6 @@ export async function POST(request: Request) {
       return decisionReply(getBartaRouteResponse(coverage.route, language), language, 200);
     }
     if (safetyResponse) return decisionReply(safetyResponse, language, 200);
-    // Throttle only after safety replies, so danger-sign guidance is never rate limited.
-    if (overChatLimit(request)) {
-      const limited = jsonNoStore({ message: "Too many questions in a minute. Please wait and try again.", status: "not_connected" }, 429);
-      limited.headers.set("Retry-After", "60"); return limited;
-    }
-
     if (retention.mode !== "ephemeral") {
       return jsonNoStore({ message: "Saved Barta conversations are unavailable." }, 400);
     }
@@ -126,6 +121,20 @@ export async function POST(request: Request) {
     }
     const bleeding = getBartaBleedingClarification(questionWithoutGreeting, language);
     if (bleeding) return decisionReply(bleeding, language, 200);
+
+    // Explicit safety replies and bleeding guidance return before the limiter.
+    const retryAfter = await getBartaChatRetryAfter(request);
+    if (retryAfter) {
+      const limited = jsonNoStore({
+        status: "not_connected",
+        answer: null,
+        message: language === "bn"
+          ? "অল্প সময়ে অনেক প্রশ্ন পাঠানো হয়েছে। একটু অপেক্ষা করে আবার পাঠান।"
+          : "Too many questions in a short time. Please wait a moment and try again.",
+      }, 429);
+      limited.headers.set("Retry-After", String(retryAfter));
+      return limited;
+    }
 
     const emojiReply = getBartaEmojiReply(question, language);
     if (emojiReply) return decisionReply(emojiReply, language, 200);
@@ -178,10 +187,7 @@ export async function POST(request: Request) {
         ? { status: "clarification", answer: null, citations: [], message: understood[language], suggestions }
         : { status: "conversation", answer: null, citations: [], message: understood[language] }, language, 200);
     }
-    const query = followUp.normalize("NFKC").replace(
-      /^(?:please(?: tell me)?|can you (?:please )?tell me|could you (?:please )?tell me|দয়া করে(?: বলুন)?|অনুগ্রহ করে(?: বলুন)?)[,،\s]+(?=(?:what|which|when|why|where|how|does|can|is|are)\b|[\p{Script=Bengali}])/iu,
-      "",
-    );
+    const query = stripBartaCourtesy(followUp);
     const querySafety = query !== followUp ? getBankSafety(query, language) ?? getBartaSafetyResponse(query, language) : undefined;
     if (querySafety) return decisionReply(querySafety, language, 200);
     const intent = getQuestionBankIntent(query, language);

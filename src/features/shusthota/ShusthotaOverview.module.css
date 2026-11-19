@@ -108,6 +108,20 @@
   background-position: 0 0.25rem;
 }
 
+.historyScroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--pro-border) transparent;
+}
+
+.historyScroll::-webkit-scrollbar { width: 0.5rem; }
+.historyScroll::-webkit-scrollbar-track { background: transparent; }
+.historyScroll::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--pro-border);
+  background-clip: padding-box;
+}
+
 @keyframes character-greeting {
   0% { opacity: 0.78; transform: scale(0.96); }
   70% { opacity: 1; transform: scale(1.04); }

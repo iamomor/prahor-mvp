@@ -15,7 +15,7 @@ const options = [
   ["none", { en: "No preference", bn: "কোনো পছন্দ নেই" }],
 ] as const;
 
-export function ActivityPreferences() {
+export function ActivityPreferences({ onSaved }: { onSaved?: () => void } = {}) {
   const { language, t } = useLanguage();
   const id = useId();
   const [selected, setSelected] = useState<string[]>([]);
@@ -50,6 +50,7 @@ export function ActivityPreferences() {
     try {
       const saved = await saveActivityPreferences(selected as Parameters<typeof saveActivityPreferences>[0]);
       setMessage(t({ en: "The server confirmed this synthetic preference record.", bn: "সার্ভার এই কৃত্রিম পছন্দের রেকর্ড নিশ্চিত করেছে।" }));
+      onSaved?.();
       try {
         const latest = await getActivityPreferences();
         if (!latest.some(entry => entry.id === saved.id)) setError(t({ en: "The save was confirmed, but the updated history was not returned.", bn: "সংরক্ষণ নিশ্চিত হয়েছে, তবে হালনাগাদ ইতিহাস ফেরত আসেনি।" }));

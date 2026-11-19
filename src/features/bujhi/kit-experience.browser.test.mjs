@@ -32,7 +32,7 @@ test("faint strip mark gives a cautious path and saves only an optional self-rep
     await page.getByRole("radio", { name: /C ও ফিকে T রেখা/ }).check();
     await page.getByRole("button", { name: "পরের কাজ দেখুন" }).click();
     await expect(page.getByRole("heading", { name: "কিটে দেখা: C ও ফিকে T রেখা" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Doing a pregnancy test/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /NHS .* পরীক্ষার তথ্য/ })).toHaveAttribute("href", /doing-a-pregnancy-test/);
     await page.getByLabel("কিট ব্যবহারের তারিখ").fill("2026-11-19");
     await expect(page.getByRole("status").filter({ hasText: "সম্ভাব্য সময়" })).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem("prohor-demo-health-v1"))).toBeNull();

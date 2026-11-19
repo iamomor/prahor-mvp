@@ -277,6 +277,12 @@ export function BartaEducationChat({
             <textarea id="barta-question" ref={questionInput} value={question}
               placeholder={copy.placeholder} aria-describedby="barta-privacy"
               onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
+            <div className={styles.composerSend}>
+              <button type="submit" className="pro-btn pro-btn-primary"
+                disabled={!ready || busy || audio.listening || !question.trim()}>
+                {copy.submit}<ArrowUp size={18} aria-hidden="true" />
+              </button>
+            </div>
             <div className={styles.composerTools}>
               <button type="button" className={styles.read} disabled={!ready || busy || audio.listening}
                 aria-controls="barta-symbol-input" aria-expanded={symbolsOpen} onClick={onOpenSymbols}>
@@ -324,12 +330,7 @@ export function BartaEducationChat({
             <button type="button" className={styles.clear} disabled={!ready || busy} onClick={() => { audio.resetAudio(); onClear(); }} lang={formLanguage}>{copy.clear}</button>
           )}
           </div>
-          <div className={styles.formFooter}>
-            <p id="barta-privacy">{copy.privacy}</p>
-            <button type="submit" className="pro-btn pro-btn-primary" disabled={busy || audio.listening || !question.trim()}>
-              {copy.submit}<ArrowUp size={18} aria-hidden="true" />
-            </button>
-          </div>
+          <p id="barta-privacy" className={styles.privacyHint}>{copy.privacy}</p>
           <p id="barta-voice-hint" className={styles.voiceHint}>
             {voiceLanguage === "auto" && (
               <>{copy.voiceAutoHint} <span lang={micLanguage}>{micLanguage === "bn" ? "বাংলা" : "English"}</span>.{" "}</>

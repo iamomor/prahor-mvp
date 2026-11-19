@@ -18,7 +18,7 @@
 .panel p { margin: 0; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
 .button { display: inline-flex; justify-content: center; align-items: center; gap: .5rem; min-height: 2.75rem; border: 1px solid var(--pro-control-border); border-radius: .75rem; padding: .6rem 1rem; font: inherit; font-weight: 600; text-decoration: none; color: var(--pro-primary); background: var(--pro-elevated); cursor: pointer; }
-.button:disabled { cursor: wait; opacity: .65; }
+.button:disabled, .textButton:disabled { cursor: not-allowed; opacity: .65; }
 .primary { color: var(--pro-on-primary); background: var(--pro-primary); }
 .field { display: grid; gap: .5rem; font-weight: 600; }
 .filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
@@ -34,7 +34,7 @@
 .facts dt { font-weight: 600; }
 .facts dd { margin: .2rem 0 0; overflow-wrap: anywhere; }
 .pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
-.check { display: flex; gap: .75rem; align-items: flex-start; padding: .875rem; border: 1px solid var(--pro-border); border-radius: .75rem; }
+.check { display: flex; gap: .75rem; align-items: flex-start; min-height: 3rem; padding: .75rem 0; border-block-end: 1px solid var(--pro-border); }
 .check input { margin-block-start: .25rem; }
 @media (min-width: 44rem) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (forced-colors: active) { .panel, .card, .badge, .button, .check { border-color: CanvasText; } .button { color: LinkText; } .primary { color: HighlightText; background: Highlight; } }
@@ -56,3 +56,28 @@
 }
 
 .root :is(p, label, button, a, summary, select, input, textarea) { font-size: 1rem; }
+
+/* Final task hierarchy: quiet metadata, open page flow, progressive disclosures. */
+.sectionHead { display: flex; gap: .875rem; align-items: flex-start; }
+.sectionHead h2 { margin: 0; }
+.sectionHead > div { display: grid; gap: .35rem; }
+.stepMark { display: grid; place-items: center; flex: none; width: 2.4rem; height: 2.4rem; border-radius: .75rem; background: var(--pro-surface); color: var(--pro-primary); font-weight: 700; }
+.textButton { display: inline-flex; align-items: center; gap: .35rem; justify-content: flex-start; min-height: 2.75rem; padding: .4rem .2rem; border: 0; background: transparent; color: var(--pro-primary); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
+.selected { color: var(--pro-on-primary); background: var(--pro-primary); }
+.disclosure { border: 0; border-block-start: 1px solid var(--pro-border); padding-block-start: .5rem; }
+.disclosure > summary { min-height: 2.75rem; padding-block: .6rem; cursor: pointer; font-weight: 600; }
+.disclosure > :not(summary) { margin-block: .75rem; }
+.sourceFooter { border-block-start: 1px solid var(--pro-border); padding-block-start: .875rem; display: grid; gap: .5rem; color: var(--pro-muted); }
+.attribution { color: var(--pro-muted); display: inline-flex; min-height: 2.75rem; align-items: center; width: fit-content; }
+.resultBar { display: flex; flex-wrap: wrap; gap: .5rem 1rem; justify-content: space-between; align-items: center; }
+.chosenPlace { display: grid; gap: .5rem; padding: 1rem; border-inline-start: 3px solid var(--pro-primary); border-radius: .75rem; background: var(--pro-surface); }
+.planGroups { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
+.planGroup { min-width: 0; margin: 0; padding: 0; border: 0; }
+.planGroup legend { font-weight: 650; padding: 0; margin-block-end: .5rem; }
+.safetyStrip { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; border-block-start: 1px solid var(--pro-border); padding-block-start: .75rem; color: var(--pro-muted); }
+.safetyStrip a { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--pro-primary); text-decoration: underline; text-underline-offset: .2em; font-weight: 600; }
+@media (min-width: 60rem) { .planGroups { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (forced-colors: active) { .selected { color: HighlightText; background: Highlight; } .stepMark, .chosenPlace { border: 1px solid CanvasText; } .textButton { color: LinkText; } }
+@media print { .printVisitRoot .planGroups { display: block; } .printVisitRoot fieldset { break-inside: avoid; } .printVisitRoot details { display: none; } }
+
+.root :is(h2, h3)[tabindex="-1"]:focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 4px; }

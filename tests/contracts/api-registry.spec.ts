@@ -42,7 +42,10 @@ test("current Barta accepts public education and legacy payloads while rejecting
   expect(currentApiContracts["POST /api/care-requests"].request.safeParse({ message: "Synthetic request", method: "aac" }).success).toBe(false);
   expect(currentApiContracts["POST /api/care-requests"].request.safeParse({
     recipientUserId: ids.provider, message: "Synthetic request", method: "aac", purpose: "Synthetic support",
-    consentGrantIds: [], reviewConfirmed: true,
+    consentGrantIds: [], reviewConfirmed: true, coordination: {
+      termsVersion: "bondhon-demo-2026-11-19", expiresAt: "2026-11-20T00:00:00Z",
+      allowReplies: false, language: "en", accommodations: [], records: [],
+    },
   }).success).toBe(true);
   expect(currentApiContracts["POST /api/care-requests"].request.safeParse({ message: "Synthetic request", method: "aac", status: "delivered" }).success).toBe(false);
 });

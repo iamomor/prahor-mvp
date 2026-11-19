@@ -2,7 +2,7 @@
 
 Prepared 19 November 2026 for `prahor-mvp-main(3).zip` plus the current `PROHOR-Bondhon-Integration-Inputs.zip`.
 
-Bondhon now has integrated mother and simulated-provider interfaces, request-level consent, exact field selection, optional accommodations, and a scoped communication history. The existing account, role approval, private-record, care API and semantic design-token systems are reused. This package contains local implementation. Hosted activation and full regression execution are pending.
+Bondhon now has integrated mother and simulated-provider interfaces, request-level consent, exact field selection, optional accommodations, and a scoped communication history. The existing account, role approval, private-record, care API and semantic design-token systems are reused. The current checkout has passed local regression and production-build checks. See [the current acceptance report](QA_2026-11-19.md) for hosted-session evidence and remaining release gates.
 
 ## Entry points and user journey
 
@@ -22,7 +22,7 @@ The mother can view request progress, the versioned permission receipt, recorded
 
 Existing request statuses remain `submitted`, `delivered`, `acknowledged`, `responded`, `closed`. The supplied roadmap's larger state vocabulary is not silently imposed on existing clients. Draft and submission-unconfirmed are client states. Consent expiry/revocation are separate from request status.
 
-The existing `POST /api/care-requests` accepts an optional strictly validated `coordination` object. Without it the established contract and RPC remain available. With it an atomic wrapper creates selected grants and binds an expiring permission to this request. The wrapper rejects mixing prior grants with a new selection. A UUID `Idempotency-Key` is bound to the full reviewed submission. Changed replay payloads fail with a conflict. Owner-only replay remains available after expiry/revocation without restoring provider access.
+Every new `POST /api/care-requests` requires a strictly validated `coordination` object, including explicit approval, reply choice and expiry. The Shonket review entry uses the same Bondhon form and atomic wrapper. Migration `20261119060000_require_request_permission.sql` denies application roles direct execution of the legacy creation RPC; the coordinator can still call it internally. Historical request reads and actions remain compatible. The atomic wrapper creates selected grants and binds an expiring permission to this request. The wrapper rejects mixing prior grants with a new selection. A UUID `Idempotency-Key` is bound to the full reviewed submission. Changed replay payloads fail with a conflict. Owner-only replay remains available after expiry/revocation without restoring provider access.
 
 | Route | Purpose |
 | --- | --- |
@@ -92,7 +92,9 @@ The verifier includes Bujhi's existing database regression and a Bondhon regress
 
 The clinic-directory database from the earlier stopped request is outside this Bondhon update.
 
-## Verification record
+## Original package verification record (historical)
+
+The following records describe the original package environment. Current checkout results are in [QA_2026-11-19.md](QA_2026-11-19.md).
 
 - Passed syntax parsing for the latest integrated source and contracts, 315 TypeScript/TSX files, using the installed Playwright Babel parser.
 - Passed installer checks on a Windows-line-ending fixture, initial apply, repeated apply, and conflict preservation.

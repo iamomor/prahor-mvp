@@ -64,6 +64,17 @@ test("mixing old grants with a new record-selection approval is rejected before 
   expect((await call("create-request", setup, { ...input, consentGrantIds: [id] })).status).toBe(400);
   expect(setup.calls).toHaveLength(0);
 });
+
+test("message-only requests require explicit permission, expiry and approval before any domain write", async () => {
+  for (const patch of [{ coordination: undefined }, { coordination: null }, { reviewConfirmed: false },
+    { coordination: { ...coordination, expiresAt: undefined } },
+    { coordination: { ...coordination, allowReplies: undefined } },
+    { coordination: { ...coordination, termsVersion: "unknown" } }]) {
+    const setup = fixture(null);
+    expect((await call("create-request", setup, { ...input, ...patch })).status).toBe(400);
+    expect(setup.calls).toHaveLength(0);
+  }
+});
 test("owner request list and record candidates cannot be used by provider accounts", async () => {
   for (const operation of ["request-list", "shareable-records", "revoke-request"] as const) {
     const setup = fixture(null, "provider");

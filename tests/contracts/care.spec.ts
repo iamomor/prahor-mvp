@@ -19,8 +19,9 @@ const providerRequest = { id: resource, createdAt: stamp, updatedAt: stamp, revi
   method: "text", message: "Synthetic reviewed message", consentedRecords: [] };
 const consentInput = { granteeUserId: provider, record: { type: "maternal_observation", id: record, fields: ["provenance"] },
   purpose: "Synthetic support", startsAt: stamp, expiresAt: "2026-11-19T00:00:00Z", reviewConfirmed: true };
+const coordination = { termsVersion: "bondhon-demo-2026-11-19", expiresAt: "2026-11-20T00:00:00Z", allowReplies: true, language: "en", accommodations: [], records: [{ type: "maternal_observation", id: record, fields: ["provenance"] }] };
 const requestInput = { recipientUserId: provider, message: "Synthetic reviewed message", method: "text", purpose: "Synthetic support",
-  consentGrantIds: [grant], reviewConfirmed: true };
+  consentGrantIds: [], reviewConfirmed: true, coordination };
 
 function fixture({ role = "mother", expired = false, unconfirmed = false, userId = actor,
   result = ownerRequest as unknown, error = null as { code: string; message: string } | null, throws = false } = {}) {
@@ -51,18 +52,18 @@ function run(operation: CareOperation, data?: unknown, setup = fixture(), header
 }
 
 test("care candidate validates persisted owner response and sends no client actor/role to RPC", async () => {
-  const setup = fixture();
+  const stored = { ...ownerRequest, coordination: { termsVersion: coordination.termsVersion,
+    expiresAt: coordination.expiresAt, allowReplies: true, language: "en", accommodations: [],
+    approvedAt: stamp, revokedAt: null, version: 1 } };
+  const setup = fixture({ result: stored });
   const response = await run("create-request", requestInput, setup);
   expect(response.status).toBe(201);
   const body = await response.json();
-  expect(supportRequestSchema.parse(body.data)).toEqual(ownerRequest);
+  expect(supportRequestSchema.parse(body.data)).toEqual(stored);
   expect(body.contractVersion).toBe(contractVersion);
   expect(response.headers.get("cache-control")).toBe("private, no-store");
   expect(response.headers.get("referrer-policy")).toBe("no-referrer");
-  expect(setup.calls).toEqual([{ name: "mvp_care_create_request", params: {
-    p_recipient_user_id: provider, p_message: requestInput.message, p_method: "text", p_purpose: requestInput.purpose,
-    p_consent_grant_ids: [grant], p_review_confirmed: true, p_idempotency_key: retryKey,
-  } }]);
+  expect(setup.calls).toEqual([{ name: "mvp_care_create_coordinated_request", params: { p_payload: requestInput, p_idempotency_key: retryKey } }]);
 });
 
 test("recipient selection exposes only approved simulated DTOs and is restricted to mothers", async () => {

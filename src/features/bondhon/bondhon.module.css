@@ -1,7 +1,8 @@
 /* minmax(0,1fr): long select options must not widen the page at 320px */
 .workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; min-width: 0; }
 /* Long Bangla/English button labels wrap instead of widening the page */
-.workspace :global(.pro-btn), .panel :global(.pro-btn) { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
+.workspace :global(.pro-btn), .panel :global(.pro-btn), .panel button { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
+.panel > * { min-width: 0; max-width: 100%; }
 .heading { font-size: clamp(1.6rem, 5vw, 2.2rem); font-weight: 650; line-height: 1.25; }
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
 .panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.15rem; border: 1px solid var(--pro-border); background: var(--pro-elevated, var(--pro-bg)); padding: clamp(1rem, 3vw, 1.5rem); border-radius: var(--pro-radius-card, 1rem); min-width: 0; overflow-wrap: anywhere; }

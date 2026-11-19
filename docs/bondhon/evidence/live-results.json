@@ -1,0 +1,82 @@
+[
+  {
+    "name": "trusted roles and approved named recipient",
+    "status": "pass"
+  },
+  {
+    "name": "anonymous and cross-role access denied",
+    "status": "pass"
+  },
+  {
+    "name": "missing permission is rejected by HTTP",
+    "status": "pass"
+  },
+  {
+    "name": "expiry, diary and unknown record rejected",
+    "status": "pass"
+  },
+  {
+    "name": "create, replay, changed retry, acknowledge, reply, follow-up and refresh",
+    "status": "pass"
+  },
+  {
+    "name": "view-only blocks original and follow-up replies; closure removes access",
+    "status": "pass"
+  },
+  {
+    "name": "owner pagination has no duplicate requests",
+    "status": "pass"
+  },
+  {
+    "name": "natural hosted expiry denies reads and writes without changing database rows",
+    "status": "pass"
+  },
+  {
+    "name": "Bujhi reviewed save, repeat save, Jibonrekha persistence and exact-field sharing",
+    "status": "pass"
+  },
+  {
+    "name": "provider browser acknowledges and sends a persisted reviewed reply",
+    "status": "pass"
+  },
+  {
+    "name": "mother form loads with no selected record or reply permission",
+    "status": "pass"
+  },
+  {
+    "name": "keyboard review focus, unchecked approval and accessible review",
+    "status": "pass"
+  },
+  {
+    "name": "English/Bangla review reflows at all required widths and 200% text",
+    "status": "pass"
+  },
+  {
+    "name": "themes, contrast, spacious layout and reduced motion preserve review",
+    "status": "pass"
+  },
+  {
+    "name": "keyboard approval submits once and shows persisted receipt",
+    "status": "pass"
+  },
+  {
+    "name": "Shonket draft, method, editing and explicit reviewed permission survive",
+    "status": "pass"
+  },
+  {
+    "name": "Bangla composition, review, approval and saved receipt",
+    "status": "pass"
+  },
+  {
+    "name": "public emergency link reaches the care section and Barta stays grounded",
+    "status": "pass"
+  },
+  {
+    "name": "network failure retains the exact reviewed payload and retry key",
+    "status": "pass"
+  },
+  {
+    "name": "all synthetic requests from this run are closed",
+    "status": "pass"
+  }
+]

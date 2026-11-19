@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import { handleCare, type CareOperation } from "../../src/lib/care/handlers";
-import { consentGrantSchema, providerRequestSchema, supportRequestSchema } from "../../src/lib/contracts/bondhon";
+import { providerRequestSchema, supportRequestSchema } from "../../src/lib/contracts/bondhon";
 import { establishFixtureRole } from "../database/care-fixtures.mjs";
 
 // Real disposable SQL + candidate HTTP adapters, with injected synthetic identity.
@@ -52,18 +52,17 @@ async function call(userId: string, operation: CareOperation, body?: unknown, id
   }), operation, { createClient: async () => clientFor(userId), siteUrl: origin }, id);
 }
 async function createFlow() {
-  const consentResponse = await call(users.mother, "create-consent", {
-    granteeUserId: users.provider, record: { type: "maternal_observation", id: recordId, fields: ["provenance"] },
-    purpose: "Synthetic reviewed support", startsAt: start, expiresAt: new Date(Date.now() + 3600000).toISOString(), reviewConfirmed: true,
-  });
-  expect(consentResponse.status).toBe(201);
-  const grant = consentGrantSchema.parse((await consentResponse.json()).data);
-  const input = { recipientUserId: users.provider, message: "Synthetic explicit message", method: "aac", purpose: grant.purpose,
-    consentGrantIds: [grant.id], reviewConfirmed: true };
+  const input = { recipientUserId: users.provider, message: "Synthetic explicit message", method: "aac", purpose: "Synthetic reviewed support",
+    consentGrantIds: [], reviewConfirmed: true, coordination: {
+      termsVersion: "bondhon-demo-2026-11-19", expiresAt: new Date(Date.now() + 3600000).toISOString(),
+      allowReplies: true, language: "en", accommodations: [],
+      records: [{ type: "maternal_observation", id: recordId, fields: ["provenance"] }],
+    } };
   const key = randomUUID();
   const response = await call(users.mother, "create-request", input, undefined, key);
   expect(response.status).toBe(201);
-  return { grant, input, key, request: supportRequestSchema.parse((await response.json()).data) };
+  const request = supportRequestSchema.parse((await response.json()).data);
+  return { grant: { id: request.consentGrantIds[0] }, input, key, request };
 }
 
 test.beforeAll(async () => {

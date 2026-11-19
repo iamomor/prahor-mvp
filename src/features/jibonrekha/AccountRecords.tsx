@@ -4,7 +4,6 @@ import { AccessPreferencesControl } from "@/components/accessibility/AccessPrefe
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-
 type Pregnancy = {
   id: string;
   label: string;
@@ -100,6 +99,46 @@ const choices = {
     ["note", ""],
   ],
 } as const;
+const unitOptions: Record<string, string[]> = {
+  weight: ["kg", "g"],
+  temperature: ["Cel", "[degF]"],
+  glucose: ["mmol/L", "mg/dL"],
+};
+type Task =
+  | "home"
+  | "observation"
+  | "pregnancy"
+  | "baby"
+  | "note"
+  | "visit"
+  | "records";
+const tasks: { id: Task; label: string; hint: string }[] = [
+  {
+    id: "observation",
+    label: "Add a measurement",
+    hint: "Mother or baby · about 30 seconds",
+  },
+  {
+    id: "records",
+    label: "Find a record",
+    hint: "Measurements, pregnancies and notes",
+  },
+  {
+    id: "pregnancy",
+    label: "Add a pregnancy",
+    hint: "Set up a pregnancy record",
+  },
+  { id: "baby", label: "Add a baby", hint: "Keep each baby separate" },
+  {
+    id: "note",
+    label: "Write a note",
+    hint: "Symptoms or a condition you noted",
+  },
+  {
+    id: "visit",
+    label: "Record a visit",
+    hint: "Keep a dated, self-recorded visit",
+  },
 ];
 
 function today() {
@@ -134,7 +173,6 @@ export function AccountRecords() {
   const [pregnancyId, setPregnancyId] = useState("");
   const [babyId, setBabyId] = useState("");
   const [task, setTask] = useState<Task>("home");
-  const [noteKind, setNoteKind] = useState<"symptom" | "condition">("symptom");
   const taskHeading = useRef<HTMLHeadingElement>(null);
   const errorFocus = useRef<HTMLDivElement>(null);
   const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
@@ -214,7 +252,27 @@ export function AccountRecords() {
     setKind("weight");
     setUnit("kg");
   }
-
+  const visibleBabies =
+    records?.babies.filter(
+      (baby) => !pregnancyId || baby.pregnancy_id === pregnancyId,
+    ) ?? [];
+  const selectedBabyId = visibleBabies.some((baby) => baby.id === babyId)
+    ? babyId
+    : (visibleBabies[0]?.id ?? "");
+  const superseded = new Set(
+    records?.corrections.map((item) => item.old_observation_id) ?? [],
+  );
+  const activeObservations =
+    records?.observations.filter((item) => !superseded.has(item.id)) ?? [];
+  const visible =
+    records?.observations.filter(
+      (item) =>
+        !superseded.has(item.id) &&
+        (subject === "mother"
+          ? item.subject === "mother" &&
+            (!pregnancyId || item.pregnancy_id === pregnancyId)
+          : item.subject === "baby" && item.baby_id === selectedBabyId),
+    ) ?? [];
   function historyFor(id: string) {
     const history: { record: Observation; reason: string }[] = [];
     let current = id;
@@ -232,7 +290,36 @@ export function AccountRecords() {
     }
     return history;
   }
-
+  return (
+    <div className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-5 text-pro-text sm:px-6 sm:py-8">
+      <header className="grid gap-2">
+        <p className="font-semibold text-pro-primary">PROHOR · My records</p>
+        <h1 className="text-3xl font-semibold" lang="bn">
+          জীবনরেখা
+        </h1>
+        <p>What would you like to do with your records?</p>
+        <AccessPreferencesControl />
+      </header>
+      <aside className="rounded-field border border-pro-border bg-pro-surface px-4 py-3 text-sm">
+        <strong>Fictional demo data only.</strong> Account saves need a
+        connection. Entries are not clinician-verified.
+      </aside>
+      {message && (
+        <p role="status" className={`${box} text-pro-success`}>
+          {message}
+        </p>
+      )}
+      {error && (
+        <div
+          ref={errorFocus}
+          tabIndex={-1}
+          role="alert"
+          className={`${box} focus-visible:outline-3 focus-visible:outline-pro-focus`}
+        >
+          <p className="text-pro-danger">{error}</p>
+          <button type="button" className={action} onClick={() => void load()}>
+            Reload records
+          </button>
         </div>
       )}
       {loading ? (

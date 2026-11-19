@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { allObservationCategories, demoMother, demoUser, getDemoObservations, getDemoWorkspace, saveDemoObservations, saveDemoReportDraft, type HealthObservation } from "@/features/jibonrekha/demo-health";
 import Link from "next/link";
@@ -172,7 +172,7 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
   const complete = fields.length > 0 && fields.every((field) => savedIds.includes(field.id) || field.reviewStatus === "rejected");
 
   return (
-    <div className={"mx-auto grid w-full min-w-0 grid-cols-1 gap-4 px-4 py-4 text-pro-text [overflow-wrap:anywhere] sm:gap-5 sm:px-6 sm:py-6 " + (stage === "check" && source ? "max-w-7xl" : "max-w-3xl")}>
+    <div className="mx-auto grid w-full max-w-3xl min-w-0 grid-cols-1 gap-4 px-4 py-4 text-pro-text [overflow-wrap:anywhere] sm:gap-5 sm:px-6 sm:py-6">
       <header className="grid gap-3" lang={language}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0 flex-1 basis-64"><WorkflowProgress current={stage} language={language} /></div>
@@ -196,10 +196,10 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
           {rejected > 0 && <div><dt className="text-pro-muted">Excluded</dt><dd className="text-2xl font-semibold tabular-nums">{rejected}</dd></div>}
         </dl>
       </section>
-      <div className={source ? "grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "grid min-w-0 gap-5"}>
-      <aside id={id + "-source"} className="grid min-w-0 gap-3 empty:hidden lg:sticky lg:top-4" aria-label="Report source" tabIndex={-1}>
+      <div className="grid min-w-0 gap-5">
+      <aside id={id + "-source"} className="grid min-w-0 gap-3 empty:hidden" aria-label="Report source" tabIndex={-1}>
       {source && <SourcePreview source={source} location={region} onReturn={returnFieldId ? () => document.getElementById(returnFieldId)?.focus() : undefined} />}
-      {report.rawText !== undefined && <details className={card}><summary className="min-h-12 cursor-pointer font-semibold">Raw OCR text — review against original</summary><pre className="mt-3 whitespace-pre-wrap font-body">{report.rawText || "No text recognized."}</pre><p>OCR confidence: {report.ocrConfidence === undefined ? "Confidence unavailable" : `${report.ocrConfidence.toFixed(1)} / 100 (engine text confidence only)`}</p>{report.unrecognizedText?.length ? <details><summary>Unrecognized content — not imported as observations</summary><pre className="whitespace-pre-wrap font-body">{report.unrecognizedText.join("\n")}</pre></details> : null}</details>}
+      {report.rawText !== undefined && <details className={card}><summary className="min-h-12 cursor-pointer font-semibold">Raw OCR text</summary><pre className="mt-3 whitespace-pre-wrap font-body">{report.rawText || "No text recognized."}</pre><p>OCR confidence: {report.ocrConfidence === undefined ? "Confidence unavailable" : `${report.ocrConfidence.toFixed(1)} / 100 (engine text confidence only)`}</p>{report.unrecognizedText?.length ? <details><summary>Unrecognized content — not imported as observations</summary><pre className="whitespace-pre-wrap font-body">{report.unrecognizedText.join("\n")}</pre></details> : null}</details>}
       {report.transcript && <section className={card} aria-label="Original speech transcript"><h2 className="text-xl font-semibold">Original speech transcript</h2><p className="whitespace-pre-wrap">{report.transcript}</p></section>}
       </aside>
       <div className="grid min-w-0 gap-5">
@@ -229,7 +229,7 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
           <div className="grid min-w-0 gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-x-4">
             <p className="!m-0 font-semibold">{field.label || "New observation"}</p>
             <p className="!m-0 whitespace-pre-wrap font-semibold tabular-nums">{field.ultrasound?.fetus && field.ultrasound.fetus + " · "}{field.value || "No readable value"} {field.unit}</p>
-          <p id={prefix + "-original"} className={detailed || (source && original?.sourceText) ? "!mt-1 whitespace-pre-wrap text-pro-muted sm:col-span-2" : "sr-only"}>{original?.sourceText ? "On the report: " + original.sourceText : "Original input: " + (original?.rawValue ?? original?.value ?? "") + " " + (original?.unit ?? "")}</p>
+          <p id={prefix + "-original"} className={detailed ? "!mt-1 whitespace-pre-wrap text-pro-muted sm:col-span-2" : "sr-only"}>{original?.sourceText ? "On the report: " + original.sourceText : "Original input: " + (original?.rawValue ?? original?.value ?? "") + " " + (original?.unit ?? "")}</p>
           <p id={`${prefix}-status`} aria-live="polite" className="!mt-1 text-pro-muted sm:col-span-2">{saved ? "Saved locally · User-reviewed" : field.reviewStatus === "verified" ? "Verified by you · Not clinically verified" : field.reviewStatus === "rejected" ? "Rejected · Excluded from saving" : "Pending · Needs your review"}</p>
           {issue && !errors[field.id] && <p className="text-pro-muted sm:col-span-2">{issue}</p>}
           </div>

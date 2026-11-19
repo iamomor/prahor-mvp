@@ -22,14 +22,24 @@ export function ConsentAndSharing({state,observations,destination,onChange}:{sta
     <details className={card}><summary className="min-h-12 cursor-pointer font-semibold">ডেমো কার্যক্রমের নথি · Illustrative audit log ({state.audit.length})</summary><p>Local records are editable through developer tools. This is not secure audit enforcement.</p>{[...state.audit].reverse().map(a=><article key={a.id} className="border-t border-pro-border py-3"><p>{a.action} · {a.at} · {a.actor}</p><p className="[overflow-wrap:anywhere]">Target: {a.targetId} · {a.reason||"No reason supplied"}</p><details><summary className="min-h-12 cursor-pointer font-semibold">Previous and updated values</summary><p>Original snapshot</p><pre className="whitespace-pre-wrap break-words text-base">{a.before}</pre><p>Updated snapshot</p><pre className="whitespace-pre-wrap break-words text-base">{a.after}</pre></details></article>)}</details>
   </div>;
 }
-export function HealthSummary({state,observations,destination,onChange}:{state:RecordsWorkspace;observations:HealthObservation[];destination:Destination;onChange:WorkspaceChange}) {
+export function VisitPack({state,observations,destination,onChange}:{state:RecordsWorkspace;observations:HealthObservation[];destination:Destination;onChange:WorkspaceChange}) {
+  const [selectedIds,setSelectedIds]=useState<string[]>([]),[prepared,setPrepared]=useState(false);
+  const available=observations.filter(item=>!item.archived&&episodeOf(item)===destination.pregnancyId&&item.recordType===destination.recordType&&item.recordId===destination.recordId);
+  const validIds=selectedIds.filter(id=>available.some(item=>item.id===id));
+  return <section className={`${card} grid gap-4`} aria-label="Visit pack preparation"><div><p className="font-semibold text-pro-primary">ভিজিট প্যাক · Visit pack</p><h2 className="text-2xl font-semibold">কোন তথ্য নিয়ে যেতে চান?</h2><p>শুধু বেছে নেওয়া তথ্য দিয়ে স্থানীয় প্রিন্ট কপি তৈরি হবে। কিছুই আগে থেকে বাছা নেই; কাউকে পাঠানো হবে না।</p></div>
+    <fieldset className="grid gap-3"><legend className="font-semibold">তথ্য বেছে নিন</legend>{!available.length&&<p>এই নথিতে কোনো তথ্য নেই। আগে একটি কাল্পনিক তথ্য যোগ করুন।</p>}{available.map(item=><label key={item.id} className="flex items-start gap-3 rounded-field border border-pro-border p-3"><input type="checkbox" checked={validIds.includes(item.id)} onChange={event=>{setPrepared(false);setSelectedIds(current=>event.target.checked?[...current,item.id]:current.filter(id=>id!==item.id));}} className="mt-1 size-5 shrink-0" /><span>{item.label}: {item.value} {item.unit} · {item.observedAt.slice(0,10)} · {observationLabel(item)}</span></label>)}</fieldset>
+    <button type="button" className={`${button} w-fit`} disabled={!validIds.length} onClick={()=>setPrepared(true)}>বাছা তথ্য দেখে প্রিন্টের প্রস্তুতি নিন</button>
+    {prepared&&validIds.length>0&&<HealthSummary key={validIds.join("|")} state={state} observations={observations} destination={destination} onChange={onChange} selectedIds={validIds} />}
+  </section>;
+}
+export function HealthSummary({state,observations,destination,onChange,selectedIds}:{state:RecordsWorkspace;observations:HealthObservation[];destination:Destination;onChange:WorkspaceChange;selectedIds?:string[]}) {
   const [includeIdentity,setIncludeIdentity]=useState(false),[reviewed,setReviewed]=useState(false),[error,setError]=useState("");
   const section=useRef<HTMLElement>(null),episode=state.episodes.find(e=>e.id===destination.pregnancyId)!;
   const baby=state.babies.find(b=>b.id===destination.recordId);
   const dating=gestationalDating(episode,episode.endDate||dhakaToday());
-  const selected=observations.filter(o=>!o.archived&&episodeOf(o)===episode.id&&o.recordType===destination.recordType&&o.recordId===destination.recordId).sort((a,b)=>b.observedAt.localeCompare(a.observedAt));
-  const entries=state.entries.filter(e=>!e.archived&&e.pregnancyId===episode.id&&e.recordType===destination.recordType&&e.recordId===destination.recordId);
-  const appointments=state.appointments.filter(a=>!a.completed&&a.pregnancyId===episode.id&&a.recordType===destination.recordType&&a.recordId===destination.recordId&&a.date>=dhakaToday());
+  const selected=observations.filter(o=>!o.archived&&episodeOf(o)===episode.id&&o.recordType===destination.recordType&&o.recordId===destination.recordId&&(!selectedIds||selectedIds.includes(o.id))).sort((a,b)=>b.observedAt.localeCompare(a.observedAt));
+  const entries=selectedIds?[]:state.entries.filter(e=>!e.archived&&e.pregnancyId===episode.id&&e.recordType===destination.recordType&&e.recordId===destination.recordId);
+  const appointments=selectedIds?[]:state.appointments.filter(a=>!a.completed&&a.pregnancyId===episode.id&&a.recordType===destination.recordType&&a.recordId===destination.recordId&&a.date>=dhakaToday());
   function print() {
     if(!reviewed||!section.current){setError("Review the summary and confirm before opening print.");return;}
     try {

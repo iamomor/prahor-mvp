@@ -1,0 +1,144 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { chromium, expect } from "@playwright/test";
+import { AxeBuilder } from "@axe-core/playwright";
+
+const url = (process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/jibonrekha";
+async function open(width = 390) {
+  const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge" });
+  const context = await browser.newContext({ viewport: { width, height: 844 } });
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto(url);
+  await expect(page.getByRole("heading", { name: "জীবনরেখা", exact: true })).toBeVisible();
+  return { browser, context, page, errors };
+}
+
+test("PDF Today design keeps the pregnancy line, sources and four tasks readable", async () => {
+  const { browser, page, errors } = await open(320);
+  try {
+    await expect(page.getByRole("region", { name: "গর্ভকালের রেখা" })).toContainText("২৪ সপ্তাহ ৬ দিন");
+    await expect(page.getByRole("img", { name: /গর্ভকালের রেখা/ })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last().getByRole("button")).toHaveCount(4);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    assert.deepEqual(result.violations.map(item => item.id), []);
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
+test("three step add reviews and persists without claiming delivery", async () => {
+  const { browser, page, errors } = await open();
+  try {
+    await page.getByRole("button", { name: /নতুন তথ্য যোগ করুন · Add a record/ }).click();
+    await expect(page.getByRole("heading", { name: "কী যোগ করবেন?" })).toBeVisible();
+    await page.getByRole("button", { name: /রক্তচাপ দুটি সংখ্যা/ }).click();
+    await page.getByRole("textbox", { name: "মান বা লেখা" }).fill("112/72");
+    await page.getByRole("button", { name: "পাঠানোর আগে দেখে নিন" }).click();
+    await expect(page.getByRole("heading", { name: "সংরক্ষণের আগে দেখে নিন" })).toBeVisible();
+    await page.getByRole("button", { name: "এই ডিভাইসে সংরক্ষণ" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "কোথাও পাঠানো হয়নি" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByText("112/72", { exact: false }).first()).toBeVisible();
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
+test("timeline correction preserves earlier value and pack starts empty", async () => {
+  const { browser, page, errors } = await open();
+  try {
+    await page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last().getByRole("button", { name: "ইতিহাস" }).click();
+    await expect(page.getByRole("heading", { name: "ইতিহাস", exact: true })).toBeVisible();
+    const weight = page.getByRole("article").filter({ has: page.getByRole("heading", { name: "ওজন" }) }).first();
+    await weight.getByRole("button", { name: "বিস্তারিত ও ইতিহাস দেখুন" }).click();
+    await expect(page.getByText("64.2 কেজি", { exact: false }).first()).toBeVisible();
+    await page.getByRole("textbox", { name: "নতুন মান" }).fill("62.6");
+    await page.getByRole("button", { name: /সংশোধন সংরক্ষণ/ }).click();
+    await expect(page.getByRole("status").filter({ hasText: "আগের মান ইতিহাসে আছে" })).toBeVisible();
+    await page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last().getByRole("button", { name: "শেয়ার" }).click();
+    await expect(page.getByRole("button", { name: /প্রিন্ট কপি দেখুন/ })).toBeDisabled();
+    await expect(page.getByRole("checkbox", { name: "আমার নাম ও যোগাযোগ যোগ করুন" })).not.toBeChecked();
+    await expect(page.getByRole("checkbox", { name: "বার্তাকে প্রশ্নের উত্তরে ব্যবহার করতে দিন" })).not.toBeChecked();
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
+test("unknown date shows no estimate, LMP uses calendar arithmetic", async () => {
+  const { browser, page } = await open();
+  try {
+    await page.getByRole("button", { name: "গর্ভকালের তারিখ ও উৎস" }).click();
+    await page.getByRole("radio", { name: /জানি না/ }).check();
+    await page.getByRole("button", { name: "সংরক্ষণ করুন" }).click();
+    await expect(page.getByRole("region", { name: "গর্ভকালের রেখা" })).toContainText("কোনো সপ্তাহ অনুমান করে দেখাব না");
+    await page.getByRole("button", { name: "গর্ভকালের তারিখ ও উৎস" }).click();
+    await page.getByRole("radio", { name: /শেষ মাসিকের প্রথম দিন/ }).check();
+    await page.getByRole("textbox", { name: /শেষ মাসিকের প্রথম দিন/ }).fill("2026-06-12");
+    await expect(page.getByText("২২ সপ্তাহ ৬ দিন", { exact: false }).first()).toBeVisible();
+  } finally { await browser.close(); }
+});
+
+test("visit pack prints only explicitly selected records with identity off", async () => {
+  const { browser, page, errors } = await open();
+  try {
+    await page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last().getByRole("button", { name: "শেয়ার" }).click();
+    await expect(page.getByRole("button", { name: /প্রিন্ট কপি দেখুন/ })).toBeDisabled();
+    await page.getByRole("checkbox", { name: /রক্তচাপ · 110\/70/ }).check();
+    await page.getByRole("checkbox", { name: /আমি বেছে নেওয়া তথ্য/ }).check();
+    await page.getByRole("button", { name: /প্রিন্ট কপি দেখুন/ }).click();
+    const sheet = page.locator(".lifeline-print-sheet");
+    await expect(sheet).toContainText("110/70");
+    await expect(sheet).not.toContainText("62.4");
+    await expect(sheet).toContainText("পরিচয় বাদ দেওয়া হয়েছে");
+    await page.emulateMedia({ media: "print" });
+    await expect(page.locator(".lifeline-print-controls")).toBeHidden();
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
+test("draft survives reload and a stale tab cannot overwrite newer records", async () => {
+  const { browser, context, page } = await open();
+  try {
+    await page.getByRole("button", { name: /নতুন তথ্য যোগ করুন · Add a record/ }).click();
+    await page.getByRole("button", { name: /ওজন একটি সংখ্যা/ }).click();
+    await page.getByRole("textbox", { name: "মান বা লেখা" }).fill("63.1");
+    await page.reload();
+    await expect(page.getByRole("status").filter({ hasText: "আগের খসড়া ফিরে এসেছে" })).toBeVisible();
+    await page.getByRole("button", { name: /নতুন তথ্য যোগ করুন · Add a record/ }).click();
+    await page.getByRole("button", { name: /ওজন একটি সংখ্যা/ }).click();
+    await expect(page.getByRole("textbox", { name: "মান বা লেখা" })).toHaveValue("63.1");
+    const other = await context.newPage();
+    await other.goto(url);
+    await other.getByRole("button", { name: /গর্ভকালের তারিখ ও উৎস/ }).click();
+    await other.getByRole("textbox", { name: "লেবেল" }).fill("অন্য ট্যাবের লেখা");
+    await other.getByRole("button", { name: "সংরক্ষণ করুন" }).click();
+    await page.getByRole("button", { name: "পাঠানোর আগে দেখে নিন" }).click();
+    await page.getByRole("button", { name: "এই ডিভাইসে সংরক্ষণ" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "অন্য ট্যাবে" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "সংরক্ষণের আগে দেখে নিন" })).toBeVisible();
+  } finally { await browser.close(); }
+});
+
+test("main PDF views reflow and keep accessible names across themes", async () => {
+  const { browser, page, errors } = await open(320);
+  try {
+    const navigation = page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last();
+    for (const name of ["আজ", "ইতিহাস", "ভিজিট", "শেয়ার"]) {
+      await navigation.getByRole("button", { name }).click();
+      for (const width of [320, 390, 768, 1280]) {
+        await page.setViewportSize({ width, height: 900 });
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${name} overflowed at ${width}px`);
+      }
+      await page.setViewportSize({ width: 320, height: 900 });
+      const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+      assert.deepEqual(axe.violations.map(item => item.id), [], `${name} accessibility`);
+    }
+    await navigation.getByRole("button", { name: "আজ" }).click();
+    for (const theme of ["quiet-garden", "original-rose", "morning-mist"]) for (const contrast of ["", "more"]) {
+      await page.evaluate(({ theme, contrast }) => { document.documentElement.dataset.theme = theme; document.documentElement.dataset.contrast = contrast; document.documentElement.dataset.textScale = "extra-large"; }, { theme, contrast });
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${theme}/${contrast} overflowed`);
+      await expect(page.getByRole("region", { name: "গর্ভকালের রেখা" })).toBeVisible();
+    }
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});

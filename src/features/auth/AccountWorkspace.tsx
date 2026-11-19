@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { useLanguage } from "@/i18n/use-language";
@@ -12,6 +13,7 @@ const inputClass = "min-h-12 w-full rounded-xl border border-pro-border bg-pro-e
 function invitationExpiry(days: number) { return new Date(Date.now() + days * 86400000).toISOString(); }
 export function AccountWorkspace({ supporter = false }: { supporter?: boolean }) {
   const { t } = useLanguage();
+  const router = useRouter();
   const [account, setAccount] = useState<AccountAccess | null>(null);
   const [connections, setConnections] = useState<SupporterConnection[]>([]);
   const [profile, setProfile] = useState(emptyRoleProfile);
@@ -74,7 +76,7 @@ export function AccountWorkspace({ supporter = false }: { supporter?: boolean })
       const result = await response.json();
       if (!response.ok) throw new Error(typeof result.code === "string" ? result.code : "unconfirmed");
       if (typeof result.redirectTo === "string" && ["/app", "/provider", "/supporter", "/account"].includes(result.redirectTo)) {
-        window.location.assign(result.redirectTo); return;
+        router.push(result.redirectTo); return;
       }
       if (result.invitation) {
         const invite = z.strictObject({ id: z.uuid(), code: z.string().regex(/^[a-f0-9]{64}$/) }).parse(result.invitation);
@@ -189,7 +191,7 @@ export function AccountWorkspace({ supporter = false }: { supporter?: boolean })
           } catch {
             // Network error — still navigate away.
           } finally {
-            window.location.assign("/sign-in?status=signed-out");
+            router.replace("/sign-in?status=signed-out");
           }
         }}
       >

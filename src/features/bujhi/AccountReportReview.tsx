@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
-import { fileSha256 } from "./ocr-service";
+import { fileSha256 } from "./sha256";
 import { isHemoglobinLabel, validDate } from "./validation";
 import type { ExtractedReport, ExtractedReportField } from "./types";
 

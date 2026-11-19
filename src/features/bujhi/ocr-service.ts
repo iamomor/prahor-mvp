@@ -1,11 +1,7 @@
-﻿import { parseOcrText } from "./ocr-parser";
-
+import { parseOcrText } from "./ocr-parser";
 import { VALUE_WORD_MIN_CONFIDENCE, valueTokenConfidence } from "./ocr-word-confidence";
-
-export async function fileSha256(file: File) {
-  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
+import { fileSha256 } from "./sha256";
+export { fileSha256 } from "./sha256";
 
 /** Runs Tesseract in a browser worker. CDN requests fetch engine/language assets, never the image. */
 export async function recognizeReportImage(file: File, onProgress: (status: string, progress: number) => void, signal: AbortSignal) {

@@ -14,7 +14,7 @@ export function CareRequestEmpty({ screen }: { screen: "review" | "status" }) {
       <div className={styles.emptyRoute}>
         <span className={styles.emptyIcon}><FileText size={25} aria-hidden="true" /></span>
         <p>{isReview ? "No help request has been prepared in this browser session." : "There is no sent request to show here."}</p>
-        <Link href="/app/care" className={`pro-btn pro-btn-primary ${styles.cardAction}`}>Go to the help form <ArrowRight size={17} aria-hidden="true" /></Link>
+        <Link href="/app/care/new" className={`pro-btn pro-btn-primary ${styles.cardAction}`}>Go to the help form <ArrowRight size={17} aria-hidden="true" /></Link>
       </div>
     </div>
   );

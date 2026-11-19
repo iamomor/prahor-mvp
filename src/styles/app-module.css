@@ -1,0 +1,76 @@
+/*
+ * PROHOR signed-in module layer. Every /app page renders inside <main class="app-module">,
+ * so Barta, Bujhi, Jibonrekha, Shusthota, Poth, Bondhon, Shonket and Adapt share one rhythm:
+ * module header -> quiet task chips -> soft cards. Tokens only; no literal brand colors.
+ */
+
+/* One page heading size and weight for every module. */
+.app-module h1,
+.app-module h1[class] {
+  max-width: none;
+  margin: 0;
+  font-size: clamp(1.75rem, 3.4vw, 2.375rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--pro-text);
+}
+.app-module :lang(bn) h1,
+.app-module h1:lang(bn) { line-height: 1.35; letter-spacing: 0; }
+
+/* Module header: eyebrow, h1, lead. Put class="module-hero" on the header or section. */
+.module-hero { display: grid; gap: 0.5rem; max-width: 48rem; margin-bottom: 0.25rem; }
+.module-hero > p:first-child,
+.app-module [class*="pageHeader"] > p:first-child {
+  margin: 0;
+  color: var(--pro-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.module-hero > p:first-child:lang(en),
+.app-module [class*="pageHeader"] > p:first-child { text-transform: uppercase; letter-spacing: 0.14em; }
+.module-hero > p:not(:first-child) { margin: 0; color: var(--pro-muted); font-size: 1.0625rem; line-height: 1.6; }
+
+/* Quiet task chips (Poth jump links, Bondhon actions). Same shape everywhere. */
+.module-chip {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--pro-border);
+  border-radius: 9999px;
+  background: var(--pro-elevated);
+  color: var(--pro-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--pro-shadow-1);
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+.module-chip:hover { background: var(--pro-surface); border-color: var(--pro-primary); }
+.module-chip:focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 2px; }
+
+/* Buttons inside modules: same calm shape and shadow as dashboard controls. */
+.app-module .pro-btn { min-height: 2.75rem; padding: 0.6rem 1.25rem; border-radius: 0.875rem; white-space: normal; }
+.app-module .pro-btn:hover { transform: none; }
+.app-module .pro-btn-secondary { box-shadow: var(--pro-shadow-1); }
+.app-module .pro-btn-primary { box-shadow: var(--pro-shadow-1); }
+
+/* Cards: the dashboard card feel (border + whisper shadow) for common module containers. */
+.app-module .pro-card,
+.app-module [class*="panel"],
+.app-module [class*="statusCard"],
+.app-module [class*="emptyCard"] { box-shadow: var(--pro-shadow-1); }
+
+/* Modules that bring their own page padding/max-width align to the shell's content edge. */
+.app-module [class*="experience"] { width: 100%; padding-inline: 0; padding-top: 0; }
+.app-module [class*="pageHeader"] { max-width: 48rem; }
+
+@media (forced-colors: active) {
+  .module-chip { border: 1px solid CanvasText; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .module-chip { transition: none; }
+}

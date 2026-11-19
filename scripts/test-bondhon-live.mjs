@@ -64,6 +64,13 @@ async function signIn(context, email, password) {
   }
 }
 async function detail(context, id) { return data(await context.request.get(`/api/care-requests/${id}/coordination`)); }
+async function continueRequest(page) { await page.locator('form button:not([type="button"])').click(); }
+async function finishRequestSteps(page, recipientId) {
+  await continueRequest(page);
+  await page.locator('form select[required]').selectOption(recipientId);
+  await continueRequest(page);
+  await continueRequest(page);
+}
 let recipient;
 function payload(patch = {}) {
   return { recipientUserId: recipient, message: 'Synthetic Bondhon verification', purpose: 'Synthetic routine visit', method: 'text',
@@ -207,14 +214,14 @@ try {
   await check('mother form loads with no selected record or reply permission', async () => {
     await page.goto('/app/bondhon');
     await page.getByRole('button', { name: 'Create a reviewed request', exact: true }).click();
-    await page.getByLabel('Named simulated recipient').selectOption(recipient);
-    assert.equal(await page.locator('input[type=checkbox]:checked').count(), 0);
     await page.getByLabel('Purpose of this request').fill('Synthetic browser journey');
     await page.getByLabel('Message for this recipient').fill('Synthetic browser message');
+    await finishRequestSteps(page, recipient);
+    assert.equal(await page.locator('input[type=checkbox]:checked').count(), 0);
     await page.screenshot({ path: `${evidence}/mother-compose.png`, fullPage: true });
   });
   await check('keyboard review focus, unchecked approval and accessible review', async () => {
-    const review = page.getByRole('button', { name: 'Review information and permissions', exact: true });
+    const review = page.locator('form button:not([type="button"])');
     await review.focus(); await page.keyboard.press('Enter');
     const heading = page.getByRole('heading', { name: 'Review your sharing decision' });
     await heading.waitFor(); assert.equal(await heading.evaluate(el => el === document.activeElement), true);
@@ -301,9 +308,9 @@ try {
     await page.getByRole('link', { name: 'Human help', exact: true }).click();
     assert.equal(await page.getByLabel('Your message', { exact: true }).inputValue(), 'Synthetic edited Shonket draft');
     await page.getByRole('link', { name: 'Review message' }).click();
-    await page.getByLabel('Named simulated recipient').selectOption(recipient);
     await page.getByLabel('Purpose of this request').fill('Synthetic Shonket regression');
-    await page.getByRole('button', { name: 'Review information and permissions' }).click();
+    await finishRequestSteps(page, recipient);
+    await continueRequest(page);
     assert.equal(await page.getByRole('button', { name: 'Approve and send to simulated queue' }).isDisabled(), true);
     await page.getByRole('checkbox', { name: 'I approve sharing exactly this information', exact: false }).check();
     const response = page.waitForResponse(r => r.url().endsWith('/api/care-requests') && r.request().method() === 'POST');
@@ -318,10 +325,10 @@ try {
     await preferences({ language: 'bn' });
     await page.goto('/app/bondhon');
     await page.getByRole('button', { name: 'পর্যালোচনা করে অনুরোধ তৈরি করুন' }).click();
-    await page.getByLabel('নামসহ সিমুলেটেড প্রাপক').selectOption(recipient);
     await page.getByLabel('এই অনুরোধের উদ্দেশ্য').fill('নমুনা নিয়মিত সাক্ষাতের প্রস্তুতি');
     await page.getByLabel('এই প্রাপকের জন্য বার্তা').fill('এটি পরীক্ষার নমুনা বার্তা।');
-    await page.getByRole('button', { name: 'তথ্য ও অনুমতি পর্যালোচনা করুন' }).click();
+    await finishRequestSteps(page, recipient);
+    await continueRequest(page);
     await page.getByRole('heading', { name: 'তথ্য শেয়ারের সিদ্ধান্ত পর্যালোচনা করুন' }).waitFor();
     await page.getByRole('checkbox', { name: 'উল্লিখিত সময় পর্যন্ত', exact: false }).check();
     const response = page.waitForResponse(r => r.url().endsWith('/api/care-requests') && r.request().method() === 'POST');
@@ -345,10 +352,10 @@ try {
   await check('network failure retains the exact reviewed payload and retry key', async () => {
     await page.goto('/app/bondhon');
     await page.getByRole('button', { name: 'Create a reviewed request' }).click();
-    await page.getByLabel('Named simulated recipient').selectOption(recipient);
     await page.getByLabel('Purpose of this request').fill('Synthetic network retry');
     await page.getByLabel('Message for this recipient').fill('Synthetic preserved draft');
-    await page.getByRole('button', { name: 'Review information and permissions' }).click();
+    await finishRequestSteps(page, recipient);
+    await continueRequest(page);
     await page.getByRole('checkbox', { name: 'I approve sharing exactly this information', exact: false }).check();
     let first;
     const path = '**/api/care-requests';

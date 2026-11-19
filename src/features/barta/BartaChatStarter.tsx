@@ -26,7 +26,8 @@ function readErrorMessage(body: unknown): string {
     : "Barta is unavailable. Try again.";
 }
 
-export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education" }) {
+/** `initialQuestion` only pre-fills the editable draft (e.g. from the dashboard); it is never sent automatically. */
+export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode?: "demo" | "education"; initialQuestion?: string }) {
   const demo = mode === "demo";
   const { prefs } = useAdaptPreferences();
   const [aacOpen, setAacOpen] = useState<boolean | null>(null);
@@ -35,7 +36,7 @@ export function BartaChatStarter({ mode = "demo" }: { mode?: "demo" | "education
   const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
   const questionInput = useRef<HTMLTextAreaElement>(null);
   const pendingRequest = useRef<AbortController | null>(null);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
   const [turns, setTurns] = useState<Turn[]>([]);
   const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? prefs.language : answerLanguage;
   const [previousChunkId, setPreviousChunkId] = useState<string>();

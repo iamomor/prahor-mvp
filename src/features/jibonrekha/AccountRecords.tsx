@@ -102,7 +102,7 @@ export function AccountRecords() {
     }
     return history;
   }
-  return <main className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-5 text-pro-text sm:px-6 sm:py-8">
+  return <div className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-5 text-pro-text sm:px-6 sm:py-8">
     <header className="grid gap-2"><p className="font-semibold text-pro-primary">PROHOR · My records</p><h1 className="text-3xl font-semibold" lang="bn">জীবনরেখা</h1><p>What would you like to do with your records?</p><AccessPreferencesControl /></header>
     <aside className="rounded-field border border-pro-border bg-pro-surface px-4 py-3 text-sm"><strong>Fictional demo data only.</strong> Account saves need a connection. Entries are not clinician-verified.</aside>
     {message && <p role="status" className={`${box} text-pro-success`}>{message}</p>}
@@ -174,5 +174,5 @@ export function AccountRecords() {
     </>}
     {records && <section hidden={task !== "records"} className={`${box} grid gap-4`} aria-label="Self-noted history"><h3 className="font-semibold">Your self-noted history</h3><div className="grid gap-4 sm:grid-cols-2"><div><h4 className="font-semibold">Conditions you noted</h4>{records.conditions.length ? <ul className="grid gap-2">{records.conditions.map(item => <li key={item.id} className="rounded-field border border-pro-border p-3"><strong>{item.label}</strong><p>{formatDate(item.documented_at)} · Self-reported · Not a confirmed diagnosis</p>{item.source_note && <p>Source note: {item.source_note}</p>}</li>)}</ul> : <p>Nothing noted yet.</p>}</div><div><h4 className="font-semibold">Symptom notes</h4>{records.symptomNotes.length ? <ul className="grid gap-2">{records.symptomNotes.map(item => <li key={item.id} className="rounded-field border border-pro-border p-3"><p>{item.note}</p><p>{formatDate(item.occurred_at)} · Recorded by you</p></li>)}</ul> : <p>No symptom notes yet.</p>}</div></div><h3 className="font-semibold">Visits you recorded</h3>{records.visits.length ? <ul className="grid gap-2">{records.visits.map(item => <li key={item.id} className="rounded-field border border-pro-border p-3"><strong>{item.subject === "baby" ? "Baby" : "Mother"} · {formatDate(item.occurred_at)}</strong><p>Recorded by you · No appointment or provider response confirmed</p>{item.place_note && <p>Place: {item.place_note}</p>}{item.note && <p>{item.note}</p>}</li>)}</ul> : <p>No account visits recorded yet.</p>}</section>}
     <details className="rounded-field border border-pro-border px-4 py-3"><summary className="cursor-pointer font-semibold">About this prototype</summary><p className="pt-2">Account records hold synthetic data only. The nine-section Jibonrekha demonstration has additional fields saved in this browser only.</p><Link href="/demo/jibonrekha" className="font-semibold text-pro-primary underline">Open the device-only demo</Link></details>
-  </main>;
+  </div>;
 }

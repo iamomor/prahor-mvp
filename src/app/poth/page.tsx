@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { PothDirectoryMvp } from "@/features/poth/PothDirectoryMvp";
 
 export const metadata: Metadata = {
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function PothPage() {
-  return <PothDirectoryMvp />;
+  return <main id="poth-main"><PothDirectoryMvp /></main>;
 }

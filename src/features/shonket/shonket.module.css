@@ -6,6 +6,26 @@
   animation: screen-enter var(--pro-duration-normal) var(--pro-ease) both;
 }
 
+.warningNotice,
+.warningActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-block: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--pro-danger);
+  border-radius: var(--pro-radius-card);
+  background: var(--pro-danger-soft);
+  color: var(--pro-text);
+  line-height: var(--pro-leading-body);
+}
+
+.warningNotice a { font-weight: 700; text-decoration: underline; text-underline-offset: 0.15em; }
+
+.warningActions { align-items: flex-start; }
+.warningActions h2 { flex-basis: 100%; margin: 0; font-size: clamp(1.25rem, 3vw, 1.65rem); line-height: 1.3; }
+
 .experience :global(.border-pro-border) {
   border-color: var(--pro-control-border);
 }

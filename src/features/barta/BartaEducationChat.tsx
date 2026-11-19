@@ -184,11 +184,12 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 });
 
 export function BartaEducationChat({
-  languageChoice, formLanguage, question, questionInput, turns, reply, error, busy,
+  languageChoice, formLanguage, question, questionInput, turns, reply, error, busy, hasPrefill,
   onLanguage, onQuestion, onDictation, symbolsOpen, onOpenSymbols, onSelect, onClear, onSubmit,
 }: {
   languageChoice: Language | "auto";
   formLanguage: Language;
+  hasPrefill: boolean;
   question: string;
   questionInput: RefObject<HTMLTextAreaElement | null>;
   turns: Turn[];
@@ -273,6 +274,7 @@ export function BartaEducationChat({
           onSubmit(event);
         }}>
           <label htmlFor="barta-question">{copy.question}</label>
+          {hasPrefill && <p className="text-sm text-pro-muted">{copy.prefillExplanation}</p>}
           <div className={styles.composer}>
             <textarea id="barta-question" ref={questionInput} value={question}
               placeholder={copy.placeholder} aria-describedby="barta-privacy"

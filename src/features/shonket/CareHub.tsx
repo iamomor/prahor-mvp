@@ -8,7 +8,7 @@ const card = "rounded-card border border-pro-border bg-pro-elevated shadow-pro-1
 
 const rows: { href: string; icon: LucideIcon; title: Text; detail: Text }[] = [
   { href: "/app/care/new", icon: HandHeart, title: { en: "Request a care worker", bn: "সেবাকর্মীর অনুরোধ" }, detail: { en: "Choose how you want to communicate", bn: "কীভাবে কথা বলতে চান বেছে নিন" } },
-  { href: "/app/care/status", icon: FileClock, title: { en: "My requests", bn: "আমার অনুরোধ" }, detail: { en: "See what was saved and what is still waiting", bn: "কী সংরক্ষিত ও কী অপেক্ষমাণ দেখুন" } },
+  { href: "/app/care/requests", icon: FileClock, title: { en: "My requests", bn: "আমার অনুরোধ" }, detail: { en: "See your saved requests and verified status", bn: "সংরক্ষিত অনুরোধ ও যাচাই করা অবস্থা দেখুন" } },
   { href: "/app/bondhon", icon: Users, title: { en: "My care circle", bn: "আমার কেয়ার সার্কেল" }, detail: { en: "Manage trusted people and permissions", bn: "বিশ্বস্ত মানুষ ও অনুমতি নিয়ন্ত্রণ" } },
   { href: "/app/poth", icon: MapPin, title: { en: "Nearby facilities", bn: "কাছের সেবাকেন্দ্র" }, detail: { en: "Browse the directory and prepare a visit", bn: "তালিকা দেখুন ও চেকআপের প্রস্তুতি নিন" } },
   { href: "/safety", icon: ShieldCheck, title: { en: "Important safety information", bn: "জরুরি নিরাপত্তা তথ্য" }, detail: { en: "Know when to seek immediate human care", bn: "কখন এখনই সেবা নিতে হবে জানুন" } },

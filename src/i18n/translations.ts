@@ -4,6 +4,7 @@ import { adaptability, persona } from "./translations/accessibility";
 import { journey, modulesGrid, dualTimeline } from "./translations/modules";
 import { shusthota, bondhon, poth } from "./translations/care";
 import { aiIntegrity, trust, faq } from "./translations/trust";
+import { shonket } from "./translations/shonket";
 
 export type Language = "bn" | "en";
 
@@ -114,6 +115,7 @@ export const translations = {
   poth,
   trust,
   faq,
+  shonket,
   finalCta,
   footer,
 } as const;

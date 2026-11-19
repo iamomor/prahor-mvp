@@ -1008,6 +1008,10 @@
 }
 
 @media (max-width: 479px) {
+  /* Brand + Urgent help + language + Adjust do not fit 320–430px in one row: wrap instead of overflowing. */
+  .auth-header { height: auto; }
+  .auth-header-inner { flex-wrap: wrap; gap: 0.5rem 1rem; padding-block: 0.5rem; }
+  .auth-header-actions { gap: 0.5rem; }
   .auth-role-grid { grid-template-columns: 1fr; }
   .auth-field-row { grid-template-columns: 1fr; }
   .auth-stepper { gap: 0.5rem; }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/i18n/use-language";
 import type { OwnProfile } from "@/lib/auth/access";
 
-export function Workspace({ profile }: { profile: OwnProfile }) {
+export function Workspace({ profile, children }: { profile: OwnProfile; children?: React.ReactNode }) {
   const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -27,12 +27,19 @@ export function Workspace({ profile }: { profile: OwnProfile }) {
       window.location.assign("/sign-in?status=signed-out");
     }
   }
-  return <section className="pro-card space-y-5">
-    <Link href="/account" className="inline-flex min-h-12 items-center underline">{t({ en: "Account and roles / switch workspace", bn: "অ্যাকাউন্ট ও পরিচয় / কর্মক্ষেত্র বদলান" })}</Link>
-    <h1 className="text-3xl font-semibold">{profile.role === "mother" ? t({ en: "Your PROHOR dashboard", bn: "আপনার প্রহর ড্যাশবোর্ড" }) : t({ en: "Simulated provider workspace", bn: "সিমুলেটেড সেবাদাতার কর্মক্ষেত্র" })}</h1>
-    {profile.display_name && <p>{profile.display_name}</p>}
-    <p>{profile.role === "mother" ? t({ en: "You are signed in to your own account. Health-record features are not connected yet.", bn: "আপনার নিজের অ্যাকাউন্টে সাইন ইন করা আছে। স্বাস্থ্যতথ্যের সুবিধা এখনো যুক্ত হয়নি।" }) : t({ en: "Your provider access is authorized. No maternal records are shared here; consent and assignment workflows are not connected yet.", bn: "আপনার সেবাদাতার প্রবেশাধিকার অনুমোদিত। এখানে মায়েদের তথ্য শেয়ার হয়নি; সম্মতি ও দায়িত্ব বণ্টনের ব্যবস্থা এখনো যুক্ত হয়নি।" })}</p>
-    <button type="button" className="pro-btn pro-btn-secondary" onClick={() => void signOut()} disabled={busy}>{busy ? t({ en: "Signing out…", bn: "সাইন আউট হচ্ছে…" }) : t({ en: "Sign out", bn: "সাইন আউট" })}</button>
+  return <div className="grid gap-8">
+    <header className="flex flex-wrap items-end justify-between gap-4">
+      <div className="grid gap-1">
+        <p className="pro-eyebrow text-pro-primary">{profile.role === "mother" ? "PROHOR" : t({ en: "Simulated provider", bn: "সিমুলেটেড সেবাদাতা" })}</p>
+        <h1 className="pro-editorial text-3xl font-semibold sm:text-4xl">{profile.role === "mother" ? t({ en: "Your PROHOR dashboard", bn: "আপনার প্রহর ড্যাশবোর্ড" }) : t({ en: "Care request queue", bn: "সহায়তা অনুরোধের তালিকা" })}</h1>
+        {profile.display_name && <p className="text-lg text-pro-muted">{t({ en: "Signed in as", bn: "সাইন ইন করেছেন" })} {profile.display_name}</p>}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link href="/account" className="inline-flex min-h-11 items-center text-pro-primary underline underline-offset-2">{t({ en: "Account and roles", bn: "অ্যাকাউন্ট ও পরিচয়" })}</Link>
+        <button type="button" className="pro-btn pro-btn-secondary" onClick={() => void signOut()} disabled={busy}>{busy ? t({ en: "Signing out…", bn: "সাইন আউট হচ্ছে…" }) : t({ en: "Sign out", bn: "সাইন আউট" })}</button>
+      </div>
+    </header>
     {failed && <p role="alert">{t({ en: "Sign-out could not be confirmed. Check your connection and try again.", bn: "সাইন আউট নিশ্চিত হয়নি। সংযোগ দেখে আবার চেষ্টা করুন।" })}</p>}
-  </section>;
+    {children}
+  </div>;
 }

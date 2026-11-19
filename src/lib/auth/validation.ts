@@ -9,6 +9,8 @@ export const signUpSchema = z.strictObject({ email, password: z.string().min(12)
 export const emailLinkSchema = z.strictObject({ email, next });
 
 export function siteOrigin(value: string | undefined): string | null {
+  // Dev convenience only: a teammate's missing NEXT_PUBLIC_SITE_URL must not block local saves. Production stays fail-closed.
+  if (!value && process.env.NODE_ENV === "development") value = "http://localhost:3000";
   try {
     const url = new URL(value ?? "");
     if (url.username || url.password || url.pathname !== "/" || url.search || url.hash) return null;

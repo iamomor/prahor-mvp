@@ -11,6 +11,7 @@ import {
 import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt";
 import { apiSuccessSchema, currentUserResponseSchema, pageSchema } from "./transport";
 import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
+import { createDiaryEntryRequestSchema, createWellnessEntryRequestSchema } from "./wellness";
 import { createBabyRequestSchema, createMaternalConditionRequestSchema, createObservationRequestSchema, createPregnancyRequestSchema, createSymptomNoteRequestSchema } from "./health";
 
 // Derived from the existing feature schemas; no second domain validation system.
@@ -111,6 +112,30 @@ export const currentApiContracts = {
       400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema,
       409: starterHealthResponseSchema, 503: starterHealthResponseSchema,
     },
+  },
+  "GET /api/wellness": {
+    source: "src/app/api/wellness/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
+    request: z.undefined(), responses: {
+      200: z.strictObject({ entries: z.array(z.object({ id: z.uuid(), occurred_at: z.string() })) }),
+      401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema,
+    },
+  },
+  "POST /api/wellness": {
+    source: "src/app/api/wellness/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
+    request: createWellnessEntryRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/diary": {
+    source: "src/app/api/diary/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
+    request: z.undefined(), responses: {
+      200: z.strictObject({ entries: z.array(z.object({ id: z.uuid(), text: z.string(), privacy: z.literal("owner_only") })) }),
+      401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema,
+    },
+  },
+  "POST /api/diary": {
+    source: "src/app/api/diary/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
+    request: createDiaryEntryRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
   },
   "POST /api/ai/chat": {
     source: "src/app/api/ai/chat/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",

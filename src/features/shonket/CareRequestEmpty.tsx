@@ -7,13 +7,13 @@ export function CareRequestEmpty({ screen }: { screen: "review" | "status" }) {
   return (
     <div className={styles.experience}>
       <header className={styles.pageHeader}>
-        <p className={styles.eyebrow}>HUMAN HELP · PREVIEW</p>
+        <p className={styles.eyebrow}>HUMAN HELP</p>
         <h1 id="shonket-screen-title" tabIndex={-1} className={`${styles.title} pro-editorial`}>{isReview ? "No message to review" : "No request status"}</h1>
-        <p className={styles.lead}>{isReview ? "This review page needs a message prepared in the help form." : "This status page needs a message from the current in-memory draft."}</p>
+        <p className={styles.lead}>{isReview ? "This review page needs a message prepared in the help form." : "No request has been sent from this device yet."}</p>
       </header>
       <div className={styles.emptyRoute}>
         <span className={styles.emptyIcon}><FileText size={25} aria-hidden="true" /></span>
-        <p>{isReview ? "No help request has been prepared in this browser session." : "There is no request draft to show here."} No data was loaded or sent.</p>
+        <p>{isReview ? "No help request has been prepared in this browser session." : "There is no sent request to show here."}</p>
         <Link href="/app/care" className={`pro-btn pro-btn-primary ${styles.cardAction}`}>Go to the help form <ArrowRight size={17} aria-hidden="true" /></Link>
       </div>
     </div>

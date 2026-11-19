@@ -35,6 +35,17 @@ function getKnowledge() {
   return preparedKnowledge;
 }
 
+// shortcut: per-instance memory, so limits reset on cold start and are per serverless instance; move to a shared store if abuse appears.
+const chatHits = new Map<string, { start: number; count: number }>();
+const chatLimitPerMinute = 20;
+function overChatLimit(request: Request, now = Date.now()) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+  if (chatHits.size > 5000) chatHits.clear();
+  const hit = chatHits.get(ip);
+  if (!hit || now - hit.start >= 60_000) { chatHits.set(ip, { start: now, count: 1 }); return false; }
+  return ++hit.count > chatLimitPerMinute;
+}
+
 async function decisionReply(answer: BartaAnswer, language: BartaRequest["language"], status: number) {
   const speech = answer.status === "not_connected" ? undefined : buildBartaSpeechText(answer, language);
   const audioText = speech && speech.length <= maxSpeechText ? speech : undefined;
@@ -97,6 +108,11 @@ export async function POST(request: Request) {
       return decisionReply(getBartaRouteResponse(coverage.route, language), language, 200);
     }
     if (safetyResponse) return decisionReply(safetyResponse, language, 200);
+    // Throttle only after safety replies, so danger-sign guidance is never rate limited.
+    if (overChatLimit(request)) {
+      const limited = jsonNoStore({ message: "Too many questions in a minute. Please wait and try again.", status: "not_connected" }, 429);
+      limited.headers.set("Retry-After", "60"); return limited;
+    }
 
     if (retention.mode !== "ephemeral") {
       return jsonNoStore({ message: "Saved Barta conversations are unavailable." }, 400);

@@ -9,7 +9,7 @@ import styles from "./shonket.module.css";
 const methods: { value: CareRequestMethod; label: string; description: string; Icon: typeof MessageSquareText }[] = [
   { value: "text", label: "Text message", description: "Communicate using written text.", Icon: MessageSquareText },
   { value: "aac", label: "AAC-friendly", description: "Use text and communication shortcuts.", Icon: Speech },
-  { value: "call", label: "Phone call", description: "A visual choice only in this demo. No call will be placed.", Icon: Phone },
+  { value: "call", label: "Phone call", description: "The provider sees that you prefer a call. No call is placed automatically.", Icon: Phone },
 ];
 
 const shortcuts = ["I need help.", "I cannot speak right now.", "Please contact me."];
@@ -59,9 +59,9 @@ export function AskForHelp() {
         <Link href="/safety">Shonket home</Link><span aria-hidden="true">/</span><span aria-current="page">Human help</span>
       </nav>
       <header className={styles.pageHeader}>
-        <p className={styles.eyebrow}>HUMAN HELP · PREVIEW</p>
+        <p className={styles.eyebrow}>HUMAN HELP · STEP 1 OF 3</p>
         <h1 id="shonket-screen-title" tabIndex={-1} className={`${styles.title} pro-editorial`}>Prepare a message</h1>
-        <p className={styles.lead}>Choose how you would prefer to communicate, then write a message to review. This page does not send it.</p>
+        <p className={styles.lead}>Choose how you would prefer to communicate, then write your message. Nothing is sent until you press Send request on the next page.</p>
       </header>
       <ol className={styles.formProgress} aria-label="Care request progress">
         <li aria-current="step"><span className={styles.stepNumber}>1</span><span>Prepare</span></li>
@@ -104,14 +104,14 @@ export function AskForHelp() {
             {error && <p className={styles.fieldError} id={errorId} role="alert">{error}</p>}
           </section>
           <div className={styles.formFooter}>
-            <p className={styles.demoNotice}>Demo only: your draft stays in memory while you navigate. It is not saved after leaving the app.</p>
+            <p className={styles.demoNotice}>Your draft stays on this page while you move between steps. It is not saved if you close the app.</p>
             <Link href="/app/care/review" onClick={continueToReview} className={`pro-btn pro-btn-primary ${styles.continueButton}`}>Review message <Send size={17} aria-hidden="true" /></Link>
           </div>
         </form>
-        <aside className={styles.helpAside} aria-label="About this preview">
+        <aside className={styles.helpAside} aria-label="About human help">
           <span className={styles.asideIcon}><HeartHandshakeIcon /></span>
-          <p className={styles.eyebrow}>A NOTE ABOUT THIS PREVIEW</p>
-          <p>This message is not sent to a care worker. The phone-call choice is visual only.</p>
+          <p className={styles.eyebrow}>WHO RECEIVES THIS</p>
+          <p>A simulated demo provider, not a real clinician or emergency service. For an emergency, call 999.</p>
           <Link href="/safety">Return to Shonket</Link>
         </aside>
       </div>

@@ -3,8 +3,8 @@ import { RequestReview } from "@/features/shonket/RequestReview";
 import { ShonketCareNavigation } from "@/features/shonket/ShonketPublicFrame";
 
 export const metadata: Metadata = {
-  title: "Review message | Shonket",
-  description: "Review the local Shonket human-help message preview.",
+  title: "Review and send | Shonket",
+  description: "Choose a recipient and what to share, then send your care request.",
 };
 
 export default function CareRequestReviewPage() {

@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
+import { fileSha256 } from "./ocr-service";
 import { isHemoglobinLabel, validDate } from "./validation";
 import type { ExtractedReport, ExtractedReportField } from "./types";
 
 type Pregnancy = { id: string; label: string };
-type Draft = { report: ExtractedReport; imageUrl: string; reportId: string };
+type Draft = { report: ExtractedReport; imageUrl: string; reportId: string; file: File; manual?: boolean };
 
 export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] }) {
   const [draft, setDraft] = useState<Draft>();
@@ -27,10 +28,19 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
 
   useEffect(() => () => { if (draft) URL.revokeObjectURL(draft.imageUrl); }, [draft]);
 
-  function openReview(report: ExtractedReport, file?: File) {
+  // OCR failed or found nothing: the mother types the printed value from the same image. rawValue stays empty, so it is never recorded as an OCR read.
+  async function openManual(file: File) {
+    const sourceFileId = await fileSha256(file);
+    openReview({
+      id: `manual-${sourceFileId}`, name: "Manual hemoglobin entry", status: "needs_review", source: "self_reported", observedAt: "", sourceFileId, inputMethod: "manual",
+      fields: [{ id: "manual-hemoglobin", label: "Hemoglobin", value: "", unit: "g/dL", rawValue: "", destination: "", reviewStatus: "pending", parsingReliability: "unrecognized" }],
+    }, file, true);
+  }
+
+  function openReview(report: ExtractedReport, file?: File, manual = false) {
     if (!file) return;
     const supported = report.fields.filter((field) => isHemoglobinLabel(field.label));
-    setDraft({ report, imageUrl: URL.createObjectURL(file), reportId: crypto.randomUUID() });
+    setDraft({ report, imageUrl: URL.createObjectURL(file), reportId: crypto.randomUUID(), file, manual });
     setFieldId(supported.length === 1 ? supported[0].id : "");
     setValue(supported.length === 1 && supported[0].parsingReliability === "recognized" ? supported[0].value : "");
     setUnit(supported.length === 1 ? supported[0].unit : "");
@@ -92,9 +102,11 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
     <header className="module-hero">
       <p>Understand your reports · রিপোর্ট বুঝুন</p>
       <h1 ref={reviewFocus} tabIndex={-1}>Bujhi account report review</h1>
-      <p>Limited prototype for fictional report images. OCR runs on this device. Account saving supports maternal hemoglobin in g/dL.</p>
+      <p>Limited prototype for fictional report images. OCR runs on this device.</p>
+      <p><strong>Saved now: hemoglobin (g/dL). Other values are shown for reading only.</strong> <span lang="bn">এখন শুধু হিমোগ্লোবিন (g/dL) সংরক্ষণ হয়। অন্য মান শুধু পড়ার জন্য দেখানো হয়।</span></p>
+      <p><a href="/bujhi/prohor-synthetic-lab-v1.png" download className="underline">Download the synthetic sample report (PNG) · নমুনা রিপোর্ট নামান</a></p>
     </header>
-    {!draft && <ImageMedicalEntry onDraft={openReview} />}
+    {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={(file) => void openManual(file)} />}
     {draft && <section className="grid gap-4 rounded-card border border-pro-border p-4" aria-label="Review extracted report">
       <button type="button" className="min-h-12 justify-self-start text-pro-primary underline" onClick={() => setDraft(undefined)}>Choose another image</button>
       {/* Local blob URL for comparison with the source. */}
@@ -102,7 +114,8 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
       <img src={draft.imageUrl} alt="Original fictional report for checking the extracted value" className="h-auto max-w-full" />
       {draft.report.rawText && <details><summary className="min-h-12 cursor-pointer">Raw OCR text</summary><pre className="whitespace-pre-wrap">{draft.report.rawText}</pre></details>}
       {draft.report.fields.filter((item) => !isHemoglobinLabel(item.label)).map((item) => <p key={item.id}>{item.label}: {item.value} {item.unit}. Read from image, unsupported for account saving.</p>)}
-      {!supported.length ? <p role="status">No supported hemoglobin field found. Nothing can be saved to the account.</p> : <>
+      {draft.manual && <p role="status">You are typing this value yourself from the image. OCR did not read it. · আপনি ছবি দেখে নিজে মানটি লিখছেন; OCR পড়েনি।</p>}
+      {!supported.length ? <div className="grid gap-3"><p role="status">No supported hemoglobin field found. Nothing is saved.</p><button type="button" className="min-h-12 justify-self-start rounded-control border border-pro-primary px-4 font-semibold text-pro-primary" onClick={() => { const { file } = draft; setDraft(undefined); void openManual(file); }}>নিজে হিমোগ্লোবিন লিখব · Type the hemoglobin value myself</button></div> : <>
         {supported.length > 1 && <label className="grid gap-2">Hemoglobin field to review<select className={control} value={fieldId} disabled={locked || saved} onChange={(event) => { const selected = supported.find((item) => item.id === event.target.value); setFieldId(event.target.value); setValue(selected?.parsingReliability === "recognized" ? selected.value : ""); setUnit(selected?.unit ?? ""); setConfirmed(false); }}><option value="">Choose a field</option>{supported.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.value} {item.unit}</option>)}</select></label>}
         {field && <>
           {field.parsingReliability !== "recognized" && <p className="font-semibold">The extracted digits are unclear. Enter the printed value from the image.</p>}

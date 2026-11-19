@@ -2,11 +2,15 @@
 
 import { VALUE_WORD_MIN_CONFIDENCE, valueTokenConfidence } from "./ocr-word-confidence";
 
+export async function fileSha256(file: File) {
+  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 /** Runs Tesseract in a browser worker. CDN requests fetch engine/language assets, never the image. */
 export async function recognizeReportImage(file: File, onProgress: (status: string, progress: number) => void, signal: AbortSignal) {
   const { createWorker } = await import("tesseract.js");
-  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
-  const sourceFileId = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  const sourceFileId = await fileSha256(file);
   if (signal.aborted) throw new Error("OCR cancelled.");
   const worker = await createWorker("eng", 1, { logger: (event) => { if (!signal.aborted) onProgress(event.status, event.progress); } });
   let termination: Promise<unknown> | undefined;

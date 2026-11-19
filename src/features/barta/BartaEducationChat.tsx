@@ -75,8 +75,9 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
     && (result.reason === "urgent_care" || result.reason === "crisis_support");
   const careHandoff = urgent || (result.status === "abstained"
     && (result.reason === "outside_education_scope" || result.reason === "mental_health_support"));
+  const optionHeading = result.status === "grounded" ? copy.followUp : copy.clarify;
   const options = showOptions
-    ? result.status === "clarification" ? result.suggestions
+    ? result.status === "clarification" || result.status === "abstained" ? (result.suggestions ?? [])
       : result.status === "grounded" && result.followUp ? [result.followUp] : []
     : [];
 
@@ -171,8 +172,8 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
         </div>
       )}
       {options.length > 0 && (
-        <section className={styles.next} aria-label={result.status === "clarification" ? copy.clarify : copy.followUp}>
-          <h3>{result.status === "clarification" ? copy.clarify : copy.followUp}</h3>
+        <section className={styles.next} aria-label={optionHeading}>
+          <h3>{optionHeading}</h3>
           <ul>
             {options.map((prompt) => <li key={prompt}><QuestionOption prompt={prompt} onSelect={onSelect} disabled={!ready || busy} /></li>)}
           </ul>
@@ -184,7 +185,7 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 
 export function BartaEducationChat({
   languageChoice, formLanguage, question, questionInput, turns, reply, error, busy,
-  onLanguage, onQuestion, onDictation, onSelect, onClear, onSubmit,
+  onLanguage, onQuestion, onDictation, symbolsOpen, onOpenSymbols, onSelect, onClear, onSubmit,
 }: {
   languageChoice: Language | "auto";
   formLanguage: Language;
@@ -197,6 +198,8 @@ export function BartaEducationChat({
   onLanguage: (language: Language | "auto") => void;
   onQuestion: (question: string) => void;
   onDictation: (question: string) => void;
+  symbolsOpen: boolean;
+  onOpenSymbols: () => void;
   onSelect: (question: string) => void;
   onClear: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -275,6 +278,11 @@ export function BartaEducationChat({
               placeholder={copy.placeholder} aria-describedby="barta-privacy"
               onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
             <div className={styles.composerTools}>
+              <button type="button" className={styles.read} disabled={!ready || busy || audio.listening}
+                aria-controls="barta-symbol-input" aria-expanded={symbolsOpen} onClick={onOpenSymbols}>
+                <MessageCircle size={18} aria-hidden="true" />
+                {copy.useSymbols}
+              </button>
               <button type="button" className={styles.read} disabled={!ready || busy} aria-describedby="barta-voice-hint"
                 onClick={() => {
                   pauseAudio();

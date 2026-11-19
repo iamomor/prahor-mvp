@@ -24,7 +24,7 @@ test("Auto changes the reply language per typed turn and stays by the composer",
 
   expect(await send("amar baby kemne manage korbo")).toMatchObject({ language: "bn" });
   await expect(page.getByText("বাচ্চার বয়স কত?", { exact: false })).toBeVisible();
-  await page.getByRole("region", { name: "একটি প্রশ্ন বেছে নিন" })
+  await page.getByRole("region", { name: "একটি বাক্য বা প্রশ্ন বেছে নিন" })
     .getByRole("button", { name: "শিশুর নিরাপদ ঘুমের জায়গা কীভাবে তৈরি করব?" }).press("Enter");
   await expect(draft).toHaveValue("শিশুর নিরাপদ ঘুমের জায়গা কীভাবে তৈরি করব?");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);

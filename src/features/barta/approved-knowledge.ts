@@ -260,7 +260,7 @@ export function bartaFollowUpQuestion(
   if (!previousChunkId || !knowledge) return question;
   const context = knowledge.topicsByChunk.get(previousChunkId);
   const normalized = questionKey(language, question).slice(3);
-  const repeat = /^(?:explain it in simple language|explain it simply|say that again|সহজ ভাষায় বুঝিয়ে বলুন|আবার বলুন|easy kore bujhiye bolen)$/u;
+  const repeat = /^(?:explain it in simple language|explain it simply|say that again|সহজ ভাষায় বুঝিয়ে বলুন|আবার বলুন|easy kore bujhiye bolen)$/u;
   if (context && repeat.test(normalized)) {
     const prompt = educationTopics[context][language];
     if (knowledge.index.get(questionKey(language, prompt))) return prompt;
@@ -278,14 +278,14 @@ export function bartaFollowUpQuestion(
   return knowledge.index.get(questionKey(language, prompt)) ? prompt : question;
 }
 
-const vagueQuestions = /^(?:pregnent|pregnancy|prégnency|gorvo|garbho|গর্ব|গর্ভ|ব্যথা|ami bhoy pachchi|what should i do|is it safe|is it normal|is that normal|what about (?:it|that|this)|what do you mean|what do i do|how (?:often|long|much|many)|when|help me|এটা কি স্বাভাবিক|কী করব|এ বিষয়ে বলুন|কতবার|কখন|ki korbo|koto bar|kokhon)$/u;
+const vagueQuestions = /^(?:pregnent|pregnancy|prégnency|gorvo|garbho|গর্ব|গর্ভ|ব্যথা|ami bhoy pachchi|what should i do|is it safe|is it normal|is that normal|what about (?:it|that|this)|what do you mean|what do i do|how (?:often|long|much|many)|when|help me|এটা কি স্বাভাবিক|কী করব|এ বিষয়ে বলুন|কতবার|কখন|ki korbo|koto bar|kokhon)$/u;
 const topicFragments: Partial<Record<EducationTopic, readonly string[]>> = {
-  anc: ["anc", "antenatal care", "গর্ভকালীন সেবা"],
-  ancVisits: ["anc visits", "checkup", "চেকআপ"],
-  nutrition: ["nutrition", "food", "খাবার", "khabar", "পুষ্টি"],
+  anc: ["anc", "antenatal care", "prenatal care", "গর্ভকালীন সেবা", "gorbhokalin sheba"],
+  ancVisits: ["anc visits", "checkup", "checkups", "pregnancy checkup", "চেকআপ", "গর্ভকালীন চেকআপ"],
+  nutrition: ["nutrition", "food", "pregnancy food", "pregnancy diet", "খাবার", "khabar", "পুষ্টি", "গর্ভাবস্থায় খাবার"],
   breastfeeding: ["breastfeeding", "breast feeding", "বুকের দুধ", "buker dudh"],
-  postnatal: ["postnatal", "postnatal care", "প্রসবের পরের সেবা"],
-  newborn: ["newborn", "newborn care", "নবজাতক", "baccha"],
+  postnatal: ["postnatal", "postnatal care", "postpartum care", "care after birth", "প্রসবের পরের সেবা", "deliveryr porer care"],
+  newborn: ["newborn", "newborn care", "baby care", "নবজাতক", "শিশুর যত্ন", "baccha", "bacchar jotno"],
   pregnancyBasics: ["trimester", "trimesters", "ট্রাইমেস্টার"],
   balancedMeals: ["pregnancy meals", "গর্ভাবস্থার খাবার"],
   warningSigns: ["warning signs", "বিপদের লক্ষণ"],
@@ -360,9 +360,22 @@ function nearbyCare(knowledge: BartaKnowledge, question: string, language: Langu
   };
 }
 
-function clarify(knowledge: BartaKnowledge, language: Language, topics: EducationTopic[]): BartaAnswer {
-  const suggestions = [...new Set(topics)].map((topic) => educationTopics[topic][language])
+function approvedSuggestions(knowledge: BartaKnowledge, language: Language, topics: EducationTopic[]): string[] {
+  return [...new Set(topics)].map((topic) => educationTopics[topic][language])
     .filter((prompt) => knowledge.index.get(questionKey(language, prompt))).slice(0, 3);
+}
+
+export function addBartaFallbackSuggestions(
+  knowledge: BartaKnowledge | null, answer: BartaAnswer, language: Language,
+): BartaAnswer {
+  if (!knowledge?.available || answer.status !== "abstained" || answer.reason !== "insufficient_evidence") return answer;
+
+  const suggestions = approvedSuggestions(knowledge, language, ["anc", "postnatal", "newborn"]);
+  return suggestions.length ? { ...answer, suggestions } : answer;
+}
+
+function clarify(knowledge: BartaKnowledge, language: Language, topics: EducationTopic[]): BartaAnswer {
+  const suggestions = approvedSuggestions(knowledge, language, topics);
   return bartaAnswerSchema.parse({
     status: "clarification",
     answer: null,

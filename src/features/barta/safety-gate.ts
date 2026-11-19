@@ -42,11 +42,12 @@ const immediateHarm = [
 
 const urgent = [
   /\b(?:heavy (?:vaginal )?bleeding|bleeding heavily|convulsions?|having (?:a )?seizures?|reduced fetal movement|(?:my )?baby (?:isn['’]?t|is not|stopped) moving|baby (?:is )?moving less|baby (?:hasn't|has not) moved|my baby.s movements? (?:decrease|have decreased)|fever after (?:birth|delivery|giving birth))\b/u,
-  /(?:প্রচুর রক্তপাত|অনেক রক্ত যাচ্ছে|বেশি রক্তপাত|খিঁচুনি|খিচুনি|(?:বাচ্চা|শিশু) (?:আজ |একদম )?ন(?:ড়|ড়)ছে না|বাচ্চার নড়াচড়া কম|বাচ্চার নড়াচড়া কম|শ্বাস নিতে কষ্ট|প্রসবের পর জ্বর|সন্তান জন্মের পর জ্বর)/u,
+  /(?:প্রচুর রক্তপাত|অনেক রক্ত যাচ্ছে|বেশি রক্তপাত|খিঁচুনি|খিচুনি|(?:বাচ্চা|শিশু) (?:আজ |একদম )?ন(?:ড়|ড়)ছে না|(?:বাচ্চা|শিশু)র নড়াচড়া কম|শ্বাস নিতে কষ্ট|প্রসবের পর জ্বর|সন্তান জন্মের পর জ্বর)/u,
   /\b(?:beshi roktopat|prochur rokto jacche|rokto pore|kichuni hole|shash nite koshto|baby r movement kome gele|baccha (?:aj |ekdom )?norche na|bacchar norachora kom|(?:baccha|bacca|bachcha) ager moto (?:nora ?chora|norachora|narachara) (?:kore|kortese|korche|korteche) na|deliveryr por jor)\b/u,
 ];
 
-const newbornTrouble = /(?:\b(?:newborn|newborn baby)\b.{0,55}\b(?:limp|unresponsive|has (?:a )?fever|won['’]t feed|not feeding|struggling to breathe)\b|নবজাতক.{0,24}(?:দুধ খাচ্ছে না|নিস্তেজ|জ্বর|সাড়া দিচ্ছে না|শ্বাস নিতে কষ্ট)|\b(?:newborn|nobojatok)(?:er)?\b.{0,40}\b(?:jor|dudh khay na|dudh khacche na|shash nite koshto)\b)/u;
+const statedUrgency = /(?:^|[.!?।]\s*)(?:this is an urgent concern|আমার কাছে বিষয়টি জরুরি মনে হচ্ছে)(?=[.!?।]|$)/u;
+const newbornTrouble = /(?:\b(?:newborn|newborn baby)\b.{0,55}\b(?:limp|unresponsive|has (?:a )?fever|won['’]t feed|not feeding|struggling to breathe)\b|নবজাতক.{0,24}(?:দুধ খাচ্ছে না|নিস্তেজ|জ্বর|সাড়া দিচ্ছে না|শ্বাস নিতে কষ্ট)|\b(?:newborn|nobojatok)(?:er)?\b.{0,40}\b(?:jor|dudh khay na|dudh khacche na|shash nite koshto)\b)/u;
 const maternalWarning = /\b(?:chest pain|severe (?:abdominal|belly) pain|i (?:have )?fainted|(?:my )?waters? (?:has |have )?broken|umbilical cord (?:is )?(?:coming out|visible))\b/u;
 const pregnancyBleeding = /(?:\b(?:bleeding|bleed|spotting)\b|রক্তপাত|রক্ত যাচ্ছে)/u;
 const breathingTrouble = /\b(?:difficulty breathing|trouble breathing|can['’]t breathe)\b/u;
@@ -55,12 +56,12 @@ const severeHeadache = /(?:\b(?:severe|bad) headache\b|তীব্র মাথ
 const pregnancy = /(?:\b(?:pregnancy|pregnant|gorboboti|gorbhoboti|gorbobosthay)\b|গর্ভাবস্থা|গর্ভবতী)/u;
 const intensiveHeadache = /\bmatha (?:onek|beshi) (?:betha|byatha)\b/u;
 const blurredVision = /(?:\b(?:blurred|blurry) vision\b|চোখে ঝাপসা|চোখে ঝাপসা দেখি|\bchokhe jhapsha\b)/u;
-const postpartumSupport = /(?:\bpostpartum depression\b|\bdepressed after (?:birth|delivery)\b|প্রসবের পর বিষণ্ন|বাচ্চা হওয়ার পর মন খারাপ|\bdeliveryr por mon kharap\b)/u;
+const postpartumSupport = /(?:\bpostpartum depression\b|\bdepressed after (?:birth|delivery)\b|প্রসবের পর বিষণ্ন|বাচ্চা হওয়ার পর মন খারাপ|\bdeliveryr por mon kharap\b)/u;
 
 const outsideScope = [
   /\b(?:diagnose me|is my baby (?:okay|ok|safe)|prescribe|what (?:drug|medicine) should i take|can i take (?:this|that) (?:medicine|drug|tablet)|how (?:many pills|much medicine)|what dose|self-medicate|how (?:can i|to) (?:abort|end (?:my|a) pregnancy))\b/u,
   /\b(?:amar pa (?:fulay|fule|phule) (?:jacche|geche)|(?:ami )?\d+ maser pregnant.{0,30}ki test (?:lagbe|korbo)|(?:ei|eta) (?:oshudh|osudh) (?:khabo|khete pari))\b/u,
-  /(?:কোন ওষুধ খাব|কতটা ওষুধ|ওষুধের ডোজ|আমার বাচ্চা কি ঠিক আছে|রোগ নির্ণয় করে|কীভাবে গর্ভপাত করব)/u,
+  /(?:কোন ওষুধ খাব|কতটা ওষুধ|ওষুধের ডোজ|আমার বাচ্চা কি ঠিক আছে|রোগ নির্ণয় করে|কীভাবে গর্ভপাত করব)/u,
   /\b(?:ignore (?:all |your |the )?(?:previous )?instructions|reveal (?:your |the )?system prompt|override (?:your |the )?safety rules)\b/u,
 ];
 
@@ -76,7 +77,8 @@ function routeQuestion(question: string): Route | undefined {
   if (immediateHarm.some((pattern) => pattern.test(text))) return "crisis_support";
   const severePain = severeHeadache.test(text) || intensiveHeadache.test(text);
   if (newbornTrouble.test(text)) return "newborn_urgent";
-  if (urgent.some((pattern) => pattern.test(text))
+  if (statedUrgency.test(text)
+    || urgent.some((pattern) => pattern.test(text))
     || maternalWarning.test(text)
     || breathingTrouble.test(text) || cannotKeepFluids.test(text)
     || (pregnancy.test(text) && pregnancyBleeding.test(text))

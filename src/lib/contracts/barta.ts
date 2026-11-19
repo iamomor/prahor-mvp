@@ -65,6 +65,7 @@ export const bartaAnswerSchema = z.discriminatedUnion("status", [
       "urgent_care", "crisis_support", "mental_health_support",
     ]),
     message: nonEmptyText(500),
+    suggestions: z.array(nonEmptyText(200)).max(3).optional(),
   }),
   z.strictObject({
     ...decisionFields,

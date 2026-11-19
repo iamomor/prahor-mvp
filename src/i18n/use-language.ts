@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import {
   readLocalPreferences,
   saveLocalPreferences,
@@ -39,9 +39,12 @@ export function useLanguage() {
     window.dispatchEvent(new CustomEvent("prohor-preferences-change", { detail: updated }));
   }
 
-  function t<T extends { [K in Language]: string }>(textObj: T): string {
-    return textObj[language] ?? textObj.bn ?? "";
-  }
+  // Stable per language: components list `t` in effect/callback deps (e.g. Shusthota's load),
+  // so a new identity every render caused an endless refetch loop.
+  const t = useCallback(
+    <T extends { [K in Language]: string }>(textObj: T): string => textObj[language] ?? textObj.bn ?? "",
+    [language],
+  );
 
   return {
     language,

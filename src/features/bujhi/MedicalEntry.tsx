@@ -53,9 +53,10 @@ export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref
         </nav>
   );
   return <div className="min-w-0 text-pro-text [overflow-wrap:anywhere]">
-    <header className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-pro-border pb-3">
-        <h1 id="bujhi-title" tabIndex={-1} className="flex items-center gap-3 text-2xl font-semibold tracking-tight"><FileText aria-hidden="true" className="size-5 text-pro-primary" />Bujhi · <span lang="bn">বুঝি</span></h1>
+    <header className="w-full">
+      <div className="module-hero"><p>Understand your reports · রিপোর্ট বুঝুন</p></div>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 pb-1 pt-2">
+        <h1 id="bujhi-title" tabIndex={-1} className="flex items-center gap-3"><FileText aria-hidden="true" className="size-5 text-pro-primary" />Bujhi · <span lang="bn">বুঝি</span></h1>
         <AccessPreferencesControl />
       </div>
       <div className={method === null ? "mt-4 rounded-card border border-pro-border bg-pro-surface p-5 sm:p-7" : "pt-4"}>
@@ -71,7 +72,7 @@ export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref
       {draftError && <p role="alert">{draftError}</p>}
       {method !== "review" && drafts.length > 0 && <button type="button" onClick={() => { setMethod("review"); requestAnimationFrame(() => reviewFocus.current?.focus()); }} className="min-h-12 rounded-control px-2 font-semibold text-pro-primary underline">Review current drafts ({drafts.length})</button>}
     </header>
-    <div hidden={method === null || method === "review"}><div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6">
+    <div hidden={method === null || method === "review"}><div className="grid w-full min-w-0 grid-cols-1 gap-6 py-6">
       <div hidden={method !== "manual"}><ManualMedicalEntry onDraft={acceptDraft} /></div>
       <div hidden={method !== "image"}><ImageMedicalEntry active={method === "image"} onDraft={acceptDraft} onManual={() => setMethod("manual")} /></div>
       <div hidden={method !== "voice"}><VoiceMedicalEntry active={method === "voice"} onDraft={acceptDraft} /></div>

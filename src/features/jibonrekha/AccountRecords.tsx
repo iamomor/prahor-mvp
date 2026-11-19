@@ -1,6 +1,5 @@
 "use client";
 
-import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -291,14 +290,13 @@ export function AccountRecords() {
     return history;
   }
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-5 text-pro-text sm:px-6 sm:py-8">
-      <header className="grid gap-2">
-        <p className="font-semibold text-pro-primary">PROHOR · My records</p>
-        <h1 className="text-3xl font-semibold" lang="bn">
+    <div className="grid w-full gap-5 text-pro-text">
+      <header className="module-hero">
+        <p>Mother and baby records</p>
+        <h1 lang="bn">
           জীবনরেখা
         </h1>
         <p>What would you like to do with your records?</p>
-        <AccessPreferencesControl />
       </header>
       <aside className="rounded-field border border-pro-border bg-pro-surface px-4 py-3 text-sm">
         <strong>Fictional demo data only.</strong> Account saves need a

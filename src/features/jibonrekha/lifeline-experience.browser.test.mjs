@@ -28,6 +28,37 @@ test("PDF Today design keeps the pregnancy line, sources and four tasks readable
   } finally { await browser.close(); }
 });
 
+test("pregnancy label clears the arc and page reflows at phone widths", async () => {
+  const { browser, page } = await open(320);
+  try {
+    for (const width of [320, 360, 390, 430, 768]) {
+      await page.setViewportSize({ width, height: 844 });
+      const spacing = await page.evaluate(() => {
+        const section = document.querySelector('[aria-label="গর্ভকালের রেখা"]');
+        const svg = section.querySelector('svg');
+        const label = [...section.querySelectorAll('p')].find(node => node.textContent.includes('২৪ সপ্তাহ ৬ দিন'));
+        const range = document.createRange();
+        range.selectNodeContents(label);
+        const text = range.getBoundingClientRect();
+        const arc = svg.getBoundingClientRect();
+        const scale = arc.width / 318;
+        let minGap = Infinity;
+        for (let step = 0; step <= 400; step++) {
+          const angle = Math.PI * step / 400;
+          const x = arc.x + (159 - 133 * Math.cos(angle)) * scale;
+          const y = arc.y + (149 - 133 * Math.sin(angle)) * scale;
+          const dx = Math.max(text.left - x, 0, x - text.right);
+          const dy = Math.max(text.top - y, 0, y - text.bottom);
+          minGap = Math.min(minGap, Math.hypot(dx, dy));
+        }
+        return { minGap, overflow: document.documentElement.scrollWidth - innerWidth };
+      });
+      assert.ok(spacing.minGap >= 7, `arc gap ${spacing.minGap}px at ${width}px`);
+      assert.ok(spacing.overflow <= 0, `horizontal overflow ${spacing.overflow}px at ${width}px`);
+    }
+  } finally { await browser.close(); }
+});
+
 test("three step add reviews and persists without claiming delivery", async () => {
   const { browser, page, errors } = await open();
   try {
@@ -93,6 +124,24 @@ test("visit pack prints only explicitly selected records with identity off", asy
     await page.emulateMedia({ media: "print" });
     await expect(page.locator(".lifeline-print-controls")).toBeHidden();
     assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
+test("identity is printed only after review and demo AI consent is unavailable", async () => {
+  const { browser, page } = await open();
+  try {
+    await page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last().getByRole("button", { name: "শেয়ার" }).click();
+    await expect(page.getByRole("checkbox", { name: "বার্তাকে প্রশ্নের উত্তরে ব্যবহার করতে দিন" })).toBeDisabled();
+    await page.getByRole("checkbox", { name: /রক্তচাপ · 110\/70/ }).check();
+    await page.getByRole("checkbox", { name: "আমার নাম ও যোগাযোগ যোগ করুন" }).check();
+    await page.getByRole("checkbox", { name: /আমি বেছে নেওয়া তথ্য/ }).check();
+    await expect(page.getByRole("button", { name: /প্রিন্ট কপি দেখুন/ })).toBeDisabled();
+    await page.getByRole("textbox", { name: "নাম", exact: true }).fill("পরীক্ষা মা");
+    await page.getByRole("textbox", { name: "যোগাযোগ (ঐচ্ছিক)" }).fill("০১XXXXXXXXX");
+    await page.getByRole("checkbox", { name: /আমি বেছে নেওয়া তথ্য/ }).check();
+    await page.getByRole("button", { name: /প্রিন্ট কপি দেখুন/ }).click();
+    await expect(page.locator(".lifeline-print-sheet")).toContainText("পরীক্ষা মা");
+    await expect(page.locator(".lifeline-print-sheet")).toContainText("০১XXXXXXXXX");
   } finally { await browser.close(); }
 });
 

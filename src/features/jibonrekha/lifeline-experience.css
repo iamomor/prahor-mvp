@@ -1,3 +1,7 @@
+.lifeline-experience :is(a, button, input, select, textarea, summary):focus-visible {
+  scroll-margin-bottom: 7rem;
+}
+
 @media print {
   @page { size: A4; margin: 16mm; }
   .lifeline-experience { background: white !important; color: black !important; min-height: auto !important; }

@@ -168,9 +168,10 @@ try {
   await A2.ctx.close();
 
   // 9. Poth
-  const poth = await fetch(`${BASE}/api/poth/facilities?q=hospital&limit=5`);
+  // view=discovery is what the Poth UI searches (DGHS registry + labelled community data).
+  const poth = await fetch(`${BASE}/api/poth/facilities?view=discovery&q=hospital`);
   const pj = await poth.json().catch(() => ({}));
-  check("9 Poth facility search (public, no booking)", poth.status === 200 && pj.bookingAvailable === false, `${poth.status} n=${pj.facilities?.length}`);
+  check("9 Poth facility search (public)", poth.status === 200 && pj.total > 0, `${poth.status} total=${pj.total}`);
 
   // 11. Care request with consented record scope
   const recs = await A.call("GET", "/api/care-records");

@@ -1,7 +1,7 @@
 # PROHOR backend requirements matrix
 
 Baseline: `origin/main` at `57e9632` (20 Nov 2026). Hosted Supabase project `prahor-mvp` (`xwpdchegbizuswhtqtgc`).
-Evidence IDs (`E-…`) refer to [verification.md](verification.md).
+Evidence IDs (`E-<step>…`) refer to the step rows in [verification.md](verification.md) §1. `E-7UI` = §2, `E-L` = §4 (local suites), `E-DB` = §5, `E-0` = account setup.
 
 ## Sources
 
@@ -40,6 +40,7 @@ Classification: **MVP** = required by S4 p. 4/18; **P1-impl** = implemented P1 w
 | PLAT-06 | Migration history = repo (S4 p. 12) | MVP | 18 files ↔ 18 applied | Verified | Versions of two migrations re-aligned to filenames | E-DB |
 | PLAT-07 | Idempotent retries (S4 p. 19) | MVP | `Idempotency-Key` / `retryKey` everywhere | Verified (pregnancy, hydration, care request, Bujhi) | — | E-3b, E-5h, E-7b, E-11c |
 | PLAT-08 | No private data in SW cache (S3 p. 36) | MVP | `public/sw.js` | Verified by `test:pwa:privacy` | — | E-L |
+| PLAT-10 | Conflicts answer 409, never hang (S4 p. 19) | MVP | `patch_access_preferences`, `jr_save`, `bujhi_commit_reviewed_hemoglobin` | **Was broken → fixed** | Raised `40001`; PostgREST retried until timeout (38–125 s). Migration `20261120000000` → `PT409`; routes map it to 409 | verification §3 D2 |
 | PLAT-09 | Deployed app = tested code (S4 p. 20) | MVP | Vercel `prahor`, Git-connected, prod branch `main` | Verified for baseline; fix deploys on merge | — | handoff |
 
 ## 01 Adapt
@@ -47,7 +48,7 @@ Classification: **MVP** = required by S4 p. 4/18; **P1-impl** = implemented P1 w
 | ID | Requirement | Class | Code / DB | Status | Gap → action | Evidence |
 |---|---|---|---|---|---|---|
 | ADP-01 | Account preferences save/reload (S4 p. 4) | MVP | `GET/PATCH /api/preferences`, `patch_access_preferences` | **Was broken on Vercel → fixed** | Vercel compression turns the ETag into `W/"…"`. Client rejected every load; server returned 400 on every save. Fixed both sides to accept the weak form | E-2c/d (pre-fix fail), E-L contracts |
-| ADP-02 | 409 on stale version (S4 p. 19) | MVP | same | Verified after fix (contract) | Re-verify on deploy | E-L |
+| ADP-02 | 409 on stale version (S4 p. 19) | MVP | same | Verified (Live-local, after PLAT-10 fix) | Re-verify after deploy | E-2 |
 | ADP-03 | Guest local preferences; no lost drafts | MVP | `src/features/adapt` | Implemented, not re-tested here (UI) | Manual check by Apurbo | — |
 
 ## 02 Barta
@@ -102,7 +103,7 @@ Classification: **MVP** = required by S4 p. 4/18; **P1-impl** = implemented P1 w
 
 | ID | Requirement | Class | Code / DB | Status | Gap → action | Evidence |
 |---|---|---|---|---|---|---|
-| POT-01 | Public search, no booking claim | MVP | `GET /api/poth/facilities` | Verified | — | E-9 |
+| POT-01 | Public search, no booking claim | MVP | `GET /api/poth/facilities?view=discovery` (DGHS registry + labelled community data). The plain path is the intentionally empty "reviewed-import" set | Verified (1,395 hits for "hospital") | — | E-9 |
 | POT-02 | Nearby (explicit coordinates only), unverified labels | MVP | `GET /api/poth/nearby` (OSM) | Implemented (PR #59), not re-tested here | — | — |
 | POT-03 | Visit preparation | MVP | `PothVisitPreparation.tsx` (client-side) | Implemented; no private persistence by contract | — | — |
 

@@ -148,6 +148,7 @@ export function BujhiExperience() {
 
       {view === "home" && <div className="mx-auto grid w-full max-w-2xl gap-6">
         <div><h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold">রিপোর্ট বুঝি</h1><p className="mt-2 max-w-[60ch]">রিপোর্টের লেখা আপনার চোখের সামনে রেখে, আপনি মিলিয়ে, তবেই সংরক্ষণ।</p></div>
+        <section className="grid gap-3 rounded-card border border-pro-border bg-pro-surface p-5"><p className="font-semibold text-pro-primary">নতুন · ছবি ছাড়াই</p><h2 className="text-xl font-semibold">ঘরে করা কিটের ফল বুঝি</h2><p>কিটে কী দেখেছেন, তিনটি ছোট ধাপে বলুন। ফল রেকর্ডে নিজে থেকে যাবে না।</p><Link href="/demo/bujhi/kit" className={`${primary} inline-flex items-center justify-center`}>কিটের ফল বুঝি →</Link></section>
         <div className="rounded-field border border-pro-info bg-pro-info-soft p-4 font-semibold text-pro-info">এখন একটি কাল্পনিক নমুনা রিপোর্টের ধরন (prohor-synthetic-lab-v1) পড়া যায়। আসল রিপোর্ট এখানে দেবেন না।</div>
         <section className="grid gap-4 rounded-card bg-pro-surface p-5"><h2 className="text-xl font-semibold">চারটি ধাপ, আপনার হাতে</h2><StepBar view="upload" /><ol className="list-decimal space-y-1 pl-5"><li>রিপোর্ট দিন</li><li>প্রতিটি লাইন আপনি মিলিয়ে নিন</li><li>সহজ ভাষায় বুঝে নিন</li><li>নিশ্চিত করে সংরক্ষণ করুন</li></ol></section>
         <button type="button" onClick={() => go("upload")} className={primary}>⇧ রিপোর্ট দিন</button>

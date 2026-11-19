@@ -22,16 +22,18 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
   const db = await createServerSupabase();
   const availability = db ? await db.from("bujhi_document_reviews").select("id").limit(1) : null;
   if (!availability || availability.error) return <>
+    <p className="mx-auto max-w-4xl px-4 pt-6"><Link href="/app/bujhi/kit" className="font-semibold text-pro-primary underline">ঘরে করা কিটের ফল বুঝি →</Link></p>
     <p className="mx-auto max-w-4xl px-4 pt-6 text-pro-text" role="status">Account report saving is unavailable. You can continue with the local review.</p>
     <MedicalEntry recordsHref="/app/jibonrekha" />
   </>;
   const result = db ? await db.from("pregnancy_records").select("id, label, owner_user_id")
     .eq("owner_user_id", profile.user_id).order("created_at") : null;
   if (result?.error || !result) return <main className="mx-auto max-w-3xl p-6"><h1 className="text-3xl">Bujhi account review</h1><p role="alert">Pregnancy records could not be loaded. Reload to try again.</p></main>;
-  if (result.data.length) return <AccountReportReview pregnancies={result.data.map((item) => ({ id: item.id, label: item.label }))} />;
+  if (result.data.length) return <><p className="mx-auto max-w-4xl px-4 pt-6"><Link href="/app/bujhi/kit" className="font-semibold text-pro-primary underline">ঘরে করা কিটের ফল বুঝি →</Link></p><AccountReportReview pregnancies={result.data.map((item) => ({ id: item.id, label: item.label }))} /></>;
   const { recordError } = await searchParams;
   return <main className="mx-auto grid max-w-3xl gap-4 p-6 text-pro-text">
     <h1 className="text-3xl font-semibold">Bujhi account review</h1>
+    <Link href="/app/bujhi/kit" className="min-h-12 font-semibold text-pro-primary underline">ঘরে করা কিটের ফল বুঝি →</Link>
     <p>Create a pregnancy record before saving a reviewed maternal measurement. Use fictional information in this prototype.</p>
     <form action={createPregnancy} className="grid gap-3">
       <label htmlFor="pregnancy-label">Pregnancy record name</label>

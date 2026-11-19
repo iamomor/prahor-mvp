@@ -1,11 +1,23 @@
 ﻿import { test } from "node:test";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
-const url=(process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/jibonrekha";
-async function open() { const browser=await chromium.launch({channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge"});const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(error.message));await page.goto(url);await expect(page.getByRole("navigation",{name:"Jibonrekha sections"})).toBeVisible();return {browser,context,page,errors}; }
-async function section(page,name){const button=page.getByRole("navigation",{name:"Jibonrekha sections"}).getByRole("button",{name});await button.focus();await page.keyboard.press("Enter");await expect(button).toHaveAttribute("aria-pressed","true");}
+const url=(process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/jibonrekha/records";
+async function open() { const browser=await chromium.launch({channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge"});const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(error.message));await page.goto(url);await expect(page.getByRole("button",{name:/মায়ের তথ্য যোগ করুন/})).toBeVisible();await page.getByRole("button",{name:/মায়ের তথ্য যোগ করুন/}).click();await expect(page.getByRole("navigation",{name:"Jibonrekha sections"})).toBeVisible();return {browser,context,page,errors}; }
+async function section(page,name){const nav=page.getByRole("navigation",{name:"Jibonrekha sections"});await expect(nav).toBeVisible();const tabName=name.source.includes("Appointments")?/Visits/:name.source.includes("Privacy")?/Share/:name;const button=nav.getByRole("button",{name:tabName});if(await button.count()){await button.focus();await page.keyboard.press("Enter");await expect(button).toHaveAttribute("aria-pressed","true");}else{const select=nav.getByRole("combobox",{name:/More/});const key=name.source.includes("Overview")?"overview":name.source.includes("Pregnancy")?"pregnancy":name.source.includes("Mother")?"mother":name.source.includes("Baby")?"baby":name.source.includes("Reports")?"reports":"summary";await select.selectOption(key);await expect(page.locator('h2[tabindex="-1"]')).toHaveText(name);}}
 async function save(form){await form.getByRole("button",{name:/Save on this device/}).click();await expect(form.getByRole("status")).toContainText("Saved on this device");}
 async function maternal(page,name,value="60.00",unit="kg") {const form=page.getByRole("form",{name:/Add maternal observation/});await form.getByLabel("Observation name (required)",{exact:true}).fill(name);await form.getByLabel("Value or note (required)",{exact:true}).fill(value);await form.getByLabel("Unit (optional)",{exact:true}).fill(unit);await form.getByLabel("Observation date (required)",{exact:true}).fill("2026-11-18");await form.getByRole("button",{name:"Save maternal observation",exact:true}).click();await expect(form.getByRole("status")).toContainText("Saved to Mother's record");}
+
+test("task-first home works at 320px and has accessible controls",async()=>{
+ const browser=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL??"msedge"});try{const context=await browser.newContext({viewport:{width:320,height:900}});const page=await context.newPage();await page.goto(url);await expect(page.getByRole("heading",{name:/আজ কী করতে চান/})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa","wcag22aa"]).analyze();expect(axe.violations.map(v=>v.id)).toEqual([]);await page.getByRole("button",{name:/আগের তথ্য দেখুন/}).focus();await page.keyboard.press("Enter");await expect(page.getByRole("heading",{name:/Timeline/})).toBeVisible();}finally{await browser.close();}
+});
+
+test("quick add reviews and saves a fictional maternal entry",async()=>{
+ const browser=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL??"msedge"});try{const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();await page.goto(url);const form=page.getByRole("form",{name:"Quick add observation"});await form.getByLabel(/মান বা লেখা/).fill("61");await form.getByRole("button",{name:/তথ্য যাচাই করুন/}).click();await expect(page.getByLabel("Review observation before saving")).toContainText("61 kg");await page.getByRole("button",{name:/এই ডিভাইসে সংরক্ষণ/}).click();await expect(page.getByRole("status")).toContainText("কোথাও পাঠানো হয়নি");expect(JSON.parse(await page.evaluate(()=>localStorage.getItem("prohor-demo-health-v1")))[0].value).toBe("61");}finally{await browser.close();}
+});
+
+test("visit pack starts with no selected records and requires review before print",async()=>{
+ const {browser,page}=await open();try{await maternal(page,"Fictional visit note");await section(page,/Privacy & Sharing/);const pack=page.getByRole("region",{name:"Visit pack preparation"});const prepare=pack.getByRole("button",{name:/প্রিন্টের প্রস্তুতি/});await expect(prepare).toBeDisabled();await pack.getByRole("checkbox").first().check();await prepare.click();await expect(pack.getByRole("region",{name:"Printable health summary"})).toContainText("Fictional visit note");await expect(pack.getByLabel(/Include fictional name/)).not.toBeChecked();}finally{await browser.close();}
+});
 
 test("mother profile, dating, episode isolation, twins and newborn details persist",async()=>{
  const {browser,page,errors}=await open();try{
@@ -72,7 +84,7 @@ test("theme/contrast combinations keep primary labels readable and preserve draf
    for(const theme of ["quiet-garden","original-rose","morning-mist"]) for(const contrast of ["","more"]){
      await page.evaluate(({theme,contrast})=>{document.documentElement.dataset.theme=theme;document.documentElement.dataset.contrast=contrast;document.documentElement.dataset.motion="reduce";},{theme,contrast});
      await expect(name).toHaveValue("Unsaved fictional name");await expect(name).toBeFocused();
-     const selected=page.getByRole("navigation",{name:"Jibonrekha sections"}).getByRole("button",{pressed:true});
+     const selected=page.getByRole("navigation",{name:"Jibonrekha sections"}).getByRole("combobox",{name:/More/});
      const primary=form.getByRole("button",{name:/Save on this device/});
      for(const target of [selected,primary]){
        const colors=await target.evaluate(element=>{const style=getComputedStyle(element);return {fg:style.color,bg:style.backgroundColor,display:style.display,opacity:style.opacity};});

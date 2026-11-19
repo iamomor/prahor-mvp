@@ -1,3 +1,3 @@
-import { RecordsWorkspace } from "@/features/jibonrekha/RecordsWorkspace";
-export const metadata = { title: "Synthetic records demo" };
-export default function RecordsDemo() { return <main><RecordsWorkspace /></main>; }
+import { LifelineExperience } from "@/features/jibonrekha/LifelineExperience";
+export const metadata = { title: "Jibonrekha Lifeline demo" };
+export default function RecordsDemo() { return <LifelineExperience />; }

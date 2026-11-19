@@ -1,0 +1,14 @@
+.lifeline-experience :is(a, button, input, select, textarea, summary):focus-visible {
+  scroll-margin-bottom: 7rem;
+}
+
+@media print {
+  @page { size: A4; margin: 16mm; }
+  .lifeline-experience { background: white !important; color: black !important; min-height: auto !important; }
+  .lifeline-experience .lifeline-chrome,
+  .lifeline-experience .lifeline-print-controls { display: none !important; }
+  .lifeline-experience main { padding: 0 !important; }
+  .lifeline-experience .lifeline-print-sheet { padding: 0 !important; background: white !important; color: black !important; }
+  .lifeline-experience .lifeline-print-sheet table { width: 100%; }
+  .lifeline-experience .lifeline-print-sheet tr { break-inside: avoid; }
+}

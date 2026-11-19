@@ -28,6 +28,34 @@ test("PDF Today design keeps the pregnancy line, sources and four tasks readable
   } finally { await browser.close(); }
 });
 
+test("care guide covers early, current and late weeks with sources and a note path", async () => {
+  const { browser, page, errors } = await open(320);
+  try {
+    await page.getByRole("button", { name: /সপ্তাহভিত্তিক গাইড খুলুন/ }).click();
+    await expect(page.getByRole("heading", { name: "সপ্তাহভিত্তিক যত্নের পথ" })).toBeFocused();
+    const week = page.getByRole("combobox", { name: "গর্ভকালের সপ্তাহ" });
+    await week.selectOption("1");
+    await expect(page.getByText("এই সপ্তাহে নতুন নির্দিষ্ট পরীক্ষা নেই")).toBeVisible();
+    await week.selectOption("24");
+    await expect(page.getByRole("heading", { name: /গর্ভকালীন ডায়াবেটিস/ })).toBeVisible();
+    await week.selectOption("34");
+    await expect(page.getByRole("heading", { name: /ডপলার বা অতিরিক্ত পরীক্ষা/ })).toBeVisible();
+    await week.selectOption("38");
+    await expect(page.getByRole("heading", { name: /প্রসবের প্রস্তুতি/ })).toBeVisible();
+    await week.selectOption("40");
+    await expect(page.getByRole("heading", { name: /শেষ সপ্তাহের যোগাযোগ/ })).toBeVisible();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.evaluate(() => { document.documentElement.dataset.textScale = "extra-large"; });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    assert.deepEqual(axe.violations.map(item => item.id), []);
+    await page.getByRole("button", { name: "আজকের নোট লিখুন" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: /নিজের নোট/ })).toBeVisible();
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
 test("pregnancy label clears the arc and page reflows at phone widths", async () => {
   const { browser, page } = await open(320);
   try {

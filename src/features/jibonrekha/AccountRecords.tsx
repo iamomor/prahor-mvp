@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import { LifelineArc } from "./LifelineArc";
+import { CareGuide } from "./CareGuide";
+import { recordedPregnancyWeek } from "./care-guide-dating";
 
 type Pregnancy = { id: string; label: string; estimated_due_date: string | null; last_menstrual_period_date: string | null };
 type Baby = { id: string; pregnancy_id: string | null; label: string; birth_date: string | null };
@@ -22,9 +24,10 @@ const choices = {
   baby: [["weight", "kg"], ["temperature", "Cel"], ["fetal_heart_rate", "/min"], ["note", ""]],
 } as const;
 const unitOptions: Record<string, string[]> = { weight: ["kg", "g"], temperature: ["Cel", "[degF]"], glucose: ["mmol/L", "mg/dL"] };
-type Task = "home" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records" | "share";
+type Task = "home" | "guide" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records" | "share";
 const tasks: { id: Task; label: string; hint: string }[] = [
   { id: "observation", label: "তথ্য যোগ করুন", hint: "মা বা শিশুর মাপ ও নোট" },
+  { id: "guide", label: "সপ্তাহভিত্তিক যত্ন", hint: "পরীক্ষার সময়, কারণ ও উৎস" },
   { id: "records", label: "আগের তথ্য দেখুন", hint: "তারিখ, উৎস ও সংশোধনের ইতিহাস" },
   { id: "pregnancy", label: "গর্ভকাল যোগ করুন", hint: "নতুন গর্ভকালের রেকর্ড" },
   { id: "baby", label: "শিশুর রেকর্ড যোগ করুন", hint: "প্রতিটি শিশুর আলাদা নথি" },
@@ -50,12 +53,14 @@ export function AccountRecords() {
   const [task, setTask] = useState<Task>("home");
   const [noteKind, setNoteKind] = useState<"symptom" | "condition">("symptom");
   const taskHeading = useRef<HTMLHeadingElement>(null);
+  const homeHeading = useRef<HTMLHeadingElement>(null);
+  const guideHeading = useRef<HTMLHeadingElement>(null);
   const errorFocus = useRef<HTMLDivElement>(null);
   const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   function openTask(next: Task) {
     setTask(next);
-    requestAnimationFrame(() => taskHeading.current?.focus());
+    requestAnimationFrame(() => (next === "home" ? homeHeading : next === "guide" ? guideHeading : taskHeading).current?.focus());
   }
   const load = useCallback(async () => {
     try {
@@ -93,8 +98,7 @@ export function AccountRecords() {
   const activeObservations = records?.observations.filter(item => !superseded.has(item.id)) ?? [];
   const visible = records?.observations.filter(item => !superseded.has(item.id) && (subject === "mother" ? item.subject === "mother" && (!pregnancyId || item.pregnancy_id === pregnancyId) : item.subject === "baby" && item.baby_id === selectedBabyId)) ?? [];
   const journeyPregnancy = records?.pregnancies.find(item => item.id === pregnancyId) ?? records?.pregnancies.at(-1);
-  const elapsedDays = journeyPregnancy?.last_menstrual_period_date ? Math.floor((Date.parse(`${today()}T00:00:00Z`) - Date.parse(`${journeyPregnancy.last_menstrual_period_date}T00:00:00Z`)) / 86400000) : NaN;
-  const journey = Number.isFinite(elapsedDays) && elapsedDays >= 0 && elapsedDays <= 294 ? { weeks: Math.floor(elapsedDays / 7), days: elapsedDays % 7 } : null;
+  const journey = recordedPregnancyWeek({ lmp: journeyPregnancy?.last_menstrual_period_date ?? null, due: journeyPregnancy?.estimated_due_date ?? null }, today());
   function historyFor(id: string) {
     const history: { record: Observation; reason: string }[] = [];
     let current = id;
@@ -108,12 +112,23 @@ export function AccountRecords() {
     }
     return history;
   }
-
+  return <main className="mx-auto grid w-full max-w-3xl gap-5 px-4 py-5 text-pro-text sm:px-6 sm:py-8">
+    <header className="grid gap-2"><div className="flex flex-wrap items-center justify-between gap-3"><p className="font-semibold text-pro-primary">PROHOR · My records</p><Link href="/faq" className="min-h-11 rounded-field border border-pro-border px-4 py-2 font-semibold text-pro-primary">জরুরি সহায়তা · Urgent help</Link></div><h1 ref={homeHeading} tabIndex={-1} className="text-3xl font-semibold" lang="bn">জীবনরেখা</h1><p lang="bn">আজ কী করতে চান?</p><AccessPreferencesControl /></header>
+    <aside className="rounded-field border border-pro-border bg-pro-surface px-4 py-3"><strong>কাল্পনিক ডেমো তথ্য।</strong> অ্যাকাউন্টে সেভ করতে ইন্টারনেট লাগে। চিকিৎসক যাচাই করেননি।</aside>
+    {message && <p role="status" className={`${box} text-pro-success`}>{message}</p>}
+    {error && <div ref={errorFocus} tabIndex={-1} role="alert" className={`${box} focus-visible:outline-3 focus-visible:outline-pro-focus`}><p className="text-pro-danger">{error}</p><button type="button" className={action} onClick={() => void load()}>Reload records</button></div>}
+    {loading ? <p role="status">Loading account records…</p> : records && <>
+      <nav aria-label="Jibonrekha quick actions" className="grid gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">{([{id:"home",label:"আজ · Today"},{id:"records",label:"ইতিহাস · Timeline"},{id:"visit",label:"ভিজিট · Visits"},{id:"share",label:"শেয়ার · Share"}] as {id:Task;label:string}[]).map(item=><button key={item.id} type="button" aria-pressed={task===item.id} onClick={()=>openTask(item.id)} className={`min-h-12 rounded-field border border-pro-primary px-3 py-2 font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus ${task===item.id?"bg-pro-primary text-pro-on-primary":"bg-pro-bg text-pro-primary"}`}>{item.label}</button>)}</div>
+        {task !== "home" && <label className="grid gap-1">আরও কাজ · More<select value={task} onChange={event => openTask(event.target.value as Task)} className={input}><option value="home">আজ · Today</option>{tasks.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
+        {task === "home" && <div className="grid gap-3 sm:grid-cols-2">{tasks.slice(0, 2).map((item, index) => <button key={item.id} type="button" onClick={() => openTask(item.id)} className={`min-h-24 rounded-card border border-pro-border px-5 py-4 text-left focus-visible:outline-3 focus-visible:outline-pro-focus ${index === 0 ? "bg-pro-primary text-pro-on-primary" : "bg-pro-elevated text-pro-text"}`}><span className="block text-lg font-semibold">{item.label} →</span><span className={`block ${index === 0 ? "text-pro-on-primary-muted" : "text-pro-muted"}`}>{item.hint}</span></button>)}</div>}
+        {task === "home" && <details className="rounded-card border border-pro-border bg-pro-elevated px-5 py-4"><summary className="cursor-pointer font-semibold">আরও কাজ</summary><div className="grid gap-2 pt-4 sm:grid-cols-2">{tasks.slice(2).map(item => <button key={item.id} type="button" onClick={() => openTask(item.id)} className="min-h-12 rounded-field border border-pro-border px-4 py-2 text-left font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus">{item.label} →</button>)}<Link href="/bujhi" className="flex min-h-12 items-center rounded-field border border-pro-border px-4 py-2 font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus">রিপোর্ট যাচাই করুন →</Link></div></details>}
       </nav>
-      <section hidden={task!=="home"} className="grid gap-3 rounded-hero bg-pro-primary p-5 text-pro-on-primary sm:grid-cols-[1fr_auto] sm:items-center" aria-label="Pregnancy journey"><div><p className="font-semibold">আপনার পথ · Your journey</p>{records.pregnancies.length>1&&<label className="mt-2 grid gap-1">গর্ভকাল বেছে নিন<select value={journeyPregnancy?.id??""} onChange={event=>setPregnancyId(event.target.value)} className={input}>{records.pregnancies.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}{journey?<><p className="mt-2 text-2xl font-semibold">{journey.weeks} সপ্তাহ {journey.days} দিন</p><p>আপনার দেওয়া শেষ মাসিকের তারিখ থেকে আনুমানিক হিসাব; চিকিৎসকের যাচাই নয়।</p></>:<><p>যাচাইযোগ্য তারিখ না থাকলে গর্ভকালের রেখা দেখানো হয় না।</p><button type="button" onClick={()=>openTask("pregnancy")} className="mt-2 min-h-11 rounded-field border border-pro-on-primary px-4 py-2 font-semibold">গর্ভকাল যোগ করুন</button></>}</div>{journey&&<LifelineArc weeks={journey.weeks} days={journey.days} />}</section>
+      <section hidden={task!=="home"} className="grid gap-3 rounded-hero bg-pro-primary p-5 text-pro-on-primary sm:grid-cols-[1fr_auto] sm:items-center" aria-label="Pregnancy journey"><div><p className="font-semibold">আপনার পথ · Your journey</p>{records.pregnancies.length>1&&<label className="mt-2 grid gap-1">গর্ভকাল বেছে নিন<select value={journeyPregnancy?.id??""} onChange={event=>setPregnancyId(event.target.value)} className={input}>{records.pregnancies.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}{journey?<><p className="mt-2 text-2xl font-semibold">{journey.weeks} সপ্তাহ {journey.days} দিন</p><p>{journey.basis === "period" ? "আপনার দেওয়া শেষ মাসিকের তারিখ থেকে আনুমানিক হিসাব" : "আপনার দেওয়া প্রসবের আনুমানিক তারিখ থেকে আনুমানিক হিসাব"}; চিকিৎসকের যাচাই নয়।</p></>:<><p>যাচাইযোগ্য তারিখ না থাকলে গর্ভকালের রেখা দেখানো হয় না।</p><button type="button" onClick={()=>openTask("pregnancy")} className="mt-2 min-h-11 rounded-field border border-pro-on-primary px-4 py-2 font-semibold">গর্ভকাল যোগ করুন</button></>}</div>{journey&&<LifelineArc weeks={journey.weeks} days={journey.days} />}</section>
       <section hidden={task !== "home"} className="rounded-card border border-pro-border bg-pro-elevated px-5 py-4" aria-label="Recent account activity"><h2 className="text-lg font-semibold">সাম্প্রতিক তথ্য</h2>{activeObservations[0] ? <p>{activeObservations[0].subject === "baby" ? "শিশু" : "মা"} · {labels[activeObservations[0].kind] ?? activeObservations[0].kind}: {activeObservations[0].value}{activeObservations[0].unit ? ` ${activeObservations[0].unit}` : ""} · {formatDate(activeObservations[0].observed_at)}</p> : <p>এখনো কোনো তথ্য যোগ করা হয়নি।</p>}</section>
       <section hidden={task!=="share"} className={`${box} grid gap-3`} aria-label="Account sharing status"><h2 className="text-2xl font-semibold">শেয়ার · Share</h2><p>এই অ্যাকাউন্ট পেজ থেকে নথি পাঠানোর ব্যবস্থা এখনো চালু নেই। আপনার কোনো তথ্য এখানে থেকে পরিবার, চিকিৎসক বা Barta-তে স্বয়ংক্রিয়ভাবে পাঠানো হয় না।</p><p className="text-pro-muted">ডেমোতে বেছে নেওয়া তথ্য দিয়ে স্থানীয় প্রিন্ট কপি তৈরি ও অনুমতির নমুনা দেখা যায়। ডেমোটি আপনার অ্যাকাউন্টের নথি ব্যবহার করে না।</p><Link href="/demo/jibonrekha" className="font-semibold text-pro-primary underline">কাল্পনিক ডেমো দেখুন</Link></section>
-      <h2 ref={taskHeading} tabIndex={-1} className="text-2xl font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus" hidden={task === "home"}>{tasks.find(item => item.id === task)?.label}</h2>
+      {task === "guide" && <CareGuide currentWeek={journey && journey.weeks >= 1 ? journey.weeks : null} currentDay={journey?.days ?? 0} headingRef={guideHeading} onBack={() => openTask("home")} onAddNote={() => openTask("note")} />}
+      <h2 ref={taskHeading} tabIndex={-1} className="text-2xl font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus" hidden={task === "home" || task === "guide"}>{tasks.find(item => item.id === task)?.label}</h2>
       <section hidden={task !== "pregnancy"} aria-label="Create a pregnancy record">
         <form className={`${box} grid gap-3`} onSubmit={event => { event.preventDefault(); const form = event.currentTarget; const data = new FormData(form); void save({ type: "pregnancy", record: { label: data.get("label"), estimatedDueDate: data.get("due") || null, lastMenstrualPeriodDate: data.get("period") || null } }, form, "Pregnancy"); }}>
           <h2 className="text-xl font-semibold">Add a pregnancy</h2><label className="grid gap-1">Name for this pregnancy<input name="label" maxLength={100} required className={input} placeholder="e.g. Pregnancy 1" /></label><label className="grid gap-1">Estimated due date (optional)<input name="due" type="date" className={input} /></label><label className="grid gap-1">First day of last period (optional)<input name="period" type="date" className={input} /></label><p className="text-pro-muted">Dates are recorded as you entered them. PROHOR does not calculate or confirm a clinical due date.</p><button disabled={busy} className={action}>Save pregnancy</button>
@@ -173,5 +188,5 @@ export function AccountRecords() {
     </>}
     {records && <section hidden={task !== "records"} className={`${box} grid gap-4`} aria-label="Self-noted history"><h3 className="font-semibold">Your self-noted history</h3><div className="grid gap-4 sm:grid-cols-2"><div><h4 className="font-semibold">Conditions you noted</h4>{records.conditions.length ? <ul className="grid gap-2">{records.conditions.map(item => <li key={item.id} className="rounded-field border border-pro-border p-3"><strong>{item.label}</strong><p>{formatDate(item.documented_at)} · Self-reported · Not a confirmed diagnosis</p>{item.source_note && <p>Source note: {item.source_note}</p>}</li>)}</ul> : <p>Nothing noted yet.</p>}</div><div><h4 className="font-semibold">Symptom notes</h4>{records.symptomNotes.length ? <ul className="grid gap-2">{records.symptomNotes.map(item => <li key={item.id} className="rounded-field border border-pro-border p-3"><p>{item.note}</p><p>{formatDate(item.occurred_at)} · Recorded by you</p></li>)}</ul> : <p>No symptom notes yet.</p>}</div></div><h3 className="font-semibold">Visits you recorded</h3>{records.visits.length ? <ul className="grid gap-2">{records.visits.map(item => <li key={item.id} className="rounded-field border border-pro-border p-3"><strong>{item.subject === "baby" ? "Baby" : "Mother"} · {formatDate(item.occurred_at)}</strong><p>Recorded by you · No appointment or provider response confirmed</p>{item.place_note && <p>Place: {item.place_note}</p>}{item.note && <p>{item.note}</p>}</li>)}</ul> : <p>No account visits recorded yet.</p>}</section>}
     <details className="rounded-field border border-pro-border px-4 py-3"><summary className="cursor-pointer font-semibold">About this prototype</summary><p className="pt-2">Account records hold synthetic data only. The nine-section Jibonrekha demonstration has additional fields saved in this browser only.</p><Link href="/demo/jibonrekha" className="font-semibold text-pro-primary underline">Open the device-only demo</Link></details>
-  </div>;
+  </main>;
 }

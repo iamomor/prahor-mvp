@@ -106,14 +106,17 @@ const unitOptions: Record<string, string[]> = {
   temperature: ["Cel", "[degF]"],
   glucose: ["mmol/L", "mg/dL"],
 };
+
+
 type Task = "home" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records";
-const tasks: { id: Task; label: string; hint: string }[] = [
-  { id: "observation", label: "Add a measurement", hint: "Mother or baby · about 30 seconds" },
-  { id: "records", label: "Find a record", hint: "Measurements, pregnancies and notes" },
-  { id: "pregnancy", label: "Add a pregnancy", hint: "Set up a pregnancy record" },
-  { id: "baby", label: "Add a baby", hint: "Keep each baby separate" },
-  { id: "note", label: "Write a note", hint: "Symptoms or a condition you noted" },
-  { id: "visit", label: "Record a visit", hint: "Keep a dated, self-recorded visit" },
+const tasks: { id: Exclude<Task, "home">; label: string; hint: string }[] = [
+  { id: "observation", label: "Add a measurement", hint: "Record a measurement or note for a mother or baby" },
+  { id: "records", label: "View account records", hint: "See entries and correction history" },
+  { id: "pregnancy", label: "Add a pregnancy", hint: "Keep the dates you enter" },
+  { id: "baby", label: "Add a baby record", hint: "Keep a separate record for each baby" },
+  { id: "note", label: "Write a health note", hint: "Record a symptom or a condition you noted" },
+  { id: "visit", label: "Record a visit", hint: "Keep details of a visit that happened" },
+
 ];
 
 function today() {
@@ -155,7 +158,10 @@ export function AccountRecords() {
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   function openTask(next: Task) {
     setTask(next);
-    requestAnimationFrame(() => (next === "home" ? homeHeading : taskHeading).current?.focus());
+
+    const heading = next === "home" ? homeHeading : taskHeading;
+    requestAnimationFrame(() => heading.current?.focus());
+
   }
   const load = useCallback(async () => {
     try {
@@ -267,22 +273,23 @@ export function AccountRecords() {
     }
     return history;
   }
+
+
   return (
-    <div className="grid w-full gap-5 text-pro-text">
-      <header className="module-hero">
-        <p>Mother and baby records</p>
-        <h1 ref={homeHeading} tabIndex={-1} lang="bn">জীবনরেখা</h1>
-        <p>What would you like to do with your records?</p>
+    <div className="mx-auto grid w-full min-w-0 max-w-6xl gap-5 px-4 py-6 text-pro-text sm:px-6">
+      <header className="grid gap-3">
+        <h1 ref={homeHeading} tabIndex={-1} className="text-3xl font-semibold">জীবনরেখা · Jibonrekha</h1>
       </header>
-      <aside className="rounded-field border border-pro-border bg-pro-surface px-4 py-3 text-sm">
-        <strong>Fictional demo data only.</strong> Account saves need a connection.
-        Entries are not clinician-verified.
-      </aside>
-      {message && <p role="status" className={`${box} text-pro-success`}>{message}</p>}
+      {message && <p role="status">{message}</p>}
       {error && (
-        <div ref={errorFocus} tabIndex={-1} role="alert" className={`${box} focus-visible:outline-3 focus-visible:outline-pro-focus`}>
-          <p className="text-pro-danger">{error}</p>
-          <button type="button" className={action} onClick={() => void load()}>Reload records</button>
+        <div ref={errorFocus} tabIndex={-1} className={box}>
+          <p role="alert" className="text-pro-danger">{error}</p>
+          {!records && !loading && (
+            <button type="button" onClick={() => void load()} className={action}>
+              Retry loading records
+            </button>
+          )}
+
         </div>
       )}
       {loading ? (

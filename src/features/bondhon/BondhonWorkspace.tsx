@@ -20,6 +20,7 @@ export function BondhonWorkspace({ profile }: { profile: OwnProfile }) {
   const [cursor, setCursor] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [now, setNow] = useState(0);
   const [refresh, setRefresh] = useState(0);
   const sequence = useRef(0);
   const loading = useRef(false);
@@ -35,22 +36,25 @@ export function BondhonWorkspace({ profile }: { profile: OwnProfile }) {
       const result = await careFetch(path + suffix, schema, profile.user_id);
       if (seq !== sequence.current) return;
       setItems(previous => after ? [...previous.filter(item => !result.items.some(next => next.id === item.id)), ...result.items] : result.items);
-      setCursor(result.nextCursor);
+      setCursor(result.nextCursor); setNow(Date.now());
     } catch {
       if (seq === sequence.current) { setItems([]); setCursor(null); setFailed(true); }
     } finally { if (seq === sequence.current) setBusy(false); loading.current = false; }
   }, [profile.user_id, provider]);
   useEffect(() => {
     if (view !== "list") return;
+    const counter = sequence;
+    const clock = provider ? window.setInterval(() => setNow(Date.now()), 1000) : undefined;
     const initial = window.setTimeout(() => void load(), 0);
     function visibility() {
-      if (document.hidden && provider) { sequence.current++; setItems([]); }
+      if (document.hidden && provider) { counter.current++; setItems([]); setCursor(null); }
       if (!document.hidden) void load();
     }
     document.addEventListener("visibilitychange", visibility);
     const interval = window.setInterval(() => { if (!document.hidden) void load(); }, 30_000);
-    return () => { sequence.current++; window.clearTimeout(initial); document.removeEventListener("visibilitychange", visibility); window.clearInterval(interval); };
+    return () => { counter.current++; window.clearInterval(clock); window.clearTimeout(initial); document.removeEventListener("visibilitychange", visibility); window.clearInterval(interval); };
   }, [load, view, refresh, provider]);
+  const visibleItems = provider ? items.filter(item => item.status !== "closed" && (!item.coordination || (!item.coordination.revokedAt && Date.parse(item.coordination.expiresAt) > now))) : items;
   function created(request: SupportRequest) { setSelected(request.id); setView("detail"); }
   return <div className={styles.workspace} lang={language}>
     <nav className={styles.actions} aria-label={t(words("Care navigation", "সেবার পথ"))}>
@@ -79,8 +83,8 @@ export function BondhonWorkspace({ profile }: { profile: OwnProfile }) {
       <button className="pro-btn pro-btn-secondary" disabled={busy} onClick={() => void load()}>{t(words("Refresh", "আবার দেখুন"))}</button>{!provider && <button className="pro-btn pro-btn-primary" onClick={() => setView("new")}>{t(words("Create a reviewed request", "পর্যালোচনা করে অনুরোধ তৈরি করুন"))}</button>}</div>
       {busy && <p role="status">{t(words("Checking the current queue…", "বর্তমান তালিকা যাচাই হচ্ছে…"))}</p>}
       {failed && <p role="alert" className={styles.error}>{t(words("Requests could not be loaded. Check your connection and sign-in, then refresh. If the problem continues, contact the project administrator.", "অনুরোধ আনা যায়নি। সংযোগ ও সাইন ইন দেখে আবার আনুন। সমস্যা থাকলে প্রকল্পের প্রশাসকের সঙ্গে যোগাযোগ করুন।"))}</p>}
-      {!busy && !failed && !items.length && <p>{t(provider ? words("No currently authorized open requests. Expired, revoked and closed requests are excluded.", "বর্তমানে অনুমোদিত খোলা অনুরোধ নেই। মেয়াদ শেষ, প্রত্যাহার করা ও বন্ধ অনুরোধ তালিকার বাইরে।") : words("You have no submitted requests. Start with a routine purpose and a named simulated recipient.", "আপনার জমা দেওয়া অনুরোধ নেই। সাধারণ উদ্দেশ্য ও নামসহ সিমুলেটেড প্রাপক দিয়ে শুরু করুন।"))}</p>}
-      <ul className={styles.list}>{items.map(item => <li key={item.id}>
+      {!busy && !failed && !visibleItems.length && <p>{t(provider ? words("No currently authorized open requests. Expired, revoked and closed requests are excluded.", "বর্তমানে অনুমোদিত খোলা অনুরোধ নেই। মেয়াদ শেষ, প্রত্যাহার করা ও বন্ধ অনুরোধ তালিকার বাইরে।") : words("You have no submitted requests. Start with a routine purpose and a named simulated recipient.", "আপনার জমা দেওয়া অনুরোধ নেই। সাধারণ উদ্দেশ্য ও নামসহ সিমুলেটেড প্রাপক দিয়ে শুরু করুন।"))}</p>}
+      <ul className={styles.list}>{visibleItems.map(item => <li key={item.id}>
       <button className={`${styles.record} pro-btn-secondary`} onClick={() => { setSelected(item.id); setView("detail"); }}>
         <strong>{"purpose" in item ? item.purpose : t(words("Authorized simulated request", "অনুমোদিত সিমুলেটেড অনুরোধ"))}</strong>
       <br />

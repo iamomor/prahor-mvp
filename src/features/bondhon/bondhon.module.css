@@ -23,3 +23,27 @@
 .error { border-inline-start: 3px solid var(--pro-danger); padding: .75rem; }
 :global(html[data-layout="spacious"]) .workspace { gap: 2rem; }
 @media (forced-colors: active) { .panel, .record, .notice { border: 1px solid CanvasText; } }
+
+/* Evidence tracker and request-scoped sharing overview. No motion or color-only meaning. */
+.tracker { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.trackerStage { display: flex; align-items: flex-start; gap: .75rem; border-inline-start: 2px solid var(--pro-border); padding-inline-start: 1rem; }
+.trackerStage[aria-current="step"] { border-inline-start-color: var(--pro-primary); }
+.trackerStage p { margin-block: .25rem; }
+.stageMark { flex: none; font-size: 1.25rem; line-height: 1.5; }
+.bondRing { display: grid; gap: 1rem; min-width: 0; }
+.motherNode { justify-self: center; text-align: center; border: 2px solid var(--pro-primary); border-radius: 50%; padding: 1.5rem; max-width: 100%; font-weight: 650; }
+.recipientNode, .privateNode { padding: 1rem; border: 1px solid var(--pro-border); border-radius: var(--pro-radius-card, 1rem); overflow-wrap: anywhere; }
+.privateNode { border-style: dashed; }
+.quickChoices { display: flex; flex-wrap: wrap; gap: .75rem; }
+.quickChoices button { min-height: 2.75rem; text-align: start; }
+@media (min-width: 48rem) { .tracker { grid-template-columns: repeat(5, minmax(0, 1fr)); } .bondRing { grid-template-columns: repeat(2, minmax(0, 1fr)); } .motherNode { grid-column: 1 / -1; } }
+@media (forced-colors: active) { .motherNode, .recipientNode, .privateNode, .trackerStage { border-color: CanvasText; } }
+
+.formSteps { display: flex; flex-wrap: wrap; gap: .5rem 1rem; padding: 0; list-style: none; }
+.formSteps [aria-current="step"] { font-weight: 700; text-decoration: underline; text-underline-offset: .25rem; }
+
+.confirmDialog { margin: auto; max-width: min(36rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1.5rem; border: 2px solid var(--pro-border); border-radius: var(--pro-radius-card, 1rem); color: var(--pro-text); background: var(--pro-bg); line-height: 1.65; }
+.confirmDialog h3 { font-size: 1.25rem; font-weight: 650; }
+.confirmDialog p { margin-block: 1rem; }
+.confirmDialog::backdrop { background: var(--pro-text); opacity: .45; }
+@media (forced-colors: active) { .confirmDialog { border-color: CanvasText; } }

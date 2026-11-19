@@ -1,10 +1,10 @@
 ﻿import { test } from "node:test";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
-const url = (process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/bujhi";
+const url = (process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/bujhi/legacy";
 const options = { channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge" };
 
-const reviewStatus = (page) => page.locator("main:visible > p[role=status]");
+const reviewStatus = (page) => page.getByRole("status").last();
 async function openSave(page) {
   await page.getByRole("button", { name: "Explain it", exact: true }).click();
   await expect(page.getByRole("region", { name: "Quick Answers" })).toBeVisible();
@@ -49,6 +49,7 @@ test("manual results must be checked before explanation and save", async () => {
     const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
     expect(axe.violations.map((entry) => entry.id)).toEqual([]);
     await page.getByRole("link", { name: "View Jibonrekha health timeline" }).click();
+    await page.getByRole("button", { name: /আগের তথ্য দেখুন/ }).click();
     await expect(page.getByRole("heading", { name: "Fictional Beta-hCG", exact: true }).first()).toBeVisible();
   } finally { await browser.close(); }
 });
@@ -136,7 +137,7 @@ test("browser speech provider produces an editable transcript without automatic 
     await expect(page.getByLabel("Speech language")).toHaveValue("en-US");
     await page.getByLabel("Speech language").selectOption("bn-BD"); await page.getByLabel("Speech language").selectOption("en-US");
     await page.getByRole("button", { name: "Start speech input" }).click();
-    await expect(page.getByRole("main").getByRole("status")).toContainText("Listening");
+    await expect(page.getByRole("status")).toContainText("Listening");
     await page.evaluate(() => { window.recognitionForTest.onresult({ results: [[{ transcript: "My blood pressure is 120 over 80 today." }]] }); window.recognitionForTest.onend(); });
     await expect(page.getByLabel("Transcript — speech or manual fallback")).toHaveValue("My blood pressure is 120 over 80 today.");
     await page.getByRole("button", { name: "Create editable speech draft" }).click();
@@ -166,7 +167,7 @@ test("unsupported speech falls back to manual transcript; only three input metho
     const page = await context.newPage(); await page.goto(url);
     await page.getByRole("button", { name: "কথা বলে বলুন — Speak Information" }).click();
     await page.getByRole("button", { name: "Start speech input" }).click();
-    await expect(page.getByRole("main").getByRole("alert")).toContainText("unsupported");
+    await expect(page.getByRole("alert").filter({ hasText: "unsupported" })).toBeVisible();
     await page.getByLabel("Transcript — speech or manual fallback").fill("Fictional note only");
     await page.getByRole("button", { name: "Create editable speech draft" }).click();
     await expect(page.getByRole("form", { name: "Correct your spoken draft" })).toBeVisible();
@@ -237,7 +238,8 @@ test("maternal laboratory save recovers from storage failure and survives refres
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("prohor-demo-health-v1")));
     expect(stored).toHaveLength(1);
     expect(stored[0]).toMatchObject({ recordId: "demo-mother-001", recordType: "mother", value: "11.20", rawValue: "11.20", unit: "g/dL", observedAt: "2026-11-18", inputMethod: "manual", source: "self_reported", structuredResult: { type: "numeric", original: "11.20" } });
-    await page.getByRole("link", { name: "View Jibonrekha health timeline" }).click(); await page.waitForURL("**/jibonrekha"); await page.reload();
+    await page.getByRole("link", { name: "View Jibonrekha health timeline" }).click(); await page.waitForURL("**/jibonrekha/records"); await page.reload();
+    await page.getByRole("button", { name: /আগের তথ্য দেখুন/ }).click();
     await expect(page.getByRole("heading", { name: "Fictional maternal lab", exact: true })).toBeVisible();
     await expect(page.getByText("11.20 g/dL", { exact: true })).toBeVisible();
     for (const width of [320,360,390,430,768,1280]) { await page.setViewportSize({width,height:900}); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); }

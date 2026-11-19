@@ -10,6 +10,7 @@ type Props = {
   headingRef: RefObject<HTMLHeadingElement | null>;
   onBack: () => void;
   onAddNote: () => void;
+  bujhiHref?: string;
 };
 
 const bn = (value: number) => new Intl.NumberFormat("bn-BD").format(value);
@@ -17,7 +18,7 @@ const selectClass = "min-h-12 w-full rounded-field border border-pro-control-bor
 const buttonClass = "min-h-11 rounded-field border border-pro-control-border bg-pro-elevated px-4 py-2 font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-pro-focus disabled:opacity-50";
 const weekOptions = Array.from({ length: guideWeekRange.last }, (_, index) => index + 1);
 
-export function CareGuide({ currentWeek, currentDay, headingRef, onBack, onAddNote }: Props) {
+export function CareGuide({ currentWeek, currentDay, headingRef, onBack, onAddNote, bujhiHref = "/demo/bujhi" }: Props) {
   const defaultWeek = currentWeek === null ? 12 : Math.min(Math.max(currentWeek, guideWeekRange.first), guideWeekRange.last);
   const [week, setWeek] = useState(defaultWeek);
   const [day, setDay] = useState(currentWeek === null ? 0 : currentDay);
@@ -75,7 +76,7 @@ export function CareGuide({ currentWeek, currentDay, headingRef, onBack, onAddNo
     <section className="grid gap-3 rounded-card border border-pro-info bg-pro-info-soft p-5 text-pro-info">
       <h2 className="text-lg font-semibold">রিপোর্টের ফল নিজে সিদ্ধান্তের জন্য নয়</h2>
       <p>পিডিএফে দেওয়া একক “স্বাভাবিক” সীমা প্রত্যেক ব্যক্তির জন্য প্রযোজ্য নয়। রিপোর্টের মান, একক, সময় ও আগের ইতিহাস মিলিয়ে চিকিৎসক ব্যাখ্যা করবেন। বুঝি-তে রিপোর্ট থেকে নেওয়া লেখা আগে যাচাই করতে হয়।</p>
-      <Link href="/demo/bujhi" className="w-fit min-h-11 font-semibold underline">রিপোর্ট বুঝতে বুঝি খুলুন →</Link>
+      <Link href={bujhiHref} className="w-fit min-h-11 font-semibold underline">রিপোর্ট বুঝতে বুঝি খুলুন →</Link>
     </section>
   </div>;
 }

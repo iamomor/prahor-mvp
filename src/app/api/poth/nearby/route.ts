@@ -10,7 +10,7 @@ const paramsSchema = z.object({
   radius: z.coerce.number().int().refine(r => ALLOWED_RADII.some(allowed => allowed === r)),
 });
 const endpoint = "https://overpass-api.de/api/interpreter";
-const cache = new Map<string, { until: number; places: CarePlace[]; truncated: boolean }>();
+const cache = new Map<string, { until: number; places: CarePlace[]; truncated: boolean; dataMode: "live-plus-snapshot"; retrievedAt: string }>();
 const inFlight = new Map<string, Promise<{ places: CarePlace[]; truncated: boolean }>>();
 let previousRequest = 0;
 const COOLDOWN_MS = 1200;
@@ -29,7 +29,9 @@ async function queryOverpass(lat: number, lon: number, radius: number) {
       body: new URLSearchParams({ data: q }).toString(), signal: controller.signal, cache: "no-store",
     });
     if (!response.ok) throw new Error(`Map data provider unavailable (${response.status})`);
-    const body: unknown = await response.json();
+    const payload = await response.text();
+    if (payload.length > 4_000_000) throw new Error("Map provider payload too large");
+    const body: unknown = JSON.parse(payload);
     if (!body || typeof body !== "object" || !("elements" in body) || !Array.isArray(body.elements))
       throw new Error("Unexpected map provider response");
     const elements = body.elements as OsmEntry[];
@@ -39,19 +41,24 @@ async function queryOverpass(lat: number, lon: number, radius: number) {
 }
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  if (!url.searchParams.has("lat") || !url.searchParams.has("lon"))
+  const allowed = ["lat", "lon", "radius", "mode"];
+  const invalid = [...url.searchParams.keys()].some(key => !allowed.includes(key) || url.searchParams.getAll(key).length !== 1);
+  const mode = url.searchParams.get("mode") ?? "snapshot";
+  if (invalid || !["snapshot", "live"].includes(mode) || !url.searchParams.get("lat")?.trim() || !url.searchParams.get("lon")?.trim())
     return NextResponse.json({ error: "Choose a location first." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   const result = paramsSchema.safeParse({ lat: url.searchParams.get("lat"), lon: url.searchParams.get("lon"), radius: url.searchParams.get("radius") || "5000" });
   if (!result.success || !insideBangladesh(result.data))
     return NextResponse.json({ error: "Choose a Bangladesh location and radius from 1–20 km." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   const { lat, lon, radius } = result.data;
   const snapshotPlaces = nearbySnapshot(lat, lon, radius);
+  const snapshotResult = { places: snapshotPlaces, truncated: snapshotPlaces.length >= 300, source: "openstreetmap-unverified", cached: true, dataMode: "saved-snapshot", retrievedAt: null };
+  if (mode === "snapshot") return NextResponse.json(snapshotResult, { headers: { "Cache-Control": "no-store" } });
   const key = `${lat.toFixed(6)}:${lon.toFixed(6)}:${radius}`;
   const now = Date.now();
   const hit = cache.get(key);
-  if (hit && hit.until > now) return NextResponse.json({ places: hit.places, truncated: hit.truncated, source: "openstreetmap-unverified", cached: true }, { headers: { "Cache-Control": "no-store" } });
+  if (hit && hit.until > now) return NextResponse.json({ places: hit.places, truncated: hit.truncated, source: "openstreetmap-unverified", cached: true, dataMode: hit.dataMode, retrievedAt: hit.retrievedAt }, { headers: { "Cache-Control": "no-store" } });
   if (!inFlight.has(key) && (now - previousRequest < COOLDOWN_MS || inFlight.size >= 2)) {
-    if (snapshotPlaces.length) return NextResponse.json({ places: snapshotPlaces, truncated: false, source: "openstreetmap-unverified", cached: true }, { headers: { "Cache-Control": "no-store" } });
+    if (snapshotPlaces.length) return NextResponse.json(snapshotResult, { headers: { "Cache-Control": "no-store" } });
     return NextResponse.json({ error: "Map service is busy. Try again shortly." }, { status: 429, headers: { "Retry-After": "3", "Cache-Control": "no-store" } });
   }
   try {
@@ -67,12 +74,12 @@ export async function GET(request: Request) {
     const byId = new Map(snapshotPlaces.map(place => [place.id, place]));
     for (const place of found.places) byId.set(place.id, place);
     const combined = Array.from(byId.values()).sort((a, b) => a.distanceKm - b.distanceKm || a.id.localeCompare(b.id));
-    const merged = { places: combined.slice(0, 300), truncated: found.truncated || combined.length > 300 };
+    const merged = { places: combined.slice(0, 300), truncated: found.truncated || snapshotPlaces.length >= 300 || combined.length > 300, dataMode: "live-plus-snapshot" as const, retrievedAt: new Date().toISOString() };
     cache.set(key, { ...merged, until: Date.now() + 8 * 60_000 });
     if (cache.size > 80) cache.delete(cache.keys().next().value!);
     return NextResponse.json({ ...merged, source: "openstreetmap-unverified", cached: false }, { headers: { "Cache-Control": "no-store" } });
   } catch {
-    if (snapshotPlaces.length) return NextResponse.json({ places: snapshotPlaces, truncated: false, source: "openstreetmap-unverified", cached: true }, { headers: { "Cache-Control": "no-store" } });
+    if (snapshotPlaces.length) return NextResponse.json(snapshotResult, { headers: { "Cache-Control": "no-store" } });
     return NextResponse.json({ error: "Community map service is unavailable; the official reviewed directory remains separate. Retry or open external map." }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
 }

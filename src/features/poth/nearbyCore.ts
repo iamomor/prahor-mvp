@@ -48,7 +48,8 @@ export function categoryFromTags(tags: Record<string, string>): CareCategory | n
   return null;
 }
 function safeText(value: string | undefined, limit: number): string | null {
-  const s = (value || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim();
+  if (typeof value !== "string") return null;
+  const s = value.replace(/[\u0000-\u001f\u007f]/g, " ").trim();
   return s ? s.slice(0, limit) : null;
 }
 function validatedPhone(value: string | undefined): string | null {
@@ -81,7 +82,9 @@ export function normalizeOsm(elements: OsmEntry[], origin: GeoPoint, radiusMetre
     const lat = e.type === "node" ? e.lat : e.center?.lat;
     const lon = e.type === "node" ? e.lon : e.center?.lon;
     if (typeof lat !== "number" || typeof lon !== "number" || !insideBangladesh({ lat, lon })) continue;
-    const kind = categoryFromTags(e.tags);
+    const tags = Object.fromEntries(Object.entries(e.tags).filter((pair): pair is [string, string] => typeof pair[1] === "string"));
+    if (["yes", "true", "1"].includes(tags.disused) || ["yes", "true", "1"].includes(tags.abandoned) || tags.access === "private") continue;
+    const kind = categoryFromTags(tags);
     if (!kind) continue;
     const distanceKm = distanceInKm(origin, { lat, lon });
     if (distanceKm * 1000 > radiusMetres) continue;
@@ -89,11 +92,11 @@ export function normalizeOsm(elements: OsmEntry[], origin: GeoPoint, radiusMetre
     if (seen.has(id)) continue;
     seen.add(id);
     places.push({ id, lat, lon, kind, distanceKm: Math.round(distanceKm * 100) / 100,
-      name: safeText(e.tags["name:bn"] || e.tags.name, 160) || "Unnamed community-mapped healthcare place",
-      address: addressFromTags(e.tags), phone: validatedPhone(e.tags["contact:phone"] || e.tags.phone),
-      website: validatedWebsite(e.tags["contact:website"] || e.tags.website),
-      hours: safeText(e.tags.opening_hours, 120),
-      emergencyTagged: e.tags.emergency === "yes",
+      name: safeText(tags["name:bn"] || tags.name, 160) || "Unnamed community-mapped healthcare place",
+      address: addressFromTags(tags), phone: validatedPhone(tags["contact:phone"] || tags.phone),
+      website: validatedWebsite(tags["contact:website"] || tags.website),
+      hours: safeText(tags.opening_hours, 120),
+      emergencyTagged: tags.emergency === "yes",
       osmUrl: `https://www.openstreetmap.org/${id}`,
       locationPrecision: e.type === "node" ? "mapped-point" : "feature-center",
     });

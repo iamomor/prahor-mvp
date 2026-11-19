@@ -118,7 +118,12 @@ export const currentApiContracts = {
   "GET /api/wellness": {
     source: "src/app/api/wellness/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
     request: z.undefined(), responses: {
-      200: z.strictObject({ entries: z.array(z.object({ id: z.uuid(), occurred_at: z.string() })) }),
+      // Mirrors the route's select list exactly (snake_case wire rows, max 100, newest first).
+      200: z.strictObject({ entries: z.array(z.strictObject({
+        id: z.uuid(), occurred_at: z.iso.datetime({ offset: true }), created_at: z.iso.datetime({ offset: true }),
+        mood: createWellnessEntryRequestSchema.shape.mood, energy: createWellnessEntryRequestSchema.shape.energy,
+        activity_note: z.string().nullable(), rest_note: z.string().nullable(),
+      })).max(100) }),
       401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema,
     },
   },
@@ -130,7 +135,10 @@ export const currentApiContracts = {
   "GET /api/diary": {
     source: "src/app/api/diary/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
     request: z.undefined(), responses: {
-      200: z.strictObject({ entries: z.array(z.object({ id: z.uuid(), text: z.string(), privacy: z.literal("owner_only") })) }),
+      200: z.strictObject({ entries: z.array(z.strictObject({
+        id: z.uuid(), text: z.string(), privacy: z.literal("owner_only"),
+        occurred_at: z.iso.datetime({ offset: true }), created_at: z.iso.datetime({ offset: true }),
+      })).max(100) }),
       401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema,
     },
   },

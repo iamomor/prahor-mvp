@@ -1,172 +1,295 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Accessibility, ArrowRight, ArrowUpRight, Activity, FolderOpen, HandHeart, House, LifeBuoy,
+  MapPin, Menu, MessageCircle, ShieldCheck, SlidersHorizontal, Sprout, X, type LucideIcon,
+} from "lucide-react";
 import { ProhorSymbol } from "@/components/marketing/HomeBrand";
 import { AccessPreferencesPanel } from "@/components/accessibility/AccessPreferencesPanel";
 import { useLanguage } from "@/i18n/use-language";
 import { applyPreferences, readLocalPreferences } from "@/lib/access-preferences";
-import { SlidersHorizontal, ArrowUpRight, LifeBuoy } from "lucide-react";
+import { SignOutButton } from "./SignOutButton";
 import "./auth.css";
 
-const motherNav = [
-  { href: "/app", en: "Dashboard", bn: "ড্যাশবোর্ড" },
-  { href: "/app/jibonrekha", en: "Records", bn: "রেকর্ড" },
-  { href: "/app/bujhi", en: "Reports", bn: "রিপোর্ট" },
-  { href: "/app/wellbeing", en: "Wellbeing", bn: "সুস্থতা" },
-  { href: "/ask", en: "Ask PROHOR", bn: "প্রশ্ন করুন" },
-  { href: "/poth", en: "Find care", bn: "সেবা খুঁজুন" },
-  { href: "/app/care", en: "Human help", bn: "মানুষের সাহায্য" },
-  { href: "/app/bondhon", en: "Bondhon", bn: "বন্ধন" },
-] as const;
+type NavItem = { href: string; en: string; bn: string; icon: LucideIcon };
 
-export function AuthShell({ children, entry = false, nav }: { children: React.ReactNode; entry?: boolean; nav?: "mother" }) {
+/** Primary jobs first; everything else under Explore. One destination per item. */
+const careNav: NavItem[] = [
+  { href: "/app", en: "Overview", bn: "সংক্ষিপ্ত বিবরণ", icon: House },
+  { href: "/app/jibonrekha", en: "My pregnancy", bn: "আমার গর্ভাবস্থা", icon: Activity },
+  { href: "/app/ask", en: "Ask PROHOR", bn: "প্রহরকে জিজ্ঞাসা", icon: MessageCircle },
+  { href: "/app/care", en: "Care & support", bn: "সেবা ও সহায়তা", icon: HandHeart },
+];
+const exploreNav: NavItem[] = [
+  { href: "/app/bondhon", en: "Bondhon sharing", bn: "বন্ধনে তথ্য শেয়ার", icon: HandHeart },
+  { href: "/app/bujhi", en: "Reports", bn: "রিপোর্ট", icon: FolderOpen },
+  { href: "/app/wellbeing", en: "Wellbeing & diary", bn: "সুস্থতা ও ডায়েরি", icon: Sprout },
+  { href: "/app/poth", en: "Find care", bn: "সেবা খুঁজুন", icon: MapPin },
+  // Public on purpose: warning signs must open even if the session has expired.
+  { href: "/safety", en: "Warning signs", bn: "সতর্কতার লক্ষণ", icon: ShieldCheck },
+  { href: "/app/accessibility", en: "Accessibility", bn: "অ্যাক্সেসিবিলিটি", icon: Accessibility },
+];
+const mobileNav: NavItem[] = [
+  { href: "/app", en: "Home", bn: "হোম", icon: House },
+  { href: "/app/jibonrekha", en: "Journey", bn: "সফর", icon: Activity },
+  { href: "/app/ask", en: "Ask", bn: "জিজ্ঞাসা", icon: MessageCircle },
+  { href: "/app/care", en: "Care", bn: "সেবা", icon: HandHeart },
+];
+const titles: { prefix: string; en: string; bn: string }[] = [
+  ...[...careNav, ...exploreNav].filter(item => item.href !== "/app").map(item => ({ prefix: item.href, en: item.en, bn: item.bn })),
+  { prefix: "/app/adapt", en: "Accessibility", bn: "অ্যাক্সেসিবিলিটি" },
+];
+
+const isCurrent = (pathname: string | null, href: string) =>
+  href === "/app" ? pathname === "/app" : pathname === href || Boolean(pathname?.startsWith(`${href}/`));
+
+export function AuthShell({ children, entry = false, nav, userName }: { children: React.ReactNode; entry?: boolean; nav?: "mother"; userName?: string | null }) {
   const { language, setLanguage, t } = useLanguage();
   const pathname = usePathname();
   const accessDetails = useRef<HTMLDetailsElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const drawer = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     applyPreferences(readLocalPreferences());
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && accessDetails.current?.open) {
-        accessDetails.current.removeAttribute("open");
-      }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && accessDetails.current?.open) accessDetails.current.removeAttribute("open");
     }
-    function handleClickOutside(event: MouseEvent) {
-      if (accessDetails.current?.open && !accessDetails.current.contains(event.target as Node)) {
-        accessDetails.current.removeAttribute("open");
-      }
+    function onClick(event: MouseEvent) {
+      if (accessDetails.current?.open && !accessDetails.current.contains(event.target as Node)) accessDetails.current.removeAttribute("open");
     }
-    window.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("click", handleClickOutside);
+    window.addEventListener("keydown", onKeyDown);
+    document.addEventListener("click", onClick);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("click", handleClickOutside);
+      window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("click", onClick);
     };
   }, []);
 
-  const header = (
-    <header className="auth-header">
-      <div className="auth-header-inner">
-        <Link
-          href="/"
-          className="auth-brand"
-          aria-label={t({ en: "PROHOR home", bn: "প্রহর প্রথম পাতা" })}
-        >
-          <ProhorSymbol />
-          <span lang="en">PROHOR</span>
-          <span className="auth-brand-divider" aria-hidden="true">|</span>
-          <span className="auth-brand-bn" lang="bn">প্রহর</span>
-        </Link>
+  // Drawer is a modal dialog: focus moves in on open and back to the menu button on close.
+  useEffect(() => {
+    if (menuOpen) drawer.current?.querySelector<HTMLElement>("button, a")?.focus();
+  }, [menuOpen]);
+  function closeMenu() {
+    setMenuOpen(false);
+    requestAnimationFrame(() => menuButton.current?.focus());
+  }
+  function trapFocus(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") { event.stopPropagation(); closeMenu(); return; }
+    if (event.key !== "Tab" || !drawer.current) return;
+    const focusable = drawer.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled])");
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  }
 
-        <div className="auth-header-actions">
-          {!entry && (
-            // Urgent help: same place on every signed-in screen, works without AI (design.md §8.3).
-            <Link href="/safety" className="inline-flex min-h-11 items-center gap-1.5 rounded-control border-2 border-pro-danger px-3 font-semibold text-pro-danger focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
-              <LifeBuoy size={17} aria-hidden="true" />{t({ en: "Urgent help", bn: "জরুরি সাহায্য" })}
-            </Link>
-          )}
-          <div className="auth-lang-group" role="group" aria-label={t({ en: "Language", bn: "ভাষা" })}>
-            <button
-              type="button"
-              className="auth-lang-btn"
-              lang="bn"
-              aria-label="বাংলা"
-              aria-pressed={language === "bn"}
-              onClick={() => setLanguage("bn")}
-            >
-              বাং
-            </button>
-            <span className="auth-lang-sep" aria-hidden="true">|</span>
-            <button
-              type="button"
-              className="auth-lang-btn"
-              lang="en"
-              aria-label="English"
-              aria-pressed={language === "en"}
-              onClick={() => setLanguage("en")}
-            >
-              EN
-            </button>
-          </div>
-
-          {/* Access preferences using native details/summary for a11y & tests */}
-          <details className="auth-access" ref={accessDetails}>
-            <summary
-              className="auth-access-btn"
-              aria-label={t({ en: "Adjust how you use PROHOR", bn: "প্রহর ব্যবহারের ধরন বদলান" })}
-            >
-              <SlidersHorizontal size={18} aria-hidden="true" />
-            </summary>
-            <div className="auth-access-panel" lang="en">
-              <div className="auth-access-panel-header">
-                <h3 className="text-base font-semibold text-pro-text">
-                  {t({ en: "Access & Appearance", bn: "ব্যবহারের ধরন ও রঙ" })}
-                </h3>
-                <p className="text-xs text-pro-muted mt-0.5">
-                  {t({
-                    en: "Customize theme, contrast, text size, and layout density.",
-                    bn: "আপনার চোখের আরাম ও সুবিধা অনুযায়ী প্রহর সাজান।",
-                  })}
-                </p>
-              </div>
-              <AccessPreferencesPanel />
-            </div>
-          </details>
-
-          {entry && (
-            /* Action pill matching homepage sign-in pill button */
-            <Link href="/" className="auth-home-btn">
-              <span>{t({ en: "Home", bn: "প্রথম পাতা" })}</span>
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-          )}
+  const accessPanel = (pill: boolean) => (
+    <details className="auth-access" ref={accessDetails}>
+      <summary
+        className={pill
+          ? "inline-flex min-h-10 cursor-pointer list-none items-center gap-1.5 rounded-pill border border-pro-border bg-pro-elevated px-3.5 text-sm font-semibold text-pro-text shadow-pro-1 hover:bg-pro-surface focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
+          : "auth-access-btn"}
+        aria-label={pill ? undefined : t({ en: "Adjust how you use PROHOR", bn: "প্রহর ব্যবহারের ধরন বদলান" })}
+      >
+        {pill ? <Accessibility size={16} aria-hidden="true" /> : <SlidersHorizontal size={18} aria-hidden="true" />}
+        {pill && <span className="sr-only sm:not-sr-only">{t({ en: "Accessibility", bn: "অ্যাক্সেসিবিলিটি" })}</span>}
+      </summary>
+      <div className="auth-access-panel">
+        <div className="auth-access-panel-header">
+          <h2 className="text-base font-semibold text-pro-text">{t({ en: "Adjust how you use PROHOR", bn: "প্রহর নিজের মতো সাজান" })}</h2>
+          <p className="mt-0.5 text-sm text-pro-muted">{t({ en: "Theme, contrast, text size and spacing. Your unsaved work stays.", bn: "থিম, কনট্রাস্ট, লেখার আকার ও ফাঁকা জায়গা। না-সংরক্ষিত লেখা হারাবে না।" })}</p>
         </div>
+        <AccessPreferencesPanel />
       </div>
-    </header>
+    </details>
+  );
+
+  const languageToggle = (
+    <div className="auth-lang-group" role="group" aria-label={t({ en: "Language", bn: "ভাষা" })}>
+      <button type="button" className="auth-lang-btn" lang="bn" aria-label="বাংলা" aria-pressed={language === "bn"} onClick={() => setLanguage("bn")}>বাং</button>
+      <span className="auth-lang-sep" aria-hidden="true">|</span>
+      <button type="button" className="auth-lang-btn" lang="en" aria-label="English" aria-pressed={language === "en"} onClick={() => setLanguage("en")}>EN</button>
+    </div>
+  );
+
+  const brand = (href: string) => (
+    <Link href={href} className="auth-brand" aria-label={t({ en: "PROHOR home", bn: "প্রহর প্রথম পাতা" })}>
+      <ProhorSymbol />
+      <span lang="en">PROHOR</span>
+      <span className="auth-brand-divider" aria-hidden="true">|</span>
+      <span className="auth-brand-bn" lang="bn">প্রহর</span>
+    </Link>
   );
 
   if (entry) {
     return (
       <div className="auth-entry" lang={language}>
-        <a href="#auth-main" className="auth-skip">
-          {t({ en: "Skip to form", bn: "ফর্মে যান" })}
-        </a>
-        {header}
-        <main id="auth-main" tabIndex={-1} className="auth-main">
-          {children}
-        </main>
+        <a href="#auth-main" className="auth-skip">{t({ en: "Skip to form", bn: "ফর্মে যান" })}</a>
+        <header className="auth-header">
+          <div className="auth-header-inner">
+            {brand("/")}
+            <div className="auth-header-actions">
+              {languageToggle}
+              {accessPanel(false)}
+              <Link href="/" className="auth-home-btn"><span>{t({ en: "Home", bn: "প্রথম পাতা" })}</span><ArrowUpRight size={16} aria-hidden="true" /></Link>
+            </div>
+          </div>
+        </header>
+        <main id="auth-main" tabIndex={-1} className="auth-main">{children}</main>
       </div>
     );
   }
 
-  // Signed-in shell (mother app, provider, account)
+  if (nav === "mother") {
+    const eyebrow = "px-3 text-xs font-semibold text-pro-muted [&:lang(en)]:uppercase [&:lang(en)]:tracking-[0.14em]";
+    const navLink = (item: NavItem, onNavigate?: () => void) => {
+      const current = isCurrent(pathname, item.href);
+      const Icon = item.icon;
+      return (
+        <Link
+          href={item.href}
+          aria-current={current ? "page" : undefined}
+          onClick={onNavigate}
+          className={`flex min-h-11 items-center gap-3 rounded-field px-3 text-[0.95rem] transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus motion-reduce:transition-none ${
+            current ? "bg-pro-surface font-semibold text-pro-primary" : "font-medium text-pro-text hover:bg-pro-surface/60"
+          }`}
+        >
+          <Icon size={18} strokeWidth={1.75} aria-hidden="true" className={current ? "text-pro-primary" : "text-pro-muted"} />
+          <span>{t(item)}</span>
+        </Link>
+      );
+    };
+    const sidebar = (onNavigate?: () => void) => (
+      <nav aria-label={t({ en: "PROHOR sections", bn: "প্রহরের অংশসমূহ" })} className="flex flex-1 flex-col gap-7">
+        <div className="grid gap-2">
+          <h2 className={eyebrow}>{t({ en: "Your care, your way", bn: "আপনার যত্ন, আপনার মতো" })}</h2>
+          <ul className="grid gap-0.5">{careNav.map(item => <li key={item.href}>{navLink(item, onNavigate)}</li>)}</ul>
+        </div>
+        <div className="grid gap-2">
+          <h2 className={eyebrow}>{t({ en: "Explore", bn: "আরও দেখুন" })}</h2>
+          <ul className="grid gap-0.5">{exploreNav.map(item => <li key={item.href}>{navLink(item, onNavigate)}</li>)}</ul>
+        </div>
+        <div className="mt-auto grid gap-2">
+          <div className="grid gap-2 rounded-card border border-pro-border bg-pro-elevated p-4 shadow-pro-1">
+            <span className="inline-flex w-fit items-center gap-1 rounded-pill bg-pro-surface px-2 py-0.5 text-xs font-semibold text-pro-primary">
+              <ShieldCheck size={13} aria-hidden="true" />{t({ en: "Private by design", bn: "গোপনীয়তা সুরক্ষিত" })}
+            </span>
+            <p className="font-semibold leading-snug text-pro-text">{t({ en: "Your space, your choices.", bn: "আপনার জায়গা, আপনার সিদ্ধান্ত।" })}</p>
+            <p className="text-sm leading-relaxed text-pro-muted">{t({ en: "Your diary stays private. You choose what to share.", bn: "ডায়েরি গোপন থাকে। কী শেয়ার করবেন, আপনিই ঠিক করেন।" })}</p>
+            <Link href="/app/care" onClick={onNavigate} className="inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-pro-primary hover:underline">
+              {t({ en: "Manage what you share", bn: "শেয়ার নিয়ন্ত্রণ করুন" })}<ArrowRight size={14} aria-hidden="true" />
+            </Link>
+          </div>
+          <SignOutButton className="flex min-h-11 items-center gap-2 rounded-field px-3 text-sm font-semibold text-pro-muted hover:bg-pro-surface/60 hover:text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus" />
+        </div>
+      </nav>
+    );
+
+    const current = pathname === "/app" ? { en: "Home", bn: "প্রথম পাতা" } : titles.find(item => pathname?.startsWith(item.prefix)) ?? { en: "Home", bn: "প্রথম পাতা" };
+    const initial = userName?.trim().charAt(0).toUpperCase();
+
+    return (
+      <div lang={language} className="flex min-h-dvh bg-pro-bg text-pro-text">
+        <a href="#auth-main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-control focus:bg-pro-elevated focus:p-3 focus:text-pro-primary focus:shadow-pro-3">
+          {t({ en: "Skip to content", bn: "মূল বিষয়বস্তুতে যান" })}
+        </a>
+
+        <div className="hidden w-64 shrink-0 border-r border-pro-border bg-pro-surface/40 lg:block">
+        <aside className="sticky top-0 flex h-dvh flex-col gap-8 overflow-y-auto px-4 py-6">
+          <div className="px-2">{brand("/app")}</div>
+          {sidebar()}
+        </aside>
+        </div>
+
+        {menuOpen && (
+          <div className="fixed inset-0 z-50 flex lg:hidden">
+            <div className="fixed inset-0 bg-pro-text/40" onClick={closeMenu} aria-hidden="true" />
+            <div ref={drawer} role="dialog" aria-modal="true" aria-label={t({ en: "Menu", bn: "মেনু" })} onKeyDown={trapFocus}
+              className="relative z-10 flex h-full w-72 max-w-[85vw] flex-col gap-6 overflow-y-auto bg-pro-bg px-4 py-4 shadow-pro-3">
+              <div className="flex items-center justify-between gap-2 px-2">
+                {brand("/app")}
+                <button type="button" onClick={closeMenu} className="grid size-11 place-items-center rounded-control text-pro-muted hover:bg-pro-surface focus-visible:outline-3 focus-visible:outline-pro-focus" aria-label={t({ en: "Close menu", bn: "মেনু বন্ধ করুন" })}>
+                  <X size={20} aria-hidden="true" />
+                </button>
+              </div>
+              {/* Following a link changes the page, so only close; focus return is for the X / Escape paths. */}
+              {sidebar(() => setMenuOpen(false))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-pro-border bg-pro-bg/95 px-4 backdrop-blur-sm sm:px-6 lg:px-10">
+            <div className="flex min-w-0 items-center gap-3">
+              <button ref={menuButton} type="button" onClick={() => setMenuOpen(true)} aria-expanded={menuOpen} aria-label={t({ en: "Open menu", bn: "মেনু খুলুন" })}
+                className="grid size-11 shrink-0 place-items-center rounded-control border border-pro-border text-pro-text hover:bg-pro-surface focus-visible:outline-3 focus-visible:outline-pro-focus lg:hidden">
+                <Menu size={20} aria-hidden="true" />
+              </button>
+              <div className="grid min-w-0 leading-tight">
+                <span className="hidden text-xs text-pro-muted sm:block"><span lang="en">PROHOR</span> / {t(current)}</span>
+                <span className="truncate font-semibold text-pro-text">{t(current)}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
+              <Link href="/safety" className="inline-flex min-h-10 items-center gap-1.5 rounded-pill border border-pro-danger/60 px-3 text-sm font-semibold text-pro-danger hover:bg-pro-danger-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
+                <LifeBuoy size={16} aria-hidden="true" />
+                <span className="sr-only md:not-sr-only">{t({ en: "Urgent help", bn: "জরুরি সাহায্য" })}</span>
+              </Link>
+              {languageToggle}
+              {accessPanel(true)}
+              <Link href="/account" aria-label={t({ en: "Account", bn: "অ্যাকাউন্ট" })}
+                className="hidden size-10 place-items-center rounded-full bg-pro-primary font-semibold text-pro-on-primary ring-2 ring-pro-surface focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus sm:grid">
+                <span aria-hidden="true">{initial || "•"}</span>
+              </Link>
+            </div>
+          </header>
+
+          <main id="auth-main" tabIndex={-1} className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8">
+            {children}
+          </main>
+
+          <nav aria-label={t({ en: "Quick navigation", bn: "দ্রুত নেভিগেশন" })} className="fixed inset-x-0 bottom-0 z-40 border-t border-pro-border bg-pro-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm lg:hidden">
+            <ul className="mx-auto grid max-w-lg grid-cols-4 gap-1 px-2 py-1.5">
+              {mobileNav.map(item => {
+                const active = isCurrent(pathname, item.href);
+                const Icon = item.icon;
+                return (
+                  <li key={item.href}>
+                    <Link href={item.href} aria-current={active ? "page" : undefined}
+                      className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-field text-xs font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus ${active ? "bg-pro-surface text-pro-primary" : "text-pro-muted hover:text-pro-text"}`}>
+                      <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+                      <span>{t(item)}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    );
+  }
+
+  // Provider, supporter and account shells
   return (
     <div lang={language} className="min-h-dvh bg-pro-bg text-pro-text">
-      <a href="#auth-main" className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:bg-pro-bg focus:p-3">
-        {t({ en: "Skip to content", bn: "মূল বিষয়বস্তুতে যান" })}
-      </a>
-      {header}
-      {nav === "mother" && (
-        <nav aria-label={t({ en: "Your PROHOR", bn: "আপনার প্রহর" })} className="border-b border-pro-border bg-pro-surface">
-          {/* Wraps instead of scrolling so long Bangla labels and 200% text never hide a destination. */}
-          <ul className="pro-shell flex flex-wrap gap-x-1 gap-y-1 py-2">
-            {motherNav.map(item => {
-              const current = item.href === "/app" ? pathname === "/app" : pathname?.startsWith(item.href);
-              return <li key={item.href}>
-                <Link href={item.href} aria-current={current ? "page" : undefined}
-                  className={`inline-flex min-h-11 items-center rounded-control px-3 font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus ${current ? "bg-pro-elevated text-pro-primary underline decoration-2 underline-offset-4" : "text-pro-text hover:bg-pro-elevated"}`}>
-                  {t({ en: item.en, bn: item.bn })}
-                </Link>
-              </li>;
-            })}
-          </ul>
-        </nav>
-      )}
-      <main id="auth-main" tabIndex={-1} className="pro-shell max-w-5xl space-y-6 py-8">
-        {children}
-      </main>
+      <a href="#auth-main" className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:bg-pro-bg focus:p-3">{t({ en: "Skip to content", bn: "মূল বিষয়বস্তুতে যান" })}</a>
+      <header className="auth-header">
+        <div className="auth-header-inner">
+          {brand("/")}
+          <div className="auth-header-actions">
+            <Link href="/safety" className="inline-flex min-h-11 items-center gap-1.5 rounded-control border-2 border-pro-danger px-3 font-semibold text-pro-danger focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
+              <LifeBuoy size={17} aria-hidden="true" />{t({ en: "Urgent help", bn: "জরুরি সাহায্য" })}
+            </Link>
+            {languageToggle}
+            {accessPanel(false)}
+          </div>
+        </div>
+      </header>
+      <main id="auth-main" tabIndex={-1} className="pro-shell-wide max-w-7xl space-y-8 py-8">{children}</main>
     </div>
   );
 }

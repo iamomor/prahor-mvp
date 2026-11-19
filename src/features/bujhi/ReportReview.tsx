@@ -172,7 +172,7 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
   const complete = fields.length > 0 && fields.every((field) => savedIds.includes(field.id) || field.reviewStatus === "rejected");
 
   return (
-    <main className={"mx-auto grid w-full min-w-0 grid-cols-1 gap-4 px-4 py-4 text-pro-text [overflow-wrap:anywhere] sm:gap-5 sm:px-6 sm:py-6 " + (stage === "check" && source ? "max-w-7xl" : "max-w-3xl")}>
+    <div className={"mx-auto grid w-full min-w-0 grid-cols-1 gap-4 px-4 py-4 text-pro-text [overflow-wrap:anywhere] sm:gap-5 sm:px-6 sm:py-6 " + (stage === "check" && source ? "max-w-7xl" : "max-w-3xl")}>
       <header className="grid gap-3" lang={language}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0 flex-1 basis-64"><WorkflowProgress current={stage} language={language} /></div>
@@ -309,7 +309,7 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
         <div className="flex flex-wrap items-center gap-3"><Link href={recordsHref} className={primary}>{w("জীবনরেখা দেখুন", "View Jibonrekha health timeline")}</Link>{onNew && <button type="button" onClick={onNew} className={button}>{w("নতুন রিপোর্ট", "New report")}</button>}</div>
       </section>}
       <p role="status" aria-atomic="true" className={feedback?.error ? "text-pro-danger" : "text-pro-text"} lang="en">{feedback?.message}</p>
-    </main>
+    </div>
   );
 }
 

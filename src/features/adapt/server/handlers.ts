@@ -50,7 +50,8 @@ export async function handlePreferences(request: Request, dependencies: Preferen
     let updatedAt: string | null = null;
     if (condition !== null) {
       try {
-        const value: unknown = JSON.parse(condition);
+        // Browsers echo the weak W/"..." form a compressing host (Vercel) returned.
+        const value: unknown = JSON.parse(condition.replace(/^W\//, ""));
         if (value !== "missing") updatedAt = timestampSchema.parse(value);
       } catch { return fail("invalid_request", "Use the ETag from your latest preference response.", 400); }
     }

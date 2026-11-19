@@ -72,6 +72,21 @@ test("a stale frontend account ID cannot read or save preferences in another ses
   }
 });
 
+test("weak If-Match from a compressing host carries the same version", async () => {
+  const setup = fixture();
+  const response = await run("PATCH", { textScale: "large" }, setup, { "if-match": `W/${JSON.stringify(at)}` });
+  expect(response.status).toBe(200);
+  expect(setup.calls).toEqual([{ name: "patch_access_preferences", args: {
+    p_patch: { textScale: "large" }, p_check_version: true, p_expected_updated_at: at,
+  } }]);
+});
+
+test("client accepts a weak ETag and sends the strong form back", async () => {
+  const body = { data: DEFAULT_ACCESS_PREFERENCES, schemaVersion: 2, updatedAt: at, requestId: id, contractVersion: "1" };
+  const loaded = await loadAccountPreferences(async () => Response.json(body, { headers: { etag: `W/${JSON.stringify(at)}` } }));
+  expect(loaded.etag).toBe(JSON.stringify(at));
+});
+
 test("partial PATCH calls the atomic RLS RPC without a target user ID", async () => {
   const setup = fixture();
   const response = await run("PATCH", { textScale: "large" }, setup, { "if-match": JSON.stringify(at) });

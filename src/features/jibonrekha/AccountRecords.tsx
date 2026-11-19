@@ -107,6 +107,7 @@ const unitOptions: Record<string, string[]> = {
   glucose: ["mmol/L", "mg/dL"],
 };
 
+
 type Task = "home" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records";
 const tasks: { id: Exclude<Task, "home">; label: string; hint: string }[] = [
   { id: "observation", label: "Add a measurement", hint: "Record a measurement or note for a mother or baby" },
@@ -115,6 +116,7 @@ const tasks: { id: Exclude<Task, "home">; label: string; hint: string }[] = [
   { id: "baby", label: "Add a baby record", hint: "Keep a separate record for each baby" },
   { id: "note", label: "Write a health note", hint: "Record a symptom or a condition you noted" },
   { id: "visit", label: "Record a visit", hint: "Keep details of a visit that happened" },
+
 ];
 
 function today() {
@@ -156,8 +158,10 @@ export function AccountRecords() {
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   function openTask(next: Task) {
     setTask(next);
+
     const heading = next === "home" ? homeHeading : taskHeading;
     requestAnimationFrame(() => heading.current?.focus());
+
   }
   const load = useCallback(async () => {
     try {
@@ -270,6 +274,7 @@ export function AccountRecords() {
     return history;
   }
 
+
   return (
     <div className="mx-auto grid w-full min-w-0 max-w-6xl gap-5 px-4 py-6 text-pro-text sm:px-6">
       <header className="grid gap-3">
@@ -284,6 +289,7 @@ export function AccountRecords() {
               Retry loading records
             </button>
           )}
+
         </div>
       )}
       {loading ? (
@@ -1232,15 +1238,10 @@ export function AccountRecords() {
           About this prototype
         </summary>
         <p className="pt-2">
-          Account records hold synthetic data only. The nine-section Jibonrekha
-          demonstration has additional fields saved in this browser only.
+          Account records hold synthetic data only. Some Jibonrekha fields are
+          available in a separate browser-only prototype and are not part of
+          this account record.
         </p>
-        <Link
-          href="/demo/jibonrekha"
-          className="font-semibold text-pro-primary underline"
-        >
-          Open the device-only demo
-        </Link>
       </details>
     </div>
   );

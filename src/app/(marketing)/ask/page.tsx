@@ -13,7 +13,9 @@ export const metadata: Metadata = {
     "Ask a general maternal-health education question in Bangla or English.",
 };
 
-export default function AskBartaPage() {
+export default async function AskBartaPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+  const params = await searchParams;
+  const query = typeof params.q === "string" ? params.q.slice(0, 1200) : "";
   return (
     <>
       <script
@@ -57,7 +59,7 @@ export default function AskBartaPage() {
             নির্ণয়, ওষুধ দেওয়া বা চিকিৎসকের সঙ্গে যোগাযোগ করে না।
           </p>
         </div>
-        <BartaChatStarter mode="education" />
+        <BartaChatStarter mode="education" initialQuestion={query} />
         <section
           id="barta-help"
           tabIndex={-1}

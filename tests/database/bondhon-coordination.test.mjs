@@ -9,9 +9,9 @@ const db = new PGlite();
 const users = Object.fromEntries(["mother", "other", "provider", "foreignProvider", "pendingProvider"].map(key => [key, randomUUID()]));
 let recordId;
 let historicalRequest;
-async function asUser(userId, action) {
+async function asUser(userId, action, role = "authenticated") {
   return db.transaction(async tx => {
-    await tx.exec("set local role authenticated");
+    await tx.exec(`set local role ${role}`);
     await tx.query("select set_config('request.jwt.claim.sub',$1,true)", [userId]);
     return action(tx);
   });
@@ -237,4 +237,87 @@ test("latest Bujhi reviewed hemoglobin can be shared with its exact selected pro
   assert.equal("documentId" in shown.provenance, false);
   const candidates = await rpc("mother", "mvp_care_shareable_records");
   assert.ok(candidates.some(item => item.record.id === observation));
+});
+
+function shonketParams(extra = {}) {
+  return { p_message: "Synthetic concern for test", p_method: "text", p_concern_types: ["fever", "other"],
+    p_onset: "today", p_idempotency_key: randomUUID(), ...extra };
+}
+test("Shonket request retry, owner/provider isolation, open evidence, revision acknowledgement and private projection", async () => {
+  const input = shonketParams();
+  const request = await rpc("mother", "mvp_shonket_submit_request", input);
+  assert.equal(request.status, "submitted");
+  assert.equal(request.revision, 1);
+  const assignment = await db.query("select recipient_user_id from prohor_care.assignments where request_id=$1", [request.id]);
+  const assignedProvider = assignment.rows[0].recipient_user_id === users.provider ? "provider" : "foreignProvider";
+  const unassignedProvider = assignedProvider === "provider" ? "foreignProvider" : "provider";
+  assert.deepEqual(request.concernTypes, input.p_concern_types);
+  assert.equal(request.onset, "today");
+  assert.deepEqual(request.events.map(event => event.status), ["submitted"]);
+  assert.equal((await rpc("mother", "mvp_shonket_submit_request", input)).id, request.id);
+  assert.equal(Number((await db.query("select count(*) as n from prohor_care.support_requests where workflow='shonket'")).rows[0].n), 1);
+  await assert.rejects(() => rpc("provider", "mvp_shonket_submit_request", shonketParams()));
+  await assert.rejects(() => asUser(null, tx => tx.query(
+    "select public.mvp_shonket_submit_request($1,$2,$3::text[],$4,$5)",
+    ["Synthetic", "text", [], null, randomUUID()]), "anon"), { code: "42501" });
+
+  await assert.rejects(() => asUser(users.mother, tx => tx.query(
+    "insert into prohor_care.support_requests(owner_user_id,recipient_user_id,message,method,purpose) values($1,$2,'Direct insert','text','No')",
+    [users.mother, users.provider])), { code: "42501" });
+  await assert.rejects(() => asUser(users.mother, tx => tx.query(
+    "update prohor_care.support_requests set status='acknowledged' where id=$1", [request.id])), { code: "42501" });
+
+  assert.deepEqual(await rpc("other", "mvp_shonket_my_requests", { p_limit: 50 }), []);
+  await assert.rejects(() => rpc("mother", "mvp_shonket_open_request", { p_id: request.id }));
+  assert.deepEqual(await rpc(unassignedProvider, "mvp_shonket_provider_requests", { p_limit: 50 }), []);
+  await assert.rejects(() => rpc(unassignedProvider, "mvp_shonket_open_request", { p_id: request.id }));
+  await assert.rejects(() => rpc(assignedProvider, "mvp_care_get_request", { p_id: request.id }));
+  assert.equal((await rpc(assignedProvider, "mvp_care_provider_requests")).items.some(item => item.id === request.id), false);
+  assert.equal((await rpc(assignedProvider, "mvp_shonket_provider_requests", { p_limit: 50 })).some(item => item.id === request.id), true);
+  await assert.rejects(() => rpc(assignedProvider, "mvp_care_acknowledge", {
+    p_id: request.id, p_expected_revision: 1, p_idempotency_key: randomUUID(),
+  }));
+
+  const opened = await rpc(assignedProvider, "mvp_shonket_open_request", { p_id: request.id });
+  assert.equal(opened.status, "delivered");
+  assert.equal(opened.revision, 2);
+  const deliveredEvent = await db.query("select actor_user_id,receipt_id from prohor_care.request_events where request_id=$1 and status='delivered'", [request.id]);
+  assert.equal(deliveredEvent.rows[0].actor_user_id, assignment.rows[0].recipient_user_id);
+  assert.ok(deliveredEvent.rows[0].receipt_id);
+  await assert.rejects(() => rpc(assignedProvider, "mvp_care_acknowledge", {
+    p_id: request.id, p_expected_revision: 1, p_idempotency_key: randomUUID(),
+  }));
+  const ackKey = randomUUID();
+  const acknowledged = await rpc(assignedProvider, "mvp_care_acknowledge", {
+    p_id: request.id, p_expected_revision: opened.revision, p_idempotency_key: ackKey,
+  });
+  assert.equal(acknowledged.status, "acknowledged");
+  await assert.rejects(() => rpc(assignedProvider, "mvp_care_respond", {
+    p_id: request.id, p_expected_revision: acknowledged.revision, p_idempotency_key: randomUUID(), p_message: "Out of phase",
+  }));
+  await assert.rejects(() => rpc("mother", "mvp_care_close", {
+    p_id: request.id, p_expected_revision: acknowledged.revision, p_idempotency_key: randomUUID(),
+  }));
+  await assert.rejects(() => rpc(assignedProvider, "mvp_care_acknowledge", {
+    p_id: request.id, p_expected_revision: opened.revision, p_idempotency_key: randomUUID(),
+  }));
+  assert.deepEqual(await rpc(assignedProvider, "mvp_care_acknowledge", {
+    p_id: request.id, p_expected_revision: opened.revision, p_idempotency_key: ackKey,
+  }), acknowledged);
+
+  const mine = await rpc("mother", "mvp_shonket_my_requests", { p_limit: 50 });
+  assert.equal(mine[0].status, "acknowledged");
+  assert.deepEqual(mine[0].events.map(event => event.status), ["submitted", "delivered", "acknowledged"]);
+  const providerProjection = await rpc(assignedProvider, "mvp_shonket_open_request", { p_id: request.id });
+  assert.deepEqual(Object.keys(providerProjection).sort(), ["id", "createdAt", "updatedAt", "revision", "status", "message", "method", "concernTypes", "onset", "events"].sort());
+  for (const secret of [users.mother, "diary", "chat", "healthRecords", "consentedRecords"])
+    assert.equal(JSON.stringify(providerProjection).includes(secret), false);
+});
+
+test("Shonket rejects unknown categories and blank messages and denies anonymous submission", async () => {
+  await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", shonketParams({ p_concern_types: ["invented"] })));
+  await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", shonketParams({ p_message: "  " })));
+  await assert.rejects(() => asUser(null, tx => tx.query(
+    "select public.mvp_shonket_submit_request($1,$2,$3::text[],$4,$5)",
+    ["Synthetic", "text", [], null, randomUUID()])), { code: "42501" });
 });

@@ -14,6 +14,7 @@ import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt
 import { apiSuccessSchema, currentUserResponseSchema, pageSchema, paginationQuerySchema } from "./transport";
 import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
 import { createDiaryEntryRequestSchema, createWellnessEntryRequestSchema } from "./wellness";
+import { shonketProviderQueueSchema, shonketRequestCreateSchema, shonketRequestListSchema, shonketRequestSchema } from "./shonket-requests";
 import { createBabyRequestSchema, createMaternalConditionRequestSchema, createObservationRequestSchema, createPregnancyRequestSchema, createSymptomNoteRequestSchema } from "./health";
 import {
   activityPreferencesRequestSchema, activityPreferencesResponseSchema, createHabitRequestSchema,
@@ -220,7 +221,7 @@ export const currentApiContracts = {
   },
   "POST /api/care-requests": {
     source: "src/app/api/care-requests/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
-    request: createSupportRequestRequestSchema, responses: { 201: apiSuccessSchema(supportRequestSchema), ...careErrorResponses },
+    request: z.union([createSupportRequestRequestSchema, shonketRequestCreateSchema]), responses: { 201: apiSuccessSchema(z.union([supportRequestSchema, shonketRequestSchema])), ...careErrorResponses },
   },
   "GET /api/care-records": {
     source: "src/app/api/care-records/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
@@ -228,7 +229,8 @@ export const currentApiContracts = {
   },
   "GET /api/care-requests": {
     source: "src/app/api/care-requests/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
-    request: paginationQuerySchema, responses: { 200: apiSuccessSchema(pageSchema(supportRequestSchema)), ...careErrorResponses },
+    request: z.union([paginationQuerySchema, z.strictObject({ workflow: z.literal("shonket"), limit: z.coerce.number().int().min(1).max(50).optional() })]),
+    responses: { 200: apiSuccessSchema(z.union([pageSchema(supportRequestSchema), shonketRequestListSchema])), ...careErrorResponses },
   },
   "GET /api/care-requests/:id": {
     source: "src/app/api/care-requests/[id]/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
@@ -252,7 +254,12 @@ export const currentApiContracts = {
   },
   "GET /api/provider/requests": {
     source: "src/app/api/provider/requests/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "provider",
-    request: z.undefined(), responses: { 200: apiSuccessSchema(pageSchema(providerRequestSummarySchema)), ...careErrorResponses },
+    request: z.union([z.undefined(), paginationQuerySchema, z.strictObject({ workflow: z.literal("shonket"), limit: z.coerce.number().int().min(1).max(50).optional() })]),
+    responses: { 200: apiSuccessSchema(z.union([pageSchema(providerRequestSummarySchema), shonketProviderQueueSchema])), ...careErrorResponses },
+  },
+  "POST /api/provider/requests/:id/open": {
+    source: "src/app/api/provider/requests/[id]/open/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "provider",
+    request: z.strictObject({}), responses: { 200: apiSuccessSchema(shonketRequestSchema), ...careErrorResponses },
   },
   "POST /api/provider/requests/:id/acknowledge": {
     source: "src/app/api/provider/requests/[id]/acknowledge/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "provider",

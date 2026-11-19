@@ -74,12 +74,12 @@ export function PothDirectoryMvp({ embedded = false }: { embedded?: boolean }) {
           </div>
         </header>}
 
-        <section className="mb-8" aria-labelledby="poth-title">
-          <p className="mb-3 font-semibold" style={{ color: "var(--pro-primary)" }}>PROHOR POTH · প্রহর পথ</p>
-          <h1 id="poth-title" className="mb-4 text-3xl font-bold leading-tight sm:text-5xl">
+        <section className="module-hero mb-6" aria-labelledby="poth-title">
+          <p>Find care · সেবা খুঁজুন</p>
+          <h1 id="poth-title">
             {label("Finding care in Bangladesh", "বাংলাদেশে স্বাস্থ্যসেবা খুঁজুন")}
           </h1>
-          <p className="max-w-3xl text-base leading-relaxed sm:text-lg">
+          <p>
             {label(
               "Browse all 8 divisions and 64 districts. Facility records are currently limited examples, not a nationwide verified hospital directory.",
               "৮টি বিভাগ ও ৬৪টি জেলার তালিকা থেকে খুঁজুন। প্রতিষ্ঠানগুলোর তথ্য এখনো সীমিত উদাহরণ; এটি সারাদেশের যাচাইকৃত হাসপাতাল তালিকা নয়।",
@@ -87,11 +87,11 @@ export function PothDirectoryMvp({ embedded = false }: { embedded?: boolean }) {
           </p>
         </section>
 
-        <nav aria-label="Poth care navigation" className="mb-7 flex flex-wrap gap-2">
-          <a href="#poth-sos" className="min-h-11 rounded-lg border px-4 py-3 font-semibold underline" style={{ borderColor: "var(--pro-control-border)" }}>Emergency 999 · জরুরি</a>
-          <a href="#poth-nearby-map" className="min-h-11 rounded-lg border px-4 py-3 underline" style={{ borderColor: "var(--pro-control-border)" }}>Nearby care map · কাছের সেবা</a>
-          <a href="#poth-reviewed-directory" className="min-h-11 rounded-lg border px-4 py-3 underline" style={{ borderColor: "var(--pro-control-border)" }}>Source-linked directory</a>
-          <a href="#poth-visit-preparation" className="min-h-11 rounded-lg border px-4 py-3 underline" style={{ borderColor: "var(--pro-control-border)" }}>Visit preparation · প্রস্তুতি</a>
+        <nav aria-label="Poth care navigation" className="mb-6 flex flex-wrap gap-2">
+          <a href="#poth-sos" className="module-chip">Emergency 999 · জরুরি</a>
+          <a href="#poth-nearby-map" className="module-chip">Nearby care map · কাছের সেবা</a>
+          <a href="#poth-reviewed-directory" className="module-chip">Source-linked directory</a>
+          <a href="#poth-visit-preparation" className="module-chip">Visit preparation · প্রস্তুতি</a>
         </nav>
 
         <section aria-labelledby="poth-filters" className="mb-8 rounded-2xl border p-5 sm:p-7" style={{ borderColor: "var(--pro-border)", background: "var(--pro-elevated)" }}>

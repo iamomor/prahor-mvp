@@ -94,6 +94,8 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
     const text = question.trim();
     if (busy || pendingRequest.current || !text) return;
 
+    const previousReply = turns.at(-1)?.result;
+    const followUpContext = previousReply?.status === "clarification" ? previousReply.followUpContext : undefined;
     const detected = detectBartaLanguage(text);
     const requestedLanguage = answerLanguage === "auto" ? detected ?? formLanguage : answerLanguage;
     setState({ status: "checking" });
@@ -112,6 +114,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
             language: requestedLanguage,
             retention: { mode: "ephemeral" },
             ...(previousChunkId && { previousChunkId }),
+            ...(followUpContext && { followUpContext }),
           }),
       });
       const body: unknown = await response.json();
@@ -132,7 +135,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
         const replyText = result.status === "grounded" ? result.answer : result.message;
         if (!demo) {
           // Keep the thread in memory for this tab. Send only the current
-          // question and an optional public chunk ID to the API.
+          // question, an optional public chunk ID and a fixed follow-up code.
           const questionLanguage = /[\u0980-\u09ff]/u.test(text) ? "bn" : detected === "bn" ? "bn-Latn" : detected;
           setTurns((history) => [...history, { question: text, questionLanguage, result, language: requestedLanguage }]);
           if (result.status !== "grounded" && result.status !== "conversation" && result.status !== "clarification") {

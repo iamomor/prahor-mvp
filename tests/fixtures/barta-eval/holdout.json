@@ -1,0 +1,732 @@
+[
+{
+"q": "hlw",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "heyy barta",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "assalamualaikum apu",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "salaam",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "good evening",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "শুভ সন্ধ্যা",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "হাই বার্তা",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "hello hello",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "tumi ki asho?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "barta acho?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "you still there?",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "কেউ কি আছেন",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "amar kotha shunte paccho",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "hello are you listening to me",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "how r u doing",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "kmn achen apu",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "ki obostha tomar",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "কি অবস্থা",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "valo achi, tumi kemon",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "I'm good thanks and you?",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "tnx a lot",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "thanks barta, very helpful",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "onek onek dhonnobad",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "শুকরিয়া",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "jazakallah khair",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "thank you, bye",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "bye bye",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "ekhon jai",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "khoda hafez",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "ভালো থাকবেন আপু",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "ok see ya",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "pore kotha bolbo",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "take care barta",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "gn",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "tumi ki ki paro",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "what else can you do",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "কী করতে পারেন আপনি",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "bujhlam na",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "not clear",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "faltu bot",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "this is useless",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "qwerty",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "porer somoy",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "delivery er pore",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "ডেলিভারির পরে",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "in pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "গর্ভকালীন",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "my baby",
+"l": "en",
+"e": "help"
+},
+{
+"q": "শিশুর",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "something else",
+"l": "en",
+"e": "help"
+},
+{
+"q": "I think I am pregnant",
+"l": "en",
+"e": "topic:pregnancyTest"
+},
+{
+"q": "ami ki pregnant kina",
+"l": "bn",
+"e": "topic:pregnancyTest"
+},
+{
+"q": "im a new mom",
+"l": "en",
+"e": "help"
+},
+{
+"q": "আমি নতুন মা",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "lower back pain pregnancy",
+"l": "en",
+"e": "topic:pregnancyBackache"
+},
+{
+"q": "pith e betha kori",
+"l": "bn",
+"e": "topic:pregnancyBackache"
+},
+{
+"q": "throwing up a lot",
+"l": "en",
+"e": "topic:morningSickness"
+},
+{
+"q": "shokal e bomi hoy",
+"l": "bn",
+"e": "topic:morningSickness"
+},
+{
+"q": "acidity problem in pregnancy",
+"l": "en",
+"e": "topic:pregnancyHeartburn"
+},
+{
+"q": "gastric er problem",
+"l": "bn",
+"e": "topic:pregnancyHeartburn"
+},
+{
+"q": "hard stool",
+"l": "en",
+"e": "topic:pregnancyConstipation"
+},
+{
+"q": "insomnia while pregnant",
+"l": "en",
+"e": "topic:pregnancySleep"
+},
+{
+"q": "gorbhaboshtay ghum ashe na",
+"l": "bn",
+"e": "topic:pregnancySleep"
+},
+{
+"q": "feeling weak",
+"l": "en",
+"e": "help"
+},
+{
+"q": "durbol lage",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "legs swelling",
+"l": "en",
+"e": "topic:warningSigns"
+},
+{
+"q": "matha bytha",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "migraine in pregnancy",
+"l": "en",
+"e": "topic:warningSigns"
+},
+{
+"q": "pete betha hocche",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "healthy diet for pregnant women",
+"l": "en",
+"e": "topic:balancedMeals"
+},
+{
+"q": "gorbhoboti mayer khabar",
+"l": "bn",
+"e": "topic:balancedMeals"
+},
+{
+"q": "গর্ভবতী মায়ের পুষ্টি",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "can i drink tea",
+"l": "en",
+"e": "topic:foodSafety"
+},
+{
+"q": "pepe khawa jabe",
+"l": "bn",
+"e": "topic:foodSafety"
+},
+{
+"q": "is it safe to eat sushi",
+"l": "en",
+"e": "topic:foodSafety"
+},
+{
+"q": "hb kom",
+"l": "bn",
+"e": "topic:ironFolate"
+},
+{
+"q": "low hemoglobin",
+"l": "en",
+"e": "topic:ironFolate"
+},
+{
+"q": "folate tablet",
+"l": "en",
+"e": "topic:ironFolate"
+},
+{
+"q": "when to start antenatal care",
+"l": "en",
+"e": "topic:firstCheckup"
+},
+{
+"q": "doctor dekhabo kobe",
+"l": "bn",
+"e": "topic:firstCheckup"
+},
+{
+"q": "prenatal visits",
+"l": "en",
+"e": "topic:ancVisits"
+},
+{
+"q": "usg kobe korbo",
+"l": "bn",
+"e": "topic:ultrasound"
+},
+{
+"q": "scan in pregnancy",
+"l": "en",
+"e": "topic:ultrasound"
+},
+{
+"q": "bp high",
+"l": "en",
+"e": "topic:bloodPressureCheck"
+},
+{
+"q": "রক্তচাপ বেশি",
+"l": "bn",
+"e": "topic:bloodPressureCheck"
+},
+{
+"q": "sugar beshi",
+"l": "bn",
+"e": "topic:glucoseCheck"
+},
+{
+"q": "ogtt test",
+"l": "en",
+"e": "topic:glucoseCheck"
+},
+{
+"q": "eclampsia ki",
+"l": "bn",
+"e": "topic:maternalHealth"
+},
+{
+"q": "baby kicks",
+"l": "en",
+"e": "topic:fetalMovement"
+},
+{
+"q": "pete baccha nore kobe",
+"l": "bn",
+"e": "topic:fetalMovement"
+},
+{
+"q": "home pregnancy kit",
+"l": "en",
+"e": "topic:pregnancyTest"
+},
+{
+"q": "first trimester",
+"l": "en",
+"e": "topic:pregnancyBasics"
+},
+{
+"q": "yoga in pregnancy",
+"l": "en",
+"e": "topic:exercise"
+},
+{
+"q": "byayam kora jabe",
+"l": "bn",
+"e": "topic:exercise"
+},
+{
+"q": "train e jete pari",
+"l": "bn",
+"e": "topic:pregnancyTravel"
+},
+{
+"q": "flying while pregnant",
+"l": "en",
+"e": "topic:pregnancyTravel"
+},
+{
+"q": "warning signs",
+"l": "en",
+"e": "topic:warningSigns"
+},
+{
+"q": "hospital bag list",
+"l": "en",
+"e": "topic:birthPlan"
+},
+{
+"q": "can my husband stay during delivery",
+"l": "en",
+"e": "help"
+},
+{
+"q": "cesarean recovery",
+"l": "en",
+"e": "help"
+},
+{
+"q": "sizar er por",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "postpartum care",
+"l": "en",
+"e": "topic:postnatal"
+},
+{
+"q": "after delivery recovery tips",
+"l": "en",
+"e": "help"
+},
+{
+"q": "feeling low since the birth",
+"l": "en",
+"e": "route:mental_health_support"
+},
+{
+"q": "delivery r por theke mon kharap",
+"l": "bn",
+"e": "route:mental_health_support"
+},
+{
+"q": "baby latch problem",
+"l": "en",
+"e": "topic:breastfeedingPosition"
+},
+{
+"q": "dudh khawanor niyom",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "breast milk only",
+"l": "en",
+"e": "topic:breastfeeding"
+},
+{
+"q": "6 maser age baby ke pani",
+"l": "bn",
+"e": "topic:babyWater"
+},
+{
+"q": "weaning foods",
+"l": "en",
+"e": "topic:solidFood"
+},
+{
+"q": "suji kobe dibo bacchake",
+"l": "bn",
+"e": "topic:solidFood"
+},
+{
+"q": "pumping at office",
+"l": "en",
+"e": "topic:feedingAtWork"
+},
+{
+"q": "first bath newborn",
+"l": "en",
+"e": "topic:babyBath"
+},
+{
+"q": "belly button care baby",
+"l": "en",
+"e": "topic:cordCare"
+},
+{
+"q": "nappy rash",
+"l": "en",
+"e": "topic:diaper"
+},
+{
+"q": "where should baby sleep",
+"l": "en",
+"e": "topic:babySleep"
+},
+{
+"q": "baccha rate ghumay na",
+"l": "bn",
+"e": "topic:babySleep"
+},
+{
+"q": "baby keeps crying at night",
+"l": "en",
+"e": "topic:babyCrying"
+},
+{
+"q": "colic baby",
+"l": "en",
+"e": "topic:babyCrying"
+},
+{
+"q": "toys for baby",
+"l": "en",
+"e": "topic:babyPlay"
+},
+{
+"q": "smoking near baby",
+"l": "en",
+"e": "topic:homeSafety"
+},
+{
+"q": "keep newborn clean",
+"l": "en",
+"e": "topic:babyHygiene"
+},
+{
+"q": "baby yellow eyes",
+"l": "en",
+"e": "help"
+},
+{
+"q": "EPI tika",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "baby ojon kom",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "sign language interpreter for checkup",
+"l": "en",
+"e": "topic:accessHearing"
+},
+{
+"q": "chokhe dekhi na",
+"l": "bn",
+"e": "topic:accessVision"
+},
+{
+"q": "I am disabled and pregnant",
+"l": "en",
+"e": "help"
+},
+{
+"q": "protibondhi ma",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "hi, I'm bleeding a lot",
+"l": "en",
+"e": "route:urgent_care"
+},
+{
+"q": "thanks, baby is not moving today",
+"l": "en",
+"e": "route:urgent_care"
+},
+{
+"q": "hello amar khichuni hocche",
+"l": "bn",
+"e": "route:urgent_care"
+},
+{
+"q": "bye, i want to end my life",
+"l": "en",
+"e": "route:crisis_support"
+},
+{
+"q": "my baby is not breathing",
+"l": "en",
+"e": "route:urgent_care"
+},
+{
+"q": "what dose of iron should i take",
+"l": "en",
+"e": "notempty"
+},
+{
+"q": "which painkiller",
+"l": "en",
+"e": "notempty"
+},
+{
+"q": "how much weight gain is normal",
+"l": "en",
+"e": "help"
+},
+{
+"q": "jomoj baccha",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "coffee kotota khawa jabe",
+"l": "bn",
+"e": "topic:foodSafety"
+},
+{
+"q": "roza rakha jabe",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "birth control after baby",
+"l": "en",
+"e": "help"
+},
+{
+"q": "due date calculator",
+"l": "en",
+"e": "help"
+},
+{
+"q": "chest pain",
+"l": "en",
+"e": "route:urgent_care"
+},
+{
+"q": "who won the match",
+"l": "en",
+"e": "offtopic"
+},
+{
+"q": "write me a poem",
+"l": "en",
+"e": "offtopic"
+},
+{
+"q": "best phone under 20000",
+"l": "en",
+"e": "offtopic"
+}
+]

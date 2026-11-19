@@ -68,7 +68,7 @@ const replies: ReplyRule[] = [
   { id: "cannot_decide", pattern: wholeMessage("(?:should i|do i need to) (?:go|see|visit) (?:to )?(?:the |a )?(?:hospital|doctor)(?: now)?", "(?:is|are) (?:this|it|these) (?:normal|ok|okay|serious|an emergency|dangerous)", "(?:will|is) (?:my )?baby (?:be )?(?:ok|okay|fine|healthy)", "what (?:should|do) i do", "ami ki korbo", "ki korbo", "কী করব|কি করব"),
     en: "I can’t decide that for you. If you’re worried about yourself or your baby, please contact a doctor, midwife or health worker. If it feels like an emergency, go to the nearest hospital now.",
     bn: "এটা আমি আপনার হয়ে ঠিক করতে পারি না। নিজের বা শিশুর জন্য চিন্তা হলে ডাক্তার, মিডওয়াইফ বা স্বাস্থ্যকর্মীর সঙ্গে যোগাযোগ করুন। জরুরি মনে হলে এখনই নিকটস্থ হাসপাতালে যান।" },
-  { id: "cannot_prescribe", pattern: wholeMessage("(?:give|suggest|recommend|prescribe) (?:me )?(?:some |a |any )?(?:medicine|tablet|pill|antibiotic|painkiller)s?", "(?:which|what) (?:medicine|tablet|pill|antibiotic)s?", "(?:ki|kon) (?:oshudh|osudh|medicine|tablet) khabo", "ওষুধ (?:দিন|দাও|বলুন)"),
+  { id: "cannot_prescribe", pattern: wholeMessage("(?:give|suggest|recommend|prescribe) (?:me )?(?:some |a |any )?(?:medicine|tablet|pill|antibiotic|painkiller)s?", "(?:which|what) (?:medicine|tablet|pill|antibiotic|painkiller|pain killer|syrup)s?", "(?:ki|kon) (?:oshudh|osudh|medicine|tablet) khabo", "ওষুধ (?:দিন|দাও|বলুন)"),
     en: "I can’t prescribe or recommend medicines. Please ask a doctor, midwife or pharmacist.",
     bn: "আমি ওষুধ দিতে বা সুপারিশ করতে পারি না। ডাক্তার, মিডওয়াইফ বা ফার্মাসিস্টকে জিজ্ঞেস করুন।" },
   { id: "id_doctor", pattern: wholeMessage("are you (?:a |an )?(?:real )?(?:doctor|nurse|midwife)", "apni ki (?:doctor|daktar)", "আপনি কি ডাক্তার"),

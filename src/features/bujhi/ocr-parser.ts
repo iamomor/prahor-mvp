@@ -1,6 +1,6 @@
 import { classifyDocument, scanCandidates, type OcrLine } from "./ultrasound";
 import { normalizeReport } from "./report-normalization";
-﻿import type { ExtractedReport, ExtractedReportField } from "./types";
+import type { ExtractedReport, ExtractedReportField } from "./types";
 import { validDate } from "./validation";
 const knownTest = /(beta[\s-]*hcg|b[\s-]*hcg|β[\s-]*hcg|hemoglobin|haemoglobin|hgb|hb|fetal heart rate|blood glucose|glucose|platelet(?:s)?|blood pressure)/iu;
 

@@ -1,0 +1,1242 @@
+[
+{
+"q": "hi",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "hello barta",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "assalamu alaikum",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "আসসালামু আলাইকুম",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "হ্যালো",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "good morning",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "shuvo shokal",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "শুভ সকাল",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "hey there!",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "hi apu",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "salam apu",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "nomoshkar",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "hello?",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "helo",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "kotha shunteso?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "kotha shunchen?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "are you there?",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "anyone there",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "are you listening",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "আছেন?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "শুনছেন?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "keu acho?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "tumi ki amar kotha bujhteso",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "can you hear me",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "how are you",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "kemon acho",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "কেমন আছেন?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "ki khobor",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "hi, how are you?",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "ami bhalo achi",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "i'm fine",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "ভালো আছি, আপনি?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "thanks",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "thank u",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "thank you so much apu",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "অনেক ধন্যবাদ",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "dhonnobad",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "thanks, that helped",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "ধন্যবাদ, বুঝেছি",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "bye",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "ok bye",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "tata",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "accha jai",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "pore kotha hobe",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "পরে কথা বলব",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "আল্লাহ হাফেজ",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "allah hafez",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "good night",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "shuvo ratri",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "see you later",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "thik ache, bye",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "valo theko",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "who are you",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "tumi ke",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "what can you do",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "আপনি কী কী পারেন?",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "are you a doctor",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "are you a robot",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "what is prohor",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "ki jiggesh korte pari",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "ok",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "hmm",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "accha",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "আচ্ছা",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "haha",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "you are useless",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "tumi kichu jano na",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "you're great",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "ami tension e achi",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "I'm worried",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "আমার ভয় লাগছে",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "sorry",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "bujhi nai",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "i didn't understand",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "আবার বলুন",
+"l": "bn",
+"e": "chat"
+},
+{
+"q": "pore",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "porer",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "after birth",
+"l": "en",
+"e": "help"
+},
+{
+"q": "after delivery",
+"l": "en",
+"e": "help"
+},
+{
+"q": "delivery r pore",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "প্রসবের পরে",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "গর্ভাবস্থায়",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "during pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "gorbhabosthay",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "baby",
+"l": "en",
+"e": "help"
+},
+{
+"q": "bacchar",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "অন্য কিছু",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "onno kichu",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "ami pregnant",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "I am pregnant",
+"l": "en",
+"e": "help"
+},
+{
+"q": "amar baby hoyeche",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "I just had a baby",
+"l": "en",
+"e": "help"
+},
+{
+"q": "আমার মাথাব্যথা করছে।",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "amar matha betha korche",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "I have a headache",
+"l": "en",
+"e": "help"
+},
+{
+"q": "my back hurts",
+"l": "en",
+"e": "topic:pregnancyBackache"
+},
+{
+"q": "komor betha",
+"l": "bn",
+"e": "topic:pregnancyBackache"
+},
+{
+"q": "কোমর ব্যথা করছে",
+"l": "bn",
+"e": "topic:pregnancyBackache"
+},
+{
+"q": "bomi bomi lage",
+"l": "bn",
+"e": "topic:morningSickness"
+},
+{
+"q": "I feel sick in the morning",
+"l": "en",
+"e": "topic:morningSickness"
+},
+{
+"q": "বমি বমি ভাব",
+"l": "bn",
+"e": "topic:morningSickness"
+},
+{
+"q": "buk jole",
+"l": "bn",
+"e": "topic:pregnancyHeartburn"
+},
+{
+"q": "বুক জ্বালা করছে",
+"l": "bn",
+"e": "topic:pregnancyHeartburn"
+},
+{
+"q": "I have heartburn",
+"l": "en",
+"e": "topic:pregnancyHeartburn"
+},
+{
+"q": "paykhana hoy na",
+"l": "bn",
+"e": "topic:pregnancyConstipation"
+},
+{
+"q": "কোষ্ঠকাঠিন্য",
+"l": "bn",
+"e": "topic:pregnancyConstipation"
+},
+{
+"q": "I am constipated",
+"l": "en",
+"e": "topic:pregnancyConstipation"
+},
+{
+"q": "ghum hoy na",
+"l": "bn",
+"e": "topic:pregnancySleep"
+},
+{
+"q": "রাতে ঘুম হয় না",
+"l": "bn",
+"e": "topic:pregnancySleep"
+},
+{
+"q": "I can't sleep at night while pregnant",
+"l": "en",
+"e": "topic:pregnancySleep"
+},
+{
+"q": "pa fule geche",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "my feet are swollen",
+"l": "en",
+"e": "help"
+},
+{
+"q": "I have a cold and cough",
+"l": "en",
+"e": "help"
+},
+{
+"q": "sordi kashi",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "I feel tired all the time",
+"l": "en",
+"e": "help"
+},
+{
+"q": "klanto lage",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "periods pain",
+"l": "en",
+"e": "topic:periodCare"
+},
+{
+"q": "pet betha",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "what should i eat",
+"l": "en",
+"e": "topic:balancedMeals"
+},
+{
+"q": "ki khabo",
+"l": "bn",
+"e": "topic:balancedMeals"
+},
+{
+"q": "গর্ভাবস্থায় কী খাব?",
+"l": "bn",
+"e": "topic:balancedMeals"
+},
+{
+"q": "what food is good in pregnancy",
+"l": "en",
+"e": "topic:balancedMeals"
+},
+{
+"q": "pregnancy te ki ki khawa jabe na",
+"l": "bn",
+"e": "topic:foodSafety"
+},
+{
+"q": "can i eat papaya",
+"l": "en",
+"e": "help"
+},
+{
+"q": "is fish safe in pregnancy",
+"l": "en",
+"e": "topic:foodSafety"
+},
+{
+"q": "কাঁচা ডিম খাওয়া যাবে?",
+"l": "bn",
+"e": "topic:foodSafety"
+},
+{
+"q": "why iron tablet",
+"l": "en",
+"e": "topic:ironFolate"
+},
+{
+"q": "folic acid keno khabo",
+"l": "bn",
+"e": "topic:ironFolate"
+},
+{
+"q": "আয়রন ট্যাবলেট কেন দরকার?",
+"l": "bn",
+"e": "topic:ironFolate"
+},
+{
+"q": "when should i see a doctor first in pregnancy",
+"l": "en",
+"e": "topic:firstCheckup"
+},
+{
+"q": "first checkup kobe",
+"l": "bn",
+"e": "topic:firstCheckup"
+},
+{
+"q": "প্রথম চেকআপ কবে করাব?",
+"l": "bn",
+"e": "topic:firstCheckup"
+},
+{
+"q": "how many checkups do i need",
+"l": "en",
+"e": "topic:ancVisits"
+},
+{
+"q": "koybar checkup korte hoy",
+"l": "bn",
+"e": "topic:ancVisits"
+},
+{
+"q": "what is anc",
+"l": "en",
+"e": "topic:anc"
+},
+{
+"q": "ANC ki",
+"l": "bn",
+"e": "topic:anc"
+},
+{
+"q": "why ultrasound",
+"l": "en",
+"e": "topic:ultrasound"
+},
+{
+"q": "ultrasound keno kora hoy",
+"l": "bn",
+"e": "topic:ultrasound"
+},
+{
+"q": "আল্ট্রাসনোগ্রাম কেন করে?",
+"l": "bn",
+"e": "topic:ultrasound"
+},
+{
+"q": "what happens at a checkup",
+"l": "en",
+"e": "topic:ancVisits"
+},
+{
+"q": "how to use anc card",
+"l": "en",
+"e": "topic:ancCard"
+},
+{
+"q": "why do they check my blood pressure",
+"l": "en",
+"e": "topic:bloodPressureCheck"
+},
+{
+"q": "pressure keno mape",
+"l": "bn",
+"e": "topic:bloodPressureCheck"
+},
+{
+"q": "what is sugar test in pregnancy",
+"l": "en",
+"e": "topic:glucoseCheck"
+},
+{
+"q": "diabetes test pregnancy",
+"l": "en",
+"e": "topic:glucoseCheck"
+},
+{
+"q": "what is preeclampsia",
+"l": "en",
+"e": "topic:maternalHealth"
+},
+{
+"q": "প্রি-এক্লাম্পসিয়া কী",
+"l": "bn",
+"e": "topic:maternalHealth"
+},
+{
+"q": "high blood pressure in pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "when will baby move",
+"l": "en",
+"e": "topic:fetalMovement"
+},
+{
+"q": "baccha kobe nore",
+"l": "bn",
+"e": "topic:fetalMovement"
+},
+{
+"q": "বাচ্চা কখন নড়াচড়া শুরু করে?",
+"l": "bn",
+"e": "topic:fetalMovement"
+},
+{
+"q": "how many kicks should i feel",
+"l": "en",
+"e": "topic:fetalMovement"
+},
+{
+"q": "when to do pregnancy test",
+"l": "en",
+"e": "topic:pregnancyTest"
+},
+{
+"q": "pregnancy test kobe korbo",
+"l": "bn",
+"e": "topic:pregnancyTest"
+},
+{
+"q": "stages of pregnancy",
+"l": "en",
+"e": "topic:pregnancyBasics"
+},
+{
+"q": "trimester ki",
+"l": "bn",
+"e": "topic:pregnancyBasics"
+},
+{
+"q": "can i exercise",
+"l": "en",
+"e": "topic:exercise"
+},
+{
+"q": "pregnancy te hata jabe?",
+"l": "bn",
+"e": "topic:exercise"
+},
+{
+"q": "can i walk daily while pregnant",
+"l": "en",
+"e": "topic:exercise"
+},
+{
+"q": "can i travel by bus while pregnant",
+"l": "en",
+"e": "topic:pregnancyTravel"
+},
+{
+"q": "pregnancy te bus e jawa jabe",
+"l": "bn",
+"e": "topic:pregnancyTravel"
+},
+{
+"q": "what are danger signs in pregnancy",
+"l": "en",
+"e": "topic:warningSigns"
+},
+{
+"q": "bipodchinho ki ki",
+"l": "bn",
+"e": "topic:warningSigns"
+},
+{
+"q": "গর্ভাবস্থার বিপদচিহ্ন কী?",
+"l": "bn",
+"e": "topic:warningSigns"
+},
+{
+"q": "morning sickness",
+"l": "en",
+"e": "topic:morningSickness"
+},
+{
+"q": "who can come with me during delivery",
+"l": "en",
+"e": "topic:birthCompanion"
+},
+{
+"q": "delivery te ke thakte parbe",
+"l": "bn",
+"e": "topic:birthCompanion"
+},
+{
+"q": "how to make a birth plan",
+"l": "en",
+"e": "topic:birthPlan"
+},
+{
+"q": "delivery r jonno ki prostuti nibo",
+"l": "bn",
+"e": "topic:birthPlan"
+},
+{
+"q": "what to pack for hospital",
+"l": "en",
+"e": "topic:birthPlan"
+},
+{
+"q": "hospital e ki niye jabo",
+"l": "bn",
+"e": "topic:birthPlan"
+},
+{
+"q": "normal delivery or c section",
+"l": "en",
+"e": "help"
+},
+{
+"q": "c section er pore ki korbo",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "labour pain kemon",
+"l": "en",
+"e": "help"
+},
+{
+"q": "what is postnatal care",
+"l": "en",
+"e": "topic:postnatal"
+},
+{
+"q": "delivery r pore checkup kobe",
+"l": "bn",
+"e": "topic:postnatalVisits"
+},
+{
+"q": "প্রসবের পর চেকআপ কবে?",
+"l": "bn",
+"e": "topic:postnatalVisits"
+},
+{
+"q": "after birth check up",
+"l": "en",
+"e": "topic:postnatalVisits"
+},
+{
+"q": "I feel sad after birth",
+"l": "en",
+"e": "route:mental_health_support"
+},
+{
+"q": "baby howar por mon kharap",
+"l": "bn",
+"e": "route:mental_health_support"
+},
+{
+"q": "how to recover after delivery",
+"l": "en",
+"e": "help"
+},
+{
+"q": "how to breastfeed",
+"l": "en",
+"e": "topic:breastfeedingPosition"
+},
+{
+"q": "bukher dudh kivabe khawabo",
+"l": "bn",
+"e": "topic:breastfeedingPosition"
+},
+{
+"q": "বুকের দুধ কীভাবে খাওয়াব?",
+"l": "bn",
+"e": "topic:breastfeedingPosition"
+},
+{
+"q": "what is exclusive breastfeeding",
+"l": "en",
+"e": "topic:breastfeeding"
+},
+{
+"q": "only breast milk for how long",
+"l": "en",
+"e": "topic:breastfeeding"
+},
+{
+"q": "baby ke pani dibo?",
+"l": "bn",
+"e": "topic:babyWater"
+},
+{
+"q": "can I give water to my newborn",
+"l": "en",
+"e": "topic:babyWater"
+},
+{
+"q": "when to start solid food",
+"l": "en",
+"e": "topic:solidFood"
+},
+{
+"q": "bacchake khichuri kobe dibo",
+"l": "bn",
+"e": "topic:solidFood"
+},
+{
+"q": "breastfeeding at work",
+"l": "en",
+"e": "topic:feedingAtWork"
+},
+{
+"q": "not enough milk",
+"l": "en",
+"e": "help"
+},
+{
+"q": "dudh kom ashe",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "how to bathe a newborn",
+"l": "en",
+"e": "topic:babyBath"
+},
+{
+"q": "bacchake kobe gosol korabo",
+"l": "bn",
+"e": "topic:babyBath"
+},
+{
+"q": "নবজাতককে কবে গোসল করাব?",
+"l": "bn",
+"e": "topic:babyBath"
+},
+{
+"q": "cord care",
+"l": "en",
+"e": "topic:cordCare"
+},
+{
+"q": "nabhi te ki lagabo",
+"l": "bn",
+"e": "topic:cordCare"
+},
+{
+"q": "নাভির যত্ন কীভাবে নেব?",
+"l": "bn",
+"e": "topic:cordCare"
+},
+{
+"q": "how to change diaper",
+"l": "en",
+"e": "topic:diaper"
+},
+{
+"q": "diaper kivabe bodlabo",
+"l": "bn",
+"e": "topic:diaper"
+},
+{
+"q": "baby sleep safely",
+"l": "en",
+"e": "topic:babySleep"
+},
+{
+"q": "baby ke kivabe shoyabo",
+"l": "bn",
+"e": "topic:babySleep"
+},
+{
+"q": "বাচ্চাকে কীভাবে শোয়াব?",
+"l": "bn",
+"e": "topic:babySleep"
+},
+{
+"q": "why is my baby crying",
+"l": "en",
+"e": "topic:babyCrying"
+},
+{
+"q": "baccha shudhu kande",
+"l": "bn",
+"e": "topic:babyCrying"
+},
+{
+"q": "বাচ্চা খুব কাঁদে",
+"l": "bn",
+"e": "topic:babyCrying"
+},
+{
+"q": "how to play with baby",
+"l": "en",
+"e": "topic:babyPlay"
+},
+{
+"q": "keep home safe for baby",
+"l": "en",
+"e": "topic:homeSafety"
+},
+{
+"q": "newborn care",
+"l": "en",
+"e": "topic:newborn"
+},
+{
+"q": "নবজাতকের যত্ন",
+"l": "bn",
+"e": "topic:newborn"
+},
+{
+"q": "baby hygiene",
+"l": "en",
+"e": "topic:babyHygiene"
+},
+{
+"q": "baby vaccine schedule",
+"l": "en",
+"e": "help"
+},
+{
+"q": "tika kobe dite hobe",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "baby jaundice",
+"l": "en",
+"e": "help"
+},
+{
+"q": "baby weight gain",
+"l": "en",
+"e": "help"
+},
+{
+"q": "I use a wheelchair, what should I ask the clinic",
+"l": "en",
+"e": "topic:accessWheelchair"
+},
+{
+"q": "ami kane shuni na, checkup e ki korbo",
+"l": "bn",
+"e": "topic:accessHearing"
+},
+{
+"q": "I am blind, how can I get information",
+"l": "en",
+"e": "topic:accessVision"
+},
+{
+"q": "can i bring someone with me to checkup",
+"l": "en",
+"e": "topic:accessSupportPerson"
+},
+{
+"q": "I have heavy bleeding",
+"l": "en",
+"e": "route:urgent_care"
+},
+{
+"q": "beshi roktopat hocche",
+"l": "bn",
+"e": "route:urgent_care"
+},
+{
+"q": "baby is not moving",
+"l": "en",
+"e": "route:urgent_care"
+},
+{
+"q": "বাচ্চা নড়ছে না",
+"l": "bn",
+"e": "route:urgent_care"
+},
+{
+"q": "I want to die",
+"l": "en",
+"e": "route:crisis_support"
+},
+{
+"q": "newborn has fever",
+"l": "en",
+"e": "route:urgent_care"
+},
+{
+"q": "what medicine should i take",
+"l": "en",
+"e": "notempty"
+},
+{
+"q": "paracetamol khawa jabe?",
+"l": "bn",
+"e": "notempty"
+},
+{
+"q": "is my baby ok",
+"l": "en",
+"e": "notempty"
+},
+{
+"q": "my husband hits me",
+"l": "en",
+"e": "route:outside_education_scope"
+},
+{
+"q": "how much weight should i gain",
+"l": "en",
+"e": "help"
+},
+{
+"q": "twins pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "can i have sex during pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "is coffee ok in pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "gestational diabetes diet",
+"l": "en",
+"e": "help"
+},
+{
+"q": "anemia in pregnancy",
+"l": "en",
+"e": "help"
+},
+{
+"q": "roktoshunnota",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "when is my due date",
+"l": "en",
+"e": "help"
+},
+{
+"q": "due date kivabe hisab kori",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "can i fast in ramadan while pregnant",
+"l": "en",
+"e": "help"
+},
+{
+"q": "rojar shomoy pregnant hole",
+"l": "bn",
+"e": "help"
+},
+{
+"q": "family planning after birth",
+"l": "en",
+"e": "help"
+},
+{
+"q": "how to sleep in pregnancy",
+"l": "en",
+"e": "topic:pregnancySleep"
+},
+{
+"q": "what is the weather today",
+"l": "en",
+"e": "offtopic"
+},
+{
+"q": "tell me about cricket",
+"l": "en",
+"e": "offtopic"
+},
+{
+"q": "asdfgh",
+"l": "en",
+"e": "chat"
+},
+{
+"q": "?",
+"l": "en",
+"e": "chat"
+}
+]

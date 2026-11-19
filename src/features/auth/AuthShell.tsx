@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent }
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Accessibility, ArrowRight, ArrowUpRight, Activity, FolderOpen, HandHeart, House, LifeBuoy,
+  Accessibility, ArrowLeft, ArrowRight, ArrowUpRight, Activity, FolderOpen, HandHeart, House, LifeBuoy,
   MapPin, Menu, MessageCircle, ShieldCheck, SlidersHorizontal, Sprout, X, type LucideIcon,
 } from "lucide-react";
 import { ProhorSymbol } from "@/components/marketing/HomeBrand";
@@ -11,25 +11,27 @@ import { AccessPreferencesPanel } from "@/components/accessibility/AccessPrefere
 import { useLanguage } from "@/i18n/use-language";
 import { applyPreferences, readLocalPreferences } from "@/lib/access-preferences";
 import { SignOutButton } from "./SignOutButton";
+import "@/styles/app-module.css";
 import "./auth.css";
 
-type NavItem = { href: string; en: string; bn: string; icon: LucideIcon };
+type NavItem = { href: string; en: string; bn: string; icon: LucideIcon; module?: string };
 
 /** Primary jobs first; everything else under Explore. One destination per item. */
 const careNav: NavItem[] = [
   { href: "/app", en: "Overview", bn: "সংক্ষিপ্ত বিবরণ", icon: House },
-  { href: "/app/jibonrekha", en: "My pregnancy", bn: "আমার গর্ভাবস্থা", icon: Activity },
-  { href: "/app/ask", en: "Ask PROHOR", bn: "প্রহরকে জিজ্ঞাসা", icon: MessageCircle },
-  { href: "/app/care", en: "Care & support", bn: "সেবা ও সহায়তা", icon: HandHeart },
+  { href: "/app/jibonrekha", en: "My pregnancy", bn: "আমার গর্ভাবস্থা", icon: Activity, module: "Jibonrekha" },
+  { href: "/app/ask", en: "Ask PROHOR", bn: "প্রহরকে জিজ্ঞাসা", icon: MessageCircle, module: "Barta" },
+  { href: "/app/care", en: "Care & support", bn: "সেবা ও সহায়তা", icon: HandHeart, module: "Shonket" },
 ];
 const exploreNav: NavItem[] = [
-  { href: "/app/bondhon", en: "Bondhon sharing", bn: "বন্ধনে তথ্য শেয়ার", icon: HandHeart },
-  { href: "/app/bujhi", en: "Reports", bn: "রিপোর্ট", icon: FolderOpen },
-  { href: "/app/wellbeing", en: "Wellbeing & diary", bn: "সুস্থতা ও ডায়েরি", icon: Sprout },
-  { href: "/app/poth", en: "Find care", bn: "সেবা খুঁজুন", icon: MapPin },
+
+  { href: "/app/bondhon", en: "Sharing & supporters", bn: "শেয়ার ও সহায়ক", icon: HandHeart, module: "Bondhon" },
+  { href: "/app/bujhi", en: "Reports", bn: "রিপোর্ট", icon: FolderOpen, module: "Bujhi" },
+  { href: "/app/wellbeing", en: "Wellbeing & diary", bn: "সুস্থতা ও ডায়েরি", icon: Sprout, module: "Shusthota" },
+  { href: "/app/poth", en: "Find care", bn: "সেবা খুঁজুন", icon: MapPin, module: "Poth" },
   // Public on purpose: warning signs must open even if the session has expired.
   { href: "/safety", en: "Warning signs", bn: "সতর্কতার লক্ষণ", icon: ShieldCheck },
-  { href: "/app/accessibility", en: "Accessibility", bn: "অ্যাক্সেসিবিলিটি", icon: Accessibility },
+  { href: "/app/accessibility", en: "Accessibility", bn: "অ্যাক্সেসিবিলিটি", icon: Accessibility, module: "Adapt" },
 ];
 const mobileNav: NavItem[] = [
   { href: "/app", en: "Home", bn: "হোম", icon: House },
@@ -158,7 +160,10 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
           }`}
         >
           <Icon size={18} strokeWidth={1.75} aria-hidden="true" className={current ? "text-pro-primary" : "text-pro-muted"} />
-          <span>{t(item)}</span>
+          <span className="grid leading-tight">
+            <span>{t(item)}</span>
+            {item.module && <span lang="en" className="text-[0.7rem] font-medium text-pro-muted">{item.module}</span>}
+          </span>
         </Link>
       );
     };
@@ -190,6 +195,9 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
 
     const current = pathname === "/app" ? { en: "Home", bn: "প্রথম পাতা" } : titles.find(item => pathname?.startsWith(item.prefix)) ?? { en: "Home", bn: "প্রথম পাতা" };
     const initial = userName?.trim().charAt(0).toUpperCase();
+    // Every module page gets the same frame: back to Home + which PROHOR module you are in.
+    const moduleItem = pathname === "/app" ? undefined
+      : [...careNav, ...exploreNav].find(item => item.module && (isCurrent(pathname, item.href) || (item.module === "Adapt" && pathname?.startsWith("/app/adapt"))));
 
     return (
       <div lang={language} className="flex min-h-dvh bg-pro-bg text-pro-text">
@@ -247,7 +255,19 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
             </div>
           </header>
 
-          <main id="auth-main" tabIndex={-1} className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8">
+          <main id="auth-main" tabIndex={-1} className="app-module mx-auto w-full max-w-[1200px] flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8">
+            {moduleItem && (
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <Link href="/app" className="inline-flex min-h-11 items-center gap-1.5 rounded-field pr-2 text-sm font-semibold text-pro-primary hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
+                  <ArrowLeft size={16} aria-hidden="true" />{t({ en: "Home", bn: "হোম" })}
+                </Link>
+                <span className="inline-flex items-center gap-2 rounded-pill border border-pro-border bg-pro-surface px-3 py-1 text-sm font-semibold text-pro-primary">
+                  <moduleItem.icon size={15} aria-hidden="true" />
+                  <span lang="en">{moduleItem.module}</span>
+                  <span className="font-normal text-pro-muted">· {t(moduleItem)}</span>
+                </span>
+              </div>
+            )}
             {children}
           </main>
 

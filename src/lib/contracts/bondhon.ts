@@ -43,7 +43,7 @@ export const supportRequestStatusSchema = z.enum(supportRequestStatuses);
 export type SupportRequestStatus = z.infer<typeof supportRequestStatusSchema>;
 
 export const createSupportRequestRequestSchema = z.strictObject({
-  coordination: coordinationApprovalSchema.optional(),
+  coordination: coordinationApprovalSchema,
   recipientUserId: idSchema, message: nonEmptyText(1000), method: communicationMethodSchema,
   purpose: nonEmptyText(300),
   consentGrantIds: z.array(idSchema).max(20).refine(

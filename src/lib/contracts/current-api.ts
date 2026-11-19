@@ -8,6 +8,8 @@ import {
   providerRequestSummarySchema, providerRespondRequestSchema, revokeConsentResponseSchema,
   supportRequestEventSummarySchema, supportRequestSchema,
 } from "./bondhon";
+import { bondhonDetailSchema } from "./bondhon-detail";
+import { availableRecordSchema, followUpRequestSchema } from "./coordination";
 import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt";
 import { apiSuccessSchema, currentUserResponseSchema, pageSchema } from "./transport";
 import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
@@ -190,6 +192,26 @@ export const currentApiContracts = {
   "POST /api/provider/requests/:id/respond": {
     source: "src/app/api/provider/requests/[id]/respond/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "provider",
     request: providerRespondRequestSchema, responses: { 200: apiSuccessSchema(providerRequestSchema), ...careErrorResponses },
+  },
+  "GET /api/care-requests": {
+    source: "src/app/api/care-requests/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(pageSchema(supportRequestSchema)), ...careErrorResponses },
+  },
+  "GET /api/care-records": {
+    source: "src/app/api/care-records/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(z.array(availableRecordSchema).max(100)), ...careErrorResponses },
+  },
+  "GET /api/care-requests/:id/coordination": {
+    source: "src/app/api/care-requests/[id]/coordination/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "request-participant",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
+  },
+  "POST /api/care-requests/:id/messages": {
+    source: "src/app/api/care-requests/[id]/messages/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "request-participant",
+    request: followUpRequestSchema, responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
+  },
+  "POST /api/care-requests/:id/revoke": {
+    source: "src/app/api/care-requests/[id]/revoke/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
   },
   "POST /api/care-requests/:id/close": {
     source: "src/app/api/care-requests/[id]/close/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",

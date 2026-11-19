@@ -211,9 +211,9 @@ test("provider projections reject owner identifiers, private source details and 
 });
 
 test("request submission requires recipient and review, but permits message-only nonvoice care", () => {
-  const request = { recipientUserId: ids.provider, message: "Synthetic request", purpose: "Synthetic follow-up", method: "aac", consentGrantIds: [], reviewConfirmed: true };
+  const request = { recipientUserId: ids.provider, message: "Synthetic request", purpose: "Synthetic follow-up", method: "aac", consentGrantIds: [], reviewConfirmed: true, coordination: { termsVersion: "bondhon-demo-2026-11-19", expiresAt: "2026-11-20T00:00:00Z", allowReplies: false, language: "en", accommodations: [], records: [] } };
   expect(createSupportRequestRequestSchema.safeParse(request).success).toBe(true);
-  for (const extra of [{ recipientUserId: undefined }, { reviewConfirmed: false }, { status: "delivered" }, { assignedProviderId: ids.provider }]) {
+  for (const extra of [{ coordination: undefined }, { recipientUserId: undefined }, { reviewConfirmed: false }, { status: "delivered" }, { assignedProviderId: ids.provider }]) {
     expect(createSupportRequestRequestSchema.safeParse({ ...request, ...extra }).success).toBe(false);
   }
 });

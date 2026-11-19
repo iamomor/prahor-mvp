@@ -222,7 +222,7 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
         )}
 
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-pro-border bg-pro-bg/95 px-4 backdrop-blur-sm sm:px-6 lg:px-10">
+          <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-pro-border bg-pro-bg/95 px-4 py-2 backdrop-blur-sm sm:px-6 lg:px-10">
             <div className="flex min-w-0 items-center gap-3">
               <button ref={menuButton} type="button" onClick={() => setMenuOpen(true)} aria-expanded={menuOpen} aria-label={t({ en: "Open menu", bn: "মেনু খুলুন" })}
                 className="grid size-11 shrink-0 place-items-center rounded-control border border-pro-border text-pro-text hover:bg-pro-surface focus-visible:outline-3 focus-visible:outline-pro-focus lg:hidden">
@@ -233,7 +233,7 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
                 <span className="truncate font-semibold text-pro-text">{t(current)}</span>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5 sm:gap-2.5">
               <Link href="/safety" className="inline-flex min-h-10 items-center gap-1.5 rounded-pill border border-pro-danger/60 px-3 text-sm font-semibold text-pro-danger hover:bg-pro-danger-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
                 <LifeBuoy size={16} aria-hidden="true" />
                 <span className="sr-only md:not-sr-only">{t({ en: "Urgent help", bn: "জরুরি সাহায্য" })}</span>

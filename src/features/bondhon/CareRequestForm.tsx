@@ -13,7 +13,11 @@ import styles from "./bondhon.module.css";
 type RecordOption = z.infer<typeof availableRecordSchema>;
 const recordKey = (record: { type: string; id: string }) => `${record.type}/${record.id}`;
 type PendingSubmission = { key: string; body: CreateSupportRequestRequest };
-export function CareRequestForm({ account, onCreated }: { account: string; onCreated: (request: SupportRequest) => void }) {
+export function CareRequestForm({ account, onCreated, initialMessage = "", initialMethod = "text", onDraftChange }: {
+  account: string; onCreated: (request: SupportRequest) => void;
+  initialMessage?: string; initialMethod?: "text" | "aac" | "call";
+  onDraftChange?: (draft: { message: string; method: "text" | "aac" | "call" }) => void;
+}) {
   const { language, t } = useLanguage();
   const id = useId();
   const [step, setStep] = useState(0);
@@ -24,8 +28,8 @@ export function CareRequestForm({ account, onCreated }: { account: string; onCre
   const [records, setRecords] = useState<RecordOption[]>([]);
   const [recipient, setRecipient] = useState("");
   const [purpose, setPurpose] = useState("");
-  const [message, setMessage] = useState("");
-  const [method, setMethod] = useState<"text" | "aac" | "call">("text");
+  const [message, setMessage] = useState(initialMessage);
+  const [method, setMethod] = useState<"text" | "aac" | "call">(initialMethod);
   const [hours, setHours] = useState("24");
   const [allowReplies, setAllowReplies] = useState(false);
   const [needs, setNeeds] = useState<Accommodation[]>([]);
@@ -41,6 +45,7 @@ export function CareRequestForm({ account, onCreated }: { account: string; onCre
   const [error, setError] = useState("");
   const [incoming, setIncoming] = useState("");
   const submitting = useRef(false);
+  useEffect(() => { onDraftChange?.({ message, method }); }, [message, method, onDraftChange]);
   useEffect(() => {
     const controller = new AbortController();
     void Promise.allSettled([
@@ -110,7 +115,7 @@ export function CareRequestForm({ account, onCreated }: { account: string; onCre
   const receiver = recipients.find(item => item.id === recipient);
   const selected = records.filter(item => selection[recordKey(item.record)]?.length);
   const summary = review ? [receiver?.displayName, review.body.purpose, review.body.message,
-    t(words("Permission expires", "অনুমতির মেয়াদ শেষ")), new Date(review.body.coordination!.expiresAt).toLocaleString(language === "bn" ? "bn-BD" : "en-GB"),
+    t(words("Permission expires", "অনুমতির মেয়াদ শেষ")), new Date(review.body.coordination.expiresAt).toLocaleString(language === "bn" ? "bn-BD" : "en-GB"),
     ...selected.flatMap(item => Object.entries(item.record.fields).filter(([key]) => selection[recordKey(item.record)]?.includes(key))
       .map(([key, value]) => `${t(fieldNames[key] ?? words(key, key))} ${displayValue(value)}`))].join(". ") : "";
   const stepNames = [words("Message", "বার্তা"), words("Recipient", "প্রাপক"), words("Records and access needs", "রেকর্ড ও সহায়তার চাহিদা"), words("Duration and replies", "মেয়াদ ও উত্তর"), words("Review and approve", "পর্যালোচনা ও অনুমতি")];
@@ -145,7 +150,7 @@ export function CareRequestForm({ account, onCreated }: { account: string; onCre
       </div>
       <div>
       <dt>{t(words("Permission ends", "অনুমতির শেষ সময়"))}</dt>
-      <dd>{new Date(review.body.coordination!.expiresAt).toLocaleString(language === "bn" ? "bn-BD" : "en-GB")}</dd>
+      <dd>{new Date(review.body.coordination.expiresAt).toLocaleString(language === "bn" ? "bn-BD" : "en-GB")}</dd>
       </div>
       <div>
       <dt>{t(words("Allowed actions", "অনুমোদিত কাজ"))}</dt>

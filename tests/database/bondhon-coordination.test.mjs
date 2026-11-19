@@ -6,8 +6,9 @@ import { PGlite } from "@electric-sql/pglite";
 import { establishFixtureRole } from "./care-fixtures.mjs";
 
 const db = new PGlite();
-const users = Object.fromEntries(["mother", "other", "provider", "foreignProvider"].map(key => [key, randomUUID()]));
+const users = Object.fromEntries(["mother", "other", "provider", "foreignProvider", "pendingProvider"].map(key => [key, randomUUID()]));
 let recordId;
+let historicalRequest;
 async function asUser(userId, action) {
   return db.transaction(async tx => {
     await tx.exec("set local role authenticated");
@@ -42,15 +43,72 @@ before(async () => {
     create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,is_anonymous boolean not null default false,raw_user_meta_data jsonb not null default '{}');
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid; $$;`);
   const directory = new URL("../../supabase/migrations/", import.meta.url);
-  for (const file of (await readdir(directory)).filter(name => name.endsWith(".sql")).sort())
+  for (const file of (await readdir(directory)).filter(name => name.endsWith(".sql") && name < "20261119060000").sort())
     await db.exec(await readFile(new URL(file, directory), "utf8"));
   for (const [key, id] of Object.entries(users)) {
     await db.query("insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())", [id, `${key}@example.invalid`]);
-    await establishFixtureRole(db, id, key.toLowerCase().includes("provider") ? "provider" : "mother");
+    await establishFixtureRole(db, id, key.toLowerCase().includes("provider") ? "provider" : "mother", key !== "pendingProvider");
   }
   recordId = await asUser(users.mother, async tx => (await tx.query("insert into public.pregnancy_records(label) values('Synthetic label') returning id")).rows[0].id);
+  historicalRequest = await rpc("mother", "mvp_care_create_request", {
+    p_recipient_user_id: users.provider, p_message: "Synthetic historical request", p_method: "text",
+    p_purpose: "Historical compatibility", p_consent_grant_ids: [], p_review_confirmed: true, p_idempotency_key: randomUUID(),
+  });
+  for (const file of (await readdir(directory)).filter(name => name.endsWith(".sql") && name >= "20261119060000").sort())
+    await db.exec(await readFile(new URL(file, directory), "utf8"));
 });
 after(async () => { await db.close(); });
+
+test("permission-free creation is denied to every application role while historical reads and closure survive", async () => {
+  const signature = "public.mvp_care_create_request(uuid,text,text,text,uuid[],boolean,uuid)";
+  for (const role of ["anon", "authenticated", "service_role"])
+    assert.equal((await db.query("select has_function_privilege($1,$2,'execute') as allowed", [role, signature])).rows[0].allowed, false);
+  await assert.rejects(() => rpc("mother", "mvp_care_create_request", {
+    p_recipient_user_id: users.provider, p_message: "Denied", p_method: "text", p_purpose: "Denied",
+    p_consent_grant_ids: [], p_review_confirmed: true, p_idempotency_key: randomUUID(),
+  }), { code: "42501" });
+  assert.equal((await detail("mother", historicalRequest)).request.coordination, undefined);
+  assert.equal((await detail("provider", historicalRequest)).request.id, historicalRequest.id);
+  await rpc("mother", "mvp_care_close", { p_id: historicalRequest.id,
+    p_expected_revision: historicalRequest.revision, p_idempotency_key: randomUUID() });
+  await assert.rejects(() => detail("provider", historicalRequest));
+});
+
+test("pending and revoked providers cannot read, acknowledge, message or receive new requests", async () => {
+  const request = await create();
+  await assert.rejects(() => create({ ...payload(), recipientUserId: users.pendingProvider }));
+  await db.query("select public.prohor_review_provider($1,false,'Synthetic administrator')", [users.provider]);
+  try {
+    for (const who of ["provider", "pendingProvider"]) {
+      await assert.rejects(() => detail(who, request));
+      await assert.rejects(() => rpc(who, "mvp_care_provider_requests"));
+      await assert.rejects(() => follow(who, request, "Denied"));
+      await assert.rejects(() => rpc(who, "mvp_care_acknowledge", { p_id: request.id,
+        p_expected_revision: request.revision, p_idempotency_key: randomUUID() }));
+      await assert.rejects(() => rpc(who, "mvp_care_respond", { p_id: request.id,
+        p_expected_revision: request.revision, p_idempotency_key: randomUUID(), p_message: "Denied" }));
+      await assert.rejects(() => rpc(who, "mvp_care_close", { p_id: request.id,
+        p_expected_revision: request.revision, p_idempotency_key: randomUUID() }));
+    }
+    await assert.rejects(() => create());
+  } finally {
+    await db.query("select public.prohor_review_provider($1,true,'Synthetic administrator')", [users.provider]);
+  }
+});
+
+test("second mother and unassigned provider cannot access or mutate a coordinated request", async () => {
+  const request = await create();
+  for (const who of ["other", "foreignProvider"]) {
+    await assert.rejects(() => detail(who, request));
+    for (const operation of ["mvp_care_get_request", "mvp_care_request_events"])
+      await assert.rejects(() => rpc(who, operation, { p_id: request.id }));
+    for (const operation of ["mvp_care_acknowledge", "mvp_care_close", "mvp_care_respond"])
+      await assert.rejects(() => rpc(who, operation, { p_id: request.id, p_expected_revision: request.revision,
+        p_idempotency_key: randomUUID(), ...(operation === "mvp_care_respond" ? { p_message: "Denied" } : {}) }));
+    await assert.rejects(() => follow(who, request, "Denied"));
+  }
+  assert.equal((await detail("mother", request)).request.revision, request.revision);
+});
 
 test("request, record grants and receipt are atomic and match explicit selected fields", async () => {
   const request = await create(payload({ records: [{ type: "pregnancy_record", id: recordId, fields: ["label"] }] }));
@@ -153,6 +211,14 @@ test("unknown, expired, overlong, foreign and diary scopes cannot create a reque
 test("direct tables and privileged internal helpers remain unavailable to clients", async () => {
   for (const sql of ["select * from prohor_care.request_permissions", "select * from prohor_care.follow_up_messages",
     "select prohor_care.permission_dto(gen_random_uuid())"]) await assert.rejects(() => asUser(users.mother, tx => tx.exec(sql)));
+  const inspection = await db.exec(await readFile(new URL("../../supabase/inspection/bondhon_readonly.sql", import.meta.url), "utf8"));
+  assert.equal(inspection.length, 6);
+  assert.equal(inspection[3].rows.length, 6);
+  assert.ok(inspection[3].rows.every(row => row.relrowsecurity && row.relforcerowsecurity && !row.direct_access));
+  assert.equal(inspection[4].rows.length, 21);
+  assert.ok(inspection[4].rows.every(row => row.exists && row.can_execute ===
+    (row.role_name === "authenticated" && !row.signature.startsWith("public.mvp_care_create_request("))));
+  assert.ok(inspection[5].rows.every(row => !row.can_execute));
 });
 
 

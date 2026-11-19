@@ -5,6 +5,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { establishFixtureRole } from "./care-fixtures.mjs";
 
+// Historical pre-hardening contract regression; full forward chain is covered in bondhon-coordination.test.mjs.
 // In-memory SQL only; no env files, remote URLs, auth credentials or live users.
 const db = new PGlite();
 const ids = Object.fromEntries(["a", "b", "p", "q", "unapproved", "unconfirmed", "anonymous"].map(name => [name, randomUUID()]));
@@ -50,7 +51,7 @@ before(async () => {
     create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,is_anonymous boolean not null default false,raw_user_meta_data jsonb not null default '{}');
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid; $$;`);
   const migrationDir = new URL("../../supabase/migrations/", import.meta.url);
-  for (const file of (await readdir(migrationDir)).filter(name => name.endsWith(".sql")).sort()) {
+  for (const file of (await readdir(migrationDir)).filter(name => name.endsWith(".sql") && name < "20261119060000").sort()) {
     await db.exec(await readFile(new URL(file, migrationDir), "utf8"));
   }
   for (const [name, id] of Object.entries(ids)) {

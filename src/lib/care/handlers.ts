@@ -165,31 +165,20 @@ export async function handleCare(
       }
       case "create-request": {
         const parsed = createSupportRequestRequestSchema.safeParse(input);
-        if (!parsed.success) return fail("invalid_request", 400, "Review the recipient, message, purpose and selected consent grants.");
+        if (!parsed.success) return fail("invalid_request", 400, "Review the recipient, message, purpose, explicit permission and expiry.");
         const value = parsed.data;
-        if (value.coordination && value.consentGrantIds.length > 0)
+        if (value.consentGrantIds.length > 0)
           return fail("invalid_request", 400, "Review selected records in this request instead of reusing grants.");
-        if (value.coordination) {
-          rpcName = "mvp_care_create_coordinated_request";
-          params = { p_payload: value, p_idempotency_key: retryKey };
-          responseSchema = supportRequestSchema.refine(stored => stored.ownerUserId === actorId &&
-            stored.recipientUserId === value.recipientUserId && stored.message === value.message &&
-            stored.method === value.method && stored.purpose === value.purpose && !!stored.coordination &&
-            Date.parse(stored.coordination.expiresAt) === Date.parse(value.coordination!.expiresAt) &&
-            stored.coordination.allowReplies === value.coordination!.allowReplies &&
-            stored.coordination.language === value.coordination!.language &&
-            sameIds(stored.coordination.accommodations, value.coordination!.accommodations) &&
-            stored.consentGrantIds.length === value.coordination!.records.length);
-          created = true;
-          break;
-        }
-        rpcName = "mvp_care_create_request";
-        params = { p_recipient_user_id: value.recipientUserId, p_message: value.message,
-          p_method: value.method, p_purpose: value.purpose, p_consent_grant_ids: value.consentGrantIds,
-          p_review_confirmed: value.reviewConfirmed, p_idempotency_key: retryKey };
-        responseSchema = supportRequestSchema.refine(value => value.ownerUserId === actorId && value.recipientUserId === parsed.data.recipientUserId &&
-          value.message === parsed.data.message && value.method === parsed.data.method && value.purpose === parsed.data.purpose &&
-          sameIds(value.consentGrantIds, parsed.data.consentGrantIds));
+        rpcName = "mvp_care_create_coordinated_request";
+        params = { p_payload: value, p_idempotency_key: retryKey };
+        responseSchema = supportRequestSchema.refine(stored => stored.ownerUserId === actorId &&
+          stored.recipientUserId === value.recipientUserId && stored.message === value.message &&
+          stored.method === value.method && stored.purpose === value.purpose && !!stored.coordination &&
+          Date.parse(stored.coordination.expiresAt) === Date.parse(value.coordination.expiresAt) &&
+          stored.coordination.allowReplies === value.coordination.allowReplies &&
+          stored.coordination.language === value.coordination.language &&
+          sameIds(stored.coordination.accommodations, value.coordination.accommodations) &&
+          stored.consentGrantIds.length === value.coordination.records.length);
         created = true;
         break;
       }

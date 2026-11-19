@@ -1,13 +1,21 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
-import Link from "next/link";
 import { useLanguage } from "@/i18n/use-language";
-import { safeAuthReturnPath } from "@/lib/routes";
 import { onboardingSchema } from "@/lib/contracts/account";
-import { RoleProfileFields, emptyRoleProfile } from "./RoleProfileFields";
+import { safeAuthReturnPath } from "@/lib/routes";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+} from "lucide-react";
+import Link from "next/link";
+import { useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Eye, EyeOff, Check, ShieldCheck } from "lucide-react";
 import { AuthStory } from "./AuthStory";
+import { RoleProfileFields, emptyRoleProfile } from "./RoleProfileFields";
 
 export function EmailSignIn({
   mode = "sign-in",
@@ -36,14 +44,17 @@ export function EmailSignIn({
   const safeNext = safeAuthReturnPath(next);
 
   const messages: Record<string, { en: string; bn: string }> = {
-    "choose-role": { en: "Choose one role to continue.", bn: "এগোনোর জন্য একটি পরিচয় বেছে নিন।" },
+    "choose-role": {
+      en: "Choose at least one role to continue.",
+      bn: "এগোনোর জন্য অন্তত একটি পরিচয় বেছে নিন।",
+    },
     "password-mismatch": {
       en: "The passwords do not match. Please check both fields.",
       bn: "পাসওয়ার্ড দুটি মেলেনি। দুটি ঘরই যাচাই করুন।",
     },
     "invalid-profile": {
-      en: "Enter your name, select one role and complete the professional fields if shown.",
-      bn: "আপনার নাম দিন, একটি পরিচয় বেছে নিন এবং পেশাগত ঘরগুলো দেখালে পূরণ করুন।",
+      en: "Enter your name, select at least one role and complete the professional fields if shown.",
+      bn: "আপনার নাম দিন, অন্তত একটি পরিচয় বেছে নিন এবং পেশাগত ঘরগুলো দেখালে পূরণ করুন।",
     },
     "roles-unavailable": {
       en: "Account role setup is not available yet. Your account has not been created. Please try again after setup is complete.",
@@ -77,7 +88,10 @@ export function EmailSignIn({
       en: "An account may have been created. Try signing in; do not submit sign-up again.",
       bn: "অ্যাকাউন্ট তৈরি হয়ে থাকতে পারে। সাইন ইন চেষ্টা করুন।",
     },
-    "signed-out": { en: "Sign in to access your account.", bn: "অ্যাকাউন্টে প্রবেশ করতে সাইন ইন করুন।" },
+    "signed-out": {
+      en: "Sign in to access your account.",
+      bn: "অ্যাকাউন্টে প্রবেশ করতে সাইন ইন করুন।",
+    },
     "session-required": {
       en: "Sign in to continue. Your previous session may have expired.",
       bn: "এগোতে সাইন ইন করুন। আগের সেশনের মেয়াদ শেষ হয়ে থাকতে পারে।",
@@ -101,53 +115,74 @@ export function EmailSignIn({
     bn: "অনুরোধটি সম্পন্ন হয়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।",
   };
 
-  const fieldInvalid = invalid && ["invalid-input", "authentication-failed"].includes(message);
+  const fieldInvalid =
+    invalid && ["invalid-input", "authentication-failed"].includes(message);
 
   async function submit(action: "sign-in" | "sign-up" | "email-link") {
     if (busy) return;
-    if (action === "sign-up" && !createdAccountId && password !== confirmPassword) {
-      setMessage("password-mismatch"); setInvalid(true);
+    if (
+      action === "sign-up" &&
+      !createdAccountId &&
+      password !== confirmPassword
+    ) {
+      setMessage("password-mismatch");
+      setInvalid(true);
       requestAnimationFrame(() => status.current?.focus());
       return;
     }
     if (action === "sign-up" && !onboardingSchema.safeParse(profile).success) {
-      setMessage("invalid-profile"); setInvalid(true);
+      setMessage("invalid-profile");
+      setInvalid(true);
       requestAnimationFrame(() => status.current?.focus());
       return;
     }
     const emailOnly = action === "email-link";
     if (emailOnly && !emailInput.current?.reportValidity()) return;
     setPasswordUsed(!emailOnly);
-    setMessage(""); setInvalid(false); setBusy(true);
+    setMessage("");
+    setInvalid(false);
+    setBusy(true);
 
     try {
       const finishProfile = action === "sign-up" && createdAccountId !== null;
-      const response = await fetch(finishProfile ? "/auth/account" : `/auth/${action}`, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          ...(finishProfile ? { "X-Prohor-Account": createdAccountId! } : {}),
+      const response = await fetch(
+        finishProfile ? "/auth/account" : `/auth/${action}`,
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            ...(finishProfile ? { "X-Prohor-Account": createdAccountId! } : {}),
+          },
+          body: JSON.stringify(
+            finishProfile
+              ? { action: "onboard", profile }
+              : {
+                  email,
+                  ...(emailOnly ? {} : { password }),
+                  next: safeNext,
+                  ...(action === "sign-up" ? { profile } : {}),
+                },
+          ),
         },
-        body: JSON.stringify(
-          finishProfile
-            ? { action: "onboard", profile }
-            : { email, ...(emailOnly ? {} : { password }), next: safeNext, ...(action === "sign-up" ? { profile } : {}) }
-        ),
-      });
+      );
 
       const data = await response.json();
       if (response.ok && typeof data.redirectTo === "string") {
         window.location.assign(safeAuthReturnPath(data.redirectTo));
       } else {
-        if (data.code === "profile-pending" && z.uuid().safeParse(data.accountId).success) {
+        if (
+          data.code === "profile-pending" &&
+          z.uuid().safeParse(data.accountId).success
+        ) {
           setCreatedAccountId(data.accountId);
         }
         setMessage(typeof data.code === "string" ? data.code : "unavailable");
         setInvalid(!response.ok);
       }
     } catch {
-      setMessage("unavailable"); setInvalid(true);
+      setMessage("unavailable");
+      setInvalid(true);
     } finally {
       setBusy(false);
       requestAnimationFrame(() => status.current?.focus());
@@ -155,7 +190,9 @@ export function EmailSignIn({
   }
 
   function moveStep(nextStep: number) {
-    setStep(nextStep); setMessage(""); setInvalid(false);
+    setStep(nextStep);
+    setMessage("");
+    setInvalid(false);
     requestAnimationFrame(() => heading.current?.focus());
   }
 
@@ -195,7 +232,9 @@ export function EmailSignIn({
         className="auth-panel"
         aria-label={t({
           en: signup ? "Create an account" : "Sign in to your account",
-          bn: signup ? "অ্যাকাউন্ট তৈরি করুন" : "আপনার অ্যাকাউন্টে সাইন ইন করুন",
+          bn: signup
+            ? "অ্যাকাউন্ট তৈরি করুন"
+            : "আপনার অ্যাকাউন্টে সাইন ইন করুন",
         })}
       >
         {/* Top bar with back link & reassurance */}
@@ -206,14 +245,19 @@ export function EmailSignIn({
           </Link>
           <span className="auth-safe-badge">
             <ShieldCheck size={14} aria-hidden="true" />
-            <span>{t({ en: "Secure & Confidential", bn: "নিরাপদ ও গোপনীয়" })}</span>
+            <span>
+              {t({ en: "Secure & Confidential", bn: "নিরাপদ ও গোপনীয়" })}
+            </span>
           </span>
         </div>
 
         {/* Seamless Segmented Mode Switcher (Sign In <-> Create Account) */}
         <nav
           className="auth-mode-switch"
-          aria-label={t({ en: "Account access mode", bn: "অ্যাকাউন্ট প্রবেশের ধরন" })}
+          aria-label={t({
+            en: "Account access mode",
+            bn: "অ্যাকাউন্ট প্রবেশের ধরন",
+          })}
         >
           <Link
             href={signInUrl}
@@ -245,11 +289,23 @@ export function EmailSignIn({
             <p className="auth-form-subtitle">
               {signup
                 ? step === 0
-                  ? t({ en: "Start with your role. We'll shape the next step around you.", bn: "আপনার পরিচয় দিয়ে শুরু করুন। পরের ধাপ আপনার জন্য সাজানো হবে।" })
+                  ? t({
+                      en: "Start with your role. We'll shape the next step around you.",
+                      bn: "আপনার পরিচয় দিয়ে শুরু করুন। পরের ধাপ আপনার জন্য সাজানো হবে।",
+                    })
                   : step === 1
-                  ? t({ en: "A little about you, and the care you're here for.", bn: "আপনার পরিচয় এবং যে যত্নের জন্য এসেছেন, সে সম্পর্কে কিছু তথ্য।" })
-                  : t({ en: "Set up your sign-in details.", bn: "সাইন ইনের তথ্য ঠিক করুন।" })
-                : t({ en: "Sign in to access your maternal care journey, records, and AI companion.", bn: "অ্যাকাউন্টে সাইন ইন করে আপনার যত্নের যাত্রা ও ব্যক্তিগত তথ্য দেখুন।" })}
+                    ? t({
+                        en: "A little about you, and the care you're here for.",
+                        bn: "আপনার পরিচয় এবং যে যত্নের জন্য এসেছেন, সে সম্পর্কে কিছু তথ্য।",
+                      })
+                    : t({
+                        en: "Set up your sign-in details.",
+                        bn: "সাইন ইনের তথ্য ঠিক করুন।",
+                      })
+                : t({
+                    en: "Sign in to access your maternal care journey, records, and AI companion.",
+                    bn: "অ্যাকাউন্টে সাইন ইন করে আপনার যত্নের যাত্রা ও ব্যক্তিগত তথ্য দেখুন।",
+                  })}
             </p>
           </div>
 
@@ -257,7 +313,10 @@ export function EmailSignIn({
           {signup && (
             <ol
               className="auth-stepper"
-              aria-label={t({ en: "Registration progress", bn: "নিবন্ধনের ধাপ" })}
+              aria-label={t({
+                en: "Registration progress",
+                bn: "নিবন্ধনের ধাপ",
+              })}
             >
               {stepLabels.map((label, index) => (
                 <li
@@ -267,7 +326,11 @@ export function EmailSignIn({
                   aria-current={step === index ? "step" : undefined}
                 >
                   <span className="auth-step-num">
-                    {step > index ? <Check size={12} aria-hidden="true" /> : `0${index + 1}`}
+                    {step > index ? (
+                      <Check size={12} aria-hidden="true" />
+                    ) : (
+                      `0${index + 1}`
+                    )}
                   </span>
                   <span className="auth-step-text">{t(label)}</span>
                 </li>
@@ -292,9 +355,19 @@ export function EmailSignIn({
                 {profile.displayName}
                 {profile.purposes.length > 0 && (
                   <span style={{ color: "var(--pro-muted)", fontWeight: 400 }}>
-                    {" "}·{" "}
+                    {" "}
+                    ·{" "}
                     {profile.purposes
-                      .map(r => t({ mother: { en: "Mother", bn: "মা" }, supporter: { en: "Supporter", bn: "সহায়তাকারী" }, doctor: { en: "Doctor", bn: "চিকিৎসক" }, chw: { en: "CHW", bn: "স্বাস্থ্যকর্মী" } }[r] ?? { en: r, bn: r }))
+                      .map((r) =>
+                        t(
+                          {
+                            mother: { en: "Mother", bn: "মা" },
+                            supporter: { en: "Supporter", bn: "সহায়তাকারী" },
+                            doctor: { en: "Doctor", bn: "চিকিৎসক" },
+                            chw: { en: "CHW", bn: "স্বাস্থ্যকর্মী" },
+                          }[r] ?? { en: r, bn: r },
+                        ),
+                      )
                       .join(" · ")}
                   </span>
                 )}
@@ -321,7 +394,7 @@ export function EmailSignIn({
                   aria-describedby="auth-status"
                   aria-invalid={fieldInvalid || undefined}
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                 />
               </div>
@@ -335,38 +408,67 @@ export function EmailSignIn({
                     className="auth-input"
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
+                    autoComplete={
+                      mode === "sign-up" ? "new-password" : "current-password"
+                    }
                     required
                     disabled={createdAccountId !== null}
                     minLength={mode === "sign-up" ? 12 : 1}
                     maxLength={128}
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     aria-describedby="password-hint auth-status"
-                    aria-invalid={((fieldInvalid && passwordUsed) || message === "password-mismatch") || undefined}
+                    aria-invalid={
+                      (fieldInvalid && passwordUsed) ||
+                      message === "password-mismatch" ||
+                      undefined
+                    }
                   />
                   <button
                     type="button"
                     tabIndex={-1}
                     className="auth-password-toggle"
-                    aria-label={showPassword ? t({ en: "Hide password", bn: "পাসওয়ার্ড আড়াল করুন" }) : t({ en: "Show password", bn: "পাসওয়ার্ড দেখুন" })}
+                    aria-label={
+                      showPassword
+                        ? t({
+                            en: "Hide password",
+                            bn: "পাসওয়ার্ড আড়াল করুন",
+                          })
+                        : t({ en: "Show password", bn: "পাসওয়ার্ড দেখুন" })
+                    }
                     aria-pressed={showPassword}
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                    {showPassword ? (
+                      <EyeOff size={18} aria-hidden="true" />
+                    ) : (
+                      <Eye size={18} aria-hidden="true" />
+                    )}
                   </button>
                 </div>
                 <p id="password-hint" className="auth-field-hint">
                   {signup
-                    ? t({ en: "At least 12 characters. Password managers and pasting are welcome.", bn: "অন্তত ১২টি অক্ষর। পাসওয়ার্ড ম্যানেজার ও পেস্ট ব্যবহার করতে পারেন।" })
-                    : t({ en: "Use the password you created for your PROHOR account.", bn: "প্রহর অ্যাকাউন্টের জন্য তৈরি করা পাসওয়ার্ড ব্যবহার করুন।" })}
+                    ? t({
+                        en: "At least 12 characters. Password managers and pasting are welcome.",
+                        bn: "অন্তত ১২টি অক্ষর। পাসওয়ার্ড ম্যানেজার ও পেস্ট ব্যবহার করতে পারেন।",
+                      })
+                    : t({
+                        en: "Use the password you created for your PROHOR account.",
+                        bn: "প্রহর অ্যাকাউন্টের জন্য তৈরি করা পাসওয়ার্ড ব্যবহার করুন।",
+                      })}
                 </p>
               </div>
 
               {signup && (
                 <div className="auth-field">
-                  <label htmlFor="confirm-password" className="auth-field-label">
-                    {t({ en: "Confirm password", bn: "পাসওয়ার্ড নিশ্চিত করুন" })}
+                  <label
+                    htmlFor="confirm-password"
+                    className="auth-field-label"
+                  >
+                    {t({
+                      en: "Confirm password",
+                      bn: "পাসওয়ার্ড নিশ্চিত করুন",
+                    })}
                   </label>
                   <input
                     id="confirm-password"
@@ -377,7 +479,7 @@ export function EmailSignIn({
                     disabled={createdAccountId !== null}
                     value={confirmPassword}
                     maxLength={128}
-                    onChange={e => setConfirmPassword(e.target.value)}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     aria-invalid={message === "password-mismatch" || undefined}
                     aria-describedby="auth-status"
                   />
@@ -417,12 +519,18 @@ export function EmailSignIn({
                 {busy
                   ? t({ en: "Please wait…", bn: "অপেক্ষা করুন…" })
                   : signup && step < 2
-                  ? t({ en: "Continue", bn: "এগিয়ে যান" })
-                  : createdAccountId
-                  ? t({ en: "Finish account setup", bn: "অ্যাকাউন্ট সেটআপ সম্পূর্ণ করুন" })
-                  : signup
-                  ? t({ en: "Create my account", bn: "আমার অ্যাকাউন্ট তৈরি করুন" })
-                  : t({ en: "Sign in", bn: "সাইন ইন" })}
+                    ? t({ en: "Continue", bn: "এগিয়ে যান" })
+                    : createdAccountId
+                      ? t({
+                          en: "Finish account setup",
+                          bn: "অ্যাকাউন্ট সেটআপ সম্পূর্ণ করুন",
+                        })
+                      : signup
+                        ? t({
+                            en: "Create my account",
+                            bn: "আমার অ্যাকাউন্ট তৈরি করুন",
+                          })
+                        : t({ en: "Sign in", bn: "সাইন ইন" })}
               </span>
               <ArrowRight size={18} aria-hidden="true" />
             </button>
@@ -431,10 +539,15 @@ export function EmailSignIn({
           {/* Account prompt */}
           <p className="auth-account-prompt">
             {signup
-              ? t({ en: "Already part of PROHOR? ", bn: "আগেই প্রহরে যোগ দিয়েছেন? " })
+              ? t({
+                  en: "Already part of PROHOR? ",
+                  bn: "আগেই প্রহরে যোগ দিয়েছেন? ",
+                })
               : t({ en: "New to PROHOR? ", bn: "প্রহরে নতুন? " })}
             <Link href={signup ? signInUrl : signUpUrl} className="auth-link">
-              {signup ? t({ en: "Sign in", bn: "সাইন ইন করুন" }) : t({ en: "Create an account", bn: "অ্যাকাউন্ট তৈরি করুন" })}
+              {signup
+                ? t({ en: "Sign in", bn: "সাইন ইন করুন" })
+                : t({ en: "Create an account", bn: "অ্যাকাউন্ট তৈরি করুন" })}
             </Link>
           </p>
         </form>
@@ -442,7 +555,9 @@ export function EmailSignIn({
         {/* Footer */}
         <footer className="auth-panel-footer">
           <Link href="/" className="auth-visitor-link">
-            <span>{t({ en: "Explore as a visitor", bn: "অতিথি হিসেবে ঘুরে দেখুন" })}</span>
+            <span>
+              {t({ en: "Explore as a visitor", bn: "অতিথি হিসেবে ঘুরে দেখুন" })}
+            </span>
             <ArrowUpRight size={14} aria-hidden="true" />
           </Link>
         </footer>

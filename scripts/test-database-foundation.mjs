@@ -6,7 +6,8 @@ import { PGlite } from "@electric-sql/pglite";
 // Models the Supabase role/auth boundary; the same test SQL must also run on
 // local Supabase to verify the actual GoTrue/PostgREST environment.
 const migrationDir = new URL("../supabase/migrations/", import.meta.url);
-const migrations = (await readdir(migrationDir)).filter((name) => name.endsWith(".sql")).sort();
+const migrations = (await readdir(migrationDir)).filter((name) => name.endsWith(".sql")).sort()
+  .slice(0, 2); // shortcut: foundation scope only (two tables); later chain is covered by test-onboarding-single-role.mjs
 const testSql = await readFile(new URL("../supabase/tests/database_foundation.sql", import.meta.url), "utf8");
 const preferenceTests = await readFile(new URL("../supabase/tests/preferences.sql", import.meta.url), "utf8");
 const legacySql = await readFile(new URL("../supabase/reference/001_initial.sql", import.meta.url), "utf8");
@@ -17,7 +18,8 @@ const bootstrap = `
   create schema auth;
   grant usage on schema public, auth to anon, authenticated, service_role;
   create table auth.users (id uuid primary key, email text,
-    raw_user_meta_data jsonb not null default '{}');
+    raw_user_meta_data jsonb not null default '{}',
+    email_confirmed_at timestamptz, is_anonymous boolean default false);
   create function auth.uid() returns uuid language sql stable as $$
     select coalesce(nullif(current_setting('request.jwt.claim.sub', true), ''),
       nullif(current_setting('request.jwt.claims', true), '')::jsonb->>'sub')::uuid;

@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Stop-Process -Id 27280 -Force -Confirm:$false; $p = \\(Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue\\).OwningProcess | Select-Object -Unique; foreach \\($id in $p\\) { Stop-Process -Id $id -Force -Confirm:$false }; \"stopped\")",
+      "Bash(grep -E \"^\\\\s+[0-9]+\\\\\\) |›.*\\(─|$\\)|violations|\\\\\"id\\\\\"|\\\\\"help\\\\\"|target|Received|Expected\")",
+      "Bash(git stash *)",
+      "Bash(gh auth *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(claude plugins *)",
+      "Read(//c/Users/omorf/.claude/**)",
+      "Bash(wc -l src/features/dashboard/*.tsx src/features/auth/*.tsx)",
+      "Bash(grep -rnE \"goto\\\\\\(['\\\\\"\\\\`]/\\(bujhi|jibonrekha\\)['\\\\\"\\\\`]|demo/\\(bujhi|jibonrekha\\)|role\\\\\\(\\\\\"main\\\\\"|getByRole\\\\\\(['\\\\\"]main|locator\\\\\\(['\\\\\"]main|'main'\" tests)",
+      "Bash(grep -vE \"^\\\\s*$\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --retry 40 --retry-connrefused --retry-delay 3 --max-time 180 http://localhost:3100/zz-preview)",
+      "Bash(node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/ccd14449-2e07-4385-954c-3d2be7856bc0/scratchpad/shots.mjs\" \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/ccd14449-2e07-4385-954c-3d2be7856bc0/scratchpad\")",
+      "Bash(git checkout *)",
+      "Bash(node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/ccd14449-2e07-4385-954c-3d2be7856bc0/scratchpad/live-test.mjs\")",
+      "Bash(gh pr *)",
+      "PowerShell(git merge --ff-only origin/main)",
+      "PowerShell(git merge --no-edit origin/main)",
+      "PowerShell(npx playwright test -c playwright.contracts.config.ts 2>&1)",
+      "PowerShell(npx playwright test -c playwright.contracts.config.ts 2>&1 | Select-Object -Last 4; Remove-Item -Recurse -Force .next\\\\dev\\\\types -ErrorAction SilentlyContinue; npm run build 2>&1 | Select-String -Pattern \"bondhon|care-re|error|Error|Compiled|✓\" | Select-Object -First 30; \"BUILD EXIT: $LASTEXITCODE\"; npm run typecheck 2>&1 | Select-Object -Last 5; \"TSC EXIT: $LASTEXITCODE\")",
+      "Bash(M_EMAIL='test.mother@prohor.demo' M_PW='Prohor-RtSZM3JjNU_m7!' P_EMAIL='test.provider@prohor.demo' P_PW='Prohor-iKX0nxzjINsV7!' node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/dc46556d-7a23-4069-b05c-b3048e9bf367/scratchpad/bondhon-live.cjs\")",
+      "Bash(curl -s --max-time 60 http://localhost:3000/)",
+      "Bash(wmic process *)",
+      "Bash(M_EMAIL='test.mother@prohor.demo' M_PW='Prohor-RtSZM3JjNU_m7!' node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/dc46556d-7a23-4069-b05c-b3048e9bf367/scratchpad/dbg.cjs\")",
+      "Bash(sed -n 1,60p src/i18n/use-language.ts* | cut -c1-200; grep -rn \"localStorage\\\\|cookie\\\\|data-lang\\\\|setLanguage\" src/i18n/*.ts* | cut -c1-180 | head -12)",
+      "Bash(M_EMAIL='test.mother@prohor.demo' M_PW='Prohor-RtSZM3JjNU_m7!' node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/dc46556d-7a23-4069-b05c-b3048e9bf367/scratchpad/dbg3.cjs\")",
+      "Bash(M_EMAIL='test.mother@prohor.demo' M_PW='Prohor-RtSZM3JjNU_m7!' node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/dc46556d-7a23-4069-b05c-b3048e9bf367/scratchpad/paginate-cleanup.cjs\")",
+      "mcp__claude_ai_Supabase__list_migrations",
+      "PowerShell(npx playwright test --config playwright.contracts.config.ts --reporter=line)"
+    ],
+    "additionalDirectories": [
+      "d:\\prohor-omor-day3\\src\\i18n"
+    ]
+  }
+}

@@ -225,6 +225,8 @@
 .auth-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(1.75rem, 3.5vw, 3.5rem);
+  align-items: start;
   gap: clamp(1.75rem, 3vw, 2.75rem);
   align-items: stretch;
 }
@@ -489,6 +491,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 0;
   padding: clamp(1.75rem, 3.5vw, 2.75rem);
   background: var(--pro-elevated);
   border: 1px solid color-mix(in srgb, var(--pro-border) 60%, transparent);
@@ -496,6 +499,7 @@
   box-shadow: 0 10px 30px rgb(var(--pro-shadow-rgb) / 0.04);
 }
 
+/* Panel top bar — back link + security badge */
 .auth-panel-top {
   display: flex;
   align-items: center;
@@ -548,13 +552,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 2.75rem;
   padding: 0.65rem 1rem;
-  border-radius: var(--pro-radius-pill);
   font-size: 0.925rem;
+  border-radius: var(--pro-radius-pill);
   font-weight: 500;
   color: var(--pro-muted);
   text-decoration: none;
-  min-height: 2.75rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   transition: background-color var(--pro-duration-fast) var(--pro-ease),
               color var(--pro-duration-fast) var(--pro-ease),
               box-shadow var(--pro-duration-fast) var(--pro-ease);

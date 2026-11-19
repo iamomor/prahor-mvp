@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { bondhonDetailSchema } from "../contracts/bondhon-detail";
+import { availableRecordSchema, followUpRequestSchema } from "../contracts/coordination";
 import { jsonNoStore } from "../api-response";
 import { readIdentity } from "../auth/access";
 import { boundedJson, sameOriginPost, siteOrigin } from "../auth/validation";
@@ -14,16 +16,17 @@ import { paginationQuerySchema, pageSchema } from "../contracts/transport";
 
 /** Local routes; database adoption and hosted acceptance are separate gates. */
 export type CareOperation = "recipients" | "create-consent" | "revoke-consent" | "create-request" |
-  "request-detail" | "request-events" | "provider-list" | "acknowledge" | "respond" | "close";
+  "request-detail" | "request-events" | "provider-list" | "acknowledge" | "respond" | "close" |
+  "request-list" | "shareable-records" | "coordination-detail" | "follow-up" | "revoke-request";
 export type CareDependencies = {
   createClient: () => Promise<SupabaseClient | null>;
   siteUrl?: string;
 };
-const readOperations = new Set<CareOperation>(["recipients", "request-detail", "request-events", "provider-list"]);
+const readOperations = new Set<CareOperation>(["recipients", "request-detail", "request-events", "provider-list", "request-list", "shareable-records", "coordination-detail"]);
 const providerOperations = new Set<CareOperation>(["provider-list", "acknowledge", "respond"]);
-const motherOperations = new Set<CareOperation>(["recipients", "create-consent", "revoke-consent", "create-request"]);
-const pathOperations = new Set<CareOperation>(["revoke-consent", "request-detail", "request-events", "acknowledge", "respond", "close"]);
-const retryOperations = new Set<CareOperation>(["create-consent", "create-request", "acknowledge", "respond", "close"]);
+const motherOperations = new Set<CareOperation>(["recipients", "create-consent", "revoke-consent", "create-request", "request-list", "shareable-records", "revoke-request"]);
+const pathOperations = new Set<CareOperation>(["revoke-consent", "request-detail", "request-events", "acknowledge", "respond", "close", "coordination-detail", "follow-up", "revoke-request"]);
+const retryOperations = new Set<CareOperation>(["create-consent", "create-request", "acknowledge", "respond", "close", "follow-up"]);
 const providerCursorSchema = z.strictObject({ createdAt: timestampSchema, id: idSchema });
 const revisionCursorSchema = z.string().regex(/^[1-9]\d{0,9}$/).transform(Number).pipe(z.number().int().max(2147483647));
 const sameIds = (first: readonly string[], second: readonly string[]) => [...first].sort().join(",") === [...second].sort().join(",");
@@ -88,7 +91,7 @@ export async function handleCare(
       return fail("conflict", 409, "Your signed-in account changed. Reload and review before continuing.");
     }
     let input: unknown;
-    if (!reading && operation !== "revoke-consent") {
+    if (!reading && !["revoke-consent", "revoke-request"].includes(operation)) {
       if (!request.headers.get("content-type")?.startsWith("application/json")) return fail("invalid_request", 400, "Send a JSON request.");
       try { input = await boundedJson(request); } catch { return fail("invalid_request", 400, "Send a valid request within the supported size."); }
     } else if (request.body !== null) {
@@ -107,7 +110,7 @@ export async function handleCare(
     }
     const query = queryInput(request);
     if (query === null) return fail("invalid_request", 400, "Use each query parameter once.");
-    if (!["provider-list", "request-events"].includes(operation) && Object.keys(query).length > 0) {
+    if (!["provider-list", "request-events", "request-list"].includes(operation) && Object.keys(query).length > 0) {
       return fail("invalid_request", 400, "This operation accepts no query parameters.");
     }
     let rpcName: string;
@@ -120,6 +123,29 @@ export async function handleCare(
         params = {};
         responseSchema = careRecipientsSchema;
         break;
+      case "shareable-records":
+        rpcName = "mvp_care_shareable_records";
+        params = {};
+        responseSchema = z.array(availableRecordSchema).max(100);
+        break;
+      case "coordination-detail":
+      case "revoke-request":
+        rpcName = operation === "coordination-detail" ? "mvp_care_coordination_detail" : "mvp_care_revoke_request";
+        params = { p_id: resourceId };
+        responseSchema = bondhonDetailSchema.refine(value => value.request.id === resourceId &&
+          (role === "mother" ? "ownerUserId" in value.request && value.request.ownerUserId === actorId :
+            !("ownerUserId" in value.request) && value.grants.length === 0 && value.audit.length === 0));
+        break;
+      case "follow-up": {
+        const parsed = followUpRequestSchema.safeParse(input);
+        if (!parsed.success) return fail("invalid_request", 400, "Review the message and request revision.");
+        rpcName = "mvp_care_follow_up";
+        params = { p_id: resourceId, p_message: parsed.data.message, p_expected_revision: parsed.data.expectedRevision, p_idempotency_key: retryKey };
+        responseSchema = bondhonDetailSchema.refine(value => value.request.id === resourceId &&
+          (role === "mother" ? "ownerUserId" in value.request && value.request.ownerUserId === actorId :
+            !("ownerUserId" in value.request) && value.grants.length === 0 && value.audit.length === 0));
+        break;
+      }
       case "create-consent": {
         const parsed = createConsentGrantRequestSchema.safeParse(input);
         if (!parsed.success) return fail("invalid_request", 400, "Review the recipient, record fields, purpose and consent dates.");
@@ -139,15 +165,20 @@ export async function handleCare(
       }
       case "create-request": {
         const parsed = createSupportRequestRequestSchema.safeParse(input);
-        if (!parsed.success) return fail("invalid_request", 400, "Review the recipient, message, purpose and selected consent grants.");
+        if (!parsed.success) return fail("invalid_request", 400, "Review the recipient, message, purpose, explicit permission and expiry.");
         const value = parsed.data;
-        rpcName = "mvp_care_create_request";
-        params = { p_recipient_user_id: value.recipientUserId, p_message: value.message,
-          p_method: value.method, p_purpose: value.purpose, p_consent_grant_ids: value.consentGrantIds,
-          p_review_confirmed: value.reviewConfirmed, p_idempotency_key: retryKey };
-        responseSchema = supportRequestSchema.refine(value => value.ownerUserId === actorId && value.recipientUserId === parsed.data.recipientUserId &&
-          value.message === parsed.data.message && value.method === parsed.data.method && value.purpose === parsed.data.purpose &&
-          sameIds(value.consentGrantIds, parsed.data.consentGrantIds));
+        if (value.consentGrantIds.length > 0)
+          return fail("invalid_request", 400, "Review selected records in this request instead of reusing grants.");
+        rpcName = "mvp_care_create_coordinated_request";
+        params = { p_payload: value, p_idempotency_key: retryKey };
+        responseSchema = supportRequestSchema.refine(stored => stored.ownerUserId === actorId &&
+          stored.recipientUserId === value.recipientUserId && stored.message === value.message &&
+          stored.method === value.method && stored.purpose === value.purpose && !!stored.coordination &&
+          Date.parse(stored.coordination.expiresAt) === Date.parse(value.coordination.expiresAt) &&
+          stored.coordination.allowReplies === value.coordination.allowReplies &&
+          stored.coordination.language === value.coordination.language &&
+          sameIds(stored.coordination.accommodations, value.coordination.accommodations) &&
+          stored.consentGrantIds.length === value.coordination.records.length);
         created = true;
         break;
       }
@@ -162,6 +193,7 @@ export async function handleCare(
         responseSchema = role === "provider" ? providerRequestSchema.refine(value => value.id === resourceId) :
           supportRequestSchema.refine(value => value.ownerUserId === actorId && value.id === resourceId);
         break;
+      case "request-list":
       case "provider-list": {
         const parsed = paginationQuerySchema.safeParse(query);
         if (!parsed.success) return fail("invalid_request", 400, "Use a supported page limit and cursor.");
@@ -170,9 +202,9 @@ export async function handleCare(
           try { cursor = providerCursorSchema.parse(JSON.parse(parsed.data.cursor)); }
           catch { return fail("invalid_request", 400, "Use the cursor from your previous request page."); }
         }
-        rpcName = "mvp_care_provider_requests";
+        rpcName = operation === "request-list" ? "mvp_care_owner_requests" : "mvp_care_provider_requests";
         params = { p_limit: parsed.data.limit, p_after_created_at: cursor?.createdAt ?? null, p_after_id: cursor?.id ?? null };
-        responseSchema = pageSchema(providerRequestSummarySchema).refine(value => value.items.length <= parsed.data.limit && (value.nextCursor === null ||
+        responseSchema = pageSchema(operation === "request-list" ? supportRequestSchema.refine(value => value.ownerUserId === actorId) : providerRequestSummarySchema).refine(value => value.items.length <= parsed.data.limit && (value.nextCursor === null ||
           (() => { try { return providerCursorSchema.safeParse(JSON.parse(value.nextCursor!)).success; } catch { return false; } })()));
         break;
       }

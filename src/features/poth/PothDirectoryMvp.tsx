@@ -9,8 +9,8 @@ import { PothNearbyMap } from "./PothNearbyMap";
 import { PothEmergencySOS } from "./PothEmergencySOS";
 import { PothCareCoverage } from "./PothCareCoverage";
 import { PothVisitPreparation } from "./PothVisitPreparation";
+import { useLanguage } from "@/i18n/use-language";
 
-type Language = "bn" | "en";
 type Example = {
   name: string;
   bangla: string;
@@ -37,8 +37,9 @@ const examples: Example[] = [
 
 const registryUrl = "https://hrm.dghs.gov.bd/public/facility-registry";
 
-export function PothDirectoryMvp() {
-  const [language, setLanguage] = useState<Language>("bn");
+/** `embedded`: rendered inside the signed-in shell, which already provides brand, language and the main landmark. */
+export function PothDirectoryMvp({ embedded = false }: { embedded?: boolean }) {
+  const { language, setLanguage } = useLanguage();
   const [division, setDivision] = useState<Division | "">("");
   const [district, setDistrict] = useState("");
   const [search, setSearch] = useState("");
@@ -57,9 +58,9 @@ export function PothDirectoryMvp() {
   });
 
   return (
-    <main lang={language} className="min-h-screen px-4 py-7 sm:px-8 sm:py-10" style={{ background: "var(--pro-bg)", color: "var(--pro-text)" }}>
+    <div lang={language} className={embedded ? "" : "min-h-screen px-4 py-7 sm:px-8 sm:py-10"} style={{ background: "var(--pro-bg)", color: "var(--pro-text)" }}>
       <div className="mx-auto max-w-5xl">
-        <header className="mb-10 flex flex-wrap items-center justify-between gap-3">
+        {!embedded && <header className="mb-10 flex flex-wrap items-center justify-between gap-3">
           <Link href="/" className="rounded-lg font-bold underline focus-visible:outline-2 focus-visible:outline-offset-4">
             PROHOR | প্রহর
           </Link>
@@ -71,7 +72,7 @@ export function PothDirectoryMvp() {
               className="min-h-11 rounded-lg border px-4 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ background: !bn ? "var(--pro-primary)" : "var(--pro-elevated)", color: !bn ? "var(--pro-on-primary)" : "var(--pro-text)", borderColor: "var(--pro-control-border)" }}>EN</button>
           </div>
-        </header>
+        </header>}
 
         <section className="mb-8" aria-labelledby="poth-title">
           <p className="mb-3 font-semibold" style={{ color: "var(--pro-primary)" }}>PROHOR POTH · প্রহর পথ</p>
@@ -182,6 +183,6 @@ export function PothDirectoryMvp() {
           )}
         </footer>
       </div>
-    </main>
+    </div>
   );
 }

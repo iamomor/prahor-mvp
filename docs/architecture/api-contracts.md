@@ -294,18 +294,21 @@ No diary text field is accepted on a check-in. Activity/rest notes are consolida
 
 ## Consent and Bondhon simulated provider workflow
 
-Status: **Working simulated backend against hosted Supabase; application source
-uncommitted, connected UI/shared preview acceptance pending.** All routes below
+Status: **Working simulated backend against hosted Supabase; source present in
+`develop` at `23206dd`, connected UI/shared preview acceptance pending.** All routes below
 call the existing cookie-bound care adapter. Forward migrations through
 `20261118070000` are applied to the operator-selected app backend: private records,
 care tables/RPCs, account-role approval integration, deferred status evidence and
 explicit HTTP conflict errors. The proposal files remain historical candidates.
-Targeted verification passed all ten HTTP operations with actual hosted Auth and
+Read-only inspection on 19 November confirmed eight care-chain migrations,
+ten forced-RLS care tables, ten authenticated care RPCs, one active simulated
+provider approval, and the subsequent `20261119000000` migration. Targeted prior
+verification passed all ten HTTP operations with actual hosted Auth and
 database persistence (23 checks), including foreign-owner/pending-provider denial,
 retry deduplication and revoke. This is a simulated app queue, not clinician
 delivery. Omor owns backend/security; the delegated care UI writer consumes this
-contract (Apurbo's Shonket work per the operator's latest instruction). No merged
-handoff SHA or deployed application preview is claimed.
+contract (Apurbo's Shonket work per the operator's latest instruction). No deployed
+application preview or completed connected UI is claimed.
 
 ### Teammate integration prerequisites
 
@@ -359,6 +362,11 @@ non-emergency simulated request path. Full connected-UI QA follows integration.
 | `POST /api/provider/requests/:id/acknowledge` | Assigned approved provider; expected revision | 200 updated request only after explicit provider action and valid delivered state |
 | `POST /api/provider/requests/:id/respond` | Assigned approved provider; revision + message | 200 atomic response message + event; updated request in `responded` state |
 | `POST /api/care-requests/:id/close` | Mother or assigned approved provider; expected revision | 200 updated request; closure does not mean a medical concern is resolved |
+| `GET /api/care-requests` | Confirmed mother; pagination | Bondhon: page of her own requests only (`mvp_care_owner_requests`) |
+| `GET /api/care-records` | Confirmed mother; no body/query | Bondhon: up to 100 of her own synthetic record field candidates for explicit selection; no diary, AI conversation or raw attachments |
+| `GET /api/care-requests/:id/coordination` | Owner or active assigned approved provider | Bondhon: request, message thread, and (owner only) grants and audit; provider gets no grants/audit |
+| `POST /api/care-requests/:id/messages` | Owner or assigned provider; `followUpRequestSchema` + retry key | Bondhon: follow-up persists only while the request permission allows replies and is unexpired/unrevoked; stale revision returns 409 |
+| `POST /api/care-requests/:id/revoke` | Owner; UUID, no body | Bondhon: revokes the request permission so later provider reads/writes fail; cannot recall content already viewed |
 
 Mother explicitly chooses recipient, message, purpose, exact record fields and finite consent expiry, reviews them, then sends. A grant is one resource with a typed field allowlist. No `all_records`, raw document, diary or AI scope exists in v1. A request can contain zero grant IDs when only its mother-approved message is sent. Grant IDs must belong to that mother and recipient, be active, and have matching purposes; the request grant join enforces integrity. Expired/revoked grants must not be replaced by copied snapshots.
 

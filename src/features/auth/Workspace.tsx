@@ -1,38 +1,42 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
+import { User } from "lucide-react";
 import { useLanguage } from "@/i18n/use-language";
 import type { OwnProfile } from "@/lib/auth/access";
+import { SignOutButton } from "./SignOutButton";
 
-export function Workspace({ profile }: { profile: OwnProfile }) {
+export function Workspace({ profile, children }: { profile: OwnProfile; children?: React.ReactNode }) {
   const { t } = useLanguage();
-  const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
-  async function signOut() {
-    setBusy(true); setFailed(false);
-    try {
-      // Server returns JSON + Set-Cookie (not a redirect) so the browser applies
-      // the cookie-clearing headers before we navigate away.
-      const response = await fetch("/auth/sign-out", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Accept": "application/json" },
-      });
-      if (!response.ok && response.status !== 503) {
-        // Non-fatal: session may already be gone — still navigate away.
-      }
-    } catch {
-      // Network error — still navigate so user is not stuck on a protected page.
-    } finally {
-      window.location.assign("/sign-in?status=signed-out");
-    }
-  }
-  return <section className="pro-card space-y-5">
-    <Link href="/account" className="inline-flex min-h-12 items-center underline">{t({ en: "Account and roles / switch workspace", bn: "অ্যাকাউন্ট ও পরিচয় / কর্মক্ষেত্র বদলান" })}</Link>
-    <h1 className="text-3xl font-semibold">{profile.role === "mother" ? t({ en: "Your PROHOR dashboard", bn: "আপনার প্রহর ড্যাশবোর্ড" }) : t({ en: "Simulated provider workspace", bn: "সিমুলেটেড সেবাদাতার কর্মক্ষেত্র" })}</h1>
-    {profile.display_name && <p>{profile.display_name}</p>}
-    <p>{profile.role === "mother" ? t({ en: "You are signed in to your own account. Health-record features are not connected yet.", bn: "আপনার নিজের অ্যাকাউন্টে সাইন ইন করা আছে। স্বাস্থ্যতথ্যের সুবিধা এখনো যুক্ত হয়নি।" }) : t({ en: "Your provider access is authorized. No maternal records are shared here; consent and assignment workflows are not connected yet.", bn: "আপনার সেবাদাতার প্রবেশাধিকার অনুমোদিত। এখানে মায়েদের তথ্য শেয়ার হয়নি; সম্মতি ও দায়িত্ব বণ্টনের ব্যবস্থা এখনো যুক্ত হয়নি।" })}</p>
-    <button type="button" className="pro-btn pro-btn-secondary" onClick={() => void signOut()} disabled={busy}>{busy ? t({ en: "Signing out…", bn: "সাইন আউট হচ্ছে…" }) : t({ en: "Sign out", bn: "সাইন আউট" })}</button>
-    {failed && <p role="alert">{t({ en: "Sign-out could not be confirmed. Check your connection and try again.", bn: "সাইন আউট নিশ্চিত হয়নি। সংযোগ দেখে আবার চেষ্টা করুন।" })}</p>}
-  </section>;
+
+  // Mother workspace: the AuthShell sidebar owns account + sign-out; MotherDashboard owns the page header.
+  if (profile.role === "mother") return <div className="w-full">{children}</div>;
+
+  return (
+    <div className="grid gap-8">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-pro-border pb-4">
+        <div className="grid gap-1">
+          <p className="w-fit rounded-pill border border-pro-border bg-pro-surface px-2.5 py-0.5 text-sm font-semibold text-pro-primary">
+            {t({ en: "Simulated provider portal", bn: "সিমুলেটেড সেবাদাতা পোর্টাল" })}
+          </p>
+          <h1 className="pro-editorial text-2xl font-bold text-pro-text sm:text-3xl">
+            {t({ en: "Care request queue", bn: "সহায়তা অনুরোধের তালিকা" })}
+          </h1>
+          {profile.display_name && (
+            <p className="text-pro-muted">{t({ en: "Signed in as", bn: "সাইন ইন করেছেন" })} {profile.display_name}</p>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/account" className="pro-btn pro-btn-secondary">
+            <User size={16} aria-hidden="true" />
+            <span>{t({ en: "Account and roles", bn: "অ্যাকাউন্ট ও পরিচয়" })}</span>
+          </Link>
+          {profile.role === "provider" && <Link href="/provider/bondhon" className="pro-btn pro-btn-secondary">
+            {t({ en: "Bondhon requests and sharing", bn: "বন্ধনের অনুরোধ ও শেয়ার" })}
+          </Link>}
+          <SignOutButton className="pro-btn pro-btn-secondary" />
+        </div>
+      </header>
+      {children}
+    </div>
+  );
 }

@@ -1,0 +1,7 @@
+PROHOR DEMO LAB - SYNTHETIC
+Fictional report. Not a real patient.
+Hemoglobin                                                                                                    11.2 g/dL
+Fasting glucose                                                                                                                    92
+Report date                                                                                                             1?-11-2026
+Printed interval                                                                                          11.0-14.0 g/dL
+prohor-synthetic-lab-v1 - page 1/1

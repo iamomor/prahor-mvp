@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { coordinationApprovalSchema, coordinationReceiptSchema } from "./coordination";
 import {
   communicationMethodSchema, idSchema, nonEmptyText,
   revisionSchema, rowShape, timestampSchema,
@@ -42,6 +43,7 @@ export const supportRequestStatusSchema = z.enum(supportRequestStatuses);
 export type SupportRequestStatus = z.infer<typeof supportRequestStatusSchema>;
 
 export const createSupportRequestRequestSchema = z.strictObject({
+  coordination: coordinationApprovalSchema.optional(),
   recipientUserId: idSchema, message: nonEmptyText(1000), method: communicationMethodSchema,
   purpose: nonEmptyText(300),
   consentGrantIds: z.array(idSchema).max(20).refine(
@@ -50,11 +52,14 @@ export const createSupportRequestRequestSchema = z.strictObject({
   reviewConfirmed: z.literal(true),
 });
 export const supportRequestSchema = z.strictObject({
-  ...rowShape, ...createSupportRequestRequestSchema.omit({ reviewConfirmed: true }).shape,
+  ...rowShape, ...createSupportRequestRequestSchema.omit({ reviewConfirmed: true, coordination: true }).shape,
+  coordination: coordinationReceiptSchema.optional(),
   status: supportRequestStatusSchema, providerMode: z.literal("simulated"),
 });
 
 export const providerRequestSummarySchema = z.strictObject({
+  purpose: nonEmptyText(300).optional(),
+  coordination: coordinationReceiptSchema.optional(),
   id: idSchema, createdAt: timestampSchema, updatedAt: timestampSchema,
   revision: revisionSchema, status: supportRequestStatusSchema,
   providerMode: z.literal("simulated"), method: communicationMethodSchema,

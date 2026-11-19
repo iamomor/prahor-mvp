@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check, Circle, Clock3, HeartHandshake, LockKeyhole, ShieldCheck, UserRound } from "lucide-react";
 import { copy } from "../home-content";
 import { useHome } from "../HomeContext";
@@ -79,6 +80,7 @@ export function BondhonPreview() {
         {t(copy("Revoke access", "অনুমতি প্রত্যাহার"))}
         <ArrowUpRight size={16} />
       </button>
+      <Link href="/bondhon" className="pro-btn pro-btn-secondary">{t(copy("Open Bondhon", "বন্ধন খুলুন"))}</Link>
     </Preview>
   );
 }

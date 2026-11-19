@@ -141,7 +141,7 @@ test("malformed conditional versions are rejected", async () => {
   }
 });
 
-for (const [code, status, errorCode] of [["40001",409,"conflict"], ["42501",403,"forbidden"], ["22023",400,"invalid_request"], ["XX000",500,"unavailable"]] as const) {
+for (const [code, status, errorCode] of [["PT409",409,"conflict"], ["40001",409,"conflict"], ["42501",403,"forbidden"], ["22023",400,"invalid_request"], ["XX000",500,"unavailable"]] as const) {
   test(`database ${code} is safely mapped to ${status}`, async () => {
     const response = await run("PATCH", { textScale: "large" }, fixture({ dbError: code }));
     expect(response.status).toBe(status);

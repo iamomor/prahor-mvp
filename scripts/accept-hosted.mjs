@@ -61,8 +61,11 @@ try {
   check("2 preferences save", pref1.s === 200, `${pref1.s} ${pref1.text.slice(0, 120)}`);
   const pref2 = await A.call("PATCH", "/api/preferences", { reducedMotion: body(pref).reducedMotion }, { "If-Match": etag });
   check("2 stale If-Match rejected 409", pref2.s === 409, `${pref2.s}`);
-  const pref3 = await A.call("PATCH", "/api/preferences", { reducedMotion: body(pref).reducedMotion }, { "If-Match": pref1.h.etag });
-  check("2 preferences restore", pref3.s === 200, `${pref3.s}`);
+  const weak = `W/${String(pref1.h.etag).replace(/^W\//, "")}`; // the form a compressing host hands browsers
+  const pref3 = await A.call("PATCH", "/api/preferences", { reducedMotion: body(pref).reducedMotion }, { "If-Match": weak });
+  check("2 preferences restore with weak If-Match", pref3.s === 200, `${pref3.s}`);
+  const pref4 = await A.call("GET", "/api/preferences");
+  check("2 restored value reloads", pref4.s === 200 && body(pref4).reducedMotion === body(pref).reducedMotion, `${pref4.s}`);
 
   // 3-4. Jibonrekha
   const jr = (s, type, record, key = randomUUID()) => s.call("POST", "/api/jibonrekha", { type, record }, { "Idempotency-Key": key });
@@ -225,7 +228,7 @@ try {
   const afterSo = await A.call("GET", "/api/jibonrekha");
   check("13 sign-out blocks private reads", (so.s === 200 || so.s === 303) && afterSo.s === 401, `${so.s} then ${afterSo.s}`);
 } catch (e) {
-  check("suite crashed", false, e.message);
+  check("suite crashed", false, e.message.split("\n")[0]); // first line only: call logs include session cookies
 } finally {
   await browser.close();
   const failed = results.filter(r => !r.ok);

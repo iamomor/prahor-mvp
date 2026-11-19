@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   // staleTimes keeps visited dynamic pages in the client router cache so moving between modules is instant.
   experimental: { cpus: 2, staleTimes: { dynamic: 60, static: 300 } },
 
+
   // Module-name alias: Shusthota lives at /app/wellbeing (sign-up `next=/app/shusthota` was a 404).
   async redirects() {
     return [
@@ -23,5 +24,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
 };
 export default nextConfig;

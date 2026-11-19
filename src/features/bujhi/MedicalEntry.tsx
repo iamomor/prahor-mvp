@@ -71,11 +71,11 @@ export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref
       {draftError && <p role="alert">{draftError}</p>}
       {method !== "review" && drafts.length > 0 && <button type="button" onClick={() => { setMethod("review"); requestAnimationFrame(() => reviewFocus.current?.focus()); }} className="min-h-12 rounded-control px-2 font-semibold text-pro-primary underline">Review current drafts ({drafts.length})</button>}
     </header>
-    <div hidden={method === null || method === "review"}><main className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6">
+    <div hidden={method === null || method === "review"}><div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6">
       <div hidden={method !== "manual"}><ManualMedicalEntry onDraft={acceptDraft} /></div>
       <div hidden={method !== "image"}><ImageMedicalEntry active={method === "image"} onDraft={acceptDraft} onManual={() => setMethod("manual")} /></div>
       <div hidden={method !== "voice"}><VoiceMedicalEntry active={method === "voice"} onDraft={acceptDraft} /></div>
-    </main></div>
+    </div></div>
     <div hidden={method !== "review"} ref={reviewFocus} tabIndex={-1} aria-label="Draft review">
       {drafts.length > 1 && <nav aria-label="Choose draft" className="mx-auto flex max-w-4xl flex-wrap gap-3 p-4">{drafts.map((report) => <button key={report.id} onClick={() => setActiveId(report.id)} aria-pressed={activeId === report.id} className="min-h-12 rounded-control border border-pro-primary p-3">{report.name}</button>)}</nav>}
       {drafts.map((report) => <div key={report.id} hidden={activeId !== report.id}><ReportReview report={report} recordsHref={recordsHref} source={sources[report.id]} onNew={() => { setMethod(null); requestAnimationFrame(() => document.getElementById("bujhi-title")?.focus()); }} /></div>)}

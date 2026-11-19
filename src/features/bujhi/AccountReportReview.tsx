@@ -87,7 +87,7 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
   }
 
   const control = "min-h-12 w-full rounded-field border border-pro-control-border bg-pro-bg px-3 text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus";
-  return <main className="mx-auto grid max-w-4xl gap-5 px-4 py-6 text-pro-text">
+  return <div className="mx-auto grid max-w-4xl gap-5 px-4 py-6 text-pro-text">
     <h1 ref={reviewFocus} tabIndex={-1} className="text-3xl font-semibold">Bujhi account report review</h1>
     <p>Limited prototype for fictional report images. OCR runs on this device. Account saving supports maternal hemoglobin in g/dL.</p>
     <Link href="/accessibility" className="min-h-12 text-pro-primary underline">Adjust how you use PROHOR</Link>
@@ -114,5 +114,5 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
       <p role="status" aria-atomic="true">{feedback}</p>
       <Link href="/app/jibonrekha" className="min-h-12 text-pro-primary underline">View Jibonrekha account timeline</Link>
     </section>}
-  </main>;
+  </div>;
 }

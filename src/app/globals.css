@@ -90,6 +90,13 @@ button { cursor: pointer; }
   color: var(--pro-primary);
 }
 
+/* Never track or uppercase Bangla: letter-spacing breaks conjuncts (tokens: "never track Bangla"). */
+.pro-eyebrow:lang(bn) {
+  letter-spacing: 0;
+  text-transform: none;
+  font-family: var(--font-noto-sans-bn), sans-serif;
+}
+
 .pro-display {
   font-family: var(--font-roboto-slab), Georgia, serif;
   font-weight: 700;

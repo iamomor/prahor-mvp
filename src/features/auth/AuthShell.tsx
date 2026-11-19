@@ -17,6 +17,7 @@ const motherNav = [
   { href: "/ask", en: "Ask PROHOR", bn: "প্রশ্ন করুন" },
   { href: "/poth", en: "Find care", bn: "সেবা খুঁজুন" },
   { href: "/app/care", en: "Human help", bn: "মানুষের সাহায্য" },
+  { href: "/app/bondhon", en: "Bondhon", bn: "বন্ধন" },
 ] as const;
 
 export function AuthShell({ children, entry = false, nav }: { children: React.ReactNode; entry?: boolean; nav?: "mother" }) {

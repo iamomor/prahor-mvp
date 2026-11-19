@@ -1,0 +1,25 @@
+.workspace { display: grid; gap: 1.5rem; min-width: 0; }
+.heading { font-size: clamp(1.6rem, 5vw, 2.2rem); font-weight: 650; line-height: 1.25; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.panel { display: grid; gap: 1.15rem; border: 1px solid var(--pro-border); background: var(--pro-elevated, var(--pro-bg)); padding: clamp(1rem, 3vw, 1.5rem); border-radius: var(--pro-radius-card, 1rem); min-width: 0; overflow-wrap: anywhere; }
+.panel h2 { font-size: 1.35rem; font-weight: 650; }
+.panel h3 { font-size: 1.15rem; font-weight: 650; }
+.notice { padding: 1rem; border-inline-start: 3px solid var(--pro-primary); background: var(--pro-surface); border-radius: .5rem; line-height: 1.65; }
+.field { display: grid; gap: .5rem; min-width: 0; }
+.field > span, .legend { font-weight: 600; }
+.choices { display: grid; gap: .5rem; min-width: 0; }
+.check { display: flex; align-items: flex-start; gap: .75rem; min-height: 2.75rem; padding-block: .5rem; overflow-wrap: anywhere; }
+.check input { width: 1.25rem; height: 1.25rem; margin-top: .2rem; flex: none; accent-color: var(--pro-primary); }
+.records { display: grid; gap: .75rem; max-height: 28rem; overflow: auto; padding: .25rem; }
+.record { border: 1px solid var(--pro-border); border-radius: .75rem; padding: 1rem; min-width: 0; }
+.record summary { cursor: pointer; padding-block: .6rem; font-weight: 600; }
+.values { display: grid; gap: .75rem; }
+.values dt { font-weight: 600; }
+.values dd { margin: .25rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.list { display: grid; gap: .75rem; padding: 0; list-style: none; }
+.list button { text-align: start; width: 100%; }
+.message { border-inline-start: 2px solid var(--pro-border); padding: .75rem 1rem; white-space: pre-wrap; }
+.meta { color: var(--pro-muted); }
+.error { border-inline-start: 3px solid var(--pro-danger); padding: .75rem; }
+:global(html[data-layout="spacious"]) .workspace { gap: 2rem; }
+@media (forced-colors: active) { .panel, .record, .notice { border: 1px solid CanvasText; } }

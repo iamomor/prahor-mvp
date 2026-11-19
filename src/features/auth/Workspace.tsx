@@ -36,6 +36,10 @@ export function Workspace({ profile, children }: { profile: OwnProfile; children
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Link href="/account" className="inline-flex min-h-11 items-center text-pro-primary underline underline-offset-2">{t({ en: "Account and roles", bn: "অ্যাকাউন্ট ও পরিচয়" })}</Link>
+        <Link href={profile.role === "provider" ? "/provider/bondhon" : "/app/bondhon"}
+          className="inline-flex min-h-11 items-center text-pro-primary underline underline-offset-2">
+          {t({ en: "Bondhon requests and sharing", bn: "বন্ধনের অনুরোধ ও শেয়ার" })}
+        </Link>
         <button type="button" className="pro-btn pro-btn-secondary" onClick={() => void signOut()} disabled={busy}>{busy ? t({ en: "Signing out…", bn: "সাইন আউট হচ্ছে…" }) : t({ en: "Sign out", bn: "সাইন আউট" })}</button>
       </div>
     </header>

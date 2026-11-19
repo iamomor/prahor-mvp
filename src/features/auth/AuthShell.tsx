@@ -23,6 +23,7 @@ const careNav: NavItem[] = [
   { href: "/app/care", en: "Care & support", bn: "সেবা ও সহায়তা", icon: HandHeart },
 ];
 const exploreNav: NavItem[] = [
+  { href: "/app/bondhon", en: "Bondhon sharing", bn: "বন্ধনে তথ্য শেয়ার", icon: HandHeart },
   { href: "/app/bujhi", en: "Reports", bn: "রিপোর্ট", icon: FolderOpen },
   { href: "/app/wellbeing", en: "Wellbeing & diary", bn: "সুস্থতা ও ডায়েরি", icon: Sprout },
   { href: "/app/poth", en: "Find care", bn: "সেবা খুঁজুন", icon: MapPin },

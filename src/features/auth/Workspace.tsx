@@ -30,6 +30,9 @@ export function Workspace({ profile, children }: { profile: OwnProfile; children
             <User size={16} aria-hidden="true" />
             <span>{t({ en: "Account and roles", bn: "অ্যাকাউন্ট ও পরিচয়" })}</span>
           </Link>
+          {profile.role === "provider" && <Link href="/provider/bondhon" className="pro-btn pro-btn-secondary">
+            {t({ en: "Bondhon requests and sharing", bn: "বন্ধনের অনুরোধ ও শেয়ার" })}
+          </Link>}
           <SignOutButton className="pro-btn pro-btn-secondary" />
         </div>
       </header>

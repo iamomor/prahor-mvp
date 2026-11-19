@@ -62,6 +62,18 @@ test("current stub response variants cannot pretend to be completed domain servi
   expect(care.responses[201].safeParse({ status: "delivered", message: "False delivery" }).success).toBe(false);
 });
 
+test("Shusthota GET contracts match the exact route select lists and reject extra columns", () => {
+  const pg = "2026-11-19T05:40:12.123456+00:00"; // PostgREST timestamptz shape
+  const wellness = { id: ids.field, occurred_at: pg, created_at: pg, mood: "mixed", energy: null, activity_note: null, rest_note: "Synthetic rest" };
+  const diary = { id: ids.field, text: "Synthetic diary", privacy: "owner_only", occurred_at: pg, created_at: pg };
+  const w = currentApiContracts["GET /api/wellness"].responses[200], d = currentApiContracts["GET /api/diary"].responses[200];
+  expect(w.safeParse({ entries: [wellness] }).success).toBe(true);
+  expect(w.safeParse({ entries: [{ ...wellness, owner_user_id: ids.motherA }] }).success).toBe(false);
+  expect(d.safeParse({ entries: [diary] }).success).toBe(true);
+  expect(d.safeParse({ entries: [{ ...diary, data_mode: "synthetic" }] }).success).toBe(false);
+  expect(d.safeParse({ entries: [{ ...diary, privacy: "provider" }] }).success).toBe(false);
+});
+
 test("shared success/error/page validators match the approved envelopes", () => {
   const success = { data: { id: ids.motherA, role: "mother", displayName: "Ayesha" }, requestId: ids.request, contractVersion: "1" };
   expect(currentUserResponseSchema.parse(success)).toEqual(success);

@@ -15,7 +15,7 @@ let knowledge: ReturnType<typeof prepareBartaKnowledge>;
 let previousModelKey: string | undefined;
 let requestNumber = 0;
 
-test.beforeAll(async () => {
+test.beforeAll(() => {
   previousModelKey = process.env.OPENROUTER_API_KEY;
   delete process.env.OPENROUTER_API_KEY;
   // Next resolves its server-only marker at compile time. The Node contract runner has no Next compiler.
@@ -25,8 +25,10 @@ test.beforeAll(async () => {
   load(path.join(path.dirname(marker), "empty.js"));
   load.cache[marker] = load.cache[load.resolve(path.join(path.dirname(marker), "empty.js"))];
   try {
-    ({ POST: post } = await import("../../src/app/api/ai/chat/route"));
-    const { approvedBartaCorpus } = await import("../../src/features/barta/approved-corpus");
+    // Keep route loading on the same CommonJS path as the server-only marker above.
+    const route = load("../../src/app/api/ai/chat/route") as typeof import("../../src/app/api/ai/chat/route");
+    const { approvedBartaCorpus } = load("../../src/features/barta/approved-corpus") as typeof import("../../src/features/barta/approved-corpus");
+    post = route.POST;
     knowledge = prepareBartaKnowledge(approvedBartaCorpus, new Date());
   } finally {
     if (saved) load.cache[marker] = saved;

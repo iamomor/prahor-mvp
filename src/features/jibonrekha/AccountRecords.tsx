@@ -151,13 +151,13 @@ export function AccountRecords() {
   const [task, setTask] = useState<Task>("home");
   const taskHeading = useRef<HTMLHeadingElement>(null);
   const homeHeading = useRef<HTMLHeadingElement>(null);
-  const guideHeading = useRef<HTMLHeadingElement>(null);
   const errorFocus = useRef<HTMLDivElement>(null);
   const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   function openTask(next: Task) {
     setTask(next);
-    requestAnimationFrame(() => (next === "home" ? homeHeading : next === "guide" ? guideHeading : taskHeading).current?.focus());
+    const heading = next === "home" ? homeHeading : taskHeading;
+    requestAnimationFrame(() => heading.current?.focus());
   }
   const load = useCallback(async () => {
     try {
@@ -270,8 +270,20 @@ export function AccountRecords() {
     return history;
   }
 
-
-
+  return (
+    <div className="mx-auto grid w-full min-w-0 max-w-6xl gap-5 px-4 py-6 text-pro-text sm:px-6">
+      <header className="grid gap-3">
+        <h1 ref={homeHeading} tabIndex={-1} className="text-3xl font-semibold">জীবনরেখা · Jibonrekha</h1>
+      </header>
+      {message && <p role="status">{message}</p>}
+      {error && (
+        <div ref={errorFocus} tabIndex={-1} className={box}>
+          <p role="alert" className="text-pro-danger">{error}</p>
+          {!records && !loading && (
+            <button type="button" onClick={() => void load()} className={action}>
+              Retry loading records
+            </button>
+          )}
         </div>
       )}
       {loading ? (

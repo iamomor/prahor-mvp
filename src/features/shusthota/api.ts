@@ -9,6 +9,20 @@ const diarySavedSchema = currentApiContracts["POST /api/diary"].responses[201];
 
 export type WellnessHistoryEntry = z.infer<typeof wellnessHistorySchema>["entries"][number];
 export type DiaryHistoryEntry = z.infer<typeof diaryHistorySchema>["entries"][number];
+const hydrationHistorySchema = currentApiContracts["GET /api/hydration"].responses[200];
+const hydrationSavedSchema = currentApiContracts["POST /api/hydration"].responses[201];
+const habitsHistorySchema = currentApiContracts["GET /api/wellness-habits"].responses[200];
+const habitSavedSchema = currentApiContracts["POST /api/wellness-habits"].responses[201];
+const habitEventsHistorySchema = currentApiContracts["GET /api/wellness-habits/:id/events"].responses[200];
+const combinedHabitEventsHistorySchema = currentApiContracts["GET /api/wellness-habit-events"].responses[200];
+const habitEventSavedSchema = currentApiContracts["POST /api/wellness-habits/:id/events"].responses[201];
+const activityPreferencesHistorySchema = currentApiContracts["GET /api/wellness/activity-preferences"].responses[200];
+const activityPreferenceSavedSchema = currentApiContracts["POST /api/wellness/activity-preferences"].responses[201];
+export type HydrationRecord = z.infer<typeof hydrationHistorySchema>["entries"][number];
+export type HabitRecord = z.infer<typeof habitsHistorySchema>["habits"][number];
+export type HabitEventRecord = z.infer<typeof habitEventsHistorySchema>["entries"][number];
+export type CombinedHabitEventRecord = z.infer<typeof combinedHabitEventsHistorySchema>["entries"][number];
+export type ActivityPreferenceRecord = z.infer<typeof activityPreferencesHistorySchema>["entries"][number];
 export type WellnessSaveInput = Partial<Pick<z.input<typeof createWellnessEntryRequestSchema>,
   "mood" | "energy" | "activityNote" | "restNote">> & { occurredAt?: string };
 
@@ -127,5 +141,46 @@ export async function saveDiaryEntry(text: string, occurredAt = new Date().toISO
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify(body.data),
+  });
+}
+
+/** P1 Shusthota requests share the same authenticated, no-store client behavior as Wellness and Diary. */
+export async function getHydration(scope: "today" | "history" = "today"): Promise<HydrationRecord[]> {
+  return (await requestJson(`/api/hydration?scope=${scope}`, hydrationHistorySchema, { method: "GET" })).entries;
+}
+export function addHydration(amountMl: number): Promise<z.infer<typeof hydrationSavedSchema>> {
+  return requestJson("/api/hydration", hydrationSavedSchema, {
+    method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ amountMl, occurredAt: new Date().toISOString(), retryKey: crypto.randomUUID() }),
+  });
+}
+export async function getHabits(): Promise<HabitRecord[]> {
+  return (await requestJson("/api/wellness-habits", habitsHistorySchema, { method: "GET" })).habits;
+}
+export function createHabit(label: string, icon: HabitRecord["icon"]): Promise<z.infer<typeof habitSavedSchema>> {
+  return requestJson("/api/wellness-habits", habitSavedSchema, {
+    method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ label, icon, retryKey: crypto.randomUUID() }),
+  });
+}
+export async function getHabitEvents(id: string): Promise<HabitEventRecord[]> {
+  return (await requestJson(`/api/wellness-habits/${encodeURIComponent(id)}/events`, habitEventsHistorySchema, { method: "GET" })).entries;
+}
+export async function getCombinedHabitEvents(): Promise<CombinedHabitEventRecord[]> {
+  return (await requestJson("/api/wellness-habit-events", combinedHabitEventsHistorySchema, { method: "GET" })).entries;
+}
+export function createHabitEvent(id: string, event: { eventType: "completed" | "completion_undone" | "archived"; relatedEventId?: string }): Promise<z.infer<typeof habitEventSavedSchema>> {
+  return requestJson(`/api/wellness-habits/${encodeURIComponent(id)}/events`, habitEventSavedSchema, {
+    method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ ...event, occurredAt: new Date().toISOString(), retryKey: crypto.randomUUID() }),
+  });
+}
+export async function getActivityPreferences(): Promise<ActivityPreferenceRecord[]> {
+  return (await requestJson("/api/wellness/activity-preferences", activityPreferencesHistorySchema, { method: "GET" })).entries;
+}
+export function saveActivityPreferences(preferences: ActivityPreferenceRecord["preferences"]): Promise<z.infer<typeof activityPreferenceSavedSchema>> {
+  return requestJson("/api/wellness/activity-preferences", activityPreferenceSavedSchema, {
+    method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ preferences, occurredAt: new Date().toISOString(), retryKey: crypto.randomUUID() }),
   });
 }

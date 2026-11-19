@@ -1,0 +1,189 @@
+.enter {
+  animation: settle-in 360ms var(--pro-ease) both;
+}
+
+.enter:nth-child(2) { animation-delay: 35ms; }
+.enter:nth-child(3) { animation-delay: 65ms; }
+.enter:nth-child(4) { animation-delay: 95ms; }
+.enter:nth-child(5) { animation-delay: 125ms; }
+.enter:nth-child(6) { animation-delay: 155ms; }
+.enter:nth-child(7) { animation-delay: 185ms; }
+
+.botanical {
+  animation: botanical-arrive 560ms var(--pro-ease) both;
+  animation-delay: 100ms;
+}
+.botanicalLeaf { animation: leaf-drift 6.5s ease-in-out infinite; }
+
+@keyframes settle-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes botanical-arrive {
+  from { opacity: 0; transform: scale(0.96) rotate(-3deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .botanical,
+  .botanicalLeaf { animation: none; }
+}
+
+:global(html[data-motion="reduce"]) .enter,
+:global(html[data-motion="reduce"]) .botanical,
+:global(html[data-motion="reduce"]) .botanicalLeaf { animation: none; }
+
+.moodOption {
+  border-color: var(--pro-control-border);
+  background: var(--pro-elevated);
+}
+
+.moodOption:hover {
+  background: color-mix(in srgb, var(--pro-surface) 58%, var(--pro-elevated));
+  box-shadow: var(--pro-shadow-1);
+}
+
+.moodSelected {
+  border-color: var(--pro-primary);
+  background: color-mix(in srgb, var(--pro-accent) 18%, var(--pro-elevated));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pro-primary) 20%, transparent), var(--pro-shadow-1);
+}
+
+.moodCharacter {
+  display: grid;
+  width: 3.75rem;
+  height: 3.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--pro-primary);
+  background: var(--pro-surface);
+  transition: transform var(--pro-duration-fast) var(--pro-ease);
+}
+
+.moodOption:hover .moodCharacter { transform: translateY(-2px) rotate(-2deg); }
+.moodSelected .moodCharacter { background: color-mix(in srgb, var(--pro-accent) 32%, var(--pro-surface)); }
+.choiceCard { transition-property: background-color, border-color, box-shadow, transform; }
+.choiceCard:hover { box-shadow: var(--pro-shadow-1); }
+.moodSvg { width: 3.25rem; height: 3.25rem; overflow: visible; }
+.sunFace { fill: var(--pro-accent); }
+.cloudFace { fill: var(--pro-elevated); }
+.moonFace { fill: var(--pro-surface-2); }
+.heart { fill: var(--pro-accent); stroke: currentColor; stroke-width: 1.5; }
+.sunRays { transform-origin: 32px 32px; animation: rays-glow 5s ease-in-out infinite; }
+.tinySparkle { animation: twinkle 3.4s ease-in-out infinite; transform-origin: 51px 14px; }
+.moodSelected .moodSvg { animation: character-greeting 420ms var(--pro-ease) both; }
+.characterSelected .sunRays { animation-duration: 2.8s; }
+.selectedMark { animation: mark-in 220ms var(--pro-ease) both; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pro-primary) 35%, transparent)); }
+
+.supportMoment { animation: settle-in 220ms var(--pro-ease) both; }
+.pauseMoment { animation: settle-in 220ms var(--pro-ease) both; }
+.breathingOrb {
+  display: grid;
+  width: 4.25rem;
+  height: 4.25rem;
+  place-items: center;
+  border: 1px solid var(--pro-border);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pro-surface) 65%, var(--pro-elevated));
+}
+.breathingOrb span {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pro-accent) 65%, var(--pro-surface));
+  animation: easy-breath 5s ease-in-out infinite alternate;
+}
+
+.restSection textarea { transition: background-color var(--pro-duration-normal) var(--pro-ease), box-shadow var(--pro-duration-normal) var(--pro-ease); }
+.restSection textarea:focus-visible { background-color: color-mix(in srgb, var(--pro-surface) 38%, var(--pro-elevated)); box-shadow: var(--pro-shadow-1); }
+.restIcon { animation: moon-float 4.5s ease-in-out infinite; }
+.saveConfirmed { animation: success-arrive 300ms var(--pro-ease) both; }
+.journal { animation: settle-in 280ms var(--pro-ease) both; }
+.journalPaper {
+  background-color: var(--pro-surface);
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 2.05rem, color-mix(in srgb, var(--pro-border) 26%, transparent) 2.05rem, color-mix(in srgb, var(--pro-border) 26%, transparent) 2.1rem);
+  background-position: 0 0.25rem;
+}
+
+@keyframes character-greeting {
+  0% { opacity: 0.78; transform: scale(0.96); }
+  70% { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mark-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rays-glow {
+  0%, 100% { opacity: 0.68; }
+  50% { opacity: 1; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.55; transform: scale(0.9) rotate(0); }
+  50% { opacity: 1; transform: scale(1.08) rotate(12deg); }
+}
+
+@keyframes easy-breath {
+  from { transform: scale(0.88); opacity: 0.78; }
+  to { transform: scale(1.12); opacity: 1; }
+}
+
+@keyframes moon-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes leaf-drift {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(2deg) translateY(-2px); }
+}
+
+@keyframes success-arrive {
+  from { opacity: 0.7; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choiceCard,
+  .choiceIcon,
+  .moodCharacter,
+  .sunRays,
+  .tinySparkle,
+  .moodSelected .moodSvg,
+  .selectedMark,
+  .supportMoment,
+  .pauseMoment,
+  .breathingOrb span,
+  .restSection textarea,
+  .restIcon,
+  .saveConfirmed,
+  .journal { animation: none; transition: none; }
+}
+
+:global(html[data-motion="reduce"]) .moodCharacter,
+:global(html[data-motion="reduce"]) .choiceCard,
+:global(html[data-motion="reduce"]) .choiceIcon,
+:global(html[data-motion="reduce"]) .botanicalLeaf,
+:global(html[data-motion="reduce"]) .motionControl,
+:global(html[data-motion="reduce"]) .sunRays,
+:global(html[data-motion="reduce"]) .tinySparkle,
+:global(html[data-motion="reduce"]) .moodSelected .moodSvg,
+:global(html[data-motion="reduce"]) .selectedMark,
+:global(html[data-motion="reduce"]) .supportMoment,
+:global(html[data-motion="reduce"]) .pauseMoment,
+:global(html[data-motion="reduce"]) .breathingOrb span,
+:global(html[data-motion="reduce"]) .restSection textarea,
+:global(html[data-motion="reduce"]) .restIcon,
+:global(html[data-motion="reduce"]) .saveConfirmed,
+:global(html[data-motion="reduce"]) .journal { animation: none; transition: none; }
+
+:global(html[data-motion="reduce"]) .moodOption:hover,
+:global(html[data-motion="reduce"]) .moodOption:hover .moodCharacter { transform: none; }
+:global(html[data-motion="reduce"]) .choiceCard:hover,
+:global(html[data-motion="reduce"]) .choiceIcon { transform: none; }

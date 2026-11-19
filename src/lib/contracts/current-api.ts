@@ -15,6 +15,11 @@ import { apiSuccessSchema, currentUserResponseSchema, pageSchema, paginationQuer
 import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
 import { createDiaryEntryRequestSchema, createWellnessEntryRequestSchema } from "./wellness";
 import { createBabyRequestSchema, createMaternalConditionRequestSchema, createObservationRequestSchema, createPregnancyRequestSchema, createSymptomNoteRequestSchema } from "./health";
+import {
+  activityPreferencesRequestSchema, activityPreferencesResponseSchema, createHabitRequestSchema,
+  combinedHabitEventsResponseSchema, habitEventRequestSchema, habitEventsResponseSchema, habitsResponseSchema,
+  hydrationGetQuerySchema, hydrationRequestSchema, hydrationResponseSchema,
+} from "./shusthota-p1";
 
 // Derived from the existing feature schemas; no second domain validation system.
 export const starterBartaRequestSchema = bartaRequestSchema.pick({ question: true });
@@ -146,6 +151,42 @@ export const currentApiContracts = {
     source: "src/app/api/diary/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
     request: createDiaryEntryRequestSchema,
     responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/hydration": {
+    source: "src/app/api/hydration/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: hydrationGetQuerySchema, responses: { 200: hydrationResponseSchema, 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/hydration": {
+    source: "src/app/api/hydration/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: hydrationRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness-habits": {
+    source: "src/app/api/wellness-habits/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: habitsResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/wellness-habits": {
+    source: "src/app/api/wellness-habits/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: createHabitRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness-habits/:id/events": {
+    source: "src/app/api/wellness-habits/[id]/events/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: habitEventsResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 404: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/wellness-habits/:id/events": {
+    source: "src/app/api/wellness-habits/[id]/events/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: habitEventRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 404: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness-habit-events": {
+    source: "src/app/api/wellness-habit-events/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: combinedHabitEventsResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness/activity-preferences": {
+    source: "src/app/api/wellness/activity-preferences/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: activityPreferencesResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/wellness/activity-preferences": {
+    source: "src/app/api/wellness/activity-preferences/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: activityPreferencesRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
   },
   "POST /api/ai/chat": {
     source: "src/app/api/ai/chat/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",

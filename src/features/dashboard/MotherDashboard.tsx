@@ -628,7 +628,7 @@ function JourneyCard({
             {weeks.map((week, index) => (
               <span key={week} className="grid justify-items-center gap-1">
                 <span
-                  className={`w-5 rounded-t-[5px] ${week === dating.weeks ? "bg-pro-primary" : "bg-pro-primary/30"}`}
+                  className={`w-5 rounded-t-[6px] ${week === dating.weeks ? "bg-pro-primary" : "bg-pro-primary/30"}`}
                   style={{ height: `${18 + (index + 7 - weeks.length) * 7}px` }}
                 />
                 <span className="text-[0.7rem] text-pro-muted">

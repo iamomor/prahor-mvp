@@ -13,10 +13,10 @@ export default async function AppAskPage({ searchParams }: { searchParams: Promi
   const initialQuestion = typeof q === "string" ? q.slice(0, 1200) : "";
   return (
     <div className="grid gap-6">
-      <header className="grid max-w-prose gap-2">
-        <p className="font-semibold text-pro-primary" lang="en">Barta</p>
-        <h1 className="pro-editorial text-3xl text-pro-text sm:text-4xl">Ask PROHOR · <span lang="bn">প্রহরকে জিজ্ঞাসা করুন</span></h1>
-        <p className="text-lg text-pro-muted">
+      <header className="module-hero">
+        <p lang="en">Your questions matter</p>
+        <h1>Ask PROHOR · <span lang="bn">প্রহরকে জিজ্ঞাসা করুন</span></h1>
+        <p>
           Ask about pregnancy, birth or newborn care and see the sources behind each answer.
           {" "}<span lang="bn">গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে প্রশ্ন করুন; প্রতিটি উত্তরের সূত্র দেখুন।</span>
         </p>

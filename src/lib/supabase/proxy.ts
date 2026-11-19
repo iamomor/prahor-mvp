@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { authCookieOptions } from "@/lib/auth/cookies";
-import { readIdentity, signInPath, workspaceRole } from "@/lib/auth/access";
+import { signInPath, workspaceRole } from "@/lib/auth/access";
 import { siteOrigin } from "@/lib/auth/validation";
 import { publicSupabaseConfig } from "./config";
 
@@ -39,10 +39,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
   if (privateRoute) {
-    const identity = await readIdentity(client);
-    if (identity.status === 401) return finish(NextResponse.redirect(new URL(signInPath(request.nextUrl.pathname + request.nextUrl.search), origin!)));
-    if (identity.status === 503) return finish(NextResponse.json({ code: "auth-unavailable" }, { status: 503 }));
-    if (requiredRole && identity.profile.role !== requiredRole) return finish(NextResponse.redirect(new URL("/account", origin!)));
+    // Fast gate only: refresh the session and require a signed-in subject. getClaims verifies the JWT
+    // locally (no network) for asymmetric keys. Profile/role checks run once in the layout via requireWorkspace.
+    let signedIn = false;
+    try { signedIn = Boolean((await client.auth.getClaims()).data?.claims?.sub); } catch { /* treated as signed out */ }
+    if (!signedIn) return finish(NextResponse.redirect(new URL(signInPath(request.nextUrl.pathname + request.nextUrl.search), origin!)));
   } else if (request.cookies.getAll().some(({ name }) => name.startsWith("sb-"))) {
     try { await client.auth.getUser(); } catch { /* Public pages stay public during Auth outages. */ }
   }

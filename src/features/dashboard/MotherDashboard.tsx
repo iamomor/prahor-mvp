@@ -16,12 +16,14 @@ import {
   HandHeart,
   Heart,
   Leaf,
+  Lock,
   MapPin,
   MessageCircle,
   PhoneCall,
   RotateCw,
   ShieldCheck,
   Smile,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -181,12 +183,18 @@ const requestLabel: Record<SupportRequest["status"], Text> = {
   closed: { en: "Closed", bn: "বন্ধ" },
 };
 
+// Last good responses, kept for this tab: coming back to Home paints instantly, then refreshes in the background.
+let lastRecords: Records | undefined;
+let lastCheckIns: CheckIn[] | undefined;
+
 export function MotherDashboard({ profile }: { profile?: OwnProfile }) {
   const { t, language } = useLanguage();
-  const [records, setRecords] = useState<Load<Records>>({ state: "loading" });
-  const [wellness, setWellness] = useState<Load<CheckIn[]>>({
-    state: "loading",
-  });
+  const [records, setRecords] = useState<Load<Records>>(() =>
+    lastRecords ? { state: "ready", data: lastRecords } : { state: "loading" },
+  );
+  const [wellness, setWellness] = useState<Load<CheckIn[]>>(() =>
+    lastCheckIns ? { state: "ready", data: lastCheckIns } : { state: "loading" },
+  );
   const [requests, setRequests] = useState<Load<SupportRequest[]>>({
     state: "loading",
   });
@@ -204,15 +212,21 @@ export function MotherDashboard({ profile }: { profile?: OwnProfile }) {
     }).format(new Date(value));
 
   const loadRecords = useCallback(() => {
-    setRecords({ state: "loading" });
+    if (!lastRecords) setRecords({ state: "loading" });
     getJson<Records>("/api/jibonrekha").then(
-      (data) => setRecords({ state: "ready", data }),
+      (data) => {
+        lastRecords = data;
+        setRecords({ state: "ready", data });
+      },
       () => setRecords({ state: "error" }),
     );
   }, []);
   const loadRest = useCallback(() => {
     getJson<{ entries: CheckIn[] }>("/api/wellness").then(
-      (data) => setWellness({ state: "ready", data: data.entries }),
+      (data) => {
+        lastCheckIns = data.entries;
+        setWellness({ state: "ready", data: data.entries });
+      },
       () => setWellness({ state: "error" }),
     );
     // This device only remembers request IDs; status is always re-read from the server.
@@ -276,34 +290,32 @@ export function MotherDashboard({ profile }: { profile?: OwnProfile }) {
           ? { en: "Good afternoon", bn: "শুভ দুপুর" }
           : { en: "Good evening", bn: "শুভ সন্ধ্যা" };
 
+  const initial = name?.charAt(0).toUpperCase();
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-8">
       {/* ════ Main column ════ */}
       <div className="grid min-w-0 gap-6">
-        <header className="flex items-start justify-between gap-4">
-          <div className="grid gap-1.5">
-            <p className={eyebrow}>
-              {t({ en: "A little care, every day", bn: "প্রতিদিন একটু যত্ন" })}
-            </p>
-            <h1 className="[font-family:var(--font-roboto-slab),var(--font-noto-serif-bn),serif] text-4xl font-normal leading-tight text-pro-text sm:text-[2.75rem]">
-              {t(greeting)}
-              {name ? "," : "."}
-              {name && (
-                <>
-                  <br />
-                  {name}.
-                </>
-              )}
+        <header className="flex items-center gap-4">
+          <span
+            aria-hidden="true"
+            className="grid size-14 shrink-0 place-items-center rounded-full bg-pro-primary text-xl font-semibold text-pro-on-primary ring-4 ring-pro-surface"
+          >
+            {initial || "•"}
+          </span>
+          <div className="grid min-w-0 flex-1 gap-0.5">
+            <p className="text-sm text-pro-muted">{t(greeting)},</p>
+            <h1 className="[font-family:var(--font-roboto-slab),var(--font-noto-serif-bn),serif] text-2xl font-normal leading-tight text-pro-text sm:text-3xl">
+              {name ? `${name}.` : t({ en: "Welcome.", bn: "স্বাগতম।" })}
             </h1>
-            <p className="text-pro-muted">
+            <p className="text-sm text-pro-muted">
               {t({
-                en: "Everything important, in one gentle place.",
-                bn: "দরকারি সবকিছু, এক শান্ত জায়গায়।",
+                en: "A little care, every day. Everything important, in one gentle place.",
+                bn: "প্রতিদিন একটু যত্ন। দরকারি সবকিছু, এক শান্ত জায়গায়।",
               })}
             </p>
           </div>
           {dating?.kind === "dated" && (
-            <span className="mt-2 inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-pro-surface px-3 py-1 text-sm font-semibold text-pro-primary">
+            <span className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-pill bg-pro-surface px-3 py-1 text-sm font-semibold text-pro-primary">
               <Heart size={14} aria-hidden="true" />
               {num(dating.weeks)} {t({ en: "weeks", bn: "সপ্তাহ" })}
             </span>
@@ -323,207 +335,135 @@ export function MotherDashboard({ profile }: { profile?: OwnProfile }) {
           <h2 id="dash-tasks" className="text-lg font-semibold text-pro-text">
             {t({ en: "What would you like to do?", bn: "আপনি কী করতে চান?" })}
           </h2>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            <Tile
-              href="/app/ask"
-              icon={MessageCircle}
-              label={{ en: "Ask PROHOR", bn: "প্রহরকে জিজ্ঞাসা" }}
-            />
-            <Tile
-              href="/app/jibonrekha"
-              icon={Activity}
-              label={{ en: "Log my health", bn: "স্বাস্থ্য তথ্য লিখুন" }}
-            />
-            <Tile
-              href="/app/bujhi"
-              icon={FolderOpen}
-              label={{ en: "Understand a report", bn: "রিপোর্ট বুঝুন" }}
-            />
-            <Tile
-              href="/app/poth"
-              icon={MapPin}
-              label={{ en: "Find care near me", bn: "কাছের সেবা খুঁজুন" }}
-            />
+          <ul className="grid grid-cols-2 gap-3">
+            <Tile href="/app/ask" icon={MessageCircle} label={{ en: "Ask PROHOR", bn: "প্রহরকে জিজ্ঞাসা" }} detail={{ en: "Answers with sources", bn: "সূত্রসহ উত্তর" }} />
+            <Tile href="/app/jibonrekha" icon={Activity} label={{ en: "Log my health", bn: "স্বাস্থ্য তথ্য লিখুন" }} detail={{ en: "Mother and baby records", bn: "মা ও শিশুর রেকর্ড" }} />
+            <Tile href="/app/bujhi" icon={FolderOpen} label={{ en: "Understand a report", bn: "রিপোর্ট বুঝুন" }} detail={{ en: "Check, then save", bn: "যাচাই করে সংরক্ষণ" }} />
+            <Tile href="/app/care" icon={HandHeart} label={{ en: "Talk to a care worker", bn: "সেবাকর্মীর সঙ্গে কথা" }} detail={{ en: "Ask for a human follow-up", bn: "মানুষের সাহায্য চান" }} />
           </ul>
         </section>
 
-        <ListCard title={{ en: "Today's essentials", bn: "আজকের জরুরি কাজ" }}>
+        <div className="flex gap-3 rounded-card bg-pro-surface p-4">
+          <span className="grid size-9 shrink-0 place-items-center rounded-pill bg-pro-elevated text-pro-primary">
+            <Leaf size={16} aria-hidden="true" />
+          </span>
+          <p className="text-sm leading-relaxed text-pro-muted">
+            <span className="block font-semibold text-pro-text">{t({ en: "A note for today", bn: "আজকের জন্য একটি কথা" })}</span>
+            {t({ en: "Small moments of rest matter. Your questions and feelings matter too.", bn: "ছোট ছোট বিশ্রামও জরুরি। আপনার প্রশ্ন ও অনুভূতিরও মূল্য আছে।" })}
+          </p>
+        </div>
+
+        <ListCard
+          title={{ en: "Your care, in one place", bn: "আপনার যত্ন, এক জায়গায়" }}
+          href="/app/jibonrekha"
+          action={{ en: "See timeline", bn: "টাইমলাইন দেখুন" }}
+        >
           <Row
-            href="/app/wellbeing"
-            icon={Smile}
-            title={{ en: "Check in with yourself", bn: "নিজের খোঁজ নিন" }}
-            detail={
-              lastCheckIn
-                ? {
-                    en: `Last check-in ${day(lastCheckIn.occurred_at, "short")}${lastCheckIn.mood ? `, feeling ${moodLabel[lastCheckIn.mood]?.en ?? ""}` : ""}`,
-                    bn: `শেষ চেক-ইন ${day(lastCheckIn.occurred_at, "short")}${lastCheckIn.mood ? `, ${moodLabel[lastCheckIn.mood]?.bn ?? ""}` : ""}`,
-                  }
-                : {
-                    en: "Optional and private, skip any day",
-                    bn: "ঐচ্ছিক ও ব্যক্তিগত, যেকোনো দিন বাদ দিন",
-                  }
-            }
+            href={latestRequest ? `/app/care/status?id=${encodeURIComponent(latestRequest.id)}` : "/app/care"}
+            icon={HandHeart}
+            title={{ en: "Care requests", bn: "সেবার অনুরোধ" }}
+            detail={latestRequest ? requestLabel[latestRequest.status] : { en: "Ask for a human follow-up, your way", bn: "নিজের মতো করে মানুষের সাহায্য চান" }}
           />
           <Row
-            href={
-              latestRequest
-                ? `/app/care/status?id=${encodeURIComponent(latestRequest.id)}`
-                : "/app/care"
-            }
-            icon={HandHeart}
-            title={{
-              en: "Talk to a care worker",
-              bn: "সেবাকর্মীর সঙ্গে কথা বলুন",
-            }}
-            detail={
-              latestRequest
-                ? requestLabel[latestRequest.status]
-                : {
-                    en: "Ask for a human follow-up, your way",
-                    bn: "নিজের মতো করে মানুষের সাহায্য চান",
-                  }
-            }
+            href="/app/poth"
+            icon={MapPin}
+            title={{ en: "Plan a visit", bn: "চেকআপের প্রস্তুতি" }}
+            detail={{ en: "Find care and prepare your questions", bn: "সেবা খুঁজুন ও প্রশ্ন গুছিয়ে নিন" }}
           />
           <Row
             href="/safety"
             icon={ShieldCheck}
             title={{ en: "Know the warning signs", bn: "সতর্কতার লক্ষণ জানুন" }}
-            detail={{
-              en: "Reviewed information, no chat needed",
-              bn: "যাচাইকৃত তথ্য, চ্যাট লাগবে না",
-            }}
+            detail={{ en: "Reviewed information, no chat needed", bn: "যাচাইকৃত তথ্য, চ্যাট লাগবে না" }}
           />
           <Row
             href="/app/accessibility"
             icon={Accessibility}
-            title={{
-              en: "Adjust how you use PROHOR",
-              bn: "প্রহর নিজের মতো সাজান",
-            }}
-            detail={{
-              en: "Text size, contrast, language, reading aloud",
-              bn: "লেখার আকার, কনট্রাস্ট, ভাষা, পড়ে শোনানো",
-            }}
+            title={{ en: "Adjust how you use PROHOR", bn: "প্রহর নিজের মতো সাজান" }}
+            detail={{ en: "Text size, contrast, language, reading aloud", bn: "লেখার আকার, কনট্রাস্ট, ভাষা, পড়ে শোনানো" }}
           />
         </ListCard>
 
         <RecentRecords records={records} onRetry={loadRecords} day={day} />
+        <Modules />
       </div>
 
       {/* ════ Side column ════ */}
       <div className="grid min-w-0 gap-5">
-        <section
-          aria-labelledby="dash-wellbeing"
-          className={`${card} grid gap-4 p-5`}
-        >
-          <CardHead
-            id="dash-wellbeing"
-            title={{ en: "For your wellbeing", bn: "আপনার সুস্থতার জন্য" }}
-            href="/app/wellbeing"
-            action={{ en: "Explore", bn: "দেখুন" }}
-          />
+        <section aria-labelledby="dash-wellbeing" className={`${card} overflow-hidden`}>
           <WellbeingArt />
-          <div className="flex gap-3 rounded-field bg-pro-surface/70 p-3.5">
-            <span className="grid size-8 shrink-0 place-items-center rounded-pill bg-pro-elevated text-pro-primary">
-              <Leaf size={15} aria-hidden="true" />
-            </span>
-            <p className="text-sm leading-relaxed text-pro-muted">
-              <span className="block font-semibold text-pro-text">
-                {t({ en: "A note for today", bn: "আজকের জন্য একটি কথা" })}
-              </span>
-              {t({
-                en: "Choose a small moment of rest, and make room for your needs too.",
-                bn: "একটু বিশ্রামের সময় বেছে নিন, নিজের প্রয়োজনকেও জায়গা দিন।",
-              })}
+          <div className="grid gap-3 p-5">
+            <p className={eyebrow}>{t({ en: "Your wellbeing", bn: "আপনার সুস্থতা" })}</p>
+            <h2 id="dash-wellbeing" className="[font-family:var(--font-roboto-slab),var(--font-noto-serif-bn),serif] text-xl font-normal leading-tight text-pro-text">
+              {t({ en: "Time for a gentle pause.", bn: "একটু থামার সময়।" })}
+            </h2>
+            <p className="text-sm text-pro-muted">
+              {t({ en: "Optional check-ins and a private diary. Skip any day.", bn: "ঐচ্ছিক চেক-ইন ও ব্যক্তিগত ডায়েরি। যেকোনো দিন বাদ দিন।" })}
             </p>
+            <Link
+              href="/app/wellbeing"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-field border border-pro-border bg-pro-elevated font-semibold text-pro-text hover:bg-pro-surface focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
+            >
+              {t({ en: "Explore wellbeing", bn: "সুস্থতা দেখুন" })}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </div>
-          <Link
-            href="/app/wellbeing"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-field bg-pro-surface font-semibold text-pro-primary hover:bg-pro-surface-2 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
-          >
-            {t({
-              en: "Check in or write my diary",
-              bn: "চেক-ইন বা ডায়েরি লিখুন",
-            })}
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
         </section>
 
-        <section
-          aria-labelledby="dash-upcoming"
-          className={`${card} grid gap-3 p-5`}
-        >
-          <CardHead
-            id="dash-upcoming"
-            title={{ en: "Upcoming care", bn: "আসন্ন চেকআপ" }}
-            href="/app/jibonrekha"
-            action={{ en: "View all", bn: "সব দেখুন" }}
-          />
+        <section aria-labelledby="dash-shusthota" className={`${card} px-5 pb-2 pt-4`}>
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="dash-shusthota" className="font-semibold text-pro-text">
+              <span lang="en">Shusthota</span>
+            </h2>
+            <span className="rounded-pill bg-pro-surface px-2.5 py-0.5 text-xs font-semibold text-pro-primary">
+              {t({ en: "For you", bn: "আপনার জন্য" })}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-pro-muted">
+            {t({ en: "A thoughtful place to check in, reflect, and ask for support.", bn: "নিজের খোঁজ নেওয়া, ভাবনা লেখা ও সহায়তা চাওয়ার শান্ত জায়গা।" })}
+          </p>
+          <ul className="mt-1 divide-y divide-pro-border">
+            <Row
+              href="/app/wellbeing"
+              icon={Smile}
+              title={{ en: "How are you feeling?", bn: "আজ কেমন আছেন?" }}
+              detail={
+                lastCheckIn
+                  ? {
+                      en: `Last check-in ${day(lastCheckIn.occurred_at, "short")}${lastCheckIn.mood ? `, ${moodLabel[lastCheckIn.mood]?.en ?? ""}` : ""}`,
+                      bn: `শেষ চেক-ইন ${day(lastCheckIn.occurred_at, "short")}${lastCheckIn.mood ? `, ${moodLabel[lastCheckIn.mood]?.bn ?? ""}` : ""}`,
+                    }
+                  : { en: "Private and optional", bn: "ব্যক্তিগত ও ঐচ্ছিক" }
+              }
+            />
+            <Row href="/app/wellbeing" icon={Lock} title={{ en: "Your private diary", bn: "আপনার ব্যক্তিগত ডায়েরি" }} detail={{ en: "Never shared unless you choose", bn: "আপনি না চাইলে শেয়ার হয় না" }} />
+            <Row href="/app/bondhon" icon={Users} title={{ en: "Your care circle", bn: "আপনার কেয়ার সার্কেল" }} detail={{ en: "Sharing is off until you press Send", bn: "পাঠান না চাপা পর্যন্ত শেয়ার বন্ধ" }} />
+          </ul>
+        </section>
+
+        <section aria-labelledby="dash-upcoming" className={`${card} grid gap-3 p-5`}>
+          <CardHead id="dash-upcoming" title={{ en: "Upcoming care", bn: "আসন্ন চেকআপ" }} href="/app/jibonrekha" action={{ en: "View all", bn: "সব দেখুন" }} />
           {nextVisit ? (
             <div className="flex items-center gap-3">
               <DateChip value={nextVisit.occurred_at} locale={locale} />
               <div className="grid min-w-0">
-                <p className="font-semibold text-pro-text">
-                  {t({ en: "Visit you saved", bn: "আপনার সংরক্ষিত চেকআপ" })}
-                </p>
-                <p className="truncate text-sm text-pro-muted">
-                  {nextVisit.place_note ||
-                    t({ en: "No place added", bn: "স্থান যোগ করা হয়নি" })}
-                </p>
+                <p className="font-semibold text-pro-text">{t({ en: "Visit you saved", bn: "আপনার সংরক্ষিত চেকআপ" })}</p>
+                <p className="truncate text-sm text-pro-muted">{nextVisit.place_note || t({ en: "No place added", bn: "স্থান যোগ করা হয়নি" })}</p>
               </div>
             </div>
           ) : (
             <p className="text-sm text-pro-muted">
               {records.state === "loading"
                 ? t({ en: "Loading…", bn: "আনা হচ্ছে…" })
-                : t({
-                    en: "No upcoming visit saved. Add your next check-up to keep it on your timeline.",
-                    bn: "পরের কোনো চেকআপ সংরক্ষিত নেই। টাইমলাইনে রাখতে পরের চেকআপ যোগ করুন।",
-                  })}
+                : t({ en: "No upcoming visit saved. Add your next check-up to keep it on your timeline.", bn: "পরের কোনো চেকআপ সংরক্ষিত নেই। টাইমলাইনে রাখতে পরের চেকআপ যোগ করুন।" })}
             </p>
           )}
         </section>
 
-        <section
-          aria-labelledby="dash-circle"
-          className={`${card} grid gap-3 p-5`}
-        >
-          <CardHead
-            id="dash-circle"
-            title={{ en: "Your care circle", bn: "আপনার কেয়ার সার্কেল" }}
-            href="/app/care"
-            action={{ en: "Manage", bn: "পরিচালনা" }}
-          />
-          <p className="text-sm leading-relaxed text-pro-muted">
-            {t({
-              en: "You decide who may see your information. Sharing is off until you choose who, what and why, and press Send.",
-              bn: "আপনার তথ্য কে দেখবে আপনিই ঠিক করেন। কাকে, কী, কেন বেছে পাঠান না চাপা পর্যন্ত শেয়ার বন্ধ থাকে।",
-            })}
-          </p>
-          {latestRequest && (
-            <p className="w-fit rounded-pill bg-pro-surface px-3 py-1 text-sm font-semibold text-pro-primary">
-              {t(requestLabel[latestRequest.status])}
-            </p>
-          )}
-        </section>
-
-        <section
-          aria-labelledby="dash-help"
-          className="grid gap-3 rounded-card border border-pro-danger/40 bg-pro-elevated p-5"
-        >
-          <h2 id="dash-help" className="font-semibold text-pro-text">
-            {t({ en: "Worried right now?", bn: "এখনই চিন্তা হচ্ছে?" })}
-          </h2>
-          <p className="text-sm text-pro-muted">
-            {t({
-              en: "Don't wait for an app or a reply. Get care now.",
-              bn: "অ্যাপ বা উত্তরের জন্য অপেক্ষা করবেন না। এখনই সেবা নিন।",
-            })}
-          </p>
-          <a
-            href="tel:999"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-field bg-pro-danger px-4 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
-          >
+        <section aria-labelledby="dash-help" className="grid gap-3 rounded-card border border-pro-danger/40 bg-pro-elevated p-5">
+          <h2 id="dash-help" className="font-semibold text-pro-text">{t({ en: "Worried right now?", bn: "এখনই চিন্তা হচ্ছে?" })}</h2>
+          <p className="text-sm text-pro-muted">{t({ en: "Don't wait for an app or a reply. Get care now.", bn: "অ্যাপ বা উত্তরের জন্য অপেক্ষা করবেন না। এখনই সেবা নিন।" })}</p>
+          <a href="tel:999" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-field bg-pro-danger px-4 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
             <PhoneCall size={16} aria-hidden="true" />
             {t({ en: "Call 999", bn: "৯৯৯-এ কল করুন" })}
           </a>
@@ -720,8 +660,9 @@ function JourneyCard({
     <section
       aria-labelledby="dash-journey"
       aria-busy={records.state === "loading"}
-      className="grid gap-5 rounded-hero border border-pro-border bg-pro-surface p-5 sm:p-6"
+      className="relative grid gap-5 overflow-hidden rounded-hero border border-pro-border bg-pro-surface p-5 sm:p-6"
     >
+      <JourneyArt />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="dash-journey" className="text-sm font-semibold text-pro-text">
           {t({ en: "Your pregnancy journey", bn: "আপনার গর্ভকালীন যাত্রা" })}
@@ -783,7 +724,7 @@ function RecentRecords({
     .slice(0, 3);
   return (
     <ListCard
-      title={{ en: "Your care, in one place", bn: "আপনার যত্ন, এক জায়গায়" }}
+      title={{ en: "Latest readings and notes", bn: "সাম্প্রতিক তথ্য ও নোট" }}
       href="/app/jibonrekha"
       action={{ en: "See timeline", bn: "টাইমলাইন দেখুন" }}
     >
@@ -900,32 +841,75 @@ function Tile({
   href,
   icon: Icon,
   label,
+  detail,
 }: {
   href: string;
   icon: LucideIcon;
   label: Text;
+  detail: Text;
 }) {
   const { t } = useLanguage();
   return (
     <li>
       <Link
         href={href}
-        className={`${card} group flex min-h-16 items-center gap-3 px-4 transition-[border-color,box-shadow] duration-200 hover:border-pro-primary/50 hover:shadow-pro-3 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus motion-reduce:transition-none`}
+        className={`${card} group grid h-full min-h-32 content-between gap-4 p-4 transition-[border-color,box-shadow] duration-200 hover:border-pro-primary/50 hover:shadow-pro-3 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus motion-reduce:transition-none`}
       >
-        <Icon
-          size={19}
-          strokeWidth={1.75}
-          aria-hidden="true"
-          className="shrink-0 text-pro-primary"
-        />
-        <span className="flex-1 font-semibold text-pro-text">{t(label)}</span>
-        <ArrowRight
-          size={17}
-          aria-hidden="true"
-          className="shrink-0 text-pro-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-pro-primary motion-reduce:transition-none"
-        />
+        <span className="flex items-start justify-between">
+          <span className="grid size-10 place-items-center rounded-field bg-pro-surface text-pro-primary">
+            <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+          </span>
+          <ArrowRight
+            size={17}
+            aria-hidden="true"
+            className="text-pro-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-pro-primary motion-reduce:transition-none"
+          />
+        </span>
+        <span className="grid gap-0.5">
+          <span className="font-semibold leading-snug text-pro-text">{t(label)}</span>
+          <span className="text-sm text-pro-muted">{t(detail)}</span>
+        </span>
       </Link>
     </li>
+  );
+}
+
+/** One place that names every PROHOR module, so each connected page is discoverable from Home. */
+const modules: { href: string; name: string; icon: LucideIcon; text: Text }[] = [
+  { href: "/app/ask", name: "Barta", icon: MessageCircle, text: { en: "Learn with sources", bn: "সূত্রসহ জানুন" } },
+  { href: "/app/bujhi", name: "Bujhi", icon: FolderOpen, text: { en: "Understand reports", bn: "রিপোর্ট বুঝুন" } },
+  { href: "/app/jibonrekha", name: "Jibonrekha", icon: Activity, text: { en: "Mother & baby records", bn: "মা ও শিশুর রেকর্ড" } },
+  { href: "/app/wellbeing", name: "Shusthota", icon: Smile, text: { en: "Rest, mood, diary", bn: "বিশ্রাম, মন, ডায়েরি" } },
+  { href: "/app/poth", name: "Poth", icon: MapPin, text: { en: "Find care", bn: "সেবা খুঁজুন" } },
+  { href: "/app/bondhon", name: "Bondhon", icon: HandHeart, text: { en: "Share with consent", bn: "সম্মতিতে শেয়ার" } },
+  { href: "/safety", name: "Shonket", icon: ShieldCheck, text: { en: "Warning signs", bn: "সতর্কতার লক্ষণ" } },
+  { href: "/app/accessibility", name: "Adapt", icon: Accessibility, text: { en: "Your preferences", bn: "আপনার পছন্দ" } },
+];
+
+function Modules() {
+  const { t } = useLanguage();
+  return (
+    <section aria-labelledby="dash-modules" className="grid gap-3">
+      <h2 id="dash-modules" className="text-lg font-semibold text-pro-text">
+        {t({ en: "Everything in PROHOR", bn: "প্রহরের সবকিছু" })}
+      </h2>
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {modules.map(({ href, name, icon: Icon, text }) => (
+          <li key={name}>
+            <Link
+              href={href}
+              className="flex min-h-14 items-center gap-2.5 rounded-field border border-pro-border bg-pro-elevated px-3 py-2 hover:border-pro-primary/50 hover:bg-pro-surface/50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
+            >
+              <Icon size={17} strokeWidth={1.75} aria-hidden="true" className="shrink-0 text-pro-primary" />
+              <span className="grid min-w-0 leading-tight">
+                <span lang="en" className="text-sm font-semibold text-pro-text">{name}</span>
+                <span className="truncate text-xs text-pro-muted">{t(text)}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -1018,6 +1002,17 @@ function WellbeingArt() {
         <path d="M268 88 C256 84 248 74 250 64 C262 66 268 76 268 88 Z" />
         <path d="M272 78 C280 66 292 62 300 64 C298 76 286 82 272 78 Z" />
       </g>
+    </svg>
+  );
+}
+
+/** Original decorative arcs behind the journey card (theme tokens only; carries no meaning). */
+function JourneyArt() {
+  return (
+    <svg viewBox="0 0 200 200" aria-hidden="true" className="pointer-events-none absolute -bottom-16 -right-12 h-56 w-56 opacity-50">
+      <circle cx="130" cy="70" r="64" fill="var(--pro-accent)" opacity="0.22" />
+      <circle cx="130" cy="70" r="44" fill="none" stroke="var(--pro-primary)" strokeWidth="1.5" opacity="0.25" />
+      <circle cx="130" cy="70" r="84" fill="none" stroke="var(--pro-primary)" strokeWidth="1.5" opacity="0.15" />
     </svg>
   );
 }

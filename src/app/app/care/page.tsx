@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { AskForHelp } from "@/features/shonket/AskForHelp";
-import { ShonketCareNavigation } from "@/features/shonket/ShonketPublicFrame";
+import { CareHub } from "@/features/shonket/CareHub";
 
 export const metadata: Metadata = {
-  title: "Prepare a message | Shonket",
-  description: "Prepare a message for human support.",
+  title: "Care & support | Shonket",
+  description: "Reach a person, manage who can see your information and find reviewed safety information.",
 };
 
-export default function CareRequestPage() {
-  return <><ShonketCareNavigation current="form" /><AskForHelp /></>;
+export default function CareHubPage() {
+  return <CareHub />;
 }

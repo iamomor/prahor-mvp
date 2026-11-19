@@ -35,6 +35,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
   const storedDraft = useSyncExternalStore(subscribeDraft, getStoredAacDraft, () => null);
   const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
   const questionInput = useRef<HTMLTextAreaElement>(null);
+  const symbolSummary = useRef<HTMLElement>(null);
   const pendingRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -53,9 +54,15 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
     setQuestion(next); setIncoming(""); clearStoredAacDraft();
     questionInput.current?.focus();
   }
+  function openSymbols() {
+    setAacOpen(true);
+    symbolSummary.current?.focus();
+  }
+
+  const symbolsOpen = aacOpen ?? prefs.communication === "aac";
   const aacSection = <section className="pro-card mb-5 max-w-prose" aria-label="Alternative question input">
-    <details open={aacOpen ?? prefs.communication === "aac"} onToggle={event => setAacOpen(event.currentTarget.open)}>
-      <summary className="min-h-12 cursor-pointer font-semibold">Picture-and-text communication · ছবি ও লেখা (AAC)</summary>
+    <details id="barta-symbol-input" open={symbolsOpen} onToggle={event => setAacOpen(event.currentTarget.open)}>
+      <summary ref={symbolSummary} className="min-h-12 cursor-pointer font-semibold">Picture-and-text communication · ছবি ও লেখা (AAC)</summary>
       <AACComposer onInsert={insertText} targetLabel="Insert into question / প্রশ্নে যুক্ত করুন" />
     </details>
     {storedDraft && <div className="mt-3 grid gap-2"><p>Saved AAC draft: {storedDraft}</p>
@@ -169,6 +176,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
         onLanguage={setAnswerLanguage}
         onQuestion={setQuestion}
         onDictation={insertText}
+        symbolsOpen={symbolsOpen} onOpenSymbols={openSymbols}
         onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} /></>
     );
   }

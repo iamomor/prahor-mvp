@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
+import { SourcePreview } from "./SourcePreview";
 import { isHemoglobinLabel, validDate } from "./validation";
 import type { ExtractedReport, ExtractedReportField } from "./types";
 
 type Pregnancy = { id: string; label: string };
-type Draft = { report: ExtractedReport; imageUrl: string; reportId: string };
+type Draft = { report: ExtractedReport; source: File; reportId: string };
 
 export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] }) {
   const [draft, setDraft] = useState<Draft>();
@@ -24,13 +25,12 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
   const pending = useRef(false);
   const snapshot = useRef<string | undefined>(undefined);
   const reviewFocus = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => () => { if (draft) URL.revokeObjectURL(draft.imageUrl); }, [draft]);
+  const uploadFocus = useRef<HTMLHeadingElement>(null);
 
   function openReview(report: ExtractedReport, file?: File) {
     if (!file) return;
     const supported = report.fields.filter((field) => isHemoglobinLabel(field.label));
-    setDraft({ report, imageUrl: URL.createObjectURL(file), reportId: crypto.randomUUID() });
+    setDraft({ report, source: file, reportId: crypto.randomUUID() });
     setFieldId(supported.length === 1 ? supported[0].id : "");
     setValue(supported.length === 1 && supported[0].parsingReliability === "recognized" ? supported[0].value : "");
     setUnit(supported.length === 1 ? supported[0].unit : "");
@@ -88,34 +88,49 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
 
   const control = "min-h-12 w-full rounded-field border border-pro-control-border bg-pro-bg px-3 text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus";
 
-  return <div className="grid gap-5 text-pro-text">
-    <header className="module-hero">
-      <p>Understand your reports · রিপোর্ট বুঝুন</p>
-      <h1 ref={reviewFocus} tabIndex={-1}>Bujhi account report review</h1>
-      <p>Limited prototype for fictional report images. OCR runs on this device. Account saving supports maternal hemoglobin in g/dL.</p>
+  return <div className="mx-auto grid w-full max-w-3xl min-w-0 gap-5 px-4 py-6 text-pro-text [overflow-wrap:anywhere] sm:px-6">
+    <header className="grid gap-2">
+      <h2 ref={uploadFocus} tabIndex={-1} className="text-2xl font-semibold">Report review</h2>
+      <p className="text-pro-muted">Prototype. Account saving supports maternal hemoglobin in g/dL.</p>
     </header>
     {!draft && <ImageMedicalEntry onDraft={openReview} />}
-    {draft && <section className="grid gap-4 rounded-card border border-pro-border p-4" aria-label="Review extracted report">
-      <button type="button" className="min-h-12 justify-self-start text-pro-primary underline" onClick={() => setDraft(undefined)}>Choose another image</button>
-      {/* Local blob URL for comparison with the source. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={draft.imageUrl} alt="Original fictional report for checking the extracted value" className="h-auto max-w-full" />
-      {draft.report.rawText && <details><summary className="min-h-12 cursor-pointer">Raw OCR text</summary><pre className="whitespace-pre-wrap">{draft.report.rawText}</pre></details>}
-      {draft.report.fields.filter((item) => !isHemoglobinLabel(item.label)).map((item) => <p key={item.id}>{item.label}: {item.value} {item.unit}. Read from image, unsupported for account saving.</p>)}
+    {draft && <section className="grid min-w-0 gap-4 rounded-card border border-pro-border bg-pro-elevated p-4 sm:p-6" aria-labelledby="account-report-heading">
+      <h3 id="account-report-heading" ref={reviewFocus} tabIndex={-1} className="text-xl font-semibold">Check what was read</h3>
+      <SourcePreview source={draft.source} />
+      {(draft.report.rawText || draft.report.fields.some((item) => !isHemoglobinLabel(item.label))) && (
+        <details className="rounded-field border border-pro-border px-3">
+          <summary className="min-h-12 cursor-pointer py-3 font-semibold text-pro-primary">OCR text and other fields</summary>
+          <div className="grid min-w-0 gap-3 pb-3">
+            {draft.report.rawText && <pre className="whitespace-pre-wrap font-body [overflow-wrap:anywhere]">{draft.report.rawText}</pre>}
+            {draft.report.fields.filter((item) => !isHemoglobinLabel(item.label)).map((item) => (
+              <p key={item.id}>{item.label} · {item.value} {item.unit}. Read from image, unsupported for account saving.</p>
+            ))}
+          </div>
+        </details>
+      )}
       {!supported.length ? <p role="status">No supported hemoglobin field found. Nothing can be saved to the account.</p> : <>
         {supported.length > 1 && <label className="grid gap-2">Hemoglobin field to review<select className={control} value={fieldId} disabled={locked || saved} onChange={(event) => { const selected = supported.find((item) => item.id === event.target.value); setFieldId(event.target.value); setValue(selected?.parsingReliability === "recognized" ? selected.value : ""); setUnit(selected?.unit ?? ""); setConfirmed(false); }}><option value="">Choose a field</option>{supported.map((item) => <option key={item.id} value={item.id}>{item.label} · {item.value} {item.unit}</option>)}</select></label>}
         {field && <>
           {field.parsingReliability !== "recognized" && <p className="font-semibold">The extracted digits are unclear. Enter the printed value from the image.</p>}
           <label className="grid gap-2">Hemoglobin value from report<input className={control} value={value} disabled={locked || saved} onChange={(event) => { setValue(event.target.value); setConfirmed(false); }} inputMode="decimal" /></label>
           <label className="grid gap-2">Printed unit<input className={control} value={unit} disabled={locked || saved} onChange={(event) => { setUnit(event.target.value); setConfirmed(false); }} /></label>
-          <label className="grid gap-2">Observation date<input className={control} type="date" value={date} disabled={locked || saved} onChange={(event) => { setDate(event.target.value); setConfirmed(false); }} /></label>
+          <label className="grid gap-2">Observation date
+            <input className={control} type="date" value={date} disabled={locked || saved} aria-describedby="account-report-date-hint" onChange={(event) => { setDate(event.target.value); setConfirmed(false); }} />
+          </label>
+          <p id="account-report-date-hint" className="text-pro-muted">If you can’t verify the date, leave this review unsaved.</p>
           <label className="grid gap-2">Pregnancy record<select className={control} value={pregnancyId} disabled={locked || saved} onChange={(event) => { setPregnancyId(event.target.value); setConfirmed(false); }}><option value="">Choose a record</option>{pregnancies.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
-          <label className="flex gap-3"><input type="checkbox" checked={confirmed} disabled={locked || saved} onChange={(event) => setConfirmed(event.target.checked)} />I compared the value, unit, date and pregnancy record with the image.</label>
-          <button type="button" disabled={saving || saved} onClick={() => void save()} className="min-h-12 rounded-control bg-pro-primary px-4 font-semibold text-pro-on-primary disabled:opacity-60">{saving ? "Saving…" : locked ? "Retry account save" : "Save reviewed hemoglobin"}</button>
+          <label className="flex min-h-12 items-start gap-3 rounded-field bg-pro-surface p-3"><input className="mt-1 size-5 shrink-0" type="checkbox" checked={confirmed} disabled={locked || saved} onChange={(event) => setConfirmed(event.target.checked)} />I checked the value, unit and date against the report and chose the correct pregnancy record.</label>
+          {!saved && <button type="button" disabled={saving} onClick={() => void save()} className="min-h-12 rounded-control bg-pro-primary px-4 font-semibold text-pro-on-primary disabled:opacity-60">{saving ? "Saving…" : locked ? "Retry account save" : "Save reviewed hemoglobin"}</button>}
         </>}
       </>}
       <p role="status" aria-atomic="true">{feedback}</p>
-      <Link href="/app/jibonrekha" className="min-h-12 text-pro-primary underline">View Jibonrekha account timeline</Link>
+      <div className="flex flex-wrap gap-x-5">
+        <button type="button" disabled={saving} className="min-h-12 text-pro-primary underline disabled:opacity-60" onClick={() => {
+          setDraft(undefined);
+          requestAnimationFrame(() => uploadFocus.current?.focus());
+        }}>Choose another image</button>
+        {saved && <Link href="/app/jibonrekha" className="inline-flex min-h-12 items-center text-pro-primary underline">View Jibonrekha</Link>}
+      </div>
     </section>}
   </div>;
 }

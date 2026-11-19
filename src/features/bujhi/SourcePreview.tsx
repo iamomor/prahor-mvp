@@ -21,7 +21,7 @@ export function SourcePreview({ source, location, onReturn }: { source: File; lo
     viewport.scrollLeft = (box.x0 + box.x1) / (2 * size.width) * viewport.scrollWidth - viewport.clientWidth / 2;
     viewport.scrollTop = (box.y0 + box.y1) / (2 * size.height) * viewport.scrollHeight - viewport.clientHeight / 2;
   }, [box, size, zoom]);
-  return <details open className="min-w-0 rounded-card border border-pro-border bg-pro-elevated p-4">
+  return <details className="min-w-0 rounded-card border border-pro-border bg-pro-elevated p-4">
     <summary className="min-h-12 cursor-pointer font-semibold">মূল রিপোর্ট দেখুন · View original</summary>
     <div className="mb-3 flex flex-wrap items-center gap-2" aria-label="Original image zoom">
       <button type="button" className="min-h-12 rounded-control border border-pro-control-border px-3" disabled={zoom === 100} onClick={() => setZoom(zoom - 50)}>Zoom out</button>

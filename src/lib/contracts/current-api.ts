@@ -11,10 +11,15 @@ import {
 import { bondhonDetailSchema } from "./bondhon-detail";
 import { availableRecordSchema, followUpRequestSchema } from "./coordination";
 import { patchAccessPreferencesSchema, preferencesResponseSchema } from "./adapt";
-import { apiSuccessSchema, currentUserResponseSchema, pageSchema } from "./transport";
+import { apiSuccessSchema, currentUserResponseSchema, pageSchema, paginationQuerySchema } from "./transport";
 import { directoryQuerySchema, directoryResponseSchema, nearbyQuerySchema, nearbyResponseSchema, pothErrorSchema } from "./poth-current";
 import { createDiaryEntryRequestSchema, createWellnessEntryRequestSchema } from "./wellness";
 import { createBabyRequestSchema, createMaternalConditionRequestSchema, createObservationRequestSchema, createPregnancyRequestSchema, createSymptomNoteRequestSchema } from "./health";
+import {
+  activityPreferencesRequestSchema, activityPreferencesResponseSchema, createHabitRequestSchema,
+  combinedHabitEventsResponseSchema, habitEventRequestSchema, habitEventsResponseSchema, habitsResponseSchema,
+  hydrationGetQuerySchema, hydrationRequestSchema, hydrationResponseSchema,
+} from "./shusthota-p1";
 
 // Derived from the existing feature schemas; no second domain validation system.
 export const starterBartaRequestSchema = bartaRequestSchema.pick({ question: true });
@@ -147,6 +152,42 @@ export const currentApiContracts = {
     request: createDiaryEntryRequestSchema,
     responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
   },
+  "GET /api/hydration": {
+    source: "src/app/api/hydration/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: hydrationGetQuerySchema, responses: { 200: hydrationResponseSchema, 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/hydration": {
+    source: "src/app/api/hydration/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: hydrationRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness-habits": {
+    source: "src/app/api/wellness-habits/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: habitsResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/wellness-habits": {
+    source: "src/app/api/wellness-habits/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: createHabitRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness-habits/:id/events": {
+    source: "src/app/api/wellness-habits/[id]/events/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: habitEventsResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 404: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/wellness-habits/:id/events": {
+    source: "src/app/api/wellness-habits/[id]/events/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: habitEventRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 404: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness-habit-events": {
+    source: "src/app/api/wellness-habit-events/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: combinedHabitEventsResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/wellness/activity-preferences": {
+    source: "src/app/api/wellness/activity-preferences/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother",
+    request: z.undefined(), responses: { 200: activityPreferencesResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/wellness/activity-preferences": {
+    source: "src/app/api/wellness/activity-preferences/route.ts", status: "Limited", owners: ["Apurbo"], auth: "mother", request: activityPreferencesRequestSchema,
+    responses: { 201: z.strictObject({ saved: z.literal(true), id: z.uuid() }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
   "POST /api/ai/chat": {
     source: "src/app/api/ai/chat/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
     request: currentBartaRequestSchema,
@@ -181,9 +222,29 @@ export const currentApiContracts = {
     source: "src/app/api/care-requests/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
     request: createSupportRequestRequestSchema, responses: { 201: apiSuccessSchema(supportRequestSchema), ...careErrorResponses },
   },
+  "GET /api/care-records": {
+    source: "src/app/api/care-records/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(z.array(availableRecordSchema).max(100)), ...careErrorResponses },
+  },
+  "GET /api/care-requests": {
+    source: "src/app/api/care-requests/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: paginationQuerySchema, responses: { 200: apiSuccessSchema(pageSchema(supportRequestSchema)), ...careErrorResponses },
+  },
   "GET /api/care-requests/:id": {
     source: "src/app/api/care-requests/[id]/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
     request: z.undefined(), responses: { 200: apiSuccessSchema(z.union([supportRequestSchema, providerRequestSchema])), ...careErrorResponses },
+  },
+  "GET /api/care-requests/:id/coordination": {
+    source: "src/app/api/care-requests/[id]/coordination/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
+  },
+  "POST /api/care-requests/:id/messages": {
+    source: "src/app/api/care-requests/[id]/messages/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
+    request: followUpRequestSchema, responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
+  },
+  "POST /api/care-requests/:id/revoke": {
+    source: "src/app/api/care-requests/[id]/revoke/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
   },
   "GET /api/care-requests/:id/events": {
     source: "src/app/api/care-requests/[id]/events/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
@@ -200,26 +261,6 @@ export const currentApiContracts = {
   "POST /api/provider/requests/:id/respond": {
     source: "src/app/api/provider/requests/[id]/respond/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "provider",
     request: providerRespondRequestSchema, responses: { 200: apiSuccessSchema(providerRequestSchema), ...careErrorResponses },
-  },
-  "GET /api/care-requests": {
-    source: "src/app/api/care-requests/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "mother",
-    request: z.undefined(), responses: { 200: apiSuccessSchema(pageSchema(supportRequestSchema)), ...careErrorResponses },
-  },
-  "GET /api/care-records": {
-    source: "src/app/api/care-records/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "mother",
-    request: z.undefined(), responses: { 200: apiSuccessSchema(z.array(availableRecordSchema).max(100)), ...careErrorResponses },
-  },
-  "GET /api/care-requests/:id/coordination": {
-    source: "src/app/api/care-requests/[id]/coordination/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "request-participant",
-    request: z.undefined(), responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
-  },
-  "POST /api/care-requests/:id/messages": {
-    source: "src/app/api/care-requests/[id]/messages/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "request-participant",
-    request: followUpRequestSchema, responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
-  },
-  "POST /api/care-requests/:id/revoke": {
-    source: "src/app/api/care-requests/[id]/revoke/route.ts", status: "Limited", owners: ["Omor", "Iftee"], auth: "mother",
-    request: z.undefined(), responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
   },
   "POST /api/care-requests/:id/close": {
     source: "src/app/api/care-requests/[id]/close/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",

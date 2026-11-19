@@ -3,12 +3,13 @@ import { useId } from "react";
 import { useLanguage } from "@/i18n/use-language";
 import type { SupportRequestStatus, SupportRequestEventSummary } from "@/lib/contracts/bondhon";
 import { buildTracker } from "./bondhon-status";
+import { formatWhen } from "./bondhon-view";
 import { statusNames, words } from "./bondhon-copy";
 import styles from "./bondhon.module.css";
 
-export function BondhonRequestTracker({ request, events, historyUnavailable }: {
+export function BondhonRequestTracker({ request, events, historyUnavailable, now = Number.NaN }: {
   request: { id: string; status: SupportRequestStatus; createdAt: string; revision: number };
-  events: readonly SupportRequestEventSummary[]; historyUnavailable: boolean;
+  events: readonly SupportRequestEventSummary[]; historyUnavailable: boolean; now?: number;
 }) {
   const { language, t } = useLanguage();
   const id = useId();
@@ -25,7 +26,7 @@ export function BondhonRequestTracker({ request, events, historyUnavailable }: {
         <span aria-hidden="true" className={styles.stageMark}>{recorded ? "✓" : "○"}</span>
         <div><strong>{t(statusNames[stage.status])}</strong>
           <p>{t(current ? words("Current server status", "সার্ভারের বর্তমান অবস্থা") : recorded ? words("Recorded", "লিপিবদ্ধ হয়েছে") : words("No event shown", "এই ঘটনার তথ্য দেখানো হয়নি"))}</p>
-          {stage.at && <time dateTime={stage.at}>{new Date(stage.at).toLocaleString(language === "bn" ? "bn-BD" : "en-GB")}</time>}
+          {stage.at && <time dateTime={stage.at}>{formatWhen(stage.at, language, now)}</time>}
         </div>
       </li>;
     })}</ol>

@@ -71,7 +71,7 @@ test("Barta clarifies symbols, preserves explicit safety disclosures, and answer
       status: "abstained", reason: "urgent_care", citations: [],
     } },
     { question: "I have a headache.", language: "en", expected: {
-      status: "conversation", citations: [], message: expect.stringContaining("When did this start?"),
+      status: "clarification", citations: [], followUpContext: "headache_stage",
     } },
     { question: "i hate tou", language: "en", expected: {
       status: "clarification", citations: [], suggestions: expect.arrayContaining(["What does ANC mean?"]),

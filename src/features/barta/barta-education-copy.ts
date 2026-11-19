@@ -2,6 +2,7 @@ export const educationCopy = {
   en: {
     answerLanguage: "Answer language",
     question: "Your question",
+    useSymbols: "Use symbols",
     placeholder: "Ask about pregnancy, birth or newborn care…",
     privacy: "Leave out names, reports and personal details.",
     submit: "Ask Barta",
@@ -18,7 +19,7 @@ export const educationCopy = {
     pregnancy: "During pregnancy",
     afterBirth: "After birth",
     followUp: "Keep going",
-    clarify: "Choose a question",
+    clarify: "Choose a phrase or question",
     clear: "Clear conversation",
     page: "Page",
     source: "Source",
@@ -64,6 +65,7 @@ export const educationCopy = {
   bn: {
     answerLanguage: "উত্তরের ভাষা",
     question: "আপনার প্রশ্ন",
+    useSymbols: "প্রতীক ব্যবহার করুন",
     placeholder: "গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে জিজ্ঞেস করুন…",
     privacy: "নাম, রিপোর্ট বা ব্যক্তিগত তথ্য দেবেন না।",
     submit: "বার্তাকে জিজ্ঞেস করুন",
@@ -80,7 +82,7 @@ export const educationCopy = {
     pregnancy: "গর্ভাবস্থায়",
     afterBirth: "জন্মের পর",
     followUp: "আরও জানতে চান?",
-    clarify: "একটি প্রশ্ন বেছে নিন",
+    clarify: "একটি বাক্য বা প্রশ্ন বেছে নিন",
     clear: "কথোপকথন মুছুন",
     page: "পৃষ্ঠা",
     source: "সূত্র",

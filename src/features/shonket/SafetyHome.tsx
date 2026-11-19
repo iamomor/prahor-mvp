@@ -11,7 +11,7 @@ export function SafetyHome() {
           <p className={styles.eyebrow}>SHONKET · SAFETY &amp; SUPPORT</p>
           <h1 id="shonket-screen-title" tabIndex={-1} className={`${styles.title} pro-editorial`}>Support, at your pace.</h1>
           <p className={styles.lead}>Find reviewed information when it is available, or prepare a message for human support. Choose what feels useful to you.</p>
-          <Link href="/app/care" className={`pro-btn pro-btn-primary ${styles.heroAction}`}>
+          <Link href="/app/care/new" className={`pro-btn pro-btn-primary ${styles.heroAction}`}>
             <HeartHandshake size={19} aria-hidden="true" /> Ask for human help <ArrowRight size={18} aria-hidden="true" />
           </Link>
         </div>
@@ -64,7 +64,7 @@ export function SafetyHome() {
             <p className={styles.actionKicker}>HUMAN SUPPORT</p>
             <h3 className={styles.cardTitle}>Prepare a message</h3>
             <p className={styles.cardText}>Choose a communication method, write what you want to say and review it.</p>
-            <Link href="/app/care" className={`pro-btn pro-btn-primary ${styles.cardAction}`}>Start a message <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link href="/app/care/new" className={`pro-btn pro-btn-primary ${styles.cardAction}`}>Start a message <ArrowRight size={17} aria-hidden="true" /></Link>
           </AppCard>
           <div className={styles.informationPath}>
             <div className={`${styles.choiceIcon} ${styles.infoIcon}`}><BookOpenText size={23} aria-hidden="true" /></div>

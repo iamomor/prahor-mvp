@@ -3,10 +3,13 @@ import { issueAudioTicket } from "@/features/barta/audio-ticket";
 import { getBundledSpeechUrl } from "@/features/barta/bundled-speech";
 import { getBartaBleedingClarification, getUsualPeriodQuestion } from "@/features/barta/bleeding-clarification";
 import { approvedBartaCorpus } from "@/features/barta/approved-corpus";
-import { bartaFollowUpQuestion, getBartaKnowledgeAnswer, prepareBartaKnowledge, resolveBartaKnowledgeAnswer } from "@/features/barta/approved-knowledge";
+import { addBartaFallbackSuggestions, bartaFollowUpQuestion, bartaTopicSuggestions, getBartaKnowledgeAnswer, prepareBartaKnowledge, resolveBartaKnowledgeAnswer } from "@/features/barta/approved-knowledge";
 import { getBartaOpenRouterSelector } from "@/features/barta/openrouter-intent";
 import { getBartaGreeting, stripOpeningGreeting } from "@/features/barta/conversation";
 import { getBartaCoverage } from "@/features/barta/conversation-coverage";
+import { askBartaSymptomStage, continueBartaSymptom, getBartaSymptomContext } from "@/features/barta/symptom-follow-up";
+import { getBartaUnderstoodReply } from "@/features/barta/barta-understanding";
+import { getBartaEmojiReply, stripBartaSocialSuffix } from "@/features/barta/emoji-questions";
 import { educationTopics } from "@/features/barta/education-topics";
 import { getBankSafety, getQuestionBankIntent } from "@/features/barta/question-bank-routing";
 import { getBartaRouteResponse, getBartaSafetyResponse } from "@/features/barta/safety-gate";
@@ -92,8 +95,8 @@ export async function POST(request: Request) {
   }
   const requestData = bartaRequestSchema.safeParse(body);
   if (requestData.success) {
-    const { question, language, retention, previousChunkId } = requestData.data;
-    const questionWithoutGreeting = stripOpeningGreeting(question);
+    const { question, language, retention, previousChunkId, followUpContext } = requestData.data;
+    const questionWithoutGreeting = stripOpeningGreeting(stripBartaSocialSuffix(question));
     const safetyResponse = getBankSafety(question, language) ?? getBartaSafetyResponse(question, language)
       ?? (questionWithoutGreeting !== question
         ? getBankSafety(questionWithoutGreeting, language) ?? getBartaSafetyResponse(questionWithoutGreeting, language)
@@ -124,6 +127,21 @@ export async function POST(request: Request) {
     const bleeding = getBartaBleedingClarification(questionWithoutGreeting, language);
     if (bleeding) return decisionReply(bleeding, language, 200);
 
+    const emojiReply = getBartaEmojiReply(question, language);
+    if (emojiReply) return decisionReply(emojiReply, language, 200);
+
+    if (followUpContext) {
+      const continuation = continueBartaSymptom(followUpContext, questionWithoutGreeting, language);
+      if (continuation?.answer.status === "clarification") {
+        const suggestions = continuation.topics
+          ? bartaTopicSuggestions(getKnowledge(), language, continuation.topics)
+          : continuation.answer.suggestions;
+        return decisionReply({ ...continuation.answer, suggestions }, language, 200);
+      }
+    }
+    const symptomContext = getBartaSymptomContext(questionWithoutGreeting, coverage?.type === "reply" && coverage.id === "symptom_context");
+    if (symptomContext) return decisionReply(askBartaSymptomStage(symptomContext, language), language, 200);
+
     if (coverage?.type === "reply") {
       const message = coverage[language];
       const answer: BartaAnswer = coverage.topics
@@ -148,10 +166,24 @@ export async function POST(request: Request) {
           : "Barta’s reviewed sources are not ready yet.",
       }, 501);
     }
-    const query = bartaFollowUpQuestion(knowledge, questionWithoutGreeting, language, previousChunkId);
+    const followUp = bartaFollowUpQuestion(knowledge, questionWithoutGreeting, language, previousChunkId);
     // A reviewed literal question takes priority over test-bank aliases and model routing.
-    const exact = knowledge ? getBartaKnowledgeAnswer(knowledge, query, language) : undefined;
+    const exact = knowledge ? getBartaKnowledgeAnswer(knowledge, followUp, language) : undefined;
     if (exact?.status === "grounded") return decisionReply(exact, language, 200);
+    // Short social messages and bare stage replies ("pore", "pregnancy") get a fixed reply or a reviewed-topic menu.
+    const understood = getBartaUnderstoodReply(question) ?? getBartaUnderstoodReply(questionWithoutGreeting);
+    if (understood) {
+      const suggestions = understood.topics ? bartaTopicSuggestions(knowledge, language, understood.topics) : [];
+      return decisionReply(suggestions.length
+        ? { status: "clarification", answer: null, citations: [], message: understood[language], suggestions }
+        : { status: "conversation", answer: null, citations: [], message: understood[language] }, language, 200);
+    }
+    const query = followUp.normalize("NFKC").replace(
+      /^(?:please(?: tell me)?|can you (?:please )?tell me|could you (?:please )?tell me|দয়া করে(?: বলুন)?|অনুগ্রহ করে(?: বলুন)?)[,،\s]+(?=(?:what|which|when|why|where|how|does|can|is|are)\b|[\p{Script=Bengali}])/iu,
+      "",
+    );
+    const querySafety = query !== followUp ? getBankSafety(query, language) ?? getBartaSafetyResponse(query, language) : undefined;
+    if (querySafety) return decisionReply(querySafety, language, 200);
     const intent = getQuestionBankIntent(query, language);
     const answer = await resolveBartaKnowledgeAnswer(
       knowledge,
@@ -161,7 +193,7 @@ export async function POST(request: Request) {
     );
     const fallback = knowledge && intent && answer.status === "abstained" && answer.reason === "insufficient_evidence"
       ? intent.fallback() : answer;
-    return decisionReply(fallback, language, knowledge ? 200 : 503);
+    return decisionReply(addBartaFallbackSuggestions(knowledge, fallback, language, query), language, knowledge ? 200 : 503);
   }
 
   const parsed = starterRequestSchema.safeParse(body);

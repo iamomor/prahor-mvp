@@ -6,6 +6,7 @@ import {
   type BartaAnswer,
 } from "@/lib/contracts/barta";
 import { isMinorBartaTypo } from "./question-matching";
+import { findBartaConcepts } from "./barta-understanding";
 import { educationTopicIds, educationTopics, type EducationTopic } from "./education-topics";
 import { dateSchema, idSchema, languageSchema, nonEmptyText, timestampSchema } from "@/lib/contracts/common";
 
@@ -260,7 +261,7 @@ export function bartaFollowUpQuestion(
   if (!previousChunkId || !knowledge) return question;
   const context = knowledge.topicsByChunk.get(previousChunkId);
   const normalized = questionKey(language, question).slice(3);
-  const repeat = /^(?:explain it in simple language|explain it simply|say that again|সহজ ভাষায় বুঝিয়ে বলুন|আবার বলুন|easy kore bujhiye bolen)$/u;
+  const repeat = /^(?:explain it in simple language|explain it simply|say that again|সহজ ভাষায় বুঝিয়ে বলুন|আবার বলুন|easy kore bujhiye bolen)$/u;
   if (context && repeat.test(normalized)) {
     const prompt = educationTopics[context][language];
     if (knowledge.index.get(questionKey(language, prompt))) return prompt;
@@ -278,14 +279,14 @@ export function bartaFollowUpQuestion(
   return knowledge.index.get(questionKey(language, prompt)) ? prompt : question;
 }
 
-const vagueQuestions = /^(?:pregnent|pregnancy|prégnency|gorvo|garbho|গর্ব|গর্ভ|ব্যথা|ami bhoy pachchi|what should i do|is it safe|is it normal|is that normal|what about (?:it|that|this)|what do you mean|what do i do|how (?:often|long|much|many)|when|help me|এটা কি স্বাভাবিক|কী করব|এ বিষয়ে বলুন|কতবার|কখন|ki korbo|koto bar|kokhon)$/u;
+const vagueQuestions = /^(?:pregnent|pregnancy|prégnency|gorvo|garbho|গর্ব|গর্ভ|ব্যথা|ami bhoy pachchi|what should i do|is it safe|is it normal|is that normal|what about (?:it|that|this)|what do you mean|what do i do|how (?:often|long|much|many)|when|help me|এটা কি স্বাভাবিক|কী করব|এ বিষয়ে বলুন|কতবার|কখন|ki korbo|koto bar|kokhon)$/u;
 const topicFragments: Partial<Record<EducationTopic, readonly string[]>> = {
-  anc: ["anc", "antenatal care", "গর্ভকালীন সেবা"],
-  ancVisits: ["anc visits", "checkup", "চেকআপ"],
-  nutrition: ["nutrition", "food", "খাবার", "khabar", "পুষ্টি"],
+  anc: ["anc", "antenatal care", "prenatal care", "গর্ভকালীন সেবা", "gorbhokalin sheba"],
+  ancVisits: ["anc visits", "checkup", "checkups", "pregnancy checkup", "চেকআপ", "গর্ভকালীন চেকআপ"],
+  nutrition: ["nutrition", "food", "pregnancy food", "pregnancy diet", "খাবার", "khabar", "পুষ্টি", "গর্ভাবস্থায় খাবার"],
   breastfeeding: ["breastfeeding", "breast feeding", "বুকের দুধ", "buker dudh"],
-  postnatal: ["postnatal", "postnatal care", "প্রসবের পরের সেবা"],
-  newborn: ["newborn", "newborn care", "নবজাতক", "baccha"],
+  postnatal: ["postnatal", "postnatal care", "postpartum care", "care after birth", "প্রসবের পরের সেবা", "deliveryr porer care"],
+  newborn: ["newborn", "newborn care", "baby care", "নবজাতক", "শিশুর যত্ন", "baccha", "bacchar jotno"],
   pregnancyBasics: ["trimester", "trimesters", "ট্রাইমেস্টার"],
   balancedMeals: ["pregnancy meals", "গর্ভাবস্থার খাবার"],
   warningSigns: ["warning signs", "বিপদের লক্ষণ"],
@@ -341,6 +342,10 @@ function nearbyCare(knowledge: BartaKnowledge, question: string, language: Langu
   if (pregnant && /(?:\b(?:travel\p{L}*|journey|seat ?belt|bhromon)\b|ভ্রমণ|সিটবেল্ট)/u.test(question)) topics.push("pregnancyTravel");
   if (pregnant && /(?:\b(?:sleep\p{L}*|ghum|kaj|chores)\b|ঘুম|বিশ্রাম|দৈনন্দিন কাজ)/u.test(question)) topics.push("pregnancySleep", "everydayWellbeing");
 
+  // A recognised subject ("belly button", "bath") beats the generic baby-care menu, but never pre-empts the model selector.
+  const concept = !topics.length && includeLexical ? findBartaConcepts(question) : undefined;
+  // Uncovered subjects (vaccines, jaundice) fall through to the fallback that says so plainly.
+  if (concept && !concept.missing) topics.push(...concept.topics);
   const broadCare = baby && !topics.length && dailyCareWords.test(question);
   if (broadCare) topics.push("newborn", "babySleep", "solidFood");
   if (!topics.length && includeLexical) topics.push(...similarQuestionTopics(knowledge, question, language));
@@ -360,9 +365,76 @@ function nearbyCare(knowledge: BartaKnowledge, question: string, language: Langu
   };
 }
 
-function clarify(knowledge: BartaKnowledge, language: Language, topics: EducationTopic[]): BartaAnswer {
-  const suggestions = [...new Set(topics)].map((topic) => educationTopics[topic][language])
+function approvedSuggestions(knowledge: BartaKnowledge, language: Language, topics: EducationTopic[]): string[] {
+  return [...new Set(topics)].map((topic) => educationTopics[topic][language])
     .filter((prompt) => knowledge.index.get(questionKey(language, prompt))).slice(0, 3);
+}
+
+export function bartaTopicSuggestions(knowledge: BartaKnowledge | null, language: Language, topics: EducationTopic[]): string[] {
+  return knowledge ? approvedSuggestions(knowledge, language, topics) : [];
+}
+
+/** Topics whose reviewed question wordings share rare words with the question (word-overlap, not semantic). */
+function lexicalTopics(knowledge: BartaKnowledge, question: string, language: Language): EducationTopic[] {
+  const terms = (text: string) => new Set(searchTerms(text).filter((term) => Array.from(term).length >= 3 && !genericMatchWords.has(term)));
+  const query = terms(question);
+  if (!query.size) return [];
+  const aliases: { topic: EducationTopic; terms: Set<string> }[] = [];
+  for (const [key, passage] of knowledge.index) {
+    if (passage?.topic && key.startsWith(`${language}:`)) aliases.push({ topic: passage.topic, terms: terms(key.slice(3)) });
+  }
+  const scores = new Map<EducationTopic, number>();
+  let matched = 0;
+  for (const term of query) {
+    const holders = new Set(aliases.filter((alias) => alias.terms.has(term)).map((alias) => alias.topic));
+    // A word found under many topics says little about which one is meant.
+    if (!holders.size || holders.size > 4) continue;
+    matched++;
+    for (const topic of holders) scores.set(topic, (scores.get(topic) ?? 0) + 1 / holders.size);
+  }
+  // One shared word is enough only when it is the whole question ("weather today" must not match "hot weather").
+  if (matched < Math.min(2, query.size)) return [];
+  return [...scores.entries()].filter(([, score]) => score >= 0.5)
+    .sort((first, second) => second[1] - first[1]).slice(0, 3).map(([topic]) => topic);
+}
+
+const fallbackCopy = {
+  related: {
+    en: "I have reviewed information close to your question. Which of these do you mean? Choose one to put it in the question box.",
+    bn: "আপনার প্রশ্নের কাছাকাছি যাচাই করা তথ্য আছে। এর কোনটি জানতে চান? প্রশ্নের ঘরে নিতে একটি বেছে নিন।",
+  },
+  missing: {
+    en: (subject: string) => `I don’t have reviewed information about ${subject} yet, so please ask a doctor, midwife or health worker about your own situation. These related topics may still help:`,
+    bn: (subject: string) => `${subject} নিয়ে আমার কাছে এখনো যাচাই করা তথ্য নেই। নিজের ক্ষেত্রে ডাক্তার, মিডওয়াইফ বা স্বাস্থ্যকর্মীকে জিজ্ঞেস করুন। এর কাছাকাছি এই বিষয়গুলো কাজে আসতে পারে:`,
+  },
+  general: {
+    en: "I can only answer from reviewed sources about pregnancy, birth, recovery and baby care, and I don’t have an answer for this one. Try a few different words, or start with one of these:",
+    bn: "আমি শুধু গর্ভাবস্থা, প্রসব, প্রসবের পর সুস্থ হওয়া ও শিশুর যত্ন নিয়ে যাচাই করা সূত্র থেকে উত্তর দিই, এই প্রশ্নের উত্তর আমার কাছে নেই। অন্য কয়েকটি শব্দে লিখুন, অথবা এগুলোর একটি দিয়ে শুরু করুন:",
+  },
+};
+
+export function addBartaFallbackSuggestions(
+  knowledge: BartaKnowledge | null, answer: BartaAnswer, language: Language, question = "",
+): BartaAnswer {
+  if (!knowledge?.available || answer.status !== "abstained" || answer.reason !== "insufficient_evidence") return answer;
+
+  const shopping = /^(?:(?:best|cheap) (?:phone|mobile|laptop)|(?:buy|price of) (?:a |an )?(?:phone|mobile|laptop))(?:\b|$)/iu.test(question);
+  const concept = shopping ? undefined : findBartaConcepts(question);
+  const inferred = shopping ? [] : concept?.topics ?? lexicalTopics(knowledge, question, language);
+  const related = approvedSuggestions(knowledge, language, inferred);
+  if (related.length) {
+    const subject = concept?.missing?.[language];
+    return bartaAnswerSchema.parse({
+      status: "clarification", answer: null, citations: [], suggestions: related,
+      message: subject ? fallbackCopy.missing[language](subject) : fallbackCopy.related[language],
+    });
+  }
+  const suggestions = approvedSuggestions(knowledge, language, ["anc", "postnatal", "newborn"]);
+  return suggestions.length ? { ...answer, message: fallbackCopy.general[language], suggestions } : answer;
+}
+
+function clarify(knowledge: BartaKnowledge, language: Language, topics: EducationTopic[]): BartaAnswer {
+  const suggestions = approvedSuggestions(knowledge, language, topics);
   return bartaAnswerSchema.parse({
     status: "clarification",
     answer: null,
@@ -493,6 +565,7 @@ export async function resolveBartaKnowledgeAnswer(
   const combined = combineReviewedAnswers(question, knowledge, language);
   if (combined) return combined;
   const normalized = key.slice(3);
+  if (findBartaConcepts(normalized)?.missing) return answer;
   const fragments = educationTopicIds.filter((topic) => topicFragments[topic]?.includes(normalized));
   if (fragments.length || vagueQuestions.test(normalized)) {
     const topics: EducationTopic[] = fragments.length ? [...fragments] : ["anc", "postnatal", "newborn"];

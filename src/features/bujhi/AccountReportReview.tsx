@@ -87,10 +87,13 @@ export function AccountReportReview({ pregnancies }: { pregnancies: Pregnancy[] 
   }
 
   const control = "min-h-12 w-full rounded-field border border-pro-control-border bg-pro-bg px-3 text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus";
-  return <div className="mx-auto grid max-w-4xl gap-5 px-4 py-6 text-pro-text">
-    <h2 ref={reviewFocus} tabIndex={-1} className="text-2xl font-semibold">রিপোর্ট যাচাই · Account review</h2>
-    <p>Limited prototype for fictional report images. OCR runs on this device. Account saving supports maternal hemoglobin in g/dL.</p>
-    <Link href="/accessibility" className="min-h-12 text-pro-primary underline">Adjust how you use PROHOR</Link>
+
+  return <div className="grid gap-5 text-pro-text">
+    <header className="module-hero">
+      <p>Understand your reports · রিপোর্ট বুঝুন</p>
+      <h1 ref={reviewFocus} tabIndex={-1}>Bujhi account report review</h1>
+      <p>Limited prototype for fictional report images. OCR runs on this device. Account saving supports maternal hemoglobin in g/dL.</p>
+    </header>
     {!draft && <ImageMedicalEntry onDraft={openReview} />}
     {draft && <section className="grid gap-4 rounded-card border border-pro-border p-4" aria-label="Review extracted report">
       <button type="button" className="min-h-12 justify-self-start text-pro-primary underline" onClick={() => setDraft(undefined)}>Choose another image</button>

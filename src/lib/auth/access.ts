@@ -14,14 +14,16 @@ export async function readIdentity(client: SupabaseClient | null): Promise<Ident
     const { data, error } = await client.auth.getUser();
     if (error || !data.user) return { status: error && (error.name === "AuthRetryableFetchError" || error.status === 429 || (error.status && error.status >= 500)) ? 503 : 401 };
     if (!data.user.email || !data.user.email_confirmed_at || data.user.is_anonymous) return { status: 401 };
-    const result = await client.from("profiles").select("user_id, display_name, role")
-      .eq("user_id", data.user.id).maybeSingle();
+    // Independent reads: run together so identity costs two round trips, not three.
+    const [result, { data: access, error: accessError }] = await Promise.all([
+      client.from("profiles").select("user_id, display_name, role").eq("user_id", data.user.id).maybeSingle(),
+      client.rpc("prohor_account_access"),
+    ]);
     const profile = result.data;
     if (result.error) return { status: 503 };
     if (!profile) return { status: 503, reason: "profile_missing" };
     if (profile.user_id !== data.user.id ||
         !["mother", "provider", "supporter", "member"].includes(profile.role) || typeof profile.display_name !== "string") return { status: 503 };
-    const { data: access, error: accessError } = await client.rpc("prohor_account_access");
     // Preserve existing deployed mother/provider accounts before the forward migration.
     if (accessError?.code === "PGRST202" && ["mother", "provider"].includes(profile.role))
       return { status: 200, profile: profile as OwnProfile };

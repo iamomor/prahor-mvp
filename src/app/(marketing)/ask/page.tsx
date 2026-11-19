@@ -3,6 +3,7 @@ import { Brand } from "@/components/ui/Brand";
 import { PageHeading } from "@/components/ui/PageHeading";
 import { BartaAccessControl } from "@/features/barta/BartaAccessControl";
 import { BartaChatStarter } from "@/features/barta/BartaChatStarter";
+import styles from "@/features/barta/barta-education.module.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -76,7 +77,7 @@ export default function AskBartaPage() {
             চ্যাটের উত্তরের জন্য অপেক্ষা করবেন না। এই প্রোটোটাইপ চিকিৎসকের কাছে
             অনুরোধ বা বার্তা পাঠায় না।
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className={styles.helpActions}>
             <a href="tel:999" className="pro-btn pro-btn-secondary">
               Call 999 in Bangladesh · <span lang="bn">বাংলাদেশে ৯৯৯-এ কল করুন</span>
             </a>

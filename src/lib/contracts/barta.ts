@@ -19,9 +19,13 @@ export const citationSchema = z.strictObject({
   page: z.number().int().positive().optional(),
 });
 
+const bartaFollowUpSchema = z.enum(["headache_stage", "symptom_stage"]);
+export type BartaFollowUp = z.infer<typeof bartaFollowUpSchema>;
+
 export const bartaRequestSchema = z.strictObject({
   question: nonEmptyText(1200), language: languageSchema,
   previousChunkId: idSchema.optional(),
+  followUpContext: bartaFollowUpSchema.optional(),
   retention: z.discriminatedUnion("mode", [
     z.strictObject({ mode: z.literal("ephemeral") }),
     z.strictObject({ mode: z.literal("saved"), conversationId: idSchema.nullable(), confirmed: z.literal(true) }),
@@ -65,6 +69,7 @@ export const bartaAnswerSchema = z.discriminatedUnion("status", [
       "urgent_care", "crisis_support", "mental_health_support",
     ]),
     message: nonEmptyText(500),
+    suggestions: z.array(nonEmptyText(200)).max(3).optional(),
   }),
   z.strictObject({
     ...decisionFields,
@@ -73,6 +78,7 @@ export const bartaAnswerSchema = z.discriminatedUnion("status", [
     citations: z.array(z.never()).length(0),
     message: nonEmptyText(500),
     suggestions: z.array(nonEmptyText(200)).max(3),
+    followUpContext: bartaFollowUpSchema.optional(),
   }),
   z.strictObject({
     status: z.literal("conversation"),

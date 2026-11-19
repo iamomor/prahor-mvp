@@ -7,7 +7,16 @@ test("Ask Barta uses only the previous public chunk ID to answer a follow-up", a
   const ask = page.getByRole("button", { name: "Ask Barta" });
 
   await question.fill("What does ANC mean?");
-  await ask.click();
+  const [initialResponse] = await Promise.all([
+    page.waitForResponse((response) => response.url().endsWith("/api/ai/chat")
+      && response.request().method() === "POST", { timeout: 65_000 }),
+    ask.click(),
+  ]);
+  expect(initialResponse.ok(), "Initial ANC chat response").toBeTruthy();
+  expect(await initialResponse.json()).toMatchObject({
+    status: "grounded",
+    answer: expect.stringContaining("ANC stands for antenatal care."),
+  });
   await expect(page.getByText("ANC stands for antenatal care.", { exact: false })).toBeVisible();
   await expect(page.getByRole("region", { name: "Keep going" }).getByRole("button", { name: "What happens at ANC visits?" })).toBeVisible();
 
@@ -42,7 +51,7 @@ test("Ask Barta offers a keyboard-selectable clarification and returns cited str
   await question.fill("Breastfeeding");
   await ask.click();
   await expect(page.getByText("What would you like to know?", { exact: false })).toBeVisible();
-  await page.getByRole("region", { name: "Choose a question" }).getByRole("button", { name: "What does exclusive breastfeeding mean?" }).press("Enter");
+  await page.getByRole("region", { name: "Choose a phrase or question" }).getByRole("button", { name: "What does exclusive breastfeeding mean?" }).press("Enter");
   await expect(question).toHaveValue("What does exclusive breastfeeding mean?");
   await expect(question).toBeFocused();
 
@@ -64,6 +73,11 @@ test("Ask Barta offers a keyboard-selectable clarification and returns cited str
 test("mobile layout lets a follow-up fill the question without submitting it", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/ask");
+  const emergencyLink = page.getByRole("link", { name: /Call 999 in Bangladesh/ });
+  await expect(emergencyLink).toBeVisible();
+  const rightEdge = await emergencyLink.evaluate((element) => element.getBoundingClientRect().right);
+  expect(rightEdge).toBeLessThanOrEqual(360);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   await page.getByLabel(/Answer language|উত্তরের ভাষা/).selectOption("en");
   const question = page.getByRole("textbox", { name: "Your question" });
   const ask = page.getByRole("button", { name: "Ask Barta" });
@@ -95,4 +109,50 @@ test("compact citations expose their full titles on request", async ({ page }) =
   await expect(sourceTitle).toBeHidden();
   await source.getByText("Citation details", { exact: true }).press("Enter");
   await expect(sourceTitle).toBeVisible();
+});
+
+test("Barta's symbol shortcut and emoji suggestions lead to an editable draft", async ({ page }) => {
+  await page.goto("/ask");
+  await page.getByLabel(/Answer language|উত্তরের ভাষা/).selectOption("en");
+
+  const shortcut = page.getByRole("button", { name: "Use symbols" });
+  await shortcut.press("Enter");
+  await expect(shortcut).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#barta-symbol-input > summary")).toBeFocused();
+  await expect(page.getByRole("button", { name: /Headache/ })).toBeVisible();
+
+  const question = page.getByRole("textbox", { name: "Your question" });
+  await question.fill("🤕");
+  await page.getByRole("button", { name: "Ask Barta" }).click();
+  const choices = page.getByRole("region", { name: "Choose a phrase or question" });
+  let submissions = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("/api/ai/chat") && request.method() === "POST") submissions++;
+  });
+  await choices.getByRole("button", { name: "I have a headache." }).press("Enter");
+  await expect(question).toHaveValue("I have a headache.");
+  await expect(question).toBeFocused();
+  expect(submissions).toBe(0);
+});
+
+test("a Banglish stage reply retains the symptom through a bounded follow-up code", async ({ page }) => {
+  await page.goto("/ask");
+  await page.getByLabel(/Answer language|উত্তরের ভাষা/).selectOption("bn");
+  const question = page.locator("#barta-question");
+  const ask = page.getByRole("button", { name: "বার্তাকে জিজ্ঞেস করুন" });
+
+  await question.fill("আমার মাথাব্যথা করছে।");
+  await ask.click();
+  await expect(page.getByRole("button", { name: "প্রসবের পরে", exact: true })).toBeVisible();
+  await question.fill("pore");
+  const [followUp] = await Promise.all([
+    page.waitForRequest((request) => request.url().endsWith("/api/ai/chat") && request.method() === "POST"),
+    ask.click(),
+  ]);
+  expect(followUp.postDataJSON()).toEqual({
+    question: "pore", language: "bn", retention: { mode: "ephemeral" }, followUpContext: "headache_stage",
+  });
+  await expect(page.getByText(/প্রসবের পরে.*মাথাব্যথা হচ্ছে/u)).toBeVisible();
+  const choices = page.getByRole("region", { name: "একটি বাক্য বা প্রশ্ন বেছে নিন" });
+  await expect(choices.getByRole("button", { name: "প্রসবের পর কখন চেকআপ করা দরকার?" })).toBeVisible();
 });

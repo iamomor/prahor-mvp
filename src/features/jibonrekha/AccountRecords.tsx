@@ -98,46 +98,13 @@ const choices = {
     ["note", ""],
   ],
 } as const;
+
 const unitOptions: Record<string, string[]> = {
   weight: ["kg", "g"],
   temperature: ["Cel", "[degF]"],
   glucose: ["mmol/L", "mg/dL"],
 };
-type Task =
-  | "home"
-  | "observation"
-  | "pregnancy"
-  | "baby"
-  | "note"
-  | "visit"
-  | "records";
-const tasks: { id: Task; label: string; hint: string }[] = [
-  {
-    id: "observation",
-    label: "Add a measurement",
-    hint: "Mother or baby · about 30 seconds",
-  },
-  {
-    id: "records",
-    label: "Find a record",
-    hint: "Measurements, pregnancies and notes",
-  },
-  {
-    id: "pregnancy",
-    label: "Add a pregnancy",
-    hint: "Set up a pregnancy record",
-  },
-  { id: "baby", label: "Add a baby", hint: "Keep each baby separate" },
-  {
-    id: "note",
-    label: "Write a note",
-    hint: "Symptoms or a condition you noted",
-  },
-  {
-    id: "visit",
-    label: "Record a visit",
-    hint: "Keep a dated, self-recorded visit",
-  },
+
 ];
 
 function today() {
@@ -289,35 +256,7 @@ export function AccountRecords() {
     }
     return history;
   }
-  return (
-    <div className="grid w-full gap-5 text-pro-text">
-      <header className="module-hero">
-        <p>Mother and baby records</p>
-        <h1 lang="bn">
-          জীবনরেখা
-        </h1>
-        <p>What would you like to do with your records?</p>
-      </header>
-      <aside className="rounded-field border border-pro-border bg-pro-surface px-4 py-3 text-sm">
-        <strong>Fictional demo data only.</strong> Account saves need a
-        connection. Entries are not clinician-verified.
-      </aside>
-      {message && (
-        <p role="status" className={`${box} text-pro-success`}>
-          {message}
-        </p>
-      )}
-      {error && (
-        <div
-          ref={errorFocus}
-          tabIndex={-1}
-          role="alert"
-          className={`${box} focus-visible:outline-3 focus-visible:outline-pro-focus`}
-        >
-          <p className="text-pro-danger">{error}</p>
-          <button type="button" className={action} onClick={() => void load()}>
-            Reload records
-          </button>
+
         </div>
       )}
       {loading ? (

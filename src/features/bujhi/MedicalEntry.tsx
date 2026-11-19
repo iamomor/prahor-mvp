@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import { ArrowRight, Camera, FileText, Images, Mic, PencilLine, ScanLine } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -12,15 +12,16 @@ import { ReportReview } from "./ReportReview";
 import { getDemoReportDrafts } from "@/features/jibonrekha/demo-health";
 import type { ExtractedReport } from "./types";
 
-type Method = "manual" | "image" | "voice" | "review";
+export type MedicalEntryMethod = "manual" | "image" | "voice";
+type Method = MedicalEntryMethod | "review";
 const entryMethods = [
   ["manual", "নিজে লিখুন", "Enter Information", PencilLine],
   ["image", "রিপোর্ট স্ক্যান করুন", "Scan Report", ScanLine],
   ["voice", "কথা বলে বলুন", "Speak Information", Mic],
 ] as const;
 
-export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref?: string }) {
-  const [method, setMethod] = useState<Method | null>(null), [drafts, setDrafts] = useState<ExtractedReport[]>([]), [activeId, setActiveId] = useState("");
+export function MedicalEntry({ recordsHref = "/demo/jibonrekha", initialMethod = null }: { recordsHref?: string; initialMethod?: MedicalEntryMethod | null }) {
+  const [method, setMethod] = useState<Method | null>(initialMethod), [drafts, setDrafts] = useState<ExtractedReport[]>([]), [activeId, setActiveId] = useState("");
   const [sources, setSources] = useState<Record<string, File>>({});
   const [draftError, setDraftError] = useState("");
   useEffect(() => {

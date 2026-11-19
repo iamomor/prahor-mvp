@@ -6,11 +6,11 @@ import { MedicalEntry } from "@/features/bujhi/MedicalEntry";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 function BujhiTasks() {
-  return <section className="mx-auto grid max-w-4xl gap-5 px-4 py-6 text-pro-text" aria-labelledby="bujhi-title">
-    <div><p className="font-semibold text-pro-primary">প্রহর · বুঝি</p><h1 id="bujhi-title" className="mt-1 text-3xl font-semibold">রিপোর্ট ও কিট বুঝি</h1><p className="mt-2 max-w-[65ch]">আপনার প্রয়োজনের কাজটি বেছে নিন। প্রতিটি তথ্য যাচাই ও সংরক্ষণের সিদ্ধান্ত আপনার হাতে।</p></div>
+  return <section className="mx-auto grid max-w-3xl gap-5 px-4 py-6 text-pro-text sm:px-6" aria-labelledby="bujhi-task-title">
+    <div><p className="font-semibold text-pro-primary">প্রহর · বুঝি</p><h1 id="bujhi-task-title" className="mt-1 text-3xl font-semibold">রিপোর্ট ও কিট বুঝি</h1><p className="mt-2 max-w-[65ch]">রিপোর্ট মিলিয়ে দেখুন, অথবা ঘরে করা কিটের ফল বুঝুন।</p></div>
     <div className="grid gap-4 sm:grid-cols-2">
-      <section className="grid content-between gap-4 rounded-card border border-pro-border bg-pro-surface p-5"><div><h2 className="text-xl font-semibold">ঘরে করা কিট</h2><p className="mt-2">ছবি ছাড়াই কিটে যা দেখেছেন বলুন। পরের কাজ বুঝে নিন; কিছু নিজে থেকে সংরক্ষণ হবে না।</p></div><Link href="/app/bujhi/kit" className="inline-flex min-h-12 items-center justify-center rounded-field bg-pro-primary px-4 py-3 text-center font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-pro-focus">কিটের ফল বুঝি →</Link></section>
-      <section className="grid content-between gap-4 rounded-card border border-pro-border bg-pro-elevated p-5"><div><h2 className="text-xl font-semibold">মেডিকেল রিপোর্ট</h2><p className="mt-2">রিপোর্টের লেখা ও মান মিলিয়ে দেখুন। সমর্থিত তথ্যই পরের ধাপে যাবে।</p></div><a href="#report-review" className="inline-flex min-h-12 items-center justify-center rounded-field border border-pro-control-border px-4 py-3 text-center font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-pro-focus">রিপোর্ট যাচাই করি ↓</a></section>
+      <section className="grid content-between gap-4 rounded-card border border-pro-border bg-pro-surface p-5"><div><h2 className="text-xl font-semibold">ঘরে করা কিট</h2><p className="mt-2">ছবি ছাড়াই কিটে দেখা চিহ্ন মিলিয়ে নিন।</p></div><Link href="/app/bujhi/kit" className="inline-flex min-h-12 items-center justify-center rounded-field bg-pro-primary px-4 py-3 text-center font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-pro-focus">কিটের ফল বুঝি →</Link></section>
+      <section className="grid content-between gap-4 rounded-card border border-pro-border bg-pro-elevated p-5"><div><h2 className="text-xl font-semibold">মেডিকেল রিপোর্ট</h2><p className="mt-2">ছবি থেকে পড়া মান মূল রিপোর্টের সঙ্গে মিলিয়ে নিন।</p></div><a href="#report-review" className="inline-flex min-h-12 items-center justify-center rounded-field border border-pro-control-border px-4 py-3 text-center font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-pro-focus">রিপোর্ট যাচাই করি ↓</a></section>
     </div>
   </section>;
 }
@@ -33,9 +33,10 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
   const availability = db ? await db.from("bujhi_document_reviews").select("id").limit(1) : null;
   if (!availability || availability.error) return <>
     <BujhiTasks />
-    <div id="report-review" tabIndex={-1} />
-    <p className="mx-auto max-w-4xl px-4 pt-6 text-pro-text" role="status">Account report saving is unavailable. You can continue with the local review.</p>
-    <MedicalEntry recordsHref="/app/jibonrekha" />
+    <div id="report-review" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      <p className="mb-4 text-pro-text" role="status">Account report saving is unavailable. You can continue with a local review.</p>
+      <MedicalEntry recordsHref="/app/jibonrekha" />
+    </div>
   </>;
   const result = db ? await db.from("pregnancy_records").select("id, label, owner_user_id")
     .eq("owner_user_id", profile.user_id).order("created_at") : null;

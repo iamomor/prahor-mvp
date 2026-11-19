@@ -34,11 +34,14 @@ export function distanceInKm(a: GeoPoint, b: GeoPoint): number {
   const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
   return 12742 * Math.atan2(Math.sqrt(Math.max(0, x)), Math.sqrt(Math.max(0, 1 - x)));
 }
+// OSM documents obstetrics under `gynaecology` ("Obstetrics and Gynaecology"); mappers also use `maternity`.
+// A mapped tag is a signal from the community map, not a verified service: the UI keeps its "not verified" label.
+const MATERNAL_SPECIALITY = new Set(["obstetrics", "gynaecology", "gynecology", "maternity"]);
 export function categoryFromTags(tags: Record<string, string>): CareCategory | null {
   const healthcare = (tags.healthcare || "").toLowerCase();
   const amenity = (tags.amenity || "").toLowerCase();
   if (healthcare === "birthing_centre" || healthcare === "maternity" || amenity === "maternity" ||
-      (tags["healthcare:speciality"] || "").toLowerCase().split(/[;,]/).some(s => s.trim() === "obstetrics")) return "maternity";
+      (tags["healthcare:speciality"] || "").toLowerCase().split(/[;,]/).some(s => MATERNAL_SPECIALITY.has(s.trim()))) return "maternity";
   if (healthcare === "midwife") return "midwife";
   if (amenity === "hospital" || healthcare === "hospital") return "hospital";
   if (healthcare === "clinic" || amenity === "clinic") return "clinic";

@@ -1,0 +1,7 @@
+@media print {
+  @page { size: A4; margin: 16mm; }
+  body * { visibility: hidden !important; }
+  .account-visit-pack-sheet, .account-visit-pack-sheet * { visibility: visible !important; }
+  .account-visit-pack-sheet { position: absolute; inset: 0 auto auto 0; width: 100%; border: 0; padding: 0; color: black; background: white; }
+  .account-visit-pack-sheet tr { break-inside: avoid; }
+}

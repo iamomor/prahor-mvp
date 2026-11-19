@@ -27,18 +27,17 @@ export function PothDirectoryMvp({ embedded = false }: { embedded?: boolean }) {
       </header>}
       <header className={`${styles.panel} ${styles.hero} ${styles.stack}`}>
         <p>{t("Poth · Find and prepare for care", "পথ · সেবা খুঁজুন, প্রস্তুতি নিন")}</p>
-        <h1 id="poth-title">{t("Find care with clearer information", "সঠিক তথ্য জেনে সেবা খুঁজুন")}</h1>
-        <p>{t("Find a facility, check what is known and prepare your questions. Search saved records without location permission; nearby search is optional.", "প্রতিষ্ঠান খুঁজুন, কী তথ্য জানা আছে দেখুন এবং প্রশ্ন প্রস্তুত করুন। অবস্থানের অনুমতি ছাড়াই রাখা তালিকায় খুঁজতে পারবেন; কাছের সেবা খোঁজা ঐচ্ছিক।")}</p>
+        <h1 id="poth-title">{t("Find care. Prepare with confidence.", "সেবা খুঁজুন। প্রস্তুতি নিন।")}</h1>
+        <p>{t("Find a place, check the details and prepare your questions. Use the directory without GPS.", "প্রতিষ্ঠান খুঁজুন, তথ্য দেখুন, প্রশ্ন গুছিয়ে নিন। GPS ছাড়াই তালিকা ব্যবহার করতে পারবেন।")}</p>
         <nav className={styles.actions} aria-label={t("Poth sections", "পথের অংশগুলো")}>
           <a className={`${styles.button} ${styles.primary}`} href="#poth-reviewed-directory">{t("Search directory", "তালিকায় খুঁজুন")}</a>
           <a className={styles.button} href="#poth-nearby-map">{t("Nearby care", "কাছের সেবা")}</a>
           <a className={styles.button} href="#poth-visit-preparation">{t("Prepare a visit", "সাক্ষাতের প্রস্তুতি")}</a>
-          <a className={styles.button} href="#poth-sos">{t("Emergency information", "জরুরি তথ্য")}</a>
         </nav>
-        <p className={styles.notice}>{t("No appointment booking or emergency dispatch is connected. A listing does not confirm maternity services, open hours or accessible entrances.", "অ্যাপয়েন্টমেন্ট বুকিং বা জরুরি সেবা পাঠানো যুক্ত নেই। তালিকায় থাকা মানেই মাতৃসেবা, খোলার সময় বা প্রবেশগম্য দরজা নিশ্চিত নয়।")}</p>
+        <div className={styles.safetyStrip}><a href="tel:999">{t("Emergency? Call 999", "জরুরি সহায়তা? ৯৯৯-এ কল করুন")}</a><span>{t("No booking or emergency dispatch in this app.", "এই অ্যাপে বুকিং বা জরুরি সেবা পাঠানো হয় না।")}</span><a href="#poth-sos">{t("More help", "আরও সহায়তা")}</a></div>
       </header>
       <PothFacilityExplorer onPrepare={setFacility} />
-      <PothNearbyMap />
+      <PothNearbyMap onPrepare={setFacility} />
       <PothVisitPreparation facility={facility} onClearFacility={() => setFacility(null)} />
       <details className={styles.panel}>
         <summary className={styles.button}>{t("Understand facility types", "প্রতিষ্ঠানের ধরন জানুন")}</summary>
@@ -47,7 +46,7 @@ export function PothDirectoryMvp({ embedded = false }: { embedded?: boolean }) {
       <PothEmergencySOS />
       <footer className={`${styles.panel} ${styles.stack}`}>
         <h2>{t("Need help planning your care?", "সেবার পরিকল্পনায় সহায়তা চান?")}</h2>
-        <p>{t("Barta helps prepare educational questions. Bondhon lets you review and authorize a separate simulated care request; opening these links shares no facility selection, location or health record.", "বার্তায় স্বাস্থ্যশিক্ষার প্রশ্ন প্রস্তুত করতে পারবেন। বন্ধনে আলাদাভাবে সিমুলেটেড সেবার অনুরোধ পর্যালোচনা ও অনুমতি দিতে পারবেন; এই লিংক খুললে প্রতিষ্ঠান, অবস্থান বা স্বাস্থ্য রেকর্ড শেয়ার হয় না।")}</p>
+        <p className={styles.meta}>{t("Learn with Barta or explore a separate, consent-controlled request in Bondhon.", "বার্তায় জানুন, বা বন্ধনে নিজের অনুমতিতে আলাদা সেবার অনুরোধ দেখুন।")}</p>
         <div className={styles.actions}><Link className={styles.button} href="/ask">{t("Ask Barta", "বার্তাকে জিজ্ঞাসা করুন")}</Link><Link className={styles.button} href="/bondhon">{t("Explore Bondhon", "বন্ধন দেখুন")}</Link></div>
       </footer>
     </div>

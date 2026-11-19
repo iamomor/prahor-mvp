@@ -36,7 +36,7 @@ const fixedMessages = {
 const immediateHarm = [
   /\b(?:kill myself|end my life|hurt myself|want to die|feel suicidal|(?:don['’]t|do not) want to live|thoughts of (?:harming|hurting) myself)\b/u,
   /\b(?:want to|might|feel like|thoughts of) (?:hurt|harm)(?:ing)? my baby\b/u,
-  /(?:আত্মহত্যা করতে|নিজেকে মেরে ফেল|নিজের ক্ষতি করতে|(?:বাচ্চার|শিশুর) ক্ষতি করতে চাই|মরে যেতে চাই)/u,
+  /(?:আত্মহত্যা করতে|নিজেকে মেরে ফেল|নিজের ক্ষতি করতে|(?:বাচ্চার|শিশুর) ক্ষতি করতে চাই|মরে যেতে চাই|বাঁচতে (?:ইচ্ছে|ইচ্ছা) (?:করে|করছে) না)/u,
   /\b(?:ami more jete chai|nijeke mere felte chai|bacchar khoti korte chai)\b/u,
 ];
 
@@ -63,6 +63,34 @@ const intensiveHeadache = /\bmatha (?:onek|beshi) (?:betha|byatha)\b/u;
 const blurredVision = /(?:\b(?:blurred|blurry) vision\b|চোখে ঝাপসা|চোখে ঝাপসা দেখি|\bchokhe jhapsha\b)/u;
 const postpartumSupport = /(?:\bpostpartum depression\b|\bdepressed after (?:birth|delivery)\b|প্রসবের পর বিষণ্ন|বাচ্চা হওয়ার পর মন খারাপ|\bdeliveryr por mon kharap\b|\b(?:feel(?:ing)?|am|im|i'm|been) (?:so |very |really )?(?:sad|low|down|depressed|empty|hopeless|not myself) (?:since|after) (?:the )?(?:birth|delivery|giving birth|having (?:my|the|a) baby|my baby was born)\b|\b(?:(?:baby|baccha|bachcha|bacca) (?:howar|hobar|hoar|hoyar)|delivery ?(?:r|er)?) (?:por|pore) (?:theke )?(?:amar )?(?:mon kharap|valo lage na|bhalo lage na|kanna pay|shudhu kanna)\b)/u;
 
+// Danger signs added 20 Nov 2026 after a 55-phrase safety run found 15 misses.
+// Basis: WHO PCPNC "go to hospital immediately" list (NBK304178) and the WHO/JHU FP Handbook urgent list.
+// Bangla letters with a nukta are written as escapes: text is NFKC-normalised, which splits ড় and য় into two code points.
+const DR = "ড\u09bc";
+const movementLost = new RegExp([
+  String.raw`\b(?:can['’]?t|cannot|can not|don['’]?t|do not) feel (?:the |my )?baby(?:['’]s)? (?:move|moving|movements?|kick(?:ing|s)?)\b`,
+  String.raw`\b(?:haven['’]?t|have not|hasn['’]?t|has not) (?:felt|feel) (?:the |my )?baby (?:move|moving|kick)`,
+  String.raw`\bno (?:fetal|baby) movements?\b`,
+  `(?:বাচ্চা|শিশু).{0,30}ন${DR}(?:ছে না|াচ${DR}া (?:করছে|করে|টের পাচ্ছি) না)`,
+].join("|"), "u");
+const highFever = /(?:\bhigh (?:fever|temperature)\b|\b(?:i have|i've got|i am having|i've had|got) (?:a )?fever\b|(?:অনেক|খুব|বেশি|তীব্র|উচ্চ) জ্বর|জ্বর (?:হয়েছে|হচ্ছে|আসছে)|\b(?:onek|khub|beshi) jor\b)/u;
+const measuredFever = /\bfever (?:of )?(\d{2,3}(?:\.\d+)?)\s*(?:°\s*)?([cf])?\b/u;
+
+function reportsHighFever(text: string): boolean {
+  const reading = measuredFever.exec(text);
+  if (!reading) return highFever.test(text);
+  const value = Number(reading[1]);
+  const fahrenheit = reading[2] === "f" || (!reading[2] && value >= 60);
+  return fahrenheit ? value >= 100.4 && value <= 115 : value >= 38 && value <= 46;
+}
+
+const fits = /\b(?:had|having|have|got) (?:a )?fits?\b|\b(?:i am|i[’\x27]m|she is|she[’\x27]s) fitting(?=$|[.!?]| (?:right now|now)\b)/u;
+const watersBroke = new RegExp(String.raw`\b(?:my )?waters? (?:broke|has broken|have broken|is leaking|are leaking|leaking)\b|\bleaking (?:fluid|water) from (?:my )?vagina\b|পানি ভে(?:ঙে|ঙ্গে)(?:ছে| গেছে)|পানি ভাঙ(?:ছে|লো|ল)`, "u");
+const severeBellyPainBangla = /(?:তল)?পেটে (?:তীব্র|প্রচণ্ড|খুব|অনেক|ভীষণ) ব্যথা|(?:তীব্র|প্রচণ্ড) পেট ?ব্যথা|\bsevere stomach pain\b/u;
+const swelling = new RegExp(String.raw`\b(?:swollen |swelling (?:of|in) (?:my )?)(?:face|hands?|fingers)\b|(?:মুখ|হাত|চোখ).{0,12}ফুলে`, "u");
+const markedSwelling = /(?:\b(?:extreme|severe|sudden) (?:swelling|puffiness)\b|\b(?:suddenly|severely) swollen\b|(?:হঠাৎ|খুব|অনেক) ফুলে)/u;
+const headacheAny = /(?:\bheadache\b|মাথা ?ব্যথা|\bmatha (?:betha|byatha)\b)/u;
+
 const outsideScope = [
   /\b(?:diagnose me|is my baby (?:okay|ok|safe)|prescribe|what (?:drug|medicine) should i take|can i take (?:this|that) (?:medicine|drug|tablet)|how (?:many pills|much medicine)|what dose|self-medicate|how (?:can i|to) (?:abort|end (?:my|a) pregnancy))\b/u,
   /\b(?:amar pa (?:fulay|fule|phule) (?:jacche|geche)|(?:ami )?\d+ maser pregnant.{0,30}ki test (?:lagbe|korbo)|(?:ei|eta) (?:oshudh|osudh) (?:khabo|khete pari))\b/u,
@@ -86,6 +114,9 @@ function routeQuestion(question: string): Route | undefined {
   if (statedUrgency.test(text)
     || urgent.some((pattern) => pattern.test(text))
     || maternalWarning.test(text)
+    || movementLost.test(text) || fits.test(text) || watersBroke.test(text) || severeBellyPainBangla.test(text)
+    || ((pregnancy.test(text) || afterBirth.test(text)) && reportsHighFever(text))
+    || (swelling.test(text) && (headacheAny.test(text) || blurredVision.test(text) || (markedSwelling.test(text) && (pregnancy.test(text) || afterBirth.test(text)))))
     || breathingTrouble.test(text) || cannotKeepFluids.test(text)
     || (pregnancy.test(text) && pregnancyBleeding.test(text))
     || /^(?:i am|i['’]m) bleeding(?:\b|$)/u.test(text)

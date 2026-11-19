@@ -7,7 +7,17 @@
       "Bash(gh auth *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(claude plugins *)",
+      "Read(//c/Users/omorf/.claude/**)",
+      "Bash(wc -l src/features/dashboard/*.tsx src/features/auth/*.tsx)",
+      "Bash(grep -rnE \"goto\\\\\\(['\\\\\"\\\\`]/\\(bujhi|jibonrekha\\)['\\\\\"\\\\`]|demo/\\(bujhi|jibonrekha\\)|role\\\\\\(\\\\\"main\\\\\"|getByRole\\\\\\(['\\\\\"]main|locator\\\\\\(['\\\\\"]main|'main'\" tests)",
+      "Bash(grep -vE \"^\\\\s*$\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --retry 40 --retry-connrefused --retry-delay 3 --max-time 180 http://localhost:3100/zz-preview)",
+      "Bash(node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/ccd14449-2e07-4385-954c-3d2be7856bc0/scratchpad/shots.mjs\" \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/ccd14449-2e07-4385-954c-3d2be7856bc0/scratchpad\")",
+      "Bash(git checkout *)",
+      "Bash(node \"C:/Users/omorf/AppData/Local/Temp/claude/0ef5068a0255b7b4/ccd14449-2e07-4385-954c-3d2be7856bc0/scratchpad/live-test.mjs\")",
+      "Bash(gh pr *)"
     ]
   }
 }

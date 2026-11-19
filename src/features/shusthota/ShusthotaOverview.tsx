@@ -2,13 +2,18 @@
 
 import { useId, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ArrowUpRight, BookHeart, CircleAlert, Leaf, LockKeyhole, Sparkles } from "lucide-react";
+import { ArrowUpRight, BookHeart, CircleAlert, Leaf, Sparkles } from "lucide-react";
 import { useLanguage } from "@/i18n/use-language";
 import { PrivateDiary } from "./PrivateDiary";
 import { HydrationHabits } from "./HydrationHabits";
 import { ActivityPreferences } from "./ActivityPreferences";
 import { ShusthotaHistory } from "./ShusthotaHistory";
 import { Wellbeing } from "./Wellbeing";
+import { RelaxationResources } from "./RelaxationResources";
+import { ActivityPlans } from "./ActivityPlans";
+import { ProviderWellnessSharing } from "./ProviderWellnessSharing";
+import { WellnessTrendSummary } from "./WellnessTrendSummary";
+import { RemindersGuide } from "./RemindersGuide";
 import styles from "./ShusthotaOverview.module.css";
 
 const copy = {
@@ -76,9 +81,9 @@ export function ShusthotaOverview() {
 
       <ShusthotaHistory refreshVersion={historyRevision} />
 
-      <HydrationHabits />
+      <HydrationHabits onSaved={() => setHistoryRevision(value => value + 1)} />
 
-      <ActivityPreferences />
+      <ActivityPreferences onSaved={() => setHistoryRevision(value => value + 1)} />
 
       <section aria-labelledby={`${id}-diary-title`} className={`${styles.enter} grid gap-5 border-t border-pro-border pt-7 sm:pt-9`}>
         <header className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(14rem,24rem)] sm:items-end sm:gap-8">
@@ -88,20 +93,15 @@ export function ShusthotaOverview() {
         <PrivateDiary />
       </section>
 
-      <section aria-labelledby={`${id}-sharing-title`} className={`${styles.enter} grid gap-2 rounded-hero border border-pro-border p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start sm:gap-4 sm:p-6`}>
-        <LockKeyhole className="mt-1 size-5 text-pro-primary" aria-hidden="true" />
-        <div className="grid gap-2"><h2 id={`${id}-sharing-title`} className="text-lg font-semibold">{t(copy.sharingTitle)}</h2><p className="pro-muted max-w-3xl leading-relaxed">{t(copy.sharingCopy)}</p><p className="pro-muted max-w-3xl text-sm leading-relaxed">{t({ en: "Bondhon currently offers explicit selection for supported wellness check-in fields. Hydration, habit and activity preference records are not available to provider projections.", bn: "বন্ধনে বর্তমানে সমর্থিত সুস্থতার খোঁজখবরের তথ্য স্পষ্টভাবে বেছে শেয়ার করা যায়। পানি, অভ্যাস ও কাজকর্মের পছন্দের রেকর্ড সেবাদাতার কাছে দেখানো হয় না।" })}</p><Link href="/app/bondhon" className={`${styles.motionControl} inline-flex min-h-11 w-fit items-center gap-2 rounded-pill border border-pro-control-border px-4 font-semibold text-pro-primary transition-colors duration-[var(--pro-duration-fast)] hover:bg-pro-surface focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus motion-reduce:transition-none`}>{t({ en: "Review sharing in Bondhon", bn: "বন্ধনে শেয়ার পর্যালোচনা করুন" })}<ArrowUpRight size={16} aria-hidden="true" /></Link></div>
-      </section>
+      <RelaxationResources />
 
-      <section aria-labelledby={`${id}-future-title`} className={`${styles.enter} grid gap-4 border-t border-pro-border pt-7 sm:pt-9`}>
-        <header className="grid gap-1"><p className="pro-eyebrow tracking-normal">{t({ en: "Not connected yet", bn: "এখনো সংযুক্ত নয়" })}</p><h2 id={`${id}-future-title`} className="pro-display text-2xl">{t({ en: "More support, when ready", bn: "প্রস্তুত হলে আরও সহায়তা" })}</h2><p className="pro-muted max-w-prose leading-relaxed">{t({ en: "These options remain unavailable until their review and privacy requirements are in place.", bn: "পর্যালোচনা ও গোপনীয়তার প্রয়োজনীয়তা পূরণ না হওয়া পর্যন্ত এই সুবিধাগুলো চালু হবে না।" })}</p></header>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          <li className="border-s-2 border-pro-border ps-4"><h3 className="font-semibold">{t({ en: "Reviewed self-care resources", bn: "পর্যালোচিত নিজের যত্নের উপকরণ" })}</h3><p className="pro-muted mt-1 leading-relaxed">{t({ en: "No verifiably reviewed, approved resource content is available to publish yet.", bn: "প্রকাশের জন্য যাচাইযোগ্যভাবে পর্যালোচিত ও অনুমোদিত কোনো উপকরণ এখনো নেই।" })}</p></li>
-          <li className="border-s-2 border-pro-border ps-4"><h3 className="font-semibold">{t({ en: "Clinician-approved activity plans", bn: "চিকিৎসক-অনুমোদিত কাজকর্মের পরিকল্পনা" })}</h3><p className="pro-muted mt-1 leading-relaxed">{t({ en: "No verified reviewer workflow or approved plans are available. No exercise guidance is shown.", bn: "যাচাইকৃত পর্যালোচনা প্রক্রিয়া বা অনুমোদিত পরিকল্পনা নেই। কোনো ব্যায়ামের নির্দেশনা দেখানো হয় না।" })}</p></li>
-          <li className="border-s-2 border-pro-border ps-4"><h3 className="font-semibold">{t({ en: "AI wellness summary", bn: "এআই সুস্থতার সারাংশ" })}</h3><p className="pro-muted mt-1 leading-relaxed">{t({ en: "No privacy-reviewed wellness AI integration is connected. Diary content is excluded from Barta and other AI context.", bn: "গোপনীয়তা-পর্যালোচিত সুস্থতা এআই সংযুক্ত নয়। ডায়েরির লেখা বার্তা বা অন্য এআই প্রসঙ্গে যায় না।" })}</p></li>
-          <li className="border-s-2 border-pro-border ps-4"><h3 className="font-semibold">{t({ en: "Reminders", bn: "রিমাইন্ডার" })}</h3><p className="pro-muted mt-1 leading-relaxed">{t({ en: "Background delivery and scheduling are not available; no active reminder is set.", bn: "পেছনে চলা নোটিফিকেশন ও সময়সূচি চালু নেই; কোনো রিমাইন্ডার সক্রিয় নয়।" })}</p></li>
-        </ul>
-      </section>
+      <ActivityPlans />
+
+      <ProviderWellnessSharing />
+
+      <WellnessTrendSummary />
+
+      <RemindersGuide />
 
       <aside className={`${styles.enter} grid gap-3 border-t border-pro-border pt-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-8`}>
         <div className="grid gap-1"><p className="pro-eyebrow tracking-normal">{t(copy.bartaKicker)}</p><p className="pro-muted max-w-prose leading-relaxed">{t(copy.bartaCopy)}</p></div>

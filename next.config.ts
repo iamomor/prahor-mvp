@@ -14,16 +14,7 @@ const nextConfig: NextConfig = {
   experimental: { cpus: 2, staleTimes: { dynamic: 60, static: 300 } },
 
 
-  // Module-name alias: Shusthota lives at /app/wellbeing (sign-up `next=/app/shusthota` was a 404).
-  async redirects() {
-    return [
-      {
-        source: "/app/shusthota",
-        destination: "/app/wellbeing",
-        permanent: false,
-      },
-    ];
-  },
+ 
 
 };
 export default nextConfig;

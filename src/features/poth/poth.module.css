@@ -1,0 +1,58 @@
+.root { min-width: 0; color: var(--pro-text); background: var(--pro-bg); line-height: 1.65; overflow-wrap: anywhere; }
+.root *, .root *::before, .root *::after { box-sizing: border-box; }
+.root :is(section, article, header, nav, fieldset, label, div) { min-width: 0; }
+.root :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { width: 100%; max-width: 100%; color: var(--pro-text); background: var(--pro-bg); border: 1px solid var(--pro-control-border); border-radius: .75rem; min-height: 3rem; padding: .65rem .8rem; font: inherit; }
+.root input[type="checkbox"] { width: 1.25rem; min-height: 1.25rem; height: 1.25rem; flex: none; accent-color: var(--pro-primary); }
+.root option { color: var(--pro-text); background: var(--pro-bg); }
+.root :is(button, a, summary) { overflow-wrap: anywhere; white-space: normal; max-width: 100%; }
+.root :is(button, a, summary, input, select, textarea):focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 3px; }
+.root :is(section[id], h2[id]) { scroll-margin-top: 7rem; }
+.container { max-width: 72rem; margin-inline: auto; }
+.public { padding: clamp(1rem, 4vw, 2.5rem); }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+.panel { border: 1px solid var(--pro-border); border-radius: 1.25rem; padding: clamp(1rem, 3vw, 1.5rem); background: var(--pro-elevated); }
+.hero { background: var(--pro-surface); }
+.hero h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); line-height: 1.3; font-weight: 650; }
+.panel h2 { font-size: 1.5rem; line-height: 1.35; font-weight: 650; }
+.panel h3 { font-size: 1.2rem; font-weight: 650; }
+.panel p { margin: 0; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.button { display: inline-flex; justify-content: center; align-items: center; gap: .5rem; min-height: 2.75rem; border: 1px solid var(--pro-control-border); border-radius: .75rem; padding: .6rem 1rem; font: inherit; font-weight: 600; text-decoration: none; color: var(--pro-primary); background: var(--pro-elevated); cursor: pointer; }
+.button:disabled { cursor: wait; opacity: .65; }
+.primary { color: var(--pro-on-primary); background: var(--pro-primary); }
+.field { display: grid; gap: .5rem; font-weight: 600; }
+.filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.card { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: .875rem; border: 1px solid var(--pro-border); border-radius: 1rem; padding: 1.1rem; background: var(--pro-bg); }
+.badge { display: inline-block; padding: .25rem .65rem; border: 1px solid var(--pro-control-border); border-radius: .5rem; font-weight: 600; }
+.meta { color: var(--pro-muted); }
+.notice { border-inline-start: 3px solid var(--pro-primary); padding: .75rem 1rem; background: var(--pro-surface); border-radius: .5rem; }
+.error { border-inline-start: 3px solid var(--pro-danger); padding: .75rem; }
+.details { border-block-start: 1px solid var(--pro-border); padding-block-start: .75rem; }
+.details summary { cursor: pointer; min-height: 2.75rem; padding-block: .5rem; font-weight: 600; }
+.facts { display: grid; gap: .75rem; padding-block: .75rem; }
+.facts dt { font-weight: 600; }
+.facts dd { margin: .2rem 0 0; overflow-wrap: anywhere; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.check { display: flex; gap: .75rem; align-items: flex-start; padding: .875rem; border: 1px solid var(--pro-border); border-radius: .75rem; }
+.check input { margin-block-start: .25rem; }
+@media (min-width: 44rem) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (forced-colors: active) { .panel, .card, .badge, .button, .check { border-color: CanvasText; } .button { color: LinkText; } .primary { color: HighlightText; background: Highlight; } }
+.mapCanvas { background: var(--pro-surface); }
+.mapRadius { border: 2px solid var(--pro-primary); background: color-mix(in srgb, var(--pro-primary) 10%, transparent); }
+.mapCenter, .mapMarker { border: 2px solid var(--pro-bg); background: var(--pro-primary); color: var(--pro-on-primary); }
+.mapMarker { outline: 1px solid var(--pro-primary); }
+.mapSelected { outline: 3px solid var(--pro-text); outline-offset: 2px; }
+.mapControl { color: var(--pro-text); background: var(--pro-elevated); border: 1px solid var(--pro-control-border); font: inherit; }
+@media (forced-colors: active) { .mapMarker, .mapCenter { forced-color-adjust: none; color: HighlightText; background: Highlight; border-color: Canvas; } .mapRadius { border-color: CanvasText; } }
+
+.printVisitRoot { display: none; }
+@media print {
+  :global(body):has(.printVisitRoot) > :not(.printVisitRoot) { display: none !important; }
+  .printVisitRoot { display: block !important; color: CanvasText; background: Canvas; }
+  .printVisitRoot section { border: 0; padding: .5rem; }
+  .printVisitRoot label { break-inside: avoid; }
+  .printVisitRoot a { color: CanvasText; }
+}
+
+.root :is(p, label, button, a, summary, select, input, textarea) { font-size: 1rem; }

@@ -107,6 +107,14 @@ const unitOptions: Record<string, string[]> = {
   glucose: ["mmol/L", "mg/dL"],
 };
 
+type Task = "home" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records";
+const tasks: { id: Exclude<Task, "home">; label: string; hint: string }[] = [
+  { id: "observation", label: "Add a measurement", hint: "Record a measurement or note for a mother or baby" },
+  { id: "records", label: "View account records", hint: "See entries and correction history" },
+  { id: "pregnancy", label: "Add a pregnancy", hint: "Keep the dates you enter" },
+  { id: "baby", label: "Add a baby record", hint: "Keep a separate record for each baby" },
+  { id: "note", label: "Write a health note", hint: "Record a symptom or a condition you noted" },
+  { id: "visit", label: "Record a visit", hint: "Keep details of a visit that happened" },
 ];
 
 function today() {
@@ -261,6 +269,7 @@ export function AccountRecords() {
     }
     return history;
   }
+
 
 
         </div>

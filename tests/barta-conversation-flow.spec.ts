@@ -134,3 +134,25 @@ test("Barta's symbol shortcut and emoji suggestions lead to an editable draft", 
   await expect(question).toBeFocused();
   expect(submissions).toBe(0);
 });
+
+test("a Banglish stage reply retains the symptom through a bounded follow-up code", async ({ page }) => {
+  await page.goto("/ask");
+  await page.getByLabel(/Answer language|উত্তরের ভাষা/).selectOption("bn");
+  const question = page.locator("#barta-question");
+  const ask = page.getByRole("button", { name: "বার্তাকে জিজ্ঞেস করুন" });
+
+  await question.fill("আমার মাথাব্যথা করছে।");
+  await ask.click();
+  await expect(page.getByRole("button", { name: "প্রসবের পরে", exact: true })).toBeVisible();
+  await question.fill("pore");
+  const [followUp] = await Promise.all([
+    page.waitForRequest((request) => request.url().endsWith("/api/ai/chat") && request.method() === "POST"),
+    ask.click(),
+  ]);
+  expect(followUp.postDataJSON()).toEqual({
+    question: "pore", language: "bn", retention: { mode: "ephemeral" }, followUpContext: "headache_stage",
+  });
+  await expect(page.getByText(/প্রসবের পরে.*মাথাব্যথা হচ্ছে/u)).toBeVisible();
+  const choices = page.getByRole("region", { name: "একটি বাক্য বা প্রশ্ন বেছে নিন" });
+  await expect(choices.getByRole("button", { name: "প্রসবের পর কখন চেকআপ করা দরকার?" })).toBeVisible();
+});

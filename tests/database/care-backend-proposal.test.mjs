@@ -264,6 +264,12 @@ test("stale scalar role cannot bypass a revoked membership for care or private R
     assert.equal((await asUser(ids.b, tx => tx.query("select * from public.health_observations"))).rows.length, 0);
     await assert.rejects(rpc(ids.b, "mvp_care_create_request", requestParams()), { code: "42501" });
     await assert.rejects(asUser(ids.b, tx => tx.query("insert into public.pregnancy_records(label) values('Synthetic denied')")), { code: "42501" });
+    // Regression (20261119040000): later Jibonrekha/Bujhi policies and RPCs must not fall back to the scalar profile role.
+    assert.equal((await asUser(ids.b, tx => tx.query("select * from public.pregnancy_records"))).rows.length, 0);
+    await assert.rejects(rpc(ids.b, "jr_save", { p_action: "pregnancy", p_data: { label: "Synthetic denied" }, p_key: randomUUID() }), { code: "42501" });
+    await assert.rejects(rpc(ids.b, "bujhi_commit_reviewed_hemoglobin", { p_report_id: randomUUID(), p_pregnancy_id: records.b.pregnancy,
+      p_source_sha256: "a".repeat(64), p_raw_label: "Hemoglobin", p_raw_value: "11.0", p_raw_unit: "g/dL",
+      p_reviewed_value: "11.0", p_reviewed_unit: "g/dL", p_observed_on: "2026-11-18" }), { code: "42501" });
   } finally {
     await db.query("update public.account_role_memberships set status='approved' where user_id=$1 and role='mother'", [ids.b]);
   }

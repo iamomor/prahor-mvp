@@ -4,7 +4,7 @@ import { ShonketCareNavigation } from "@/features/shonket/ShonketPublicFrame";
 
 export const metadata: Metadata = {
   title: "Prepare a message | Shonket",
-  description: "Prepare a local preview of a message for human support.",
+  description: "Prepare a message for human support.",
 };
 
 export default function CareRequestPage() {

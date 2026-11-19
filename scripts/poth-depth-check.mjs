@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const checks = [
- ['Poth discovery and source safety', ['--test', 'tests/unit/poth-directory.test.mjs']],
+ ['Poth discovery and source safety', ['--test', 'tests/unit/poth-directory.test.mjs', 'tests/unit/poth-maternal-tags.test.mjs', 'tests/unit/poth-checklist.test.mjs']],
  ['Preserved nationwide source snapshot', ['scripts/verify-poth-community-cache.mjs']],
  ['Route definitions', ['node_modules/next/dist/bin/next', 'typegen']],
  ['Typecheck', ['node_modules/typescript/bin/tsc', '--noEmit']],

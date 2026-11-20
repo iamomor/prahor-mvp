@@ -5,7 +5,7 @@ import { fetchBartaAudio } from "./barta-audio-file";
 import styles from "./barta-education.module.css";
 import { claimAudioSession, releaseAudioSession } from "@/lib/audio-session";
 
-export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, disabled, browserReading, onBrowserRead }: {
+export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, disabled, browserReading, browserFailed, onBrowserRead }: {
   text: string;
   language: Language;
   ticket?: string;
@@ -13,6 +13,7 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
   guideLabel?: string;
   disabled: boolean;
   browserReading: boolean;
+  browserFailed?: boolean;
   onBrowserRead: () => void;
 }) {
   const copy = educationCopy[language];
@@ -60,7 +61,16 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
 
   function activate() {
     if (disabled || loading) return;
+    if (browserReading) {
+      onBrowserRead();
+      return;
+    }
     const media = player.current;
+    if (guideLabel && !ready && !failed && !browserFailed &&
+      window.speechSynthesis?.getVoices().some(voice => voice.localService && voice.lang.toLowerCase().split(/[-_]/u)[0] === language)) {
+      onBrowserRead();
+      return;
+    }
     if (!ready || !media) {
       void load();
       return;
@@ -69,7 +79,7 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
     else media.pause();
   }
 
-  const label = loading ? copy.preparingAudio : failed ? copy.retryAudio
+  const label = browserReading ? copy.stopReading : loading ? copy.preparingAudio : failed ? copy.retryAudio
     : ready ? (playing ? copy.pauseAudio : copy.playAudio) : (guideLabel ?? copy.readAloud);
 
   return (
@@ -99,6 +109,14 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
             onEnded={() => { releaseAudioSession(owner.current); setPlaying(false); }}
             onError={() => { releaseAudioSession(owner.current); setFailed(true); }} />
         </>
+      )}
+      {guideLabel && (
+        <details>
+          <summary className="cursor-pointer font-semibold text-pro-primary">
+            {language === "bn" ? "নির্দেশনার লেখা পড়ুন" : "Read the guide transcript"}
+          </summary>
+          <p className="mt-2 whitespace-pre-line">{text}</p>
+        </details>
       )}
       {failed && (
         <>

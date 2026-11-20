@@ -388,30 +388,6 @@
   background: var(--pro-primary);
   color: var(--pro-on-primary);
 }
-.startersLabel { color: var(--pro-muted); font-size: 0.9375rem; font-weight: 600; }
-.starters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.starters button {
-  min-height: 2.75rem;
-  max-width: 100%;
-  padding: 0.45rem 1rem;
-  border: 1px solid var(--pro-control-border);
-  border-radius: var(--pro-radius-pill);
-  background: var(--pro-surface);
-  color: var(--pro-text);
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1.35;
-  text-align: start;
-  overflow-wrap: anywhere;
-  transition:
-    background-color var(--pro-duration-fast) var(--pro-ease),
-    border-color var(--pro-duration-fast) var(--pro-ease),
-    transform var(--pro-duration-fast) var(--pro-ease);
-}
-.starters button:hover:not(:disabled) { background: var(--pro-surface-2); border-color: var(--pro-primary); }
-.starters button:active:not(:disabled) { transform: scale(0.985); }
-.starters button:disabled { opacity: 0.55; }
 
 /* New answers settle in gently; reduced motion turns this off below. */
 .turn:last-child .answer, .thread > div > .answer { animation: barta-rise var(--pro-duration-normal) var(--pro-ease); }

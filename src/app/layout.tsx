@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ModuleCommunication } from "@/components/accessibility/ModuleCommunication";
 import { homepagePreferenceBootstrap } from "@/components/marketing/preference-bootstrap";
 import { PreferenceRuntime } from "@/features/adapt/components/PreferenceRuntime";
 
@@ -40,7 +41,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body><script dangerouslySetInnerHTML={{ __html: homepagePreferenceBootstrap }} /><PreferenceRuntime />{children}</body>
+      <body><script dangerouslySetInnerHTML={{ __html: homepagePreferenceBootstrap }} /><PreferenceRuntime />{children}<ModuleCommunication /></body>
     </html>
   );
 }

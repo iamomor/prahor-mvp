@@ -23,10 +23,10 @@ const secret = "synthetic-day3-audio-signing-key-for-tests";
 const ticketModule = load("src/features/barta/audio-ticket.ts", { "node:crypto": { createHmac, timingSafeEqual }, "./barta-spoken-text": { maxSpeechText } }, { BARTA_AUDIO_SIGNING_KEY: secret });
 const issue = ticketModule.issueAudioTicket as unknown as (text: string, language: "en" | "bn", now?: number) => string;
 const verify = ticketModule.verifyAudioTicket as unknown as (secret: string, ticket: string, text: string, language: string, now?: number) => boolean;
-function fixture(options: { mode?: string; fish?: Uint8Array; bundled?: Uint8Array; provider?: string; local?: Uint8Array } = {}) {
+function fixture(options: { mode?: string; fish?: Uint8Array; bundled?: Uint8Array; provider?: string; local?: Uint8Array; unconfigured?: boolean } = {}) {
   const calls: string[] = [];
   const route = load("src/app/api/ai/barta-audio/route.ts", {
-    "@/features/barta/audio-ticket": { getSpeechConfig: () => ({ key: secret, provider: options.provider ?? "bundled", region: "synthetic" }), verifyAudioTicket: verify },
+    "@/features/barta/audio-ticket": { getSpeechConfig: () => options.unconfigured ? undefined : ({ key: secret, provider: options.provider ?? "bundled", region: "synthetic" }), verifyAudioTicket: verify },
     "@/features/barta/barta-spoken-text": { getBartaSpokenGuide: () => "Synthetic guide" },
     "@/features/barta/local-speech": { synthesizeLocalSpeech: async () => options.local ?? new Uint8Array(128) },
     "@/lib/api-response": { jsonNoStore: (body: unknown, status: number) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } }) },
@@ -71,4 +71,14 @@ test("oversized local and Azure audio responses fail without emitting bytes", as
   for (const f of [fixture({ provider: "local", local: new Uint8Array(4_000_001) }), fixture({ provider: "azure" })]) {
     expect((await f.send({ help: true, language: "en" })).status).toBe(502);
   }
+});
+
+
+test("a public bundled guide plays with no speech keys while custom reply requests stay locked", async () => {
+  const f = fixture({ unconfigured: true, bundled: new Uint8Array(512) });
+  const guide = await f.send({ help: true, language: "en" });
+  expect(guide.status).toBe(200);
+  expect(guide.headers.get("x-barta-audio-source")).toBe("bundled");
+  expect((await f.send({ language: "en", text: "Synthetic", ticket: "a".repeat(78) })).status).toBe(503);
+  expect(f.calls).toEqual(["bundled"]);
 });

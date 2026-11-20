@@ -10,7 +10,7 @@ import { CareGuide } from "./CareGuide";
 import { AccountVisitPack } from "./AccountVisitPack";
 import { accountJourney } from "./account-journey";
 import { filterAccountHistory } from "./account-history";
-import { selectAccountPregnancy, type GuideSelection } from "./account-records-model";
+import type { GuideSelection } from "./account-records-model";
 
 import { accountSourceLabel } from "./account-provenance";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
@@ -172,6 +172,7 @@ export function AccountRecords() {
   const [kind, setKind] = useState("weight");
   const [unit, setUnit] = useState("kg");
   const [pregnancyId, setPregnancyId] = useState("");
+  const [guideSelections, setGuideSelections] = useState<Record<string, GuideSelection | null>>({});
   const [babyId, setBabyId] = useState("");
   const [historySubject, setHistorySubject] = useState<"both" | "mother" | "baby">("both");
   const [historyQuery, setHistoryQuery] = useState("");
@@ -318,6 +319,10 @@ export function AccountRecords() {
   }
   const selectedPregnancy = records ? selectAccountPregnancyFn(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
+  const guideKey = selectedPregnancy?.id ?? "none";
+  const guideSelection = guideSelections[guideKey] ?? null;
+  const shownJourney = journey && guideSelection ? { ...journey, weeks: guideSelection.week, days: guideSelection.day } : journey;
+  const previewing = Boolean(journey && guideSelection && (guideSelection.week !== journey.weeks || guideSelection.day !== journey.days));
 
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);

@@ -10,6 +10,7 @@ import { fieldIssues, isHemoglobinLabel, parseNumeric } from "./validation";
 import { documentLabels, sectionLabels, type DocumentType, type SourceLocation } from "./report-schema";
 import { abbreviationHelp, documentSubtypes, ultrasoundGroups, type UltrasoundSubtype } from "./ultrasound";
 import { WorkflowProgress } from "./WorkflowProgress";
+import { ReportUnderstanding } from "./ReportUnderstanding";
 import { SourcePreview } from "./SourcePreview";
 import { autoAnswerLanguage, QuickAnswers, words, type AnswerLanguage } from "./QuickAnswers";
 import type { ExtractedReport, ExtractedReportField } from "./types";
@@ -272,6 +273,7 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
       </div>
       </div>}
       {stage === "learn" && <div className="grid gap-4" lang={language}>
+        <ReportUnderstanding fields={fields} language={language} />
         <QuickAnswers fields={checkedFields} language={language} />
         <div className="flex flex-wrap gap-3"><button type="button" className={button} onClick={() => go("check")}>{w("যাচাইয়ে ফিরুন", "Back to check")}</button><button type="button" className={primary} onClick={() => go("save")}>{w("সংরক্ষণে এগোন", "Continue to save")}</button></div>
       </div>}

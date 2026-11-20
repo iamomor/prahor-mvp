@@ -75,8 +75,9 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
     && (result.reason === "urgent_care" || result.reason === "crisis_support");
   const careHandoff = urgent || (result.status === "abstained"
     && (result.reason === "outside_education_scope" || result.reason === "mental_health_support"));
+  const optionHeading = result.status === "grounded" ? copy.followUp : copy.clarify;
   const options = showOptions
-    ? result.status === "clarification" ? result.suggestions
+    ? result.status === "clarification" || result.status === "abstained" ? (result.suggestions ?? [])
       : result.status === "grounded" && result.followUp ? [result.followUp] : []
     : [];
 
@@ -171,8 +172,8 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
         </div>
       )}
       {options.length > 0 && (
-        <section className={styles.next} aria-label={result.status === "clarification" ? copy.clarify : copy.followUp}>
-          <h3>{result.status === "clarification" ? copy.clarify : copy.followUp}</h3>
+        <section className={styles.next} aria-label={optionHeading}>
+          <h3>{optionHeading}</h3>
           <ul>
             {options.map((prompt) => <li key={prompt}><QuestionOption prompt={prompt} onSelect={onSelect} disabled={!ready || busy} /></li>)}
           </ul>
@@ -183,11 +184,12 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 });
 
 export function BartaEducationChat({
-  languageChoice, formLanguage, question, questionInput, turns, reply, error, busy,
-  onLanguage, onQuestion, onDictation, onSelect, onClear, onSubmit,
+  languageChoice, formLanguage, question, questionInput, turns, reply, error, busy, hasPrefill,
+  onLanguage, onQuestion, onDictation, symbolsOpen, onOpenSymbols, onSelect, onClear, onSubmit,
 }: {
   languageChoice: Language | "auto";
   formLanguage: Language;
+  hasPrefill: boolean;
   question: string;
   questionInput: RefObject<HTMLTextAreaElement | null>;
   turns: Turn[];
@@ -197,6 +199,8 @@ export function BartaEducationChat({
   onLanguage: (language: Language | "auto") => void;
   onQuestion: (question: string) => void;
   onDictation: (question: string) => void;
+  symbolsOpen: boolean;
+  onOpenSymbols: () => void;
   onSelect: (question: string) => void;
   onClear: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -270,11 +274,23 @@ export function BartaEducationChat({
           onSubmit(event);
         }}>
           <label htmlFor="barta-question">{copy.question}</label>
+          {hasPrefill && <p className="text-sm text-pro-muted">{copy.prefillExplanation}</p>}
           <div className={styles.composer}>
             <textarea id="barta-question" ref={questionInput} value={question}
               placeholder={copy.placeholder} aria-describedby="barta-privacy"
               onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
+            <div className={styles.composerSend}>
+              <button type="submit" className="pro-btn pro-btn-primary"
+                disabled={!ready || busy || audio.listening || !question.trim()}>
+                {copy.submit}<ArrowUp size={18} aria-hidden="true" />
+              </button>
+            </div>
             <div className={styles.composerTools}>
+              <button type="button" className={styles.read} disabled={!ready || busy || audio.listening}
+                aria-controls="barta-symbol-input" aria-expanded={symbolsOpen} onClick={onOpenSymbols}>
+                <MessageCircle size={18} aria-hidden="true" />
+                {copy.useSymbols}
+              </button>
               <button type="button" className={styles.read} disabled={!ready || busy} aria-describedby="barta-voice-hint"
                 onClick={() => {
                   pauseAudio();
@@ -316,12 +332,7 @@ export function BartaEducationChat({
             <button type="button" className={styles.clear} disabled={!ready || busy} onClick={() => { audio.resetAudio(); onClear(); }} lang={formLanguage}>{copy.clear}</button>
           )}
           </div>
-          <div className={styles.formFooter}>
-            <p id="barta-privacy">{copy.privacy}</p>
-            <button type="submit" className="pro-btn pro-btn-primary" disabled={busy || audio.listening || !question.trim()}>
-              {copy.submit}<ArrowUp size={18} aria-hidden="true" />
-            </button>
-          </div>
+          <p id="barta-privacy" className={styles.privacyHint}>{copy.privacy}</p>
           <p id="barta-voice-hint" className={styles.voiceHint}>
             {voiceLanguage === "auto" && (
               <>{copy.voiceAutoHint} <span lang={micLanguage}>{micLanguage === "bn" ? "বাংলা" : "English"}</span>.{" "}</>

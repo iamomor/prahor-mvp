@@ -16,7 +16,7 @@ function normalizeConversation(text: string): string {
     .replace(/\s+/gu, " ").trim();
 }
 
-const wholeMessage = (...patterns: string[]) => new RegExp(`^(?:${patterns.join("|")})$`, "u");
+const wholeMessage = (...patterns: string[]) => new RegExp(`^(?:${patterns.join("|").normalize("NFKC")})$`, "u");
 
 // Match disclosures, rather than the names of topics someone may ask about.
 const crisis = /\b(?:i (?:want to (?:kill myself|end my life|die)|wish i (?:was|were) dead|am better off dead|dont want to be alive)|(?:everyone|they|my family) (?:would be|is) better off without me|(?:amar |ami )?(?:more|morte) (?:jete )?ichch?[eh] (?:kore|korche)|(?:amar |ami )?bachte ichch?[eh] korche na)\b|(?:আত্মহত্যা করতে চাই|আমি (?:মরতে চাই|বাঁচতে চাই না)|মরতে ইচ্ছে করে|বাঁচতে ইচ্ছে করে না)/u;
@@ -29,7 +29,7 @@ const heavy = wholeMessage(
 );
 const worry = wholeMessage(
   "(?:(?:im|i am|i feel|feeling) )?(?:(?:getting|feeling|so|very|really|a bit|a little|too|kinda|kind of|pretty) )*(?:worried|scared|afraid|anxious|nervous|stressed|tense|upset|sad|lonely|alone|tired|exhausted|overwhelmed|confused|lost|frightened|panicking|crying)",
-  "i (?:cant|cannot) sleep",
+  "i (?:cant|cannot) sleep", "i feel anxious and worried", "আমার ভয় ও দুশ্চিন্তা লাগছে",
   "(?:(?:amar|amr|ami) )?(?:(?:khub|onek|ektu) )?(?:bhoy|voy|tension|chinta|mon kharap|bhalo lagche na|valo lagche na|ekla|kanna)(?: lagche| lagtese| hocche| hochhe| pacchi)?",
   "(?:আমার |আমি )?(?:খুব |অনেক |একটু )?(?:ভয়|ভয়|চিন্তা|টেনশন|মন খারাপ|ভালো লাগছে না|একা|কান্না|দুশ্চিন্তা)(?: লাগছে| হচ্ছে| পাচ্ছি| করছি)?",
 );
@@ -53,10 +53,22 @@ const replies: ReplyRule[] = [
   { id: "cannot_act", pattern: wholeMessage("(?:can you )?(?:call|book|schedule|find|send|message) (?:me )?(?:an? |the |my )?(?:ambulance|doctor|hospital|appointment|midwife|clinic)(?: for me)?", "ambulance (?:dorkar|lagbe|chai)", "(?:nearest|nearby) (?:hospital|clinic|doctor)", "(?:hospital|clinic) (?:kothay|near me)", "হাসপাতাল কোথায়"),
     en: "I can’t call, book or search for places. For an emergency, contact emergency services or go to the nearest hospital. The Find Care (Poth) section can help you look at care places, but confirm with the place first.",
     bn: "আমি ফোন, বুকিং বা জায়গা খোঁজা করতে পারি না। জরুরি হলে জরুরি সেবায় যোগাযোগ করুন বা নিকটস্থ হাসপাতালে যান। ‘Find Care (পথ)’ অংশে সেবাকেন্দ্র দেখতে পারেন, তবে আগে নিশ্চিত হয়ে নিন।" },
+  { id: "aac_care_request", pattern: wholeMessage("i need to see a doctor or midwife", "(?:please )?call my family", "আমার একজন ডাক্তার বা ধাত্রীর সঙ্গে দেখা করা দরকার", "(?:দয়া করে )?আমার পরিবারকে কল দিন"),
+    en: "Use Find care on this page to look for a health facility. To reach family, use your phone’s calling app.",
+    bn: "স্বাস্থ্যকেন্দ্র খুঁজতে এই পাতার ‘সেবা খুঁজুন’ লিংক ব্যবহার করুন। পরিবারের সঙ্গে যোগাযোগ করতে ফোন থেকে কল করুন।" },
+  { id: "aac_everyday_request", pattern: wholeMessage("please bring me some water", "i need to rest", "আমাকে একটু পানি দিন", "আমার বিশ্রাম নেওয়া প্রয়োজন"),
+    en: "You can show your message to someone nearby. Is there anything about your care you’d like to ask?",
+    bn: "কাছের কাউকে আপনার বার্তাটি দেখাতে পারেন। নিজের যত্ন নিয়ে কিছু জানতে চান?" },
+  { id: "symptom_context", pattern: wholeMessage(
+    "i have (?:pain|a headache|a fever|swelling)", "i feel (?:dizzy|nauseous|uncomfortable|weak and tired)",
+    "আমার (?:ব্যথা হচ্ছে|মাথাব্যথা করছে|মাথা ঘুরছে|জ্বর এসেছে|বমি বমি ভাব হচ্ছে|ফোলা ভাব আছে|খুব দুর্বল ও ক্লান্ত লাগছে|অস্বস্তি লাগছে)",
+  ),
+    en: "When did this start? Are you asking about pregnancy, recovery after birth, or something else? A short answer is enough. For advice about a symptom you have, contact your care team.",
+    bn: "এটা কখন শুরু হয়েছে? গর্ভাবস্থা, প্রসবের পরের সময়, নাকি অন্য কিছু নিয়ে জানতে চাচ্ছেন? কয়েকটি শব্দেই বলতে পারেন। নিজের লক্ষণ নিয়ে পরামর্শের জন্য সেবাদানকারী দলের সঙ্গে কথা বলুন।" },
   { id: "cannot_decide", pattern: wholeMessage("(?:should i|do i need to) (?:go|see|visit) (?:to )?(?:the |a )?(?:hospital|doctor)(?: now)?", "(?:is|are) (?:this|it|these) (?:normal|ok|okay|serious|an emergency|dangerous)", "(?:will|is) (?:my )?baby (?:be )?(?:ok|okay|fine|healthy)", "what (?:should|do) i do", "ami ki korbo", "ki korbo", "কী করব|কি করব"),
     en: "I can’t decide that for you. If you’re worried about yourself or your baby, please contact a doctor, midwife or health worker. If it feels like an emergency, go to the nearest hospital now.",
     bn: "এটা আমি আপনার হয়ে ঠিক করতে পারি না। নিজের বা শিশুর জন্য চিন্তা হলে ডাক্তার, মিডওয়াইফ বা স্বাস্থ্যকর্মীর সঙ্গে যোগাযোগ করুন। জরুরি মনে হলে এখনই নিকটস্থ হাসপাতালে যান।" },
-  { id: "cannot_prescribe", pattern: wholeMessage("(?:give|suggest|recommend|prescribe) (?:me )?(?:some |a |any )?(?:medicine|tablet|pill|antibiotic|painkiller)s?", "(?:which|what) (?:medicine|tablet|pill|antibiotic)s?", "(?:ki|kon) (?:oshudh|osudh|medicine|tablet) khabo", "ওষুধ (?:দিন|দাও|বলুন)"),
+  { id: "cannot_prescribe", pattern: wholeMessage("(?:give|suggest|recommend|prescribe) (?:me )?(?:some |a |any )?(?:medicine|tablet|pill|antibiotic|painkiller)s?", "(?:which|what) (?:medicine|tablet|pill|antibiotic|painkiller|pain killer|syrup)s?", "(?:ki|kon) (?:oshudh|osudh|medicine|tablet) khabo", "ওষুধ (?:দিন|দাও|বলুন)"),
     en: "I can’t prescribe or recommend medicines. Please ask a doctor, midwife or pharmacist.",
     bn: "আমি ওষুধ দিতে বা সুপারিশ করতে পারি না। ডাক্তার, মিডওয়াইফ বা ফার্মাসিস্টকে জিজ্ঞেস করুন।" },
   { id: "id_doctor", pattern: wholeMessage("are you (?:a |an )?(?:real )?(?:doctor|nurse|midwife)", "apni ki (?:doctor|daktar)", "আপনি কি ডাক্তার"),
@@ -80,7 +92,7 @@ const replies: ReplyRule[] = [
   { id: "language", pattern: wholeMessage("(?:do you )?(?:speak|know|understand) (?:bangla|bengali|english)", "(?:reply|answer|speak|talk|write) in (?:bangla|bengali|english)", "(?:bangla|english|bengali)(?:te| e)? (?:bolo|bolun|likho)", "বাংলায়|ইংরেজিতে", "change language"),
     en: "I can answer in Bangla and English. Use the Answer language menu under the question box to switch.",
     bn: "আমি বাংলা ও ইংরেজিতে উত্তর দিতে পারি। বদলাতে প্রশ্নের ঘরের নিচের ‘Answer language’ মেনু ব্যবহার করুন।" },
-  { id: "how_to", pattern: wholeMessage("what can (?:i|you) (?:ask|do|help)(?: with| about)?", "what (?:topics|questions)(?: can you (?:answer|cover))?", "how (?:do i|to) (?:use|start)(?: this| you| barta)?", "(?:show|give) (?:me )?(?:some )?(?:examples?|topics|menu|options|ideas)", "menu|options|examples?|topics", "i dont (?:know|have) (?:what|anything) to ask", "where (?:do i|to) start", "ki jiggesh korte pari", "kivabe use korbo", "কী জিজ্ঞেস করতে পারি|কীভাবে ব্যবহার"),
+  { id: "how_to", pattern: wholeMessage("(?:what|how) can (?:i|you) (?:ask|do|help)(?: with| about| (?:for|with) (?:me|you)| (?:me|you))?", "what (?:topics|questions)(?: can you (?:answer|cover))?", "how (?:do i|to) (?:use|start)(?: this| you| barta)?", "(?:show|give) (?:me )?(?:some )?(?:examples?|topics|menu|options|ideas)", "menu|options|examples?|topics", "i (?:have|want to ask) a question", "can i ask (?:you )?(?:a question|something)", "amar ekta proshno ache", "আমার একটি প্রশ্ন আছে|একটা প্রশ্ন করতে পারি", "i dont (?:know|have) (?:what|anything) to ask", "where (?:do i|to) start", "ki jiggesh korte pari", "kivabe use korbo", "কী জিজ্ঞেস করতে পারি|কীভাবে ব্যবহার"),
     en: "You can type a question, tap a topic, or use the microphone. For example:",
     bn: "লিখে প্রশ্ন করতে পারেন, কোনো বিষয়ে চাপ দিতে পারেন বা মাইক্রোফোন ব্যবহার করতে পারেন। যেমন:", topics: true },
   { id: "voice", pattern: wholeMessage("(?:can you |do you )?(?:read|speak|talk|say)(?: (?:it|this|that|aloud|out loud|to me))*", "read aloud", "voice(?: mode| input)?", "(?:mic|microphone|audio|sound|voice) (?:is )?(?:not working|broken)", "(?:i )?(?:cant|cannot) (?:hear|listen|speak)", "মাইক কাজ করছে না|শুনতে পাচ্ছি না"),
@@ -95,7 +107,7 @@ const replies: ReplyRule[] = [
   { id: "boundary", pattern: wholeMessage("(?:i )?love you(?: \\w+)?", "marry me", "be my (?:girlfriend|boyfriend|wife|husband)", "(?:send|show) (?:me )?(?:a )?(?:nudes?|pic|photo|selfie)", "(?:sex|porn|nude|nsfw|horny|sexy)(?: \\w+)?", "you(?:re| are) (?:so )?(?:hot|sexy|beautiful|cute)", "tomake bhalobashi", "তোমাকে ভালোবাসি|বিয়ে করবে"),
     en: "Thanks for reaching out. I’m here to talk about pregnancy, birth, recovery, and baby care. Is there a question I can help with?",
     bn: "কথা বলার জন্য ধন্যবাদ। গর্ভাবস্থা, প্রসব, সুস্থ হয়ে ওঠা ও শিশুর যত্ন নিয়ে কথা বলতে পারি। কোনো প্রশ্নে কি সাহায্য করতে পারি?" },
-  { id: "rude", pattern: wholeMessage("(?:you(?:re| are) )?(?:so |very |really )?(?:stupid|dumb|useless|idiot|worthless|trash|garbage|rubbish|boring|pathetic|bad|worst|a waste)(?: bot| app| ai)?", "(?:you )?(?:dont|do not|never) (?:understand|help|know|answer|get it)(?: me| anything)?", "(?:wrong|nonsense|useless|bullshit|bs|shit|crap|wtf)(?: answer)?", "(?:shut up|go away|stop|fuck(?: you| off)?|hate you|you suck|stfu)", "(?:tui|tumi|apni) (?:boka|gadha|pagol|faltu|bekar|harami)", "boka|bokachoda|gadha|faltu|bekar|harami", "বোকা|গাধা|পাগল|ফালতু|বাজে|বেকার|হারামি|ভুল উত্তর|কিছুই বোঝো না|চুপ"),
+  { id: "rude", pattern: wholeMessage("(?:you(?:re| are) )?(?:so |very |really )?(?:stupid|dumb|useless|idiot|worthless|trash|garbage|rubbish|boring|pathetic|bad|worst|a waste)(?: bot| app| ai)?", "(?:you )?(?:dont|do not|never) (?:understand|help|know|answer|get it)(?: me| anything)?", "(?:wrong|nonsense|useless|bullshit|bs|shit|crap|wtf)(?: answer)?", "(?:shut up|go away|stop|fuck(?: you| off)?|(?:i )?hate (?:you|tou|yuo)|you suck|stfu)", "(?:tui|tumi|apni) (?:boka|gadha|pagol|faltu|bekar|harami)", "boka|bokachoda|gadha|faltu|bekar|harami", "tui kisui bujhos na|tumi kichui bujho na", "তুমি কিছুই বুঝো না|আমি তোমাকে পছন্দ করি না", "বোকা|গাধা|পাগল|ফালতু|বাজে|বেকার|হারামি|ভুল উত্তর|কিছুই বোঝো না|চুপ"),
     en: "I’m sorry I wasn’t helpful. I can only answer from my reviewed sources. Try asking in different words, or choose a topic below.",
     bn: "আমি কাজে আসতে পারিনি, দুঃখিত। আমি শুধু যাচাই করা সূত্র থেকে উত্তর দিতে পারি। অন্যভাবে প্রশ্ন করে দেখুন বা নিচ থেকে একটি বিষয় বেছে নিন।", topics: true },
   { id: "chat", pattern: wholeMessage("(?:im |i am )?(?:so |very )?(?:bored|lazy|free|hungry|sleepy|busy)", "(?:lets|can we|want to) (?:chat|talk|gossip)", "chat with me|talk to me", "be my friend|i need a friend", "(?:adda|gappo|golpo|kotha) (?:dibo|korbo|bolo|korun|bolun)", "(?:একটু )?(?:কথা|গল্প|আড্ডা) (?:বলি|বলো|বলুন|করি|করো|করুন)", "বোর|বন্ধু হও"),

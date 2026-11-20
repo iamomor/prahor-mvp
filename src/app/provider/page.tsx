@@ -1,6 +1,8 @@
 import { requireWorkspace } from "@/lib/auth/require-workspace";
 import { Workspace } from "@/features/auth/Workspace";
-import { ProviderQueue } from "@/features/bondhon/ProviderQueue";
+import { BondhonWorkspace } from "@/features/bondhon/BondhonWorkspace";
+import { ProviderQueue } from "@/features/shonket/ProviderQueue";
 export default async function Provider() {
-  return <Workspace profile={await requireWorkspace("provider")}><ProviderQueue /></Workspace>;
+  const profile = await requireWorkspace("provider");
+  return <Workspace profile={profile}><ProviderQueue /><BondhonWorkspace profile={profile} embedded /></Workspace>;
 }

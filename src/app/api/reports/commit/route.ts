@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     p_observed_on: data.observedOn,
   });
   if (result.error) {
-    const status = result.error.code === "40001" ? 409 : result.error.code === "42501" ? 403 :
+    const status = result.error.code === "PT409" || result.error.code === "40001" ? 409 : result.error.code === "42501" ? 403 :
       ["22023", "22007", "22008"].includes(result.error.code) ? 400 : 503;
     return jsonNoStore({ message: "Report was not saved." }, status);
   }

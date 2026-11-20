@@ -1,6 +1,6 @@
 ﻿# PROHOR — Canonical API contracts (Day 2, Step 14)
 
-Updated 18 November 2026. This is the single integration reference. It distinguishes
+Updated 19 November 2026. This is the single integration reference. It distinguishes
 actual wire behavior from domain proposals. **Implemented means route/code exists,
 not deployed or verified against live Supabase.** Domain-owner sign-offs below are
 pending; this document does not invent approvals, clinical validation or delivery.
@@ -11,7 +11,7 @@ Read with [data model](data-model.md), [security](security.md), [team review](te
 ## Status and ownership
 
 - **Implemented:** real route and behavior in the current tree; infrastructure may still be required.
-- **Limited:** working educational prototype or optional service; not clinical validation or a deployed backend.
+- **Limited:** working educational prototype or optional service; not clinical validation. Deployment status needs separate evidence for each backend.
 - **Mock:** route exists but is an honest unavailable/501 stub. It does not invent success, records or AI answers.
 - **Planned:** no route handler; the existing shared domain schemas are an implementation proposal.
 - **Needs Review:** a naming, payload, security or cross-team adoption decision is unresolved. Do not build callers assuming approval.
@@ -69,9 +69,29 @@ of the contract, not merely the body type.**
 | `GET /api/health` | Mock; unavailable record persistence; Ifty + Omor | Only Auth `getUser()` is currently checked; no filters consumed | 401/503 `{message}`; valid session -> 501 `{message}`; **no 200 record list** | No record query/write; backend, subject filters, mother/owner authorization and migrations pending |
 | `GET /api/jibonrekha` | Limited; synthetic account records; Ifty + Omor | Confirmed mother; no body | 200 `{pregnancies,babies,observations,conditions,symptomNotes,visits,corrections}`; 401/403/503 `{message}` | Owner-scoped RLS reads from existing private-record tables and additive Jibonrekha history tables; maximum 50 pregnancies and 100 of each other record type |
 | `POST /api/jibonrekha` | Limited; synthetic account saves; Ifty + Omor | Confirmed mother; same-origin JSON <=8 KiB; strict `type` and record body for pregnancy, baby, supported observation, self-noted condition, symptom note, self-recorded visit, or observation correction; UUID `Idempotency-Key` required | 201 `{saved:true,id}` only after atomic RPC commit; 400/401/403/409/503 `{message}` | `jr_save` owns the write transaction, retry key, source and owner checks. Corrections append a new self-reported row and retain the original. Requires `20261119020000_jibonrekha_account_history.sql`; no offline queue. |
+| `GET /api/wellness` | Limited; optional synthetic check-in history; Samin + Omor | Confirmed mother; no body or query parameters | 200 `{entries:[{id,occurred_at,created_at,mood,energy,activity_note,rest_note}]}`; maximum 100 newest first; 401/403/503 `{message}` | Owner-scoped read. No pagination. Live migration/RLS verification is recorded in `docs/qa/SHUSTHOTA_BACKEND_VERIFICATION.md`; browser-session HTTP testing remains pending. |
+| `POST /api/wellness` | Limited; optional synthetic check-in; Samin + Omor | Confirmed mother; exact same-origin JSON; camelCase `createWellnessEntryRequestSchema` body | 201 `{saved:true,id}`; 400/401/403/503 `{message}` | Server validates and inserts only supported fields. Database enforces synthetic-only data; entries are append-only. |
+| `GET /api/diary` | Limited; synthetic owner-only diary history; Samin + Omor | Confirmed mother; no body or query parameters | 200 `{entries:[{id,text,privacy:"owner_only",occurred_at,created_at}]}`; maximum 100 newest first; 401/403/503 `{message}` | Owner-scoped read. Diary is absent from Barta and provider projections. No pagination. |
+| `POST /api/diary` | Limited; synthetic owner-only diary entry; Samin + Omor | Confirmed mother; exact same-origin JSON; camelCase `{text,occurredAt}` | 201 `{saved:true,id}`; 400/401/403/503 `{message}` | Diary text is accepted only by this route. Database enforces synthetic-only data; entries are append-only. |
+| `GET /api/hydration` | Limited; synthetic hydration history; Apurbo | Confirmed mother; `scope=today` (default) or `scope=history` | 200 `{entries:[{id,amount_ml,occurred_at,created_at}]}`; at most 100 newest; 400/401/403/503 `{message}` | Owner-only RLS; today is bounded to Asia/Dhaka day; history is capped at 100 with no pagination. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `POST /api/hydration` | Limited; synthetic hydration entry; Apurbo | Confirmed mother; same-origin JSON `{amountMl:1..5000,occurredAt,retryKey}` | 201 `{saved:true,id}`; 400/401/403/409/503 `{message}` | Server validation, database amount/data-mode constraints, owner-only RLS and retry-key uniqueness. No daily target or medical recommendation. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `GET /api/wellness-habits` | Limited; synthetic personal habits; Apurbo | Confirmed mother; no body | 200 `{habits:[{id,label,icon,created_at}]}`; at most 100 active habits; 401/403/503 `{message}` | Active list excludes append-only archive events through an invoker-security view; owner-only RLS. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `POST /api/wellness-habits` | Limited; synthetic personal habit; Apurbo | Confirmed mother; same-origin JSON `{label,icon,retryKey}` | 201 `{saved:true,id}`; 400/401/403/409/503 `{message}` | User-defined label and symbol only; owner-only insert/read and synthetic-only mode. Archive is an event; no hard delete. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `GET /api/wellness-habits/:id/events` | Limited; synthetic habit activity; Apurbo | Confirmed mother; UUID habit path | 200 `{entries:[...]}`; at most 100 newest; 401/403/404/503 `{message}` | Checks owner and habit association; append-only events. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `POST /api/wellness-habits/:id/events` | Limited; synthetic habit activity; Apurbo | Confirmed mother; same-origin JSON event type `completed`, `completion_undone` with owned event ID, or `archived` | 201 `{saved:true,id}`; 400/401/403/404/503 `{message}` | Owner-scoped composite foreign keys, validated references and append-only behavior. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `GET /api/wellness-habit-events` | Limited; synthetic habit history; Apurbo | Confirmed mother; no query or body | 200 `{entries:[{id,habit_id,habit_label,event_type,related_event_id,occurred_at,created_at}]}`; at most 100 newest; 401/403/503 `{message}` | Owner-only bounded projection of events and their user-authored labels. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `GET /api/wellness/activity-preferences` | Limited; synthetic self-selected preference history; Apurbo | Confirmed mother; no body | 200 `{entries:[...]}`; at most 100 newest; 401/403/503 `{message}` | Owner-only, append-only snapshots. No ability or disability inference. Requires the forward Shusthota P1 migration; deployment is unverified. |
+| `POST /api/wellness/activity-preferences` | Limited; synthetic self-selected preferences; Apurbo | Confirmed mother; same-origin JSON `{preferences,occurredAt,retryKey}` | 201 `{saved:true,id}`; 400/401/403/409/503 `{message}` | Allowlisted optional values and synthetic-only data. This is separate from `activityNote`; no exercise advice. Requires the forward Shusthota P1 migration; deployment is unverified. |
 | `POST /api/ai/chat` | Limited educational prototype; Iftee + Omor | Public; strict question/language/retention/optional previousChunkId, or legacy question-only input; JSON <=8 KiB | 200 grounded/abstained/clarification/conversation; 400 invalid or saved mode; 501 unavailable; 503 dependency failure | Bundled project-reference-checked corpus; clinical review pending; no DB or transcript persistence; optional development-only Gemini passage selection |
 | `POST /api/ai/barta-audio` | Limited optional speech; Iftee + Omor | Public guide request or exact text/language with signed ticket; JSON <=16,000 bytes | 200 binary WAV/MP3, represented as Uint8Array in the catalog; 400/403/429/502/503 JSON `{message}` | Optional local eSpeak or server-configured Azure; process-local throttle; no transcript persistence |
 | `POST /api/care-requests` | Limited simulated care backend; Omor + care UI writer | Confirmed mother; reviewed full Bondhon DTO; exact Origin, JSON <=8 KiB, UUID Idempotency-Key | 201 v1 SupportRequest only after persisted simulated queue receipt; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; hosted migrations applied and targeted Auth/DB/API checks passed; connected UI and shared preview acceptance pending |
+| `POST /api/care-requests` (Shonket workflow) | Limited synthetic support request; Samin + Omor | Confirmed Mother; strict `{message,method,concernTypes,onset}`; same-origin JSON <=8 KiB; UUID `Idempotency-Key`; no client owner/recipient | 201 Shonket request only after atomic row, assignment, queue receipt, submitted event and retry receipt commit; infrastructure uncertainty is 503 | Extends existing `support_requests`; a fictional provider is assigned server-side. Request begins `submitted`, then becomes `delivered` only on provider open. Requires `20261120100000_shonket_request_workflow.sql`; deployment not verified. |
+| `GET /api/care-records` | Limited owner record picker; Omor + Samin | Confirmed mother; no body or query parameters | 200 v1 available-record array (maximum 100); 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; only owner-selectable synthetic records are returned |
+| `GET /api/care-requests` | Limited owner request history; Omor + Samin | Confirmed mother; `limit` 1–50 and optional opaque cursor query | 200 v1 page of owner SupportRequest records; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; owner-scoped request list with bounded pagination |
+| `GET /api/care-requests?workflow=shonket` | Limited Shonket request history; Samin + Omor | Confirmed Mother; `limit` 1–50 | 200 maximum 50 owner-only requests with event-backed status history; 400/401/403/503 | Cookie-bound owner-scoped RPC; no unrelated records projected. Requires the Shonket forward migration; deployment not verified. |
+| `GET /api/care-requests/:id/coordination` | Limited Bondhon coordination detail; Omor + Samin | Request participant; UUID path id; no body or query parameters | 200 v1 Bondhon detail containing request, messages, grants and audit; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; mother/provider projection is restricted by current request authorization |
+| `POST /api/care-requests/:id/messages` | Limited Bondhon follow-up; Omor + Samin | Request participant; exact Origin, JSON body `message` 1–2000 plus positive `expectedRevision`, UUID `Idempotency-Key` | 200 v1 updated Bondhon detail; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; revision and retry key are verified before the follow-up is persisted |
+| `POST /api/care-requests/:id/revoke` | Limited Bondhon request revocation; Omor + Samin | Confirmed mother; exact Origin, UUID path id; no body or query parameters | 200 v1 updated Bondhon detail; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; only the request owner can revoke future coordination access |
 
 All current outcomes use `Cache-Control: no-store` (private canonical endpoints use
 `private, no-store`). Public Barta does not require a Content-Type header.
@@ -121,8 +141,10 @@ verification; text remains available.
 | `GET /api/poth/nearby` | Limited; public | explicit Bangladesh lat/lon and allowed radius 1–20 km | 200 `{places,truncated,source:'openstreetmap-unverified',cached}` or 400/429/503 `{error}`. Community data is separate from reviewed directory data; provider tags do not verify clinical services or accessibility. No booking. |
 
 These additions require Omor's contract review before promotion to `develop`.
-Record/review features remain explicitly synthetic local demos. No health record,
-report extraction, care delivery, wellness or provider backend is invented.
+Record/review features remain explicitly synthetic demos. Current health,
+care and P0 Shusthota behavior is limited to the registered routes above. New
+Shusthota P1 endpoints require the forward migration in this branch; deployment is
+not verified. Do not infer production readiness from source or local tests.
 
 No route is renamed, redirected or newly implemented by Step 14.
 
@@ -210,7 +232,7 @@ above (400/401/403/404/409/429/500/503; Bujhi additionally 413/415); GET success
 | Current profile / preferences | Omor + Apurbo | Own profiles/access_preferences only | Implemented above; Auth, RLS, explicit account/local reconciliation |
 | Pregnancy/maternal observations/conditions/notes | Ifty + Omor | pregnancy_records, health_observations, maternal_conditions, maternal_symptom_notes; mother-owned | Auth, parent ownership, supported units/provenance and Bujhi review; no provider direct owner DTOs |
 | Separate linked baby records | Ifty + Omor | baby_records + baby_observations; same mother owner, nullable pregnancy link | Auth, same-owner composite relationships; a baby ID does not grant maternal history |
-| Wellness / private diary | Samin + Omor | wellness_entries and wellness_diary_entries; owner-only | Private diary never included in check-in or sharing; optional supported wellness only |
+| Wellness / private diary | Samin + Omor; P1 Shusthota records in this branch | wellness_entries, wellness_diary_entries, plus P1 tables in the new migration; owner-only | Diary never enters check-in, AI or provider projections; existing supported wellness fields only are shareable via explicit Bondhon consent; P1 migration deployment unverified |
 | Barta educational AI | Iftee + Omor | Approved knowledge_sources/chunks; conversations/messages only with opt-in | RAG/source review, abstention, privacy/rate limits, no unvalidated diagnosis/triage |
 | Bujhi extraction / review | Iftee + Ifty + Omor | medical_documents, document_extractions, extracted_fields, document_reviews, document_record_links; owner-bound | Private Storage, supported fixture, extraction worker, immutable review and atomic verified commit |
 | Facility directory / visit preparation | Samin | facility_directory and sourced per-fact accessibility/contact facts; public published projection; appointments self-owned | Reviewed provenance; no invented facilities/access features/slots or booking confirmation |
@@ -279,18 +301,47 @@ Commit accepts **only** review ID, revision and `confirmSave:true`. It reloads t
 
 ## Shusthota and Poth
 
-Status: Planned. Owner: Samin; Omor collaborates on private wellness data/security. Directory is public only after source/fact review; diary always owner-only.
+### Shusthota current API
+
+Status: **Limited**. The current routes above are the wire contract. The backend
+deployment and RLS transaction checks are documented in
+[`SHUSTHOTA_BACKEND_VERIFICATION.md`](../qa/SHUSTHOTA_BACKEND_VERIFICATION.md);
+that document says browser-session HTTP checks were not performed. All stored
+Shusthota records are synthetic demo data. Do not enter real maternal or diary data.
+
+Hydration, personal habit/event, and activity-preference routes have source code and a new
+forward migration in this branch. The migration has been exercised in an isolated PGlite
+test only; live Supabase deployment is unverified. Do not treat those routes as production
+ready until the migration is applied and the deployed Mother A/B authorization path is verified.
+
+POST bodies use camelCase; GET rows use snake_case. GET returns at most the 100
+newest entries without pagination. Records are append-only and cannot be edited or
+deleted. Mood and energy use their supported enums. Energy is not a separate fatigue
+measurement; activity uses free-text `activity_note`; rest uses free-text
+`rest_note`, not structured activity or sleep tracking. Diary is owner-only and is
+not included in AI or provider projections. Wellness entries may be shared only
+after the mother selects records/fields and explicitly consents through Bondhon.
+
+`src/lib/contracts/api.ts` retains `ProposedApiOperations` entries for several
+overlapping paths, including old Page-based Shusthota shapes. Those entries are not
+the current wire contract: `ApiOperations` gives `CurrentApiOperations` precedence
+for existing route keys. Use `current-api.ts` for runtime current request/response
+schemas. Removing the shadowed proposals requires a separate contract-owner change.
+
+### Poth proposals
+
+Status: Planned for the proposed paths below; existing `/api/poth/*` routes and
+their current schemas remain described in the canonical route catalog above.
 
 | Method/path | Auth/input | Proposed result |
 | --- | --- | --- |
-| `GET /api/wellness` | Owner; pagination | Page of optional check-ins |
-| `POST /api/wellness` | Owner; `createWellnessEntryRequestSchema` | Created check-in, 201; at least one voluntary field, no inferred diagnosis |
-| `GET /api/diary` | Owner; pagination | Page of diary entries, always owner only |
-| `POST /api/diary` | Owner; `createDiaryEntryRequestSchema` | Diary entry with `privacy:"owner_only"`, 201 |
 | `GET /api/facilities` | Public; `q`, district <=100 chars, pagination | Page of sourced `Facility`; unknown attributes say not verified; `bookingIntegration:"not_integrated"` |
 | `POST /api/appointments` | Owner; `saveAppointmentRequestSchema` | `{id,status:"self_recorded"}`, 201; saving a note is not a booking |
 
-No diary text field is accepted on a check-in. Activity/rest notes are consolidated in check-ins for the first MVP. Facility source verification is per fact; absence of a facility result/feature is not evidence a service is unavailable. No invented rows or booking slots. Further CRUD, reminders and structured activity/rest endpoints are future contracts requiring a separate adoption PR.
+Facility source verification is per fact; absence of a facility result/feature is
+not evidence a service is unavailable. No invented rows or booking slots. Further
+CRUD, reminders and structured activity/rest endpoints are future contracts
+requiring a separate adoption PR.
 
 ## Consent and Bondhon simulated provider workflow
 
@@ -334,8 +385,9 @@ application preview or completed connected UI is claimed.
 5. Start with an explicitly reviewed message and `consentGrantIds:[]`. This shares
    the submitted message only. Record sharing additionally requires real owned
    saved record IDs, finite reviewed grants and matching recipient/purpose.
-   Health/wellness HTTP persistence remains separate unfinished domain work;
-   do not send browser-demo record IDs as though they exist in the database.
+   The P0 wellness route can provide real synthetic saved record IDs for Bondhon's
+   explicit record-selection flow. P1 hydration, habit and activity-preference records
+   are not yet in provider projections; their migration deployment remains unverified.
 6. Keep one UUID retry key for an identical reviewed submission/action. Retain
    draft/key on network timeout or unknown failure; retry the identical payload to
    reconcile. Changed content requires a new reviewed action/key. Validate v1
@@ -359,9 +411,16 @@ non-emergency simulated request path. Full connected-UI QA follows integration.
 | `GET /api/care-requests/:id` | Owner or active assigned approved provider | Owned DTO or restricted assigned-request projection; provider attached fields require fresh grant checks |
 | `GET /api/care-requests/:id/events` | Same request authorization; pagination | Safe event history page; receipt IDs do not authorize access |
 | `GET /api/provider/requests` | Active approved provider; pagination | Assigned simulated requests only; no global mother's-record search |
+| `GET /api/provider/requests?workflow=shonket` | Confirmed fictional Provider; `limit` 1–50 | Maximum 50 assigned Shonket requests with message, contact method, concern categories, onset and timestamps; no diary, chat or unrelated health data; requires `20261120100000_shonket_request_workflow.sql` (deployment unverified) |
+| `POST /api/provider/requests/:id/open` | Assigned approved Provider; UUID path and same-origin empty JSON | 200 safe request projection only after provider-open event is persisted; delivered state is not reported before database confirmation; requires Shonket migration (deployment unverified) |
 | `POST /api/provider/requests/:id/acknowledge` | Assigned approved provider; expected revision | 200 updated request only after explicit provider action and valid delivered state |
 | `POST /api/provider/requests/:id/respond` | Assigned approved provider; revision + message | 200 atomic response message + event; updated request in `responded` state |
 | `POST /api/care-requests/:id/close` | Mother or assigned approved provider; expected revision | 200 updated request; closure does not mean a medical concern is resolved |
+| `GET /api/care-requests` | Confirmed mother; pagination | Bondhon: page of her own requests only (`mvp_care_owner_requests`) |
+| `GET /api/care-records` | Confirmed mother; no body/query | Bondhon: up to 100 of her own synthetic record field candidates for explicit selection; no diary, AI conversation or raw attachments |
+| `GET /api/care-requests/:id/coordination` | Owner or active assigned approved provider | Bondhon: request, message thread, and (owner only) grants and audit; provider gets no grants/audit |
+| `POST /api/care-requests/:id/messages` | Owner or assigned provider; `followUpRequestSchema` + retry key | Bondhon: follow-up persists only while the request permission allows replies and is unexpired/unrevoked; stale revision returns 409 |
+| `POST /api/care-requests/:id/revoke` | Owner; UUID, no body | Bondhon: revokes the request permission so later provider reads/writes fail; cannot recall content already viewed |
 
 Mother explicitly chooses recipient, message, purpose, exact record fields and finite consent expiry, reviews them, then sends. A grant is one resource with a typed field allowlist. No `all_records`, raw document, diary or AI scope exists in v1. A request can contain zero grant IDs when only its mother-approved message is sent. Grant IDs must belong to that mother and recipient, be active, and have matching purposes; the request grant join enforces integrity. Expired/revoked grants must not be replaced by copied snapshots.
 
@@ -392,8 +451,8 @@ SQL dependencies, simulated provider administration and pending acceptance.
 
 ## Proposed request field dictionary
 
-These are schema definitions; care now has local handlers as documented above,
-while private health/wellness/report handlers remain proposals. Except fields
+These are schema definitions; care and Shusthota now have local handlers as documented above,
+while other private health/report handlers remain proposals. Except fields
 explicitly marked optional/defaulted, listed fields are required even when nullable.
 Unknown keys are rejected. Open the linked domain source before adopting a proposal.
 
@@ -405,6 +464,7 @@ Unknown keys are rejected. Open the linked domain source before adopting a propo
 | `createMaternalConditionRequestSchema` / `createSymptomNoteRequestSchema` — health | Condition: `pregnancyId:UUID|null,label:string(1–300),documentedAt:timestamp,sourceNote:string(1–500)|null`; note: `pregnancyId:UUID|null,note:string(1–2000),occurredAt:timestamp` |
 | `createWellnessEntryRequestSchema` — [wellness.ts](../../src/lib/contracts/wellness.ts) | `occurredAt:timestamp`, nullable `mood:comfortable/mixed/difficult/prefer_not_to_say`, nullable `energy:low/medium/high/prefer_not_to_say`, nullable `activityNote/restNote:string(1–1000)`; at least one voluntary field non-null |
 | `createDiaryEntryRequestSchema` — wellness | `text:string(1–10000),occurredAt:timestamp`; server `privacy:owner_only`; never a shareable resource |
+| Shusthota P1 schemas — [shusthota-p1.ts](../../src/lib/contracts/shusthota-p1.ts) | Hydration: `amountMl:1–5000,occurredAt,retryKey`; habit: `label:1–60,icon,retryKey`; habit events: completed/undo with same-owner completion reference/archive; activity preferences: allowlisted optional values, unique, `none` alone; all P1 saves are synthetic-only and append-only |
 | `bartaRequestSchema` — [barta.ts](../../src/lib/contracts/barta.ts) | `question:string(1–1200),language:bn/en`, `retention` defaults to `{mode:ephemeral}`; saved mode requires `conversationId:UUID|null,confirmed:true` |
 | `createDocumentRequestSchema` — [bujhi.ts](../../src/lib/contracts/bujhi.ts) | `format:prohor-synthetic-lab-v1`, `contentType:application/pdf`, integer `byteSize:1..5242880`, `syntheticConfirmed:true`; actual uploaded bytes must also be checked |
 | `startExtractionRequestSchema` — Bujhi | `documentId:UUID`; owner, actual upload and approved template checks required |

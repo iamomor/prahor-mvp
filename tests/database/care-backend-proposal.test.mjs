@@ -5,6 +5,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { establishFixtureRole } from "./care-fixtures.mjs";
 
+// Historical pre-hardening contract regression; full forward chain is covered in bondhon-coordination.test.mjs.
 // In-memory SQL only; no env files, remote URLs, auth credentials or live users.
 const db = new PGlite();
 const ids = Object.fromEntries(["a", "b", "p", "q", "unapproved", "unconfirmed", "anonymous"].map(name => [name, randomUUID()]));
@@ -50,7 +51,7 @@ before(async () => {
     create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,is_anonymous boolean not null default false,raw_user_meta_data jsonb not null default '{}');
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid; $$;`);
   const migrationDir = new URL("../../supabase/migrations/", import.meta.url);
-  for (const file of (await readdir(migrationDir)).filter(name => name.endsWith(".sql")).sort()) {
+  for (const file of (await readdir(migrationDir)).filter(name => name.endsWith(".sql") && name < "20261119060000").sort()) {
     await db.exec(await readFile(new URL(file, migrationDir), "utf8"));
   }
   for (const [name, id] of Object.entries(ids)) {
@@ -387,7 +388,7 @@ test("queue and event pagination expose only allowed summaries and validate curs
 
 test("all internal tables force RLS and deny direct reads/writes and helper calls, even for service_role", async () => {
   const tables = (await db.query("select c.relname,c.relrowsecurity,c.relforcerowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='prohor_care' and c.relkind='r'")).rows;
-  assert.deepEqual(tables.map(table => table.relname).sort(), ["provider_approvals", "consent_grants", "support_requests", "request_grants", "assignments", "queue_receipts", "response_messages", "request_events", "mutation_receipts", "audit_events"].sort());
+  assert.deepEqual(tables.map(table => table.relname).sort(), ["provider_approvals", "consent_grants", "support_requests", "request_grants", "assignments", "queue_receipts", "response_messages", "request_events", "mutation_receipts", "audit_events", "request_permissions", "follow_up_messages"].sort());
   assert(tables.every(table => table.relrowsecurity && table.relforcerowsecurity));
   for (const role of ["anon", "authenticated", "service_role"]) {
     for (const table of tables) {
@@ -396,7 +397,7 @@ test("all internal tables force RLS and deny direct reads/writes and helper call
     await assert.rejects(asUser(ids.a, tx => tx.query("select prohor_care.actor()"), role), { code: "42501" });
   }
   const functions = (await db.query("select p.proname,p.prosecdef,p.proconfig,has_function_privilege('anon',p.oid,'EXECUTE') as anonymous,has_function_privilege('service_role',p.oid,'EXECUTE') as service,has_function_privilege('authenticated',p.oid,'EXECUTE') as authenticated from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname like 'mvp_care_%'")).rows;
-  assert.equal(functions.length, 10);
+  assert.equal(functions.length, 16);
   assert(functions.every(fn => fn.prosecdef && fn.proconfig.some(value => value === 'search_path=""')));
   assert(functions.every(fn => !fn.anonymous && !fn.service && fn.authenticated));
   const helpers = (await db.query("select has_function_privilege('authenticated',p.oid,'EXECUTE') as allowed from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='prohor_care'")).rows;

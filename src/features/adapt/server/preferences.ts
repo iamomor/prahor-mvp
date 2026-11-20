@@ -13,7 +13,7 @@ export class PreferenceStoreError extends Error {
   constructor(public readonly kind: "invalid" | "forbidden" | "conflict" | "unavailable") { super(kind); }
 }
 function storeFailure(error: { code?: string }): never {
-  throw new PreferenceStoreError(error.code === "40001" ? "conflict" : error.code === "42501" ? "forbidden" :
+  throw new PreferenceStoreError(error.code === "PT409" || error.code === "40001" ? "conflict" : error.code === "42501" ? "forbidden" :
     error.code === "22023" || error.code === "23514" ? "invalid" : "unavailable");
 }
 

@@ -55,7 +55,7 @@ export function AskForHelp() {
 
   return (
     <div className={styles.experience}>
-      <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
+      <nav className={styles.breadcrumbs} aria-label="Breadcrumb" hidden>
         <Link href="/safety">Shonket home</Link><span aria-hidden="true">/</span><span aria-current="page">Human help</span>
       </nav>
       <header className={styles.pageHeader}>

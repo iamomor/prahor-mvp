@@ -3,6 +3,7 @@ import { Brand } from "@/components/ui/Brand";
 import { PageHeading } from "@/components/ui/PageHeading";
 import { BartaAccessControl } from "@/features/barta/BartaAccessControl";
 import { BartaChatStarter } from "@/features/barta/BartaChatStarter";
+import styles from "@/features/barta/barta-education.module.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
     "Ask a general maternal-health education question in Bangla or English.",
 };
 
-export default function AskBartaPage() {
+export default async function AskBartaPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+  const params = await searchParams;
+  const query = typeof params.q === "string" ? params.q.slice(0, 1200) : "";
   return (
     <>
       <script
@@ -56,7 +59,7 @@ export default function AskBartaPage() {
             নির্ণয়, ওষুধ দেওয়া বা চিকিৎসকের সঙ্গে যোগাযোগ করে না।
           </p>
         </div>
-        <BartaChatStarter mode="education" />
+        <BartaChatStarter mode="education" initialQuestion={query} />
         <section
           id="barta-help"
           tabIndex={-1}
@@ -76,7 +79,7 @@ export default function AskBartaPage() {
             চ্যাটের উত্তরের জন্য অপেক্ষা করবেন না। এই প্রোটোটাইপ চিকিৎসকের কাছে
             অনুরোধ বা বার্তা পাঠায় না।
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className={styles.helpActions}>
             <a href="tel:999" className="pro-btn pro-btn-secondary">
               Call 999 in Bangladesh · <span lang="bn">বাংলাদেশে ৯৯৯-এ কল করুন</span>
             </a>

@@ -11,7 +11,7 @@ test("Bujhi validates image signatures and revokes local preview URLs on removal
       URL.revokeObjectURL = (url) => { window.revokedUrls.push(url); revoke(url); };
     });
     const page = await context.newPage();
-    await page.goto((process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/bujhi");
+    await page.goto((process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/bujhi/legacy");
     const gallery = page.waitForEvent("filechooser");
     await page.getByRole("button", { name: /Gallery/ }).click();
     await (await gallery).setFiles([]);

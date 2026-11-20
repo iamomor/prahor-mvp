@@ -16,3 +16,5 @@ test-results/
 /tmp/hero-regression-results/
 /tmp/hero-test-results/
 /tmp/hero-verification/
+.vercel
+.env*

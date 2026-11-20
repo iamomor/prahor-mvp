@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import { ArrowRight, Camera, FileText, Images, Mic, PencilLine, ScanLine } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -12,15 +12,16 @@ import { ReportReview } from "./ReportReview";
 import { getDemoReportDrafts } from "@/features/jibonrekha/demo-health";
 import type { ExtractedReport } from "./types";
 
-type Method = "manual" | "image" | "voice" | "review";
+export type MedicalEntryMethod = "manual" | "image" | "voice";
+type Method = MedicalEntryMethod | "review";
 const entryMethods = [
   ["manual", "নিজে লিখুন", "Enter Information", PencilLine],
   ["image", "রিপোর্ট স্ক্যান করুন", "Scan Report", ScanLine],
   ["voice", "কথা বলে বলুন", "Speak Information", Mic],
 ] as const;
 
-export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref?: string }) {
-  const [method, setMethod] = useState<Method | null>(null), [drafts, setDrafts] = useState<ExtractedReport[]>([]), [activeId, setActiveId] = useState("");
+export function MedicalEntry({ recordsHref = "/demo/jibonrekha", initialMethod = null }: { recordsHref?: string; initialMethod?: MedicalEntryMethod | null }) {
+  const [method, setMethod] = useState<Method | null>(initialMethod), [drafts, setDrafts] = useState<ExtractedReport[]>([]), [activeId, setActiveId] = useState("");
   const [sources, setSources] = useState<Record<string, File>>({});
   const [draftError, setDraftError] = useState("");
   useEffect(() => {
@@ -53,9 +54,10 @@ export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref
         </nav>
   );
   return <div className="min-w-0 text-pro-text [overflow-wrap:anywhere]">
-    <header className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-pro-border pb-3">
-        <h1 id="bujhi-title" tabIndex={-1} className="flex items-center gap-3 text-2xl font-semibold tracking-tight"><FileText aria-hidden="true" className="size-5 text-pro-primary" />Bujhi · <span lang="bn">বুঝি</span></h1>
+    <header className="w-full">
+      <div className="module-hero"><p>Understand your reports · রিপোর্ট বুঝুন</p></div>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 pb-1 pt-2">
+        <h1 id="bujhi-title" tabIndex={-1} className="flex items-center gap-3"><FileText aria-hidden="true" className="size-5 text-pro-primary" />Bujhi · <span lang="bn">বুঝি</span></h1>
         <AccessPreferencesControl />
       </div>
       <div className={method === null ? "mt-4 rounded-card border border-pro-border bg-pro-surface p-5 sm:p-7" : "pt-4"}>
@@ -71,11 +73,11 @@ export function MedicalEntry({ recordsHref = "/demo/jibonrekha" }: { recordsHref
       {draftError && <p role="alert">{draftError}</p>}
       {method !== "review" && drafts.length > 0 && <button type="button" onClick={() => { setMethod("review"); requestAnimationFrame(() => reviewFocus.current?.focus()); }} className="min-h-12 rounded-control px-2 font-semibold text-pro-primary underline">Review current drafts ({drafts.length})</button>}
     </header>
-    <div hidden={method === null || method === "review"}><main className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6">
+    <div hidden={method === null || method === "review"}><div className="grid w-full min-w-0 grid-cols-1 gap-6 py-6">
       <div hidden={method !== "manual"}><ManualMedicalEntry onDraft={acceptDraft} /></div>
       <div hidden={method !== "image"}><ImageMedicalEntry active={method === "image"} onDraft={acceptDraft} onManual={() => setMethod("manual")} /></div>
       <div hidden={method !== "voice"}><VoiceMedicalEntry active={method === "voice"} onDraft={acceptDraft} /></div>
-    </main></div>
+    </div></div>
     <div hidden={method !== "review"} ref={reviewFocus} tabIndex={-1} aria-label="Draft review">
       {drafts.length > 1 && <nav aria-label="Choose draft" className="mx-auto flex max-w-4xl flex-wrap gap-3 p-4">{drafts.map((report) => <button key={report.id} onClick={() => setActiveId(report.id)} aria-pressed={activeId === report.id} className="min-h-12 rounded-control border border-pro-primary p-3">{report.name}</button>)}</nav>}
       {drafts.map((report) => <div key={report.id} hidden={activeId !== report.id}><ReportReview report={report} recordsHref={recordsHref} source={sources[report.id]} onNew={() => { setMethod(null); requestAnimationFrame(() => document.getElementById("bujhi-title")?.focus()); }} /></div>)}

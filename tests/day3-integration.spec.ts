@@ -134,12 +134,12 @@ test("AAC inserts once without sending; over-limit incoming text remains availab
 
 test("public record/report modules mount at 320px and settings preserve an unfinished entry", async ({ page }) => {
   const f = await accounts(page); f.setActive(null); await page.setViewportSize({ width: 320, height: 800 });
-  await page.goto("/demo/jibonrekha"); await expect(page.getByText(/Fictional demo only/)).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Jibonrekha sections" })).toBeVisible();
+  await page.goto("/demo/jibonrekha"); await expect(page.getByText(/ডেমো তথ্য — এটি কাল্পনিক/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "জীবনরেখা" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.goto("/demo/bujhi");
-  await expect(page.getByRole("heading", { level: 1, name: /Bujhi/ })).toBeVisible();
-  await page.getByRole("button", { name: /Enter Information/ }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "রিপোর্ট বুঝি" })).toBeVisible();
+  await page.getByRole("button", { name: "নিজে লিখি" }).click();
   const editable = page.getByLabel(/Test or observation name \(required\)/).first(); await editable.fill("Synthetic unsaved entry");
   await page.getByRole("button", { name: "Adjust how you use PROHOR", exact: true }).first().press("Enter");
   await page.keyboard.press("Escape"); await expect(editable).toHaveValue("Synthetic unsaved entry");

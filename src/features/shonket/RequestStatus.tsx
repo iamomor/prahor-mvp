@@ -71,7 +71,8 @@ export function RequestStatus({ requestId }: { requestId?: string }) {
               <div><dt>Message</dt><dd className={styles.userMessage}>{request.message}</dd></div>
               <div><dt>Preferred method</dt><dd>{methodLabels[request.method]}</dd></div>
               <div><dt>Why</dt><dd>{request.purpose}</dd></div>
-              <div><dt>Records shared</dt><dd>{request.consentGrantIds.length ? `${request.consentGrantIds.length} (ends when you close the request or after 7 days)` : "None"}</dd></div>
+              <div><dt>Records shared</dt><dd>{request.consentGrantIds.length || "None"}</dd></div>
+              {request.coordination && <div><dt>Permission ends</dt><dd>{new Date(request.coordination.expiresAt).toLocaleString("en-GB")}. Closing or revoking ends future access sooner.</dd></div>}
               <div><dt>Request ID</dt><dd className="break-all font-mono text-sm">{request.id}</dd></div>
             </dl>
           </>}

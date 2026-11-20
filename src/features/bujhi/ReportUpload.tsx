@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { validateReportFile, type ReportMediaKind } from "./upload-validation";
@@ -83,22 +83,18 @@ export function ReportUpload({ onContinue, autoContinue = false, continueLabel =
 
   return <section aria-labelledby={`${id}-heading`} className="grid min-w-0 grid-cols-1 gap-[var(--pro-gap-field)] rounded-card border border-pro-border bg-pro-elevated p-[var(--pro-pad-card)]">
     <h2 id={`${id}-heading`} className="text-2xl font-semibold">Choose a photo</h2>
-    <p id={`${id}-privacy`} className="text-pro-muted">Use synthetic or non-sensitive files only. Selection and preview stay in this browser. Nothing is sent to a server or stored in localStorage. Returning here preserves your current review corrections.</p>
+    <p id={`${id}-privacy`} className="text-pro-muted">Choose a fictional report. The photo stays in this browser.</p>
     <button type="button" className={button + " justify-self-start text-pro-primary"} onClick={() => cameraInput.current?.click()}>ছবি তুলুন · Take a photo</button>
     <input id="bujhi-photo-camera" ref={cameraInput} type="file" hidden capture="environment" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => void choose(event, "photo")} />
     <div className="grid min-w-0 gap-2">
       <label htmlFor="bujhi-photo-gallery" className="font-semibold">Photo Upload · <span lang="bn">ছবি নির্বাচন</span></label>
-      <p id={`${id}-photo-hint`} className="text-pro-muted">JPG/JPEG, PNG, or WebP · Maximum 10 MiB. Selecting another file replaces the current preview.</p>
+      <p id={`${id}-photo-hint`} className="text-pro-muted">JPG, PNG or WebP · Up to 10 MiB</p>
       <input ref={photoInput} id="bujhi-photo-gallery" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" className={control} onChange={(event) => void choose(event, "photo")} aria-describedby={`${id}-photo-hint ${id}-privacy ${id}-error`} aria-invalid={Boolean(error)} />
     </div>
     <p role="status" aria-atomic="true">{message}</p>
     <p id={`${id}-error`} role="alert" className="text-pro-danger">{error}</p>
     {selected && <section aria-label="Selected file preview" className="grid min-w-0 gap-3 rounded-field border border-pro-border p-3">
-      <dl className="grid min-w-0 gap-2 [overflow-wrap:anywhere]">
-        <div><dt className="font-semibold">File name</dt><dd>{selected.file.name}</dd></div>
-        <div><dt className="font-semibold">File type</dt><dd>{selected.file.type || "Browser MIME type unavailable; extension and file signature checked"}</dd></div>
-        <div><dt className="font-semibold">File size</dt><dd>{(selected.file.size / 1024 / 1024).toFixed(2)} MiB ({selected.file.size.toLocaleString("en-BD")} bytes)</dd></div>
-      </dl>
+      <p className="font-semibold [overflow-wrap:anywhere]">{selected.file.name}</p>
       {/* Blob URLs stay in the browser; no image optimization request is needed. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img key={selected.url} src={selected.url} alt="Local preview of your selected fictional photo" className="h-auto max-h-96 w-full min-w-0 object-contain" onLoad={ready} onError={previewFailed} />

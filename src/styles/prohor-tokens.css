@@ -57,23 +57,23 @@
 }
 :root[data-theme="morning-mist"],
 [data-prohor-preview][data-theme="morning-mist"] {
-  --pro-bg: #fbf1e8;
-  --pro-surface: #f3e2d5;
-  --pro-surface-2: #f7e8ef;
+  --pro-bg: #f8faf9;
+  --pro-surface: #dfeeee;
+  --pro-surface-2: #cfe4e4;
   --pro-elevated: #ffffff;
-  --pro-text: #33252c;
-  --pro-muted: #6d554c;
-  --pro-primary: #893c2c;
-  --pro-primary-hover: #6f3023;
+  --pro-text: #17373b;
+  --pro-muted: #466168;
+  --pro-primary: #075b67;
+  --pro-primary-hover: #064a55;
   --pro-on-primary: #ffffff;
-  --pro-on-primary-muted: #f7e8ef;
-  --pro-accent: #edbd91;
-  --pro-on-accent: #33252c;
-  --pro-accent-strong: #6f3023;
-  --pro-border: #b9907c;
-  --pro-control-border: #765044;
+  --pro-on-primary-muted: #d9ecee;
+  --pro-accent: #e8bac7;
+  --pro-on-accent: #17373b;
+  --pro-accent-strong: #7a3656;
+  --pro-border: #96b4b6;
+  --pro-control-border: #53777b;
   --pro-focus: #144db5;
-  --pro-shadow-rgb: 51 37 44;
+  --pro-shadow-rgb: 23 55 59;
 }
 
 /* ── 2. Shared tokens (identical in every theme) ─────────────────── */

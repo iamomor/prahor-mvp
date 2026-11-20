@@ -1,0 +1,110 @@
+[
+  {
+    "id": 31,
+    "code": "10000033",
+    "name": "Dhaka Medical College Hospital",
+    "nameBn": "ঢাকা মেডিকেল কলেজ হাসপাতাল",
+    "division": "Dhaka",
+    "district": "Dhaka",
+    "area": "Shahbag",
+    "phone": "01715016984",
+    "email": "dmch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 52,
+    "code": "10000056",
+    "name": "Sir Salimullah Medical College Mitford Hospital",
+    "nameBn": "স্যার সলিমুল্লাহ মেডিকেল কলেজ মিটফোর্ড হাসপাতাল",
+    "division": "Dhaka",
+    "district": "Dhaka",
+    "area": "Kotwali",
+    "phone": "01703636314",
+    "email": "mitford@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 751,
+    "code": "10000756",
+    "name": "Chattogram Medical College Hospital",
+    "nameBn": "চট্টগ্রাম মেডিকেল কলেজ হাসপাতাল",
+    "division": "Chattogram",
+    "district": "Chattogram",
+    "area": "Panchlaish",
+    "phone": "02-41356220",
+    "email": "cmch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 1554,
+    "code": "10001560",
+    "name": "Rajshahi Medical College Hospital",
+    "nameBn": "রাজশাহী মেডিকেল কলেজ হাসপাতাল",
+    "division": "Rajshahi",
+    "district": "Rajshahi",
+    "area": "Rajpara",
+    "phone": "01321180528",
+    "email": "rmch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 1800,
+    "code": "10001807",
+    "name": "Khulna Medical College Hospital",
+    "nameBn": "খুলনা মেডিকেল কলেজ হাসপাতাল",
+    "division": "Khulna",
+    "district": "Khulna",
+    "area": "Sonadanga",
+    "phone": null,
+    "email": "kmch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 392,
+    "code": "10000397",
+    "name": "Mymensingh Medical College Hospital",
+    "nameBn": "ময়মনসিংহ মেডিকেল কলেজ হাসপাতাল",
+    "division": "Mymensingh",
+    "district": "Mymensingh",
+    "area": "Mymensingh Sadar",
+    "phone": "01769957093",
+    "email": "mmch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 1612,
+    "code": "10001618",
+    "name": "Rangpur Medical College Hospital",
+    "nameBn": "রংপুর মেডিকেল কলেজ হাসপাতাল",
+    "division": "Rangpur",
+    "district": "Rangpur",
+    "area": null,
+    "phone": "01765910182",
+    "email": "rangmch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 1969,
+    "code": "10001978",
+    "name": "Sher-e-bangla Medical College Hospital",
+    "nameBn": "শের-ই-বাংলা মেডিকেল কলেজ হাসপাতাল",
+    "division": "Barishal",
+    "district": "Barishal",
+    "area": "Barishal Sadar",
+    "phone": "01701248090",
+    "email": "sbmch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  },
+  {
+    "id": 2186,
+    "code": "10002195",
+    "name": "Sylhet MAG Osmani Medical College Hospital",
+    "nameBn": "সিলেট এমএজি ওসমানী মেডিকেল কলেজ হাসপাতাল",
+    "division": "Sylhet",
+    "district": "Sylhet",
+    "area": "Kotwali",
+    "phone": "01335233256",
+    "email": "magomch@hospi.dghs.gov.bd",
+    "reviewedOn": "2026-11-19"
+  }
+]

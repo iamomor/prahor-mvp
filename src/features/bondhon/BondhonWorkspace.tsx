@@ -1,6 +1,9 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { BondhonGuide } from "./BondhonGuide";
+import { useBondhonPageGuard } from "./use-bondhon-page-guard";
 import { Clock, MessageSquare, PersonStanding, TriangleAlert } from "lucide-react";
 import { useLanguage } from "@/i18n/use-language";
 import type { OwnProfile } from "@/lib/auth/access";
@@ -21,7 +24,14 @@ const filterNames: Record<QueueFilter, { en: string; bn: string }> = {
 
 /** `embedded`: the page already supplies the heading, navigation and sign-out (the provider dashboard), so only the notice and the queue render. */
 export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnProfile; embedded?: boolean }) {
+  return <BondhonSession key={`${profile.user_id}:${profile.role}`} profile={profile} embedded={embedded} />;
+}
+function BondhonSession({ profile, embedded }: { profile: OwnProfile; embedded: boolean }) {
   const { language, t } = useLanguage();
+  const router = useRouter();
+  const privateRoot = useBondhonPageGuard();
+  const heading = useRef<HTMLHeadingElement>(null);
+  const [leavePath, setLeavePath] = useState<string | null>(null);
   const provider = profile.role === "provider";
   const [view, setView] = useState<"list" | "new" | "detail">("list");
   const [selected, setSelected] = useState("");
@@ -37,12 +47,15 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
   const [leaving, setLeaving] = useState(false);
   const sequence = useRef(0);
   const loading = useRef(false);
+  const controller = useRef<AbortController | null>(null);
   const loadedPages = useRef(1);
   const [checked, setChecked] = useState(false);
   const load = useCallback(async (after?: string) => {
     if (loading.current) return;
     loading.current = true;
     const seq = ++sequence.current;
+    const request = new AbortController();
+    controller.current = request;
     setBusy(true); setFailed(false);
     try {
       const path = provider ? "/api/provider/requests" : "/api/care-requests";
@@ -53,7 +66,7 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
       const rounds = after ? 1 : loadedPages.current;
       for (let page = 0; page < rounds; page++) {
         const suffix = nextCursor ? `?limit=20&cursor=${encodeURIComponent(nextCursor)}` : "?limit=20";
-        const result = await careFetch(path + suffix, schema, profile.user_id);
+        const result = await careFetch(path + suffix, schema, profile.user_id, { signal: request.signal });
         if (seq !== sequence.current) return;
         collected.push(...result.items);
         nextCursor = result.nextCursor;
@@ -68,44 +81,68 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
       setCursor(nextCursor); setNow(Date.now()); setChecked(true);
     } catch {
       if (seq === sequence.current) { setItems([]); setCursor(null); setFailed(true); }
-    } finally { if (seq === sequence.current) setBusy(false); loading.current = false; }
+    } finally { if (seq === sequence.current) { setBusy(false); loading.current = false; } }
   }, [profile.user_id, provider]);
   useEffect(() => {
     if (view !== "list" && !provider) return;
     const counter = sequence;
+    const activeController = controller;
+    const loadLock = loading;
     const clock = window.setInterval(() => setNow(Date.now()), 1000);
     const initialLoad = window.setTimeout(() => void load(), 0);
     function visibility() {
-      if (document.hidden && provider) { counter.current++; setItems([]); setCursor(null); }
+      if (document.hidden && provider) { counter.current++; activeController.current?.abort(); loadLock.current = false; setBusy(false); setChecked(false); setItems([]); setCursor(null); }
       if (!document.hidden) void load();
     }
     document.addEventListener("visibilitychange", visibility);
     const interval = window.setInterval(() => { if (!document.hidden) void load(); }, 30_000);
-    return () => { counter.current++; window.clearInterval(clock); window.clearTimeout(initialLoad); document.removeEventListener("visibilitychange", visibility); window.clearInterval(interval); };
+    return () => { counter.current++; activeController.current?.abort(); loadLock.current = false; window.clearInterval(clock); window.clearTimeout(initialLoad); document.removeEventListener("visibilitychange", visibility); window.clearInterval(interval); };
   }, [load, view, refresh, provider]);
+  useEffect(() => {
+    if (view !== "list") return;
+    const focus = window.setTimeout(() => heading.current?.focus(), 0);
+    return () => window.clearTimeout(focus);
+  }, [view]);
+  useEffect(() => {
+    function protectDraft(event: MouseEvent) {
+    if (view !== "new" || provider || !(event.target instanceof Element)) return;
+    const link = event.target.closest<HTMLAnchorElement>("a[href]");
+    if (!link || link.target === "_blank" || link.hasAttribute("download") || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    const destination = new URL(link.href, window.location.href);
+    if (destination.origin !== window.location.origin || destination.hash && destination.pathname === window.location.pathname) return;
+    event.preventDefault(); event.stopPropagation();
+    if (submissionState !== "idle") return;
+    setLeavePath(destination.pathname + destination.search + destination.hash); setLeaving(true);
+
+    }
+    document.addEventListener("click", protectDraft, true);
+    return () => document.removeEventListener("click", protectDraft, true);
+  }, [view, provider, submissionState]);
   function created(request: SupportRequest) { setInitial(undefined); setSelected(request.id); setView("detail"); }
   function open(id: string) { setSelected(id); setView("detail"); }
   const queue = provider ? queueView(items, now, filter) : null;
   const earlier = provider ? [] : splitSharing(items as SupportRequest[], now).earlier;
-  return <div className={styles.workspace} lang={language}>
+  return <div ref={privateRoot} className={`${styles.workspace} ${styles.bondhonPage}`} lang={language}>
     {!embedded && <nav className={styles.actions} aria-label={t(words("Care navigation", "সেবার পথ"))}>
       <Link className="pro-btn pro-btn-secondary" href={provider ? "/provider" : "/app"}>{t(words("Dashboard", "ড্যাশবোর্ড"))}</Link>
       <Link className="pro-btn pro-btn-secondary" href="/poth">{t(words("Find care and visit preparation", "সেবা খোঁজা ও সাক্ষাতের প্রস্তুতি"))}</Link>
       <Link className="pro-btn pro-btn-secondary" href="/account">{t(words("Account and roles", "অ্যাকাউন্ট ও পরিচয়"))}</Link>
     </nav>}
-    {!embedded && <header>
-      <h1 className={styles.heading}>{t(provider ? words("Bondhon · Simulated provider queue", "বন্ধন · সিমুলেটেড সেবাদাতার তালিকা") : words("Bondhon · Your sharing decisions", "বন্ধন · শেয়ারের সিদ্ধান্ত আপনার"))}</h1>
-      <p>{t(words("Choose the person, information and time. Follow each request in one place.", "প্রাপক, তথ্য ও সময় বাছুন। প্রতিটি অনুরোধ এক জায়গায় দেখুন।"))}</p>
+    {!embedded && <header className={styles.pageHeader}>
+      <p className={styles.eyebrow}>{t(words("PROHOR / Bondhon", "প্রহর / বন্ধন"))}</p>
+      <h1 ref={heading} tabIndex={-1} className={styles.heading}>{t(provider ? words("Bondhon · Simulated provider queue", "বন্ধন · সিমুলেটেড সেবাদাতার তালিকা") : words("Bondhon · Your sharing decisions", "বন্ধন · শেয়ারের সিদ্ধান্ত আপনার"))}</h1>
+      <p>{t(words("A little support, on your terms. Choose what to share and keep every request in one place.", "আপনার সিদ্ধান্তে একটু সহায়তা। কী শেয়ার করবেন বাছুন, প্রতিটি অনুরোধ এক জায়গায় রাখুন।"))}</p>
     </header>}
-    <aside className={styles.notice}>
-      <p>{t(words("Hackathon simulation. Use synthetic information. No staffed medical service or emergency monitoring is connected.", "হ্যাকাথনের সিমুলেশন। নমুনা তথ্য ব্যবহার করুন। কোনো কর্মরত চিকিৎসাসেবা বা জরুরি পর্যবেক্ষণ যুক্ত নেই।"))}</p>
-      <Link className="underline inline-flex min-h-12 items-center" href="/poth#poth-sos">{t(words("Open emergency and care information", "জরুরি ও সেবার তথ্য খুলুন"))}</Link>
+    {view === "list" && !provider && <BondhonGuide />}
+    <aside className={styles.simulationNote}>
+      <p>{t(words("Simulated care coordination · synthetic information only. This is not a staffed medical or emergency service.", "সিমুলেটেড সেবা সমন্বয় · শুধু নমুনা তথ্য। এটি কর্মরত চিকিৎসা বা জরুরি সেবা নয়।"))}</p>
+      <Link className="underline inline-flex min-h-12 items-center" href="/poth#poth-sos" target="_blank" rel="noopener noreferrer">{t(words("Open emergency and care information (new tab)", "জরুরি ও সেবার তথ্য খুলুন (নতুন ট্যাব)"))}</Link>
     </aside>
     {view === "new" && !provider && <>
-      <button className="pro-btn pro-btn-secondary justify-self-start" disabled={submissionState !== "idle"} onClick={() => setLeaving(true)}>{t(words("Return to requests", "অনুরোধে ফিরুন"))}</button>
-      <CareRequestForm account={profile.user_id} onCreated={created} initial={initial} onSubmissionStateChange={setSubmissionState} />
+      <button className="pro-btn pro-btn-secondary justify-self-start" disabled={submissionState !== "idle"} onClick={() => { setLeavePath(null); setLeaving(true); }}>{t(words("Return to requests", "অনুরোধে ফিরুন"))}</button>
+      <CareRequestForm key={profile.user_id} account={profile.user_id} onCreated={created} initial={initial} onSubmissionStateChange={setSubmissionState} />
       {submissionState === "unconfirmed" && <p role="status" className={styles.notice}>{t(words("Keep this request open and retry the same reviewed submission. Returning now could lose its retry key.", "এই অনুরোধ খোলা রাখুন এবং একই পর্যালোচিত জমা আবার চেষ্টা করুন। এখন ফিরলে পুনঃচেষ্টার চাবি হারাতে পারে।"))}</p>}
-      {leaving && <RevokeDialog action="discard" busy={false} onCancel={() => setLeaving(false)} onConfirm={() => { setLeaving(false); setInitial(undefined); setView("list"); }} />}
+      {leaving && <RevokeDialog action="discard" busy={false} onCancel={() => { setLeaving(false); setLeavePath(null); }} onConfirm={() => { setLeaving(false); setInitial(undefined); if (leavePath) router.push(leavePath); else setView("list"); }} />}
     </>}
     <div className={provider && view === "detail" ? styles.providerSplit : styles.workspace}>
     {(view === "list" || provider) && <div className={styles.queuePane}>
@@ -127,7 +164,7 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
       </details>}
       {provider && <section className={styles.panel} aria-labelledby="queue-title">
         <div className={styles.actions}>
-          <h2 id="queue-title">{t(words("Your authorized queue", "আপনার অনুমোদিত তালিকা"))}</h2>
+          <h2 id="queue-title" ref={embedded ? heading : undefined} tabIndex={-1}>{t(words("Your authorized queue", "আপনার অনুমোদিত তালিকা"))}</h2>
           <button className="pro-btn pro-btn-secondary" disabled={busy} onClick={() => void load()}>{t(words("Refresh", "আবার দেখুন"))}</button>
         </div>
         {queue && <fieldset className={styles.pillRow}>
@@ -141,9 +178,10 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
         {!busy && !failed && queue && !queue.rows.length && <p>{t(words("No requests here right now. Expired, stopped and closed requests are excluded.", "এখন এখানে কোনো অনুরোধ নেই। মেয়াদ শেষ, থামানো ও বন্ধ অনুরোধ বাদ।"))}</p>}
         <ul className={styles.list}>{queue?.rows.map(item => {
           const c = item.coordination, soon = accessState(item, now) === "ending_soon";
-          return <li key={item.id}><button className={styles.queueRow} onClick={() => open(item.id)}>
+          return <li key={item.id}><button className={styles.queueRow} aria-current={view === "detail" && selected === item.id ? "true" : undefined} onClick={() => open(item.id)}>
             {!!c?.accommodations.length && <span className={styles.chips}>{c.accommodations.map(key => <span key={key} className={styles.chip}><PersonStanding size={14} aria-hidden="true" /> {t(accommodations[key])}</span>)}</span>}
-            <strong className="line-clamp-2">{item.message}</strong>
+            {item.purpose && <span className={styles.meta}>{item.purpose}</span>}
+            <strong>{item.message}</strong>
             <span className={styles.chips}>
               <span className={styles.chip}>{t(statusNames[item.status])}</span>
               {c && <span className={`${styles.chip} ${soon ? styles.chipSoon : ""}`}>{soon ? <TriangleAlert size={14} aria-hidden="true" /> : <Clock size={14} aria-hidden="true" />} {formatLeft(msLeft(c.expiresAt, now), language)}</span>}

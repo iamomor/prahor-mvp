@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/i18n/use-language";
+import { FileCheck2, ScanLine, ShieldCheck } from "lucide-react";
 import { ReportUpload } from "./ReportUpload";
 import { recognizeReportImage } from "./ocr-service";
 import type { ExtractedReport } from "./types";
 import { isHemoglobinLabel } from "./validation";
 export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFile }: { active?: boolean; onDraft: (report: ExtractedReport, source?: File) => void; onManual?: () => void; onManualFile?: (file: File) => void }) {
+  const { t } = useLanguage();
   const [fallbackFile, setFallbackFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0), [status, setStatus] = useState("Select a fictional report image. No OCR has run."), [error, setError] = useState("");
@@ -30,18 +33,22 @@ export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFi
     finally { if (!active.signal.aborted) setBusy(false); }
   }
   function cancel() { controller.current?.abort(); setBusy(false); setStatus("OCR cancelled. Nothing saved."); }
-  return <section className="grid min-w-0 gap-4" aria-label="Image OCR entry">
-    <h2 className="text-2xl font-semibold">{busy ? <>Reading your report · <span lang="bn">রিপোর্ট পড়া হচ্ছে</span></> : <>Scan Medical Report · <span lang="bn">রিপোর্টের ছবি স্ক্যান করুন</span></>}</h2>
-    <div hidden={busy} className="min-w-0"><p className="max-w-[60ch]">Use a fictional report. This reader supports English text.</p>
-    <a href="/bujhi/prohor-synthetic-lab-v1.png" download className="inline-flex min-h-12 items-center font-semibold text-pro-primary underline">Download sample report (PNG)</a>
-    <p className="mb-3 text-pro-muted">The sample has an incomplete date. Use it to practice checking the extracted values.</p>
-    <label className="flex gap-3 rounded-field border border-pro-border bg-pro-surface p-4"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={busy} />Allow downloads for the English reader. Your image is read on this device.</label>
-    <fieldset disabled={busy} className="min-w-0"><legend className="sr-only">Select report image</legend><ReportUpload autoContinue={active && consent && !busy} onContinue={(file) => void scan(file)} /></fieldset>
+  return <section className="grid min-w-0 gap-6 rounded-card border border-pro-border bg-pro-elevated p-4 sm:p-6" aria-label="Image OCR entry">
+    <header className="flex items-start gap-3"><span className="grid size-12 shrink-0 place-items-center rounded-field bg-pro-surface text-pro-primary"><ScanLine aria-hidden="true" className="size-6" /></span><div className="grid gap-1"><h2 className="text-xl font-semibold">{busy ? t({ en: "Reading your report", bn: "রিপোর্ট পড়া হচ্ছে" }) : t({ en: "Scan a medical report", bn: "রিপোর্টের ছবি স্ক্যান করুন" })}</h2><p className="text-pro-muted">{t({ en: "Use a fictional report. This reader supports English text.", bn: "কাল্পনিক রিপোর্ট ব্যবহার করুন। এই পাঠক শুধু ইংরেজি লেখা পড়তে পারে।" })}</p></div></header>
+    <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+    <div hidden={busy} className="grid min-w-0 gap-5">
+      <label className="flex items-start gap-3 rounded-field border border-pro-control-border bg-pro-surface p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={busy} className="mt-1 size-5 shrink-0 accent-pro-primary" /><span>{t({ en: "Allow downloads for the English reader. Your image is read on this device.", bn: "ইংরেজি পাঠকের ফাইল ডাউনলোডের অনুমতি দিন। আপনার ছবিটি এই ডিভাইসেই পড়া হয়।" })}</span></label>
+      <fieldset disabled={busy} className="min-w-0"><legend className="sr-only">Select report image</legend><ReportUpload autoContinue={active && consent && !busy} onContinue={(file) => void scan(file)} /></fieldset>
     </div>
     {busy && <div className="grid gap-4 rounded-card border border-pro-border bg-pro-surface p-5"><p className="!m-0">Photo received. Reading runs on this device.</p><progress value={progress} max={100} aria-label="OCR engine progress" className="w-full" /><button type="button" onClick={cancel} className="min-h-12 rounded-control border border-pro-primary p-3 text-pro-primary">Cancel OCR</button></div>}
+    <aside className="grid min-w-0 gap-5 rounded-card bg-pro-surface p-5">
+      <div className="grid gap-2"><h3 className="flex items-center gap-2 font-semibold"><ShieldCheck aria-hidden="true" className="size-5 shrink-0 text-pro-primary" />{t({ en: "You stay in control", bn: "নিয়ন্ত্রণ আপনার হাতে" })}</h3><p className="text-pro-muted">{t({ en: "Reading an image does not save a measurement. Check the value, unit and date before choosing what to keep.", bn: "ছবি পড়লেই কোনো মান সংরক্ষণ হয় না। কী রাখবেন বেছে নেওয়ার আগে মান, একক ও তারিখ মিলিয়ে নিন।" })}</p></div>
+      <div className="grid gap-2 border-t border-pro-border pt-4"><h3 className="flex items-center gap-2 font-semibold"><FileCheck2 aria-hidden="true" className="size-5 shrink-0 text-pro-primary" />{t({ en: "Try a practice report", bn: "নমুনা রিপোর্ট দিয়ে চেষ্টা করুন" })}</h3><p className="text-pro-muted">{t({ en: "The sample has an incomplete date. Use it to practice checking the extracted values.", bn: "নমুনাটির তারিখ অসম্পূর্ণ। পড়া মানগুলো মিলিয়ে দেখার অনুশীলন করুন।" })}</p><a href="/bujhi/prohor-synthetic-lab-v1.png" download className="inline-flex min-h-12 w-fit items-center font-semibold text-pro-primary underline underline-offset-4">{t({ en: "Download sample report (PNG)", bn: "নমুনা রিপোর্ট ডাউনলোড করুন (PNG)" })}</a></div>
+    </aside>
+    </div>
     {onManual && <button type="button" onClick={onManual} className="min-h-12 justify-self-start rounded-control px-2 font-semibold text-pro-primary underline">নিজে লিখব · Type it myself</button>}
     {onManualFile && fallbackFile && !busy && <button type="button" onClick={() => onManualFile(fallbackFile)} className="min-h-12 justify-self-start rounded-control border border-pro-primary px-4 font-semibold text-pro-primary">নিজে হিমোগ্লোবিন লিখব · Type the hemoglobin value myself</button>}
-    <p role="status" aria-atomic="true">{status}{busy ? ` (${progress}%, current engine stage)` : ""}</p><p role="alert" className="text-pro-danger">{error}</p>
+    <p role="status" aria-atomic="true" className="border-t border-pro-border pt-4 text-pro-muted">{status}{busy ? ` (${progress}%, current engine stage)` : ""}</p><p role="alert" className={error ? "rounded-field border border-pro-danger bg-pro-danger-soft p-4 text-pro-danger" : ""}>{error}</p>
   </section>;
 }
 

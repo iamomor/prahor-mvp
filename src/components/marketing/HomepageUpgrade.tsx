@@ -2,28 +2,46 @@
 
 import Image from "next/image";
 import { ArrowRight, ArrowUpRight, BookOpen, CalendarDays, Check, FileCheck2, Heart, HeartHandshake, LockKeyhole, MapPin, MessageCircle, MonitorSmartphone, ShieldCheck, SlidersHorizontal, Sun } from "lucide-react";
+import { InclusiveJourney } from "./InclusiveJourney";
 import { SectionEyebrow } from "./SectionEyebrow";
 import { useHome } from "./HomeContext";
-import { copy } from "./home-content";
+import { copy, type Copy } from "./home-content";
 import { ModuleScreen, MotherWindow, ProviderWindow, type ModuleName } from "./ProductScreens";
 
 const MATERNAL_SOURCE = "https://www.unicef.org/bangladesh/en/press-releases/uncertainty-aid-commitments-threatens-bangladeshs-progress-maternal-health-unicef";
 const BMMS_SOURCE = "https://pmc.ncbi.nlm.nih.gov/articles/PMC10248997/";
+const NSPD_SOURCE = "https://www.tbsnews.net/bangladesh/28-total-population-have-disabilities-bbs-558590";
+const UN_WOMEN_SOURCE = "https://www.unwomen.org/en/news/stories/2015/12/empowering-and-including-women-and-girls-with-disabilities";
+const WHO_DISABILITY_SOURCE = "https://www.who.int/news/item/02-12-2022-health-inequities-lead-to-early-death-in-many-persons-with-disabilities";
+
+type Stat = { value: Copy; label: Copy; source: string; href: string };
+const statGroups: { id: string; title: Copy; stats: Stat[] }[] = [
+  { id: "every", title: copy("Every mother in Bangladesh", "বাংলাদেশের প্রতিটি মা"), stats: [
+    { value: copy("≈4,000", "≈৪,০০০"), label: copy("mothers died from pregnancy or childbirth causes in 2023", "মা ২০২৩ সালে গর্ভধারণ বা প্রসবজনিত কারণে মারা গেছেন"), source: "WHO · UNICEF · UNFPA · 2025", href: MATERNAL_SOURCE },
+    { value: copy("1 in 3", "৩ জনে ১"), label: copy("women who died of maternal causes had sought care at three or more places", "মাতৃমৃত্যুর শিকার নারী তিন বা তার বেশি জায়গায় সেবা চেয়েছিলেন"), source: "BMMS 2016 · J Glob Health 2023", href: BMMS_SOURCE },
+  ] },
+  { id: "disability", title: copy("Mothers with disabilities", "প্রতিবন্ধিতা আছে এমন মা"), stats: [
+    { value: copy("19.3 lakh", "১৯.৩ লাখ"), label: copy("women and girls in Bangladesh live with a disability", "নারী ও কিশোরী বাংলাদেশে প্রতিবন্ধিতা নিয়ে বাস করেন"), source: "BBS · NSPD 2021", href: NSPD_SOURCE },
+    { value: copy("1 in 5", "৫ জনে ১"), label: copy("women worldwide live with a disability", "নারী বিশ্বজুড়ে প্রতিবন্ধিতা নিয়ে বাস করেন"), source: "UN Women · WHO", href: UN_WOMEN_SOURCE },
+  ] },
+];
+
+function SourceLink({ href, children }: { href: string; children: string }) {
+  return <a className="impact-source font-tag" href={href} target="_blank" rel="noreferrer" lang="en">{children}<ArrowUpRight size={14} aria-hidden="true" /><span className="home-sr-only"> (opens in a new tab)</span></a>;
+}
 
 export function ProductStrip() {
   const { t } = useHome();
-  const items = [
-    { value: "8", label: copy("connected modules", "সংযুক্ত মডিউল"), caption: copy("Adapt, Barta, Shonket, Jibonrekha, Bujhi, Shusthota, Poth, Bondhon", "অ্যাডাপ্ট, বার্তা, সংকেত, জীবনরেখা, বুঝি, সুস্থতা, পথ, বন্ধন") },
-    { value: "24", label: copy("planned capabilities", "পরিকল্পিত সুবিধা"), caption: copy("One roadmap, honest status on each", "এক পরিকল্পনায় প্রতিটির স্পষ্ট অবস্থান"), href: "#roadmap" },
-    { value: "0", label: copy("disability categories to choose", "বেছে নেওয়ার অক্ষমতার শ্রেণি"), caption: copy("Same care for every mother; preferences, not labels", "প্রতিটি মায়ের জন্য একই যত্ন; পরিচয়ের শ্রেণি নয়, নিজের পছন্দ") },
-    { value: "2", label: copy("records, 1 journey", "রেকর্ড, ১ যাত্রা"), caption: copy("Mother and baby records stay separate on one timeline", "এক সময়রেখায় মা ও শিশুর রেকর্ড থাকে আলাদা") },
-  ];
-  return <section className="upgrade-product-strip story-section" aria-label={t(copy("The PROHOR product at a glance", "এক নজরে প্রহর"))}><div className="home-container upgrade-product-grid">{items.map(item => <div key={item.value}><strong className="upgrade-product-number" lang="en">{item.value}</strong><h2>{t(item.label)}</h2>{item.href ? <a href={item.href}>{t(item.caption)}<ArrowUpRight size={16} aria-hidden="true" /></a> : <p>{t(item.caption)}</p>}</div>)}</div></section>;
+  return <section className="impact-stats story-section" aria-labelledby="impact-title"><div className="home-container">
+    <div className="impact-heading"><div><SectionEyebrow>{t(copy("Why this matters", "কেন এটি জরুরি"))}</SectionEyebrow><h2 id="impact-title">{t(copy("Every mother counts. ", "প্রতিটি মা গুরুত্বপূর্ণ। "))}<em>{t(copy("Including the ones care often misses.", "যাঁরা প্রায়ই যত্নের বাইরে থেকে যান, তাঁরাও।"))}</em></h2></div><p>{t(copy("PROHOR is built for mothers with disabilities and mothers without. One platform, the same care, no separate version.", "প্রহর তৈরি প্রতিবন্ধিতা আছে এবং নেই—দুই ধরনের মায়ের জন্যই। এক প্ল্যাটফর্ম, একই যত্ন, আলাদা কোনো সংস্করণ নেই।"))}</p></div>
+    <div className="impact-groups">{statGroups.map(group => <article key={group.id} className={`impact-group impact-group-${group.id}`} aria-labelledby={`impact-${group.id}`}><h3 id={`impact-${group.id}`} className="font-tag">{t(group.title)}</h3><ul>{group.stats.map(stat => <li key={stat.source}><p className="impact-number">{t(stat.value)}</p><p className="impact-label">{t(stat.label)}</p><SourceLink href={stat.href}>{stat.source}</SourceLink></li>)}</ul></article>)}</div>
+    <p className="impact-bridge"><HeartHandshake size={22} aria-hidden="true" /><span>{t(copy("One platform for both: no disability form, no separate sign-up, the same right to care.", "দুজনের জন্য এক প্ল্যাটফর্ম: প্রতিবন্ধিতার ফর্ম নেই, আলাদা নিবন্ধন নেই, যত্নের অধিকার একই।"))}</span></p>
+  </div></section>;
 }
 
 export function MaternalFacts() {
   const { t } = useHome();
-  return <div className="upgrade-maternal-facts"><p>{t(copy("About 4,000 maternal deaths in Bangladesh in 2023; the maternal mortality ratio was 79% lower than in 2000.", "২০২৩ সালে বাংলাদেশে আনুমানিক ৪,০০০ মাতৃমৃত্যু; ২০০০ সালের তুলনায় মাতৃমৃত্যুর অনুপাত ৭৯% কম।"))} <a href={MATERNAL_SOURCE} target="_blank" rel="noreferrer">{t(copy("UN estimates · WHO, UNICEF, UNFPA · 2025", "জাতিসংঘের হিসাব · বিশ্ব স্বাস্থ্য সংস্থা, ইউনিসেফ, ইউএনএফপিএ · ২০২৫"))}<span className="home-sr-only"> (opens in a new tab)</span></a></p><p>{t(copy("1 in 3 women who died of maternal causes had sought care at three or more places.", "মাতৃমৃত্যুর শিকার প্রতি ৩ জন নারীর ১ জন তিন বা তার বেশি স্থানে সেবা চেয়েছিলেন।"))} <a href={BMMS_SOURCE} target="_blank" rel="noreferrer" lang="en">BMMS 2016 · Journal of Global Health, 2023<span className="home-sr-only"> (opens in a new tab)</span></a></p></div>;
+  return <div className="upgrade-maternal-facts"><p>{t(copy("Bangladesh cut its maternal mortality ratio by 79% since 2000, to 115 deaths per 100,000 live births in 2023.", "২০০০ সালের পর বাংলাদেশে মাতৃমৃত্যুর অনুপাত ৭৯% কমে ২০২৩ সালে প্রতি লাখ জীবিত জন্মে ১১৫-এ নেমেছে।"))} <SourceLink href={MATERNAL_SOURCE}>WHO · UNICEF · UNFPA · 2025</SourceLink></p><p>{t(copy("Persons with disabilities can die up to 20 years earlier, largely because of avoidable health inequities.", "প্রতিবন্ধী ব্যক্তিরা ২০ বছর পর্যন্ত আগে মারা যেতে পারেন, মূলত এড়ানো যায় এমন স্বাস্থ্যবৈষম্যের কারণে।"))} <SourceLink href={WHO_DISABILITY_SOURCE}>WHO · 2022</SourceLink></p></div>;
 }
 
 export { CompanionStory, SupportStory } from "./HomepageCare";
@@ -57,7 +75,7 @@ export function TeamStory({ images }: { images: Record<string, boolean> }) {
 
 export function FinalCTA() {
   const { t, openPreferences } = useHome();
-  return <section className="upgrade-final story-section" aria-labelledby="final-title"><div className="home-container"><div className="upgrade-final-card"><div className="upgrade-final-circles" aria-hidden="true"><span /><span /></div><div><SectionEyebrow>{t(copy("Your care. Your way.", "আপনার যত্ন। আপনার মতো।"))}</SectionEyebrow><h2 id="final-title">{t(copy("One care journey. ", "এক যত্নের যাত্রা। "))}<em>{t(copy("Every mother’s way.", "প্রতিটি মায়ের মতো।"))}</em></h2><p>{t(copy("A more connected future starts by making room for every mother.", "আরও সংযুক্ত ভবিষ্যতের শুরু প্রতিটি মায়ের জন্য জায়গা করে দিয়ে।"))}</p><div className="story-actions"><button className="home-button" onClick={openPreferences} aria-haspopup="dialog">{t(copy("Make PROHOR yours", "প্রহরকে আপনার মতো করুন"))}<ArrowUpRight size={21} aria-hidden="true" /></button><a className="home-button home-button-secondary" href="#features">{t(copy("Explore the journey", "যাত্রাটি ঘুরে দেখুন"))}<ArrowRight size={21} aria-hidden="true" /></a></div><p className="upgrade-final-disclaimer">{t(copy("An educational product prototype; clinical services and provider delivery are not connected.", "শিক্ষামূলক পণ্যের প্রোটোটাইপ; চিকিৎসাসেবা ও সেবাদাতার কাছে তথ্য পাঠানোর সংযোগ নেই।"))}</p></div></div></div></section>;
+  return <section className="upgrade-final story-section" aria-labelledby="final-title"><div className="home-container"><div className="upgrade-final-card"><InclusiveJourney /><div><SectionEyebrow>{t(copy("Your care. Your way.", "আপনার যত্ন। আপনার মতো।"))}</SectionEyebrow><h2 id="final-title">{t(copy("One care journey. ", "এক যত্নের যাত্রা। "))}<em>{t(copy("Every mother’s way.", "প্রতিটি মায়ের মতো।"))}</em></h2><p>{t(copy("A more connected future starts by making room for every mother.", "আরও সংযুক্ত ভবিষ্যতের শুরু প্রতিটি মায়ের জন্য জায়গা করে দিয়ে।"))}</p><div className="story-actions"><button className="home-button" onClick={openPreferences} aria-haspopup="dialog">{t(copy("Make PROHOR yours", "প্রহরকে আপনার মতো করুন"))}<ArrowUpRight size={21} aria-hidden="true" /></button><a className="home-button home-button-secondary" href="#features">{t(copy("Explore the journey", "যাত্রাটি ঘুরে দেখুন"))}<ArrowRight size={21} aria-hidden="true" /></a></div><p className="upgrade-final-disclaimer">{t(copy("An educational product prototype; clinical services and provider delivery are not connected.", "শিক্ষামূলক পণ্যের প্রোটোটাইপ; চিকিৎসাসেবা ও সেবাদাতার কাছে তথ্য পাঠানোর সংযোগ নেই।"))}</p></div></div></div></section>;
 }
 
 export function AudiencePanels() {

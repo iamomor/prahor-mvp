@@ -169,12 +169,15 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
 
   if (!demo) {
     return (
-      <><NetworkStatus message={educationCopy[formLanguage].offline} /><BartaEducationChat symbolPanel={aacSection} languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
+      <div className={styles.workspace}>
+        <NetworkStatus message={educationCopy[formLanguage].offline} />
+        <BartaEducationChat symbolPanel={aacSection} languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
         question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
         onLanguage={setAnswerLanguage}
         onQuestion={setQuestion}
         onDictation={insertText}
-        onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} /></>
+        onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} />
+      </div>
     );
   }
 

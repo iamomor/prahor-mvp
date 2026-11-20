@@ -66,17 +66,17 @@ export default async function AskBartaPage({ searchParams }: { searchParams: Pro
           id="barta-help"
           tabIndex={-1}
           aria-labelledby="barta-help-title"
-          className="pro-card mt-8 max-w-prose space-y-3"
+          className="pro-card mt-8 max-w-[71rem] scroll-mt-6 space-y-3"
         >
           <h2 id="barta-help-title" className="text-xl font-semibold">
             Help without chat
           </h2>
-          <p>
+          <p className="max-w-prose">
             If you need urgent medical care, seek help at a hospital or
             maternity facility. Please do not wait for a chat reply. This
             prototype does not send care requests or notify a clinician.
           </p>
-          <p lang="bn">
+          <p lang="bn" className="max-w-prose">
             জরুরি চিকিৎসা প্রয়োজন হলে হাসপাতাল বা মাতৃসেবা কেন্দ্রে সহায়তা নিন।
             চ্যাটের উত্তরের জন্য অপেক্ষা করবেন না। এই প্রোটোটাইপ চিকিৎসকের কাছে
             অনুরোধ বা বার্তা পাঠায় না।

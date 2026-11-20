@@ -8,7 +8,9 @@ import { accountAccessSchema, supporterConnectionSchema, type AccountAccess, typ
   type WorkspaceRole, type SignupPurpose } from "@/lib/contracts/account";
 import { emptyRoleProfile, RoleProfileFields } from "./RoleProfileFields";
 
-const snapshotSchema = z.strictObject({ account: accountAccessSchema, connections: z.array(supporterConnectionSchema) });
+const activitySchema = z.array(z.strictObject({ id: z.uuid(), action: z.enum(["supporter_invited", "supporter_accepted", "supporter_revoked"]),
+  occurredAt: z.string(), connectionId: z.uuid().nullable(), byYou: z.boolean() }));
+const snapshotSchema = z.strictObject({ account: accountAccessSchema, connections: z.array(supporterConnectionSchema), activity: activitySchema.default([]) });
 const inputClass = "min-h-12 w-full rounded-xl border border-pro-border bg-pro-elevated px-4 py-3 text-base text-pro-text";
 function invitationExpiry(days: number) { return new Date(Date.now() + days * 86400000).toISOString(); }
 export function AccountWorkspace({ supporter = false }: { supporter?: boolean }) {
@@ -16,6 +18,7 @@ export function AccountWorkspace({ supporter = false }: { supporter?: boolean })
   const router = useRouter();
   const [account, setAccount] = useState<AccountAccess | null>(null);
   const [connections, setConnections] = useState<SupporterConnection[]>([]);
+  const [activity, setActivity] = useState<z.infer<typeof activitySchema>>([]);
   const [profile, setProfile] = useState(emptyRoleProfile);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -46,7 +49,7 @@ export function AccountWorkspace({ supporter = false }: { supporter?: boolean })
     if (signal?.aborted) return;
     if (accountId.current && accountId.current !== snapshot.account.userId) throw new Error("account-changed");
     accountId.current = snapshot.account.userId;
-    setAccount(snapshot.account); setConnections(snapshot.connections);
+    setAccount(snapshot.account); setConnections(snapshot.connections); setActivity(snapshot.activity);
     if (!snapshot.account.onboarded) {
       const purposes: SignupPurpose[] = snapshot.account.roles.filter(r => r.status === "approved" && r.role !== "provider")
         .map(r => r.role as "mother" | "supporter");
@@ -170,8 +173,14 @@ export function AccountWorkspace({ supporter = false }: { supporter?: boolean })
           <p>{c.scopes.map(s => s === "visit_preparation" ? t({ en: "Visit preparation", bn: "সাক্ষাতের প্রস্তুতি" }) : t({ en: "Care coordination", bn: "যত্নের সমন্বয়" })).join("; ")}</p>
           <p>{t({ en: "Expiry", bn: "মেয়াদ" })}: {new Date(c.expiresAt).toLocaleString()}</p>
           {(c.status === "active" || c.status === "pending") && <button type="button" className="pro-btn pro-btn-secondary" disabled={busy}
-            onClick={() => { if (window.confirm(t({ en: "Revoke this invitation or relationship? Further access will be blocked.", bn: "এই আমন্ত্রণ বা সম্পর্ক প্রত্যাহার করবেন? পরবর্তী প্রবেশ বন্ধ হবে।" }))) void act({ action: "revoke", connectionId: c.id }); }}>{t({ en: "Revoke access", bn: "অনুমতি প্রত্যাহার করুন" })}</button>}
+            onClick={() => { if (window.confirm(t({ en: "Revoke this invitation or relationship? Further access will be blocked.", bn: "এই আমন্ত্রণ বা সম্পর্ক প্রত্যাহার করবেন? পরবর্তী প্রবেশ বন্ধ হবে।" }))) void act({ action: "revoke", connectionId: c.id }); }}>{c.status === "pending" && c.supporterId === account.userId ? t({ en: "Decline invitation", bn: "আমন্ত্রণ প্রত্যাখ্যান করুন" }) : t({ en: "Revoke access", bn: "অনুমতি প্রত্যাহার করুন" })}</button>}
         </li>)}</ul>
+        <h3 className="font-semibold">{t({ en: "Activity history", bn: "কার্যকলাপের ইতিহাস" })}</h3>
+        {!activity.length ? <p>{t({ en: "No recorded activity yet.", bn: "এখনও কোনো কার্যকলাপ নথিভুক্ত নেই।" })}</p>
+          : <ol className="space-y-1">{activity.map(item => <li key={item.id}>{new Date(item.occurredAt).toLocaleString()} — {
+            item.action === "supporter_invited" ? t({ en: "Invitation created", bn: "আমন্ত্রণ তৈরি হয়েছে" })
+            : item.action === "supporter_accepted" ? t({ en: "Invitation accepted", bn: "আমন্ত্রণ গৃহীত হয়েছে" })
+            : t({ en: "Invitation declined or access revoked", bn: "আমন্ত্রণ প্রত্যাখ্যাত বা অনুমতি প্রত্যাহৃত" })} ({item.byYou ? t({ en: "by you", bn: "আপনার দ্বারা" }) : t({ en: "by the other person", bn: "অন্যজনের দ্বারা" })})</li>)}</ol>}
       </section>}
     </>}
     <nav aria-label={t({ en: "Account links", bn: "অ্যাকাউন্টের লিংক" })} className="flex flex-wrap gap-4">

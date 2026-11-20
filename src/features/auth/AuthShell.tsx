@@ -240,7 +240,7 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
               </button>
               <div className="grid min-w-0 leading-tight">
                 <span className="hidden text-xs text-pro-muted sm:block"><span lang="en">PROHOR</span> / {t(current)}</span>
-                <span className="truncate font-semibold text-pro-text">{t(current)}</span>
+                <span className="min-w-0 break-words font-semibold text-pro-text">{t(current)}</span>
               </div>
             </div>
             <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5 sm:gap-2.5">

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
-import { AACComposer, ReadAloudButton, mergeAacText } from "@/features/adapt";
+import { AACComposer, HeldAacText, ReadAloudButton, VoiceDictationButton, mergeAacText } from "@/features/adapt";
 import { useLanguage } from "@/i18n/use-language";
 import { careRecipientsSchema, createSupportRequestRequestSchema, supportRequestSchema, type SupportRequest, type CreateSupportRequestRequest } from "@/lib/contracts/bondhon";
 import { availableRecordSchema, bondhonTermsVersion, type Accommodation, type CoordinationApproval } from "@/lib/contracts/coordination";
@@ -252,8 +252,9 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       <span>{t(words("Message for this recipient", "এই প্রাপকের জন্য বার্তা"))}</span>
       <textarea ref={messageInput} required rows={4} className="pro-input" maxLength={1000} value={message} onChange={event => setMessage(event.target.value)} aria-describedby={`${id}-privacy`} />
       </label>
+    <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={message} maxLength={1000} onChange={setMessage} />
     <p id={`${id}-privacy`}>{t(words("Everything you type in this message is shared after approval. Include only information needed for this purpose. Drafts stay in memory in this tab.", "অনুমতির পর এই বার্তায় লেখা সব তথ্য শেয়ার হবে। এই উদ্দেশ্যে প্রয়োজনীয় তথ্যই লিখুন। খসড়া এই ট্যাবের মেমরিতে থাকে।"))}</p>
-    {incoming && <p role="alert">{t(words("The combined message exceeds 1000 characters. Your existing text is kept. Incoming text", "মিলিত বার্তা ১০০০ অক্ষর ছাড়িয়েছে। আগের লেখা রাখা আছে। নতুন লেখা"))} {incoming}</p>}
+    {incoming && <HeldAacText text={incoming} value={message} maxLength={1000} lang={language === "bn" ? "bn" : "en"} onDismiss={() => setIncoming("")} onAdd={next => { setMessage(next); setIncoming(""); messageInput.current?.focus(); }} />}
 </>}
     {step === 1 && <>
     <fieldset className={styles.choices}>

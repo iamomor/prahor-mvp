@@ -13,7 +13,10 @@ import { BartaLearningResources } from "./BartaLearningResources";
 import { useBartaAudio } from "./use-barta-audio";
 import { useBartaReplyAudio } from "./use-barta-reply-audio";
 import styles from "./barta-education.module.css";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
 import { useHydrated } from "@/lib/use-hydrated";
+import { useAdaptPreferences } from "@/features/adapt";
+import { VoiceDictationButton } from "@/features/adapt";
 import { saveVisitQuestion, visitQuestionsHref } from "@/features/shared/visit-questions";
 
 type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
@@ -74,7 +77,7 @@ function isUrgent(result: BartaAnswer) {
   return result.status === "abstained" && (result.reason === "urgent_care" || result.reason === "crisis_support");
 }
 
-const Answer = memo(function Answer({ result, locale, question, turnId, showOptions, onSelect, busy, speakerEnabled, speakerDisabled, onToggleSpeaker }: {
+const Answer = memo(function Answer({ result, locale, question, turnId, showOptions, onSelect, busy, speakerEnabled, speakerDisabled, onToggleSpeaker, allowAudio }: {
   result: BartaAnswer;
   locale: Language;
   question?: string;
@@ -85,6 +88,7 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
   speakerEnabled: boolean;
   speakerDisabled: boolean;
   onToggleSpeaker: () => void;
+  allowAudio: boolean;
 }) {
   const ready = useHydrated();
   const copy = educationCopy[locale];
@@ -104,7 +108,7 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
         <span className={styles.mark}><HeartHandshake size={18} aria-hidden="true" /></span>
         <strong lang={locale === "bn" ? "bn" : "en"}>{locale === "bn" ? "বার্তা" : "Barta"}</strong>
         {urgent && <strong className={styles.urgentLabel}>{copy.urgent}</strong>}
-        <SpeakerSwitch enabled={speakerEnabled} locale={locale} disabled={speakerDisabled} onToggle={onToggleSpeaker} />
+        {allowAudio && <SpeakerSwitch enabled={speakerEnabled} locale={locale} disabled={speakerDisabled} onToggle={onToggleSpeaker} />}
       </header>
       {result.status === "grounded" ? (
         <>
@@ -188,7 +192,7 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 
 export function BartaEducationChat({
   languageChoice, formLanguage, question, questionInput, turns, reply, error, busy, hasPrefill,
-  onLanguage, onQuestion, onDictation, symbolPanel, onSelect, onClear, onSubmit,
+  onLanguage, onQuestion, symbolPanel, onSelect, onClear, onSubmit,
 }: {
   languageChoice: Language | "auto";
   formLanguage: Language;
@@ -201,7 +205,6 @@ export function BartaEducationChat({
   busy: boolean;
   onLanguage: (language: Language | "auto") => void;
   onQuestion: (question: string) => void;
-  onDictation: (question: string) => void;
   /** The AAC symbol builder, shown inside the composer card. */
   symbolPanel?: ReactNode;
   onSelect: (question: string) => void;
@@ -213,7 +216,12 @@ export function BartaEducationChat({
   const audio = useBartaAudio();
   const { play: playAudio, stopSpeaking } = audio;
   const { start: startReplyAudio, stop: stopReplyAudio, blocked, retry } = useBartaReplyAudio();
-  const [speakerEnabled, setSpeakerEnabled] = useState(false);
+  const { prefs: adaptPrefs } = useAdaptPreferences();
+  // Explicit "off" in Adapt hides Barta's speaker switch and keeps replies text-only.
+  const audioAllowed = adaptPrefs.readAloud !== false;
+  const [speakerOn, setSpeakerEnabled] = useState(false);
+  const [voiceListening, setVoiceListening] = useState(false);
+  const speakerEnabled = speakerOn && audioAllowed;
   const delivered = useRef<BartaAnswer | string | undefined>(undefined);
   const spokenGuide = useMemo(() => getBartaSpokenGuide(formLanguage), [formLanguage]);
   const [voiceLanguage, setVoiceLanguage] = useState<Language | "auto">("auto");
@@ -286,13 +294,14 @@ export function BartaEducationChat({
       stopSpeaking();
       pauseAudio(event.target);
     }}>
+      <ModuleFeatureOverview module="barta" />
       <section className={styles.chat} aria-label={formLanguage === "bn" ? "বার্তার কথোপকথন" : "Barta conversation"}>
 
 
         <div className={styles.speakerBar}>
-          <SpeakerSwitch enabled={speakerEnabled} locale={formLanguage}
-            disabled={!ready || (!speakerEnabled && audio.listening)} onToggle={() => toggleSpeaker()} />
-          <p lang={formLanguage}>{copy.speakerHint}</p>
+          {audioAllowed && <SpeakerSwitch enabled={speakerEnabled} locale={formLanguage}
+            disabled={!ready || (!speakerEnabled && audio.listening)} onToggle={() => toggleSpeaker()} />}
+          {audioAllowed && <p lang={formLanguage}>{copy.speakerHint}</p>}
         </div>
 
         {hasThread ? (
@@ -306,14 +315,14 @@ export function BartaEducationChat({
                 </div>
                 <Answer result={turn.result} locale={turn.language} question={turn.question} turnId={`barta-turn-${index}`}
                   showOptions={reply?.result === turn.result} onSelect={onSelect} busy={busy || audio.listening}
-                  speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
+                  allowAudio={audioAllowed} speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
                   onToggleSpeaker={() => toggleSpeaker(turn)} />
               </div>
             ))}
             {transient && <div ref={latest}>
               <Answer result={transient.result} locale={transient.language} turnId="barta-current"
                 showOptions onSelect={onSelect} busy={busy || audio.listening}
-                speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
+                allowAudio={audioAllowed} speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
                 onToggleSpeaker={() => toggleSpeaker(transient)} />
             </div>}
             {speakerEnabled && blocked && (
@@ -364,6 +373,7 @@ export function BartaEducationChat({
 
         <div className={styles.composerCard}>
           <form className={styles.form} lang={formLanguage} onSubmit={(event) => {
+            if (voiceListening) { event.preventDefault(); return; }
             if (audio.listening) { event.preventDefault(); return; }
             if (speakerEnabled && !busy && question.trim()) {
             delivered.current = undefined;
@@ -380,53 +390,30 @@ export function BartaEducationChat({
               <span>{formLanguage === "bn" ? "বাংলা বা ইংরেজিতে" : "Bangla or English"}</span>
             </div>
             {hasPrefill && <p className="text-sm text-pro-muted">{copy.prefillExplanation}</p>}
-            <div className={styles.composer} data-listening={audio.listening || undefined}>
+            <div className={styles.composer}>
               <textarea id="barta-question" ref={questionInput} value={question}
                 placeholder={copy.placeholder} aria-describedby="barta-privacy"
                 onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
-            {audio.listening && (
-              <div className={styles.dictationPreview} role="region" aria-label={copy.liveTranscript}>
-                <strong>{copy.liveTranscript}</strong>
-                <p lang={audio.transcript?.language ?? micLanguage}>
-                  {audio.transcript?.final && <span>{audio.transcript.final} </span>}
-                  {audio.transcript?.interim && <mark>{audio.transcript.interim}</mark>}
-                  {!audio.transcript?.final && !audio.transcript?.interim && (
-                    <span lang={formLanguage}>{copy.transcriptWaiting}</span>
-                  )}
-                </p>
-              </div>
-            )}
               <div className={styles.composerBar}>
                 {symbolPanel && (
-                  <a href="#barta-symbol-input" className={styles.tool}>
+                  <button type="button" className={styles.tool} aria-controls="barta-symbol-input"
+                    onClick={() => document.getElementById("barta-symbol-input")?.focus()}>
                     <LayoutGrid size={18} aria-hidden="true" />
                     {copy.useSymbols}
-                  </a>
+                  </button>
                 )}
-                <button type="button" className={styles.tool} disabled={!ready || busy}
-                  aria-describedby="barta-voice-hint barta-voice-more" data-active={audio.listening || undefined}
-                  onClick={() => {
-                    pauseAudio();
-                    audio.dictate(micLanguage, formLanguage, (transcript) => {
-                      onDictation(transcript);
-                    });
-                  }}>
-                  {audio.listening
-                    ? <span className={styles.liveDot} aria-hidden="true" />
-                    : <Mic size={18} aria-hidden="true" />}
-                  {audio.listening ? copy.stopListening : copy.startListening}
-                </button>
                 <div className={styles.sendGroup}>
                 <span className={styles.counter} data-near={question.length > 1100 || undefined}>
                   <bdi>{question.length}</bdi>/1200
                 </span>
                 <button type="submit" className={styles.send}
-                  disabled={!ready || busy || audio.listening || !question.trim()}>
+                  disabled={!ready || busy || audio.listening || voiceListening || !question.trim()}>
                   {copy.submit}<ArrowUp size={18} aria-hidden="true" />
                 </button>
                 </div>
               </div>
             </div>
+            <VoiceDictationButton language={voiceLanguage === "auto" ? micLanguage : voiceLanguage} hideLanguageSelect disabled={!ready || busy} value={question} maxLength={1200} onChange={onQuestion} onListeningChange={setVoiceListening} focusTargetRef={questionInput} />
             <div className={styles.chatPreferences}>
 
               <label className={styles.language}>
@@ -533,10 +520,10 @@ export function BartaEducationChat({
           </details>
         </div>
         <div className={styles.sideNote}>
-        <BartaAudioFile key={formLanguage} guideLabel={copy.readGuide}
+        {audioAllowed && <BartaAudioFile key={formLanguage} guideLabel={copy.readGuide}
           text={spokenGuide} language={formLanguage} disabled={!ready || busy || audio.listening}
           browserReading={audio.speaking === "barta-guide"}
-          onBrowserRead={() => readAnswer("barta-guide", spokenGuide, formLanguage)} />
+          onBrowserRead={() => readAnswer("barta-guide", spokenGuide, formLanguage)} />}
         {playbackMessage("barta-guide") && (
           <p role="status" className={styles.playbackNotice}>{playbackMessage("barta-guide")}</p>
         )}

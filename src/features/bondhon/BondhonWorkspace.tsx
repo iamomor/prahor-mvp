@@ -14,6 +14,8 @@ import { careFetch } from "./client";
 import { accommodations, statusNames, words } from "./bondhon-copy";
 import { accessState, accessWords, digits, formatLeft, formatWhen, msLeft, queueView, splitSharing, type QueueFilter } from "./bondhon-view";
 import styles from "./bondhon.module.css";
+import { NotificationPreferences } from "./NotificationPreferences";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
 
 const filterNames: Record<QueueFilter, { en: string; bn: string }> = {
   new: words("New", "নতুন"), progress: words("In progress", "চলছে"), replied: words("Replied", "উত্তর দেওয়া"), all: words("All open", "সব খোলা"),
@@ -97,6 +99,7 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
       <h1 className={styles.heading}>{t(provider ? words("Bondhon · Simulated provider queue", "বন্ধন · সিমুলেটেড সেবাদাতার তালিকা") : words("Bondhon · Your sharing decisions", "বন্ধন · শেয়ারের সিদ্ধান্ত আপনার"))}</h1>
       <p>{t(words("Choose the person, information and time. Follow each request in one place.", "প্রাপক, তথ্য ও সময় বাছুন। প্রতিটি অনুরোধ এক জায়গায় দেখুন।"))}</p>
     </header>}
+    {!embedded && !provider && <ModuleFeatureOverview module="bondhon" />}
     <aside className={styles.notice}>
       <p>{t(words("Hackathon simulation. Use synthetic information. No staffed medical service or emergency monitoring is connected.", "হ্যাকাথনের সিমুলেশন। নমুনা তথ্য ব্যবহার করুন। কোনো কর্মরত চিকিৎসাসেবা বা জরুরি পর্যবেক্ষণ যুক্ত নেই।"))}</p>
       <Link className="underline inline-flex min-h-12 items-center" href="/poth#poth-sos">{t(words("Open emergency and care information", "জরুরি ও সেবার তথ্য খুলুন"))}</Link>
@@ -113,6 +116,7 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
       {failed && <p role="alert" className={styles.error}>{t(words("Requests could not be loaded. Check your connection and sign-in, then refresh. If the problem continues, contact the project administrator.", "অনুরোধ আনা যায়নি। সংযোগ ও সাইন ইন দেখে আবার আনুন। সমস্যা থাকলে প্রকল্পের প্রশাসকের সঙ্গে যোগাযোগ করুন।"))}</p>}
       {!provider && !failed && <SharingNow account={profile.user_id} items={items as SupportRequest[]} now={now} ready={checked && !busy} complete={cursor === null} onOpen={open}
         onNew={() => { setInitial(undefined); setView("new"); }} onChanged={() => setRefresh(value => value + 1)} />}
+      {!provider && <NotificationPreferences />}
       {!provider && <button className="pro-btn pro-btn-secondary justify-self-start" disabled={busy} onClick={() => void load()}>{t(words("Refresh", "আবার দেখুন"))}</button>}
       {!provider && earlier.length > 0 && <details className={styles.panel}>
         <summary className="pro-btn pro-btn-secondary">{t(words(`Earlier requests (${earlier.length})`, `আগের অনুরোধ (${digits(earlier.length, "bn")})`))}</summary>

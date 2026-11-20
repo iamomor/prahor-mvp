@@ -1,5 +1,6 @@
 "use client";
 
+import { useModalFocus } from "@/components/accessibility/useModalFocus";
 import { useId, useState } from "react";
 import { BookOpen, CheckCircle2, ChevronRight, CircleAlert, Sparkles, Wind } from "lucide-react";
 import { AppButton } from "@/components/ui/AppButton";
@@ -57,6 +58,7 @@ export function RelaxationResources() {
   const id = useId();
   const [selectedCategory, setSelectedCategory] = useState<ResourceCategory | "all">("all");
   const [activeResource, setActiveResource] = useState<ReviewedResource | null>(null);
+  const dialogRef = useModalFocus<HTMLDivElement>(activeResource !== null, () => setActiveResource(null));
 
   const published = getPublishedReviewedResources(language === "bn" ? "bn" : "en");
   const filtered = selectedCategory === "all"
@@ -183,6 +185,7 @@ export function RelaxationResources() {
       {/* Modal / Detailed View */}
       {activeResource && (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={`${id}-modal-title`}

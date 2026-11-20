@@ -2,13 +2,13 @@
 import { claimAudioSession, ownsAudioSession, releaseAudioSession } from "@/lib/audio-session";
 type Recognition = {
   lang: string; continuous: boolean; interimResults: boolean; processLocally?: boolean;
-  onresult: ((event: { results: { [index: number]: { [index: number]: { transcript: string } } } }) => void) | null;
+  onresult: ((event: { results: ArrayLike<{ isFinal?: boolean; [index: number]: { transcript: string } }> }) => void) | null;
   onerror: ((event: { error: string }) => void) | null; onend: (() => void) | null;
   start: () => void; stop: () => void; abort: () => void;
 };
 type Constructor = { new(): Recognition; available?: (options: { langs: string[]; processLocally: true }) => Promise<string> };
 export type SpeechSession = { stop: () => void; cancel: () => void };
-export type SpeechOptions = { signal?: AbortSignal; language: SpeechLanguage; allowRemote: boolean; onText: (text: string) => void; onError: (message: string) => void; onEnd: () => void };
+export type SpeechOptions = { signal?: AbortSignal; language: SpeechLanguage; allowRemote: boolean; onText: (text: string) => void; onInterim?: (text: string) => void; onError: (message: string) => void; onEnd: () => void };
 
 /** Provider boundary. No Azure SDK, credentials, API endpoint, or saved recording. */
 export async function transcribeSpeech(options: SpeechOptions): Promise<SpeechSession> {
@@ -25,14 +25,26 @@ export async function transcribeSpeech(options: SpeechOptions): Promise<SpeechSe
   // Edge's remote service is not enabled in this MVP to avoid Azure-backed processing.
   if (!local && /Edg\//.test(navigator.userAgent)) throw new Error("Remote speech in Microsoft Edge is not enabled here. Use on-device recognition or type the transcript.");
   if ("processLocally" in recognition) recognition.processLocally = local;
-  recognition.lang = options.language; recognition.continuous = false; recognition.interimResults = false;
+  recognition.lang = options.language; recognition.continuous = false; recognition.interimResults = true;
   const owner = Symbol("bujhi-microphone");
   const cleanup = () => { releaseAudioSession(owner); options.signal?.removeEventListener("abort", cancel); };
   const cancel = () => {
     recognition.onresult = null; recognition.onerror = null; recognition.onend = null;
     recognition.abort(); cleanup(); options.onEnd();
   };
-  recognition.onresult = (event) => { if (ownsAudioSession(owner)) options.onText(event.results[0]?.[0]?.transcript ?? ""); };
+  const completedResults = new Set<number>();
+  recognition.onresult = (event) => {
+    if (!ownsAudioSession(owner)) return;
+    const interim: string[] = [];
+    for (let index = 0; index < event.results.length; index += 1) {
+      const result = event.results[index];
+      const transcript = result?.[0]?.transcript?.trim();
+      if (!transcript) continue;
+      if (result.isFinal === false) interim.push(transcript);
+      else if (!completedResults.has(index)) { completedResults.add(index); options.onText(transcript); }
+    }
+    options.onInterim?.(interim.join(" "));
+  };
   recognition.onerror = (event) => { cleanup(); options.onError(event.error === "not-allowed" ? "Microphone permission was denied. You can type the same information below." : `Speech could not complete (${event.error}). Retry or type your information.`); };
   recognition.onend = () => { cleanup(); options.onEnd(); };
   if (options.signal?.aborted) throw new Error("Speech cancelled before microphone start.");

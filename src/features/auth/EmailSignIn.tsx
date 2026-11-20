@@ -551,6 +551,11 @@ export function EmailSignIn({
             </Link>
           </p>
         </form>
+        <p className="mt-4">
+          <Link href={`/sign-in/phone?next=${encodeURIComponent(safeNext)}`} className="font-semibold underline">
+            {t({ en: "Use a phone number instead", bn: "বরং ফোন নম্বর ব্যবহার করুন" })}
+          </Link>
+        </p>
 
         {/* Footer */}
         <footer className="auth-panel-footer">

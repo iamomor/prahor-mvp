@@ -5,6 +5,7 @@ import { Armchair, BatteryFull, BatteryLow, BatteryMedium, Check, CircleOff, Foo
 import { AppButton } from "@/components/ui/AppButton";
 import { CheckBadge } from "./ShusthotaUi";
 import { useLanguage } from "@/i18n/use-language";
+import { VoiceDictationButton } from "@/features/adapt";
 import { saveWellnessEntry, shusthotaErrorCopy } from "./api";
 import styles from "./ShusthotaOverview.module.css";
 
@@ -224,6 +225,7 @@ export function Wellbeing({ onSaved }: { onSaved?: () => Promise<void> | void })
           <p id={`${id}-rest-help`} className="pro-muted text-sm leading-relaxed">{t(copy.restHint)}</p>
           <textarea id={`${id}-rest`} value={restNote} onChange={event => { setRestNote(event.target.value); touch(); }} maxLength={1000} rows={4} aria-describedby={`${id}-rest-help ${id}-rest-count`} className={`${styles.journalPaper} ${field} min-h-32 resize-y py-3 leading-relaxed`} placeholder={t(copy.placeholder)} />
           <p id={`${id}-rest-count`} className="pro-muted text-end text-sm tabular-nums">{restNote.length}/1000</p>
+          <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={restNote} maxLength={1000} onChange={next => { setRestNote(next); touch(); }} />
         </div>
 
         {status && <p role={status.kind === "error" ? "alert" : "status"} aria-live={status.kind === "error" ? "assertive" : "polite"} className={`${status.kind === "error" ? "rounded-control border border-pro-danger bg-pro-danger-soft p-3 text-pro-danger" : `flex items-center gap-2 rounded-control border border-pro-success bg-pro-success-soft p-3 text-pro-success ${styles.saveConfirmed}`}`}>{status.kind === "success" && <Check size={18} aria-hidden="true" className="shrink-0" />}{status.message}</p>}

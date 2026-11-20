@@ -5,6 +5,7 @@ import { AppButton } from "@/components/ui/AppButton";
 import { AppCard } from "@/components/ui/AppCard";
 import { useLanguage } from "@/i18n/use-language";
 import type { WellnessEntry } from "@/lib/contracts/wellness";
+import { ReadAloudButton } from "@/features/adapt";
 import { saveWellnessEntry, shusthotaErrorCopy } from "./api";
 
 type EnergyValue = NonNullable<WellnessEntry["energy"]>;
@@ -20,6 +21,7 @@ const energyOptions: readonly EnergyOption[] = [
   { value: "prefer_not_to_say", label: { en: "Prefer not to say", bn: "বলতে চাই না" } },
 ];
 
+const symbols: Record<string, string> = { low: "🪫", medium: "🔋", high: "☀️", prefer_not_to_say: "🔒" };
 const copy = {
   chooseTitle: { en: "How is your energy right now?", bn: "এই মুহূর্তে আপনার শক্তির মাত্রা কেমন?" },
   chooseHelp: { en: "Choose one option if you like.", bn: "ইচ্ছা হলে একটি বেছে নিন।" },
@@ -134,7 +136,7 @@ export function EnergyCheckIn({ onClose, onSaved }: { onClose: () => void; onSav
                     onChange={() => setSelectedEnergy(option.value)}
                     className="size-5 shrink-0 accent-pro-primary"
                   />
-                  <span>{t(option.label)}</span>
+                  <span aria-hidden="true" className="text-2xl">{symbols[option.value]}</span><span>{t(option.label)}</span>
                 </label>
               ))}
             </fieldset>
@@ -156,6 +158,7 @@ export function EnergyCheckIn({ onClose, onSaved }: { onClose: () => void; onSav
             <div className="grid gap-2 rounded-field border border-pro-border bg-pro-surface p-4">
               <p className="text-sm font-medium text-pro-muted">{t(copy.selectedLabel)}</p>
               <p className="text-lg font-semibold text-pro-text">{selectedOption ? t(selectedOption.label) : ""}</p>
+              {selectedOption && <ReadAloudButton text={t(selectedOption.label)} language={language === "en" ? "en" : "bn"} />}
               <p className="pro-muted text-sm">{t(copy.previewNote)}</p>
             </div>
             <div className="flex flex-col gap-3 border-t border-pro-border pt-4 sm:flex-row sm:flex-wrap">

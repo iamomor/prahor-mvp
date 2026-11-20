@@ -79,8 +79,8 @@ export const footer = {
       bn: "প্রহর একটি শিক্ষামূলক ও সহযোগিতামূলক মাতৃত্বকালীন প্ল্যাটফর্ম। এটি কোনো স্বয়ংক্রিয় রোগ নির্ণয়কারী যন্ত্র বা প্রেসক্রিপশন প্রদানকারী সফটওয়্যার নয়। যেকোনো মেডিকেল তথ্যের জন্য বিশেষজ্ঞ চিকিৎসকের পরামর্শ অপরিহার্য।",
     },
     wcagNote: {
-      en: "Designed for WCAG 2.2 Level AA target accessibility. PROHOR never categorizes users into 'normal' or 'disabled' tiers—all mothers receive identical rights to quality healthcare journeys.",
-      bn: "WCAG ২.২ লেভেল AA অ্যাক্সেসিবিলিটি মানদণ্ডে তৈরি। প্রহর কখনোই ব্যবহারকারীদের 'সাধারণ' বা 'অক্ষম' শ্রেণিতে ভাগ করে না—সকল মা সমান মর্যাদায় সেবা পাওয়ার অধিকারী।",
+      en: "Built toward the WCAG 2.2 Level AA target; accessibility validation is in progress and conformance is not yet claimed. PROHOR never categorizes users into 'normal' or 'disabled' tiers—all mothers receive identical rights to quality healthcare journeys.",
+      bn: "WCAG ২.২ লেভেল AA লক্ষ্যে তৈরি হচ্ছে; অ্যাক্সেসিবিলিটি যাচাই চলছে, এখনো পূর্ণ সম্মতি দাবি করা হচ্ছে না। প্রহর কখনোই ব্যবহারকারীদের 'সাধারণ' বা 'অক্ষম' শ্রেণিতে ভাগ করে না—সকল মা সমান মর্যাদায় সেবা পাওয়ার অধিকারী।",
     },
     copyright: {
       en: "PROHOR | প্রহর. Open architecture for maternal health equity in Bangladesh.",

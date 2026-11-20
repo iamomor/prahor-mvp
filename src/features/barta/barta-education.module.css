@@ -250,7 +250,7 @@
 /* The conversation lives in one fixed-height box. The page never jumps; older messages scroll inside it. */
 .stage {
   position: relative;
-  height: clamp(8.5rem, 22svh, 24rem);
+  height: clamp(8.5rem, 52svh, 34rem);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;

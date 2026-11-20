@@ -234,6 +234,11 @@ export const currentApiContracts = {
     request: bartaAudioRequestSchema,
     responses: { 200: z.instanceof(Uint8Array), 400: bartaErrorSchema, 403: bartaErrorSchema, 404: bartaErrorSchema, 429: bartaErrorSchema, 502: bartaErrorSchema, 503: bartaErrorSchema },
   },
+  "POST /api/tts/cartesia": {
+    source: "src/app/api/tts/cartesia/route.ts", status: "Limited", owners: ["Iftee"], auth: "public",
+    request: z.strictObject({ text: z.string().min(1).max(2500), language: z.enum(["en", "bn"]) }),
+    responses: { 200: z.instanceof(Uint8Array), 400: z.strictObject({ error: z.literal("invalid_request") }), 422: z.strictObject({ error: z.literal("voice_unavailable") }), 502: z.strictObject({ error: z.enum(["voice_unavailable", "provider_failed"]) }), 503: z.strictObject({ error: z.literal("voice_unavailable") }) },
+  },
   "GET /api/poth/facilities": {
     source: "src/app/api/poth/facilities/route.ts", status: "Limited", owners: ["Iftee", "Samin", "Omor"], auth: "public",
     request: directoryQuerySchema, responses: { 200: directoryResponseSchema, 400: pothErrorSchema },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapPin, Navigation, Phone, Search } from "lucide-react";
+import { ClipboardCheck, ExternalLink, Info, Loader2, MapPin, Navigation, Phone, Search } from "lucide-react";
 import { geoLabel } from "./geoLabels";
 import type { VisitFacility } from "./PothVisitPreparation";
 import styles from "./poth.module.css";
@@ -213,7 +213,7 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
     window.setTimeout(() => { const summary = document.querySelector<HTMLElement>("#poth-optional-map > summary"); summary?.focus(); summary?.scrollIntoView({ block: "center" }); }, 0);
   }
   return <section id="poth-nearby-map" className={`${styles.panel} ${styles.stack}`} aria-labelledby="poth-nearby-heading">
-    <div className={styles.sectionHead}><span className={styles.stepMark} aria-hidden="true">02</span><div><h2 id="poth-nearby-heading" tabIndex={-1}>{t("Look nearby", "কাছের সেবা খুঁজুন")}</h2><p className={styles.meta}>{t("Choose an area or use your location. GPS is optional.", "এলাকা বাছুন বা নিজের অবস্থান ব্যবহার করুন। GPS ঐচ্ছিক।")}</p></div></div>
+    <div className={styles.sectionHead}><span className={styles.iconTile} aria-hidden="true"><Navigation size={22} /></span><div><span className={styles.step}>{t("Step 2", "ধাপ ২")}</span><h2 id="poth-nearby-heading" tabIndex={-1}>{t("Look nearby", "কাছের সেবা খুঁজুন")}</h2><p className={styles.meta}>{t("Choose an area or use your location. GPS is optional.", "এলাকা বাছুন বা নিজের অবস্থান ব্যবহার করুন। GPS ঐচ্ছিক।")}</p></div></div>
     <div className={styles.filters}>
       <div className={styles.field}><label id="poth-nearby-area-label" htmlFor="poth-nearby-area">{t("Area", "এলাকা")}</label><select id="poth-nearby-area" aria-labelledby="poth-nearby-area-label" value={cityChoice} onChange={e => selectCity(Number(e.target.value))}>
         <option value="" disabled>{t("GPS / custom point", "GPS / নিজের দেওয়া স্থান")}</option>
@@ -227,7 +227,7 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
       <button type="button" className={`${styles.button} ${styles.primary}`} disabled={busy} onClick={() => void search()}><Search size={18} aria-hidden="true" />{busy ? t("Searching…", "খোঁজা হচ্ছে…") : t("Search this area", "এই এলাকায় খুঁজুন")}</button>
       <button type="button" className={styles.button} onClick={locate}><Navigation size={18} aria-hidden="true" />{t("Use my location", "আমার অবস্থান ব্যবহার করুন")}</button>
     </div>
-    <p className={styles.meta}>{area}{accuracy !== null && gps ? ` · ±${accuracy.toLocaleString(language === "bn" ? "bn-BD" : "en")} m` : ""} · {t("Approximate search centre", "খোঁজার আনুমানিক কেন্দ্র")}</p>
+    <p className={`${styles.line} ${styles.small}`}><MapPin size={17} aria-hidden="true" /><span><strong>{area}</strong>{accuracy !== null && gps ? ` · ±${accuracy.toLocaleString(language === "bn" ? "bn-BD" : "en")} m` : ""} · {t("Approximate search centre", "খোঁজার আনুমানিক কেন্দ্র")}</span></p>
     <details className={styles.disclosure}>
       <summary>{t("Location options & privacy", "অবস্থানের বিকল্প ও গোপনীয়তা")}</summary>
       <p>{t("Search sends the chosen point to our server. Live lookup also sends it to a map-data provider. Temporary caches and hosting/provider logs may contain coordinates; nothing is sent to a care provider.", "খুঁজলে বাছাই করা স্থান আমাদের সার্ভারে যায়। সরাসরি খোঁজে মানচিত্র-তথ্য সরবরাহকারীর কাছেও যায়। অস্থায়ী ক্যাশ ও সার্ভারের লগে স্থান থাকতে পারে; সেবাদাতাকে কিছু পাঠানো হয় না।")}</p>
@@ -242,7 +242,7 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
         <button type="button" className={styles.button} disabled={!manualLat.trim() || !manualLon.trim()} onClick={applyManualPoint}>{t("Use this point", "এই স্থান ব্যবহার করুন")}</button>
       </details>
     </details>
-    <p role="status" aria-live="polite">{language === "bn" ? message.bn : message.en}</p>
+    <p role="status" aria-live="polite" className={styles.statusLine}>{busy ? <Loader2 size={18} aria-hidden="true" /> : <Info size={18} aria-hidden="true" />}<span>{language === "bn" ? message.bn : message.en}</span></p>
     {dataMode && <>
       <p className={styles.meta}>{dataMode === "saved-snapshot" ? t("Saved map data · not verified", "রাখা মানচিত্রের তথ্য · যাচাই হয়নি") : t("Live + saved map data · not verified", "সরাসরি ও রাখা তথ্য · যাচাই হয়নি")} · {t("Distances are straight-line, not travel time.", "দূরত্ব সরলরেখায়, যাতায়াতের সময় নয়।")}</p>
       <details className={styles.disclosure}>
@@ -254,14 +254,14 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
         </div>
         <button type="button" className={styles.textButton} onClick={() => { setQuery(""); setFilter("all"); setSort("nearest"); setShowCount(MAX_PAGE); }}>{t("Clear result filters", "ফলাফলের ফিল্টার মুছুন")}</button>
       </details>
-      {matched.length === 0 && <p className={styles.notice}>{t("No matching saved map record. This does not mean care is unavailable. Try another area or the directory above.", "রাখা মানচিত্রে মিল নেই। এর অর্থ সেবা নেই নয়। অন্য এলাকা বা ওপরের তালিকায় খুঁজুন।")}</p>}
+      {matched.length === 0 && <p className={styles.notice}><Info size={18} aria-hidden="true" />{t("No matching saved map record. This does not mean care is unavailable. Try another area or the directory above.", "রাখা মানচিত্রে মিল নেই। এর অর্থ সেবা নেই নয়। অন্য এলাকা বা ওপরের তালিকায় খুঁজুন।")}</p>}
       <div className={styles.cards}>{shown.map(p => <article key={p.id} className={styles.card}>
-        <span className={styles.meta}>{kindNames[p.kind]} · {p.distanceKm.toLocaleString(language === "bn" ? "bn-BD" : "en", { maximumFractionDigits: 2 })} {t("km", "কিমি")}</span>
-        <h3 tabIndex={-1}>{p.name}</h3><p>{p.address ?? t("Address not supplied", "ঠিকানা দেওয়া নেই")}</p>
-        <div className={styles.actions}>
-          {onPrepare && <button type="button" className={`${styles.button} ${styles.primary}`} onClick={() => onPrepare({ id: p.id, name: p.name, nameBn: /[\u0980-\u09ff]/u.test(p.name) ? p.name : null, area: p.address, phone: p.phone, sourceUrl: p.osmUrl })}>{t("Prepare a visit", "সাক্ষাতের প্রস্তুতি")}</button>}
-          {p.phone && <a className={styles.textButton} href={phoneLink(p.phone)}><Phone size={16} aria-hidden="true" />{t("Call", "কল করুন")}</a>}
-          <a className={styles.textButton} href={directions(p)} target="_blank" rel="noopener noreferrer">{t("Directions ↗", "যাওয়ার পথ ↗")}</a>
+        <div className={styles.cardTop}><span className={`${styles.badge} ${styles.badgeWarn}`}><MapPin size={15} aria-hidden="true" />{t("Map listing · unverified", "মানচিত্রের তথ্য · যাচাই হয়নি")}</span><span className={styles.count}>{p.distanceKm.toLocaleString(language === "bn" ? "bn-BD" : "en", { maximumFractionDigits: 2 })} {t("km", "কিমি")}</span></div>
+        <h3 tabIndex={-1}>{p.name}</h3><p className={`${styles.meta} ${styles.small}`}>{kindNames[p.kind]}</p><p className={styles.line}><MapPin size={17} aria-hidden="true" /><span>{p.address ?? t("Address not supplied", "ঠিকানা দেওয়া নেই")}</span></p>
+        <div className={styles.cardActions}>
+          {onPrepare && <button type="button" className={`${styles.button} ${styles.primary}`} onClick={() => onPrepare({ id: p.id, name: p.name, nameBn: /[\u0980-\u09ff]/u.test(p.name) ? p.name : null, area: p.address, phone: p.phone, sourceUrl: p.osmUrl })}><ClipboardCheck size={18} aria-hidden="true" />{t("Prepare a visit", "সাক্ষাতের প্রস্তুতি")}</button>}
+          {p.phone && <a className={styles.button} href={phoneLink(p.phone)}><Phone size={17} aria-hidden="true" />{t("Call", "কল করুন")}</a>}
+          <a className={styles.button} href={directions(p)} target="_blank" rel="noopener noreferrer"><Navigation size={17} aria-hidden="true" />{t("Directions", "যাওয়ার পথ")}<ExternalLink size={14} aria-hidden="true" /></a>
         </div>
         <details className={styles.details}><summary>{t("Details & source", "বিস্তারিত ও উৎস")}</summary>
           <p>{t("Phone", "ফোন")}: {p.phone ?? t("Not supplied", "দেওয়া নেই")}</p><p>{t("Opening hours", "খোলার সময়")}: {p.hours ?? t("Unknown", "অজানা")}</p>

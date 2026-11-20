@@ -1,5 +1,8 @@
 
-import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, HeartHandshake, LayoutGrid, Lock, Mic, ShieldCheck, Square, Volume2, VolumeX } from "lucide-react";
+
+
+import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, HeartHandshake, LayoutGrid, Lock, Mic, ShieldCheck, Volume2, VolumeX } from "lucide-react";
+
 
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
@@ -33,6 +36,8 @@ const additionalTopics = [
   "feedingAtWork", "babyCrying", "postnatalVisits", "everydayWellbeing", "babyHygiene",
   "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
 ] as const satisfies readonly EducationTopic[];
+
+const starterTopics = ["ancVisits", "nutrition", "breastfeeding", "newborn"] as const satisfies readonly EducationTopic[];
 
 const QuestionOption = memo(function QuestionOption({ prompt, onSelect, disabled }: {
   prompt: string;
@@ -186,7 +191,7 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 
 export function BartaEducationChat({
   languageChoice, formLanguage, question, questionInput, turns, reply, error, busy, hasPrefill,
-  onLanguage, onQuestion, onDictation, symbolsOpen, symbolPanel, onOpenSymbols, onSelect, onClear, onSubmit,
+  onLanguage, onQuestion, onDictation, symbolPanel, onSelect, onClear, onSubmit,
 }: {
   languageChoice: Language | "auto";
   formLanguage: Language;
@@ -200,10 +205,8 @@ export function BartaEducationChat({
   onLanguage: (language: Language | "auto") => void;
   onQuestion: (question: string) => void;
   onDictation: (question: string) => void;
-  symbolsOpen: boolean;
   /** The AAC symbol builder, shown inside the composer card. */
   symbolPanel?: ReactNode;
-  onOpenSymbols: () => void;
   onSelect: (question: string) => void;
   onClear: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -288,13 +291,15 @@ export function BartaEducationChat({
     }}>
       <section className={styles.chat} aria-label={formLanguage === "bn" ? "বার্তার কথোপকথন" : "Barta conversation"}>
 
+
         <div className={styles.speakerBar}>
           <SpeakerSwitch enabled={speakerEnabled} locale={formLanguage}
             disabled={!ready || (!speakerEnabled && audio.listening)} onToggle={() => toggleSpeaker()} />
           <p lang={formLanguage}>{copy.speakerHint}</p>
         </div>
 
-        {hasThread && (
+        {hasThread ? (
+
           <div className={styles.thread}>
             {turns.map((turn, index) => (
               <div key={index} className={styles.turn} ref={!transient && !error && index === turns.length - 1 ? latest : undefined}>
@@ -331,6 +336,28 @@ export function BartaEducationChat({
             {busy && <p className={styles.notice} lang={formLanguage}>{copy.checking}</p>}
             {error && <div ref={latest}><p className={styles.notice} lang={error.language} role="alert">{error.message}</p></div>}
           </div>
+        ) : (
+          <div className={styles.welcome} lang={formLanguage}>
+            <div className={styles.welcomeHead}>
+              <span className={styles.avatar} aria-hidden="true"><HeartHandshake size={22} /></span>
+              <div>
+                <h2>{formLanguage === "bn" ? "হ্যালো, আমি বার্তা" : "Hi, I’m Barta"}</h2>
+                <p>{formLanguage === "bn"
+                  ? "গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে নিজের ভাষায় প্রশ্ন করুন। প্রতিটি উত্তরের সূত্র দেখতে পাবেন।"
+                  : "Ask about pregnancy, birth or caring for your newborn, in your own words. Every answer shows where it comes from."}</p>
+              </div>
+            </div>
+            <p className={styles.startersLabel}>{formLanguage === "bn" ? "শুরু করতে একটি বেছে নিন" : "Not sure where to start? Try one"}</p>
+            <ul className={styles.starters}>
+              {starterTopics.map((topic) => (
+                <li key={topic}>
+                  <button type="button" disabled={!ready || busy || audio.listening} onClick={() => onSelect(educationTopics[topic][formLanguage])}>
+                    {educationTopics[topic][formLanguage]}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <p className={styles.announce} role="status" lang={reply?.language ?? formLanguage}>
@@ -341,7 +368,15 @@ export function BartaEducationChat({
         <div className={styles.composerCard}>
           <form className={styles.form} lang={formLanguage} onSubmit={(event) => {
             if (audio.listening) { event.preventDefault(); return; }
-            onSubmit(event);
+            if (speakerEnabled && !busy && question.trim()) {
+            delivered.current = undefined;
+            stopReplyAudio();
+            pauseAudio();
+            const submittedText = question.trim();
+            const language = /[\u0980-\u09ff]/u.test(submittedText) ? "bn" : "en";
+            playAudio("barta-question", submittedText, language, true);
+          }
+          onSubmit(event);
           }}>
             <div className={styles.formHead}>
               <label htmlFor="barta-question">{copy.question}</label>
@@ -352,12 +387,25 @@ export function BartaEducationChat({
               <textarea id="barta-question" ref={questionInput} value={question}
                 placeholder={copy.placeholder} aria-describedby="barta-privacy"
                 onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
+            {audio.listening && (
+              <div className={styles.dictationPreview} role="region" aria-label={copy.liveTranscript}>
+                <strong>{copy.liveTranscript}</strong>
+                <p lang={audio.transcript?.language ?? micLanguage}>
+                  {audio.transcript?.final && <span>{audio.transcript.final} </span>}
+                  {audio.transcript?.interim && <mark>{audio.transcript.interim}</mark>}
+                  {!audio.transcript?.final && !audio.transcript?.interim && (
+                    <span lang={formLanguage}>{copy.transcriptWaiting}</span>
+                  )}
+                </p>
+              </div>
+            )}
               <div className={styles.composerBar}>
-                <button type="button" className={styles.tool} disabled={!ready || busy || audio.listening}
-                  aria-controls="barta-symbol-input" aria-expanded={symbolsOpen} onClick={onOpenSymbols}>
-                  <LayoutGrid size={18} aria-hidden="true" />
-                  {copy.useSymbols}
-                </button>
+                {symbolPanel && (
+                  <a href="#barta-symbol-input" className={styles.tool}>
+                    <LayoutGrid size={18} aria-hidden="true" />
+                    {copy.useSymbols}
+                  </a>
+                )}
                 <button type="button" className={styles.tool} disabled={!ready || busy}
                   aria-describedby="barta-voice-hint barta-voice-more" data-active={audio.listening || undefined}
                   onClick={() => {

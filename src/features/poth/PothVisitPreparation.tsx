@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Building2, ClipboardCheck, ExternalLink, Info, Phone, Printer, RotateCcw, Save, X } from "lucide-react";
 import { useLanguage } from "@/i18n/use-language";
 import { PothSavedVisitQuestions } from "./PothSavedVisitQuestions";
 import type { DirectoryPlace } from "./directoryCore";
@@ -74,13 +75,13 @@ export function PothVisitPreparation({ facility, onClearFacility }: { facility?:
     try { window.print(); } catch { cleanup(); setStatus({ en: "Print unavailable. Your checklist is still here.", bn: "প্রিন্ট করা যাচ্ছে না। তালিকা এখানেই আছে।" }); }
   }
   return <section ref={content} id="poth-visit-preparation" className={`${styles.panel} ${styles.stack}`} aria-labelledby="poth-preparation-title">
-    <div className={styles.sectionHead}><span className={styles.stepMark} aria-hidden="true">03</span><div><h2 id="poth-preparation-title" ref={heading} tabIndex={-1}>{t("Prepare a visit", "সাক্ষাতের প্রস্তুতি")}</h2><p className={styles.meta}>{t("A personal checklist, not a booking or shared care record.", "নিজের প্রস্তুতির তালিকা; বুকিং বা শেয়ার করা রেকর্ড নয়।")}</p></div></div>
+    <div className={styles.sectionHead}><span className={styles.iconTile} aria-hidden="true"><ClipboardCheck size={22} /></span><div><span className={styles.step}>{t("Step 3", "ধাপ ৩")}</span><h2 id="poth-preparation-title" ref={heading} tabIndex={-1}>{t("Prepare a visit", "সাক্ষাতের প্রস্তুতি")}</h2><p className={styles.meta}>{t("A personal checklist, not a booking or shared care record.", "নিজের প্রস্তুতির তালিকা; বুকিং বা শেয়ার করা রেকর্ড নয়।")}</p></div></div>
     {facility ? <div className={styles.chosenPlace}>
       <p className={styles.meta}>{t("Your chosen place · confirm before travelling", "আপনার বাছাই করা স্থান · যাওয়ার আগে নিশ্চিত করুন")}</p>
       <h3>{language === "bn" ? facility.nameBn ?? facility.name : facility.name}</h3>
       {facility.area && <p>{facility.area}</p>}
-      <div className={styles.actions}>{facility.phone && <a className={styles.textButton} href={`tel:${facility.phone.replace(/[^+0-9]/g, "")}`}>{t("Call", "কল করুন")}</a>}<a className={styles.textButton} href={facility.sourceUrl} target="_blank" rel="noopener noreferrer">{t("Source ↗", "উৎস ↗")}</a>{onClearFacility && <button className={styles.textButton} onClick={() => { onClearFacility?.(); window.requestAnimationFrame(() => heading.current?.focus()); }}>{t("Remove place", "স্থান সরান")}</button>}</div>
-    </div> : <p className={styles.meta}>{t("Choose “Prepare a visit” on a listing, or use this checklist on its own.", "তালিকার ‘সাক্ষাতের প্রস্তুতি’ চাপুন, বা শুধু এই তালিকা ব্যবহার করুন।")}</p>}
+      <div className={styles.actions}>{facility.phone && <a className={styles.button} href={`tel:${facility.phone.replace(/[^+0-9]/g, "")}`}><Phone size={17} aria-hidden="true" />{t("Call", "কল করুন")}</a>}<a className={styles.textButton} href={facility.sourceUrl} target="_blank" rel="noopener noreferrer">{t("Source", "উৎস")}<ExternalLink size={14} aria-hidden="true" /></a>{onClearFacility && <button type="button" className={styles.textButton} onClick={() => { onClearFacility?.(); window.requestAnimationFrame(() => heading.current?.focus()); }}><X size={16} aria-hidden="true" />{t("Remove place", "স্থান সরান")}</button>}</div>
+    </div> : <div className={styles.emptyPlace}><Building2 size={22} aria-hidden="true" /><p className={styles.meta}>{t("No place chosen yet. Press “Prepare a visit” on any listing above, or use this checklist on its own.", "এখনো স্থান বাছা হয়নি। ওপরের কোনো তালিকায় ‘সাক্ষাতের প্রস্তুতি’ চাপুন, বা শুধু এই তালিকা ব্যবহার করুন।")}</p></div>}
     <PothSavedVisitQuestions />
     <div className={styles.planGroups}>{groups.map(group => <fieldset className={styles.planGroup} key={group.en}><legend>{t(group.en, group.bn)}</legend>
       {group.indices.map(index => <label key={index} className={styles.check}>
@@ -88,9 +89,12 @@ export function PothVisitPreparation({ facility, onClearFacility }: { facility?:
         <span>{t(steps[index][0], steps[index][1])}</span>
       </label>)}
     </fieldset>)}</div>
-    <div className={styles.resultBar}><p>{t(`${checked.filter(Boolean).length} of ${steps.length} checked`, `${checked.filter(Boolean).length.toLocaleString("bn-BD")}/${steps.length.toLocaleString("bn-BD")}টি চিহ্নিত`)}</p><p className={styles.meta}>{saved ? t("Saved in this tab", "এই ট্যাবে রাখা আছে") : t("Save to keep check marks after reload", "রিলোডের পর রাখতে সংরক্ষণ করুন")}</p></div>
-    <div className={styles.actions}><button className={`${styles.button} ${styles.primary}`} onClick={save}>{t("Save in this tab", "এই ট্যাবে রাখুন")}</button><button className={styles.button} onClick={print}>{t("Print checklist", "তালিকা প্রিন্ট করুন")}</button><button className={styles.textButton} onClick={clear}>{t("Clear", "মুছুন")}</button></div>
-    {status && <p role="status">{language === "bn" ? status.bn : status.en}</p>}
+    <div className={styles.progress}>
+      <div className={styles.resultBar}><p className={styles.count}>{t(`${checked.filter(Boolean).length} of ${steps.length} checked`, `${checked.filter(Boolean).length.toLocaleString("bn-BD")}/${steps.length.toLocaleString("bn-BD")}টি চিহ্নিত`)}</p><p className={`${styles.meta} ${styles.small}`}>{saved ? t("Saved in this tab", "এই ট্যাবে রাখা আছে") : t("Not saved yet — save to keep check marks after reload", "এখনো রাখা হয়নি — রিলোডের পর রাখতে সংরক্ষণ করুন")}</p></div>
+      <progress value={checked.filter(Boolean).length} max={steps.length} aria-label={t("Checklist progress", "চেকলিস্টের অগ্রগতি")} />
+    </div>
+    <div className={styles.actionBar}><button type="button" className={`${styles.button} ${styles.primary}`} onClick={save}><Save size={18} aria-hidden="true" />{t("Save in this tab", "এই ট্যাবে রাখুন")}</button><button type="button" className={styles.button} onClick={print}><Printer size={18} aria-hidden="true" />{t("Print checklist", "তালিকা প্রিন্ট করুন")}</button><button type="button" className={styles.textButton} onClick={clear}><RotateCcw size={16} aria-hidden="true" />{t("Clear", "মুছুন")}</button></div>
+    {status && <p role="status" className={styles.statusLine}><Info size={18} aria-hidden="true" /><span>{language === "bn" ? status.bn : status.en}</span></p>}
     <details className={styles.disclosure}><summary>{t("What is saved?", "কী রাখা হয়?")}</summary><p>{t("Only these check marks are saved in this tab until it closes. Facility selection is not saved; Barta questions use their existing tab storage. Nothing is sent to a care provider.", "ট্যাব বন্ধ হওয়া পর্যন্ত শুধু এই টিক চিহ্ন রাখা হয়। প্রতিষ্ঠান বাছাই রাখা হয় না; বার্তার প্রশ্ন আগের মতো ট্যাবে থাকে। সেবাদাতাকে কিছু পাঠানো হয় না।")}</p></details>
   </section>;
 }

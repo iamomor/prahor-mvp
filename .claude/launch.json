@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "prohor-day3-existing",
+      "url": "http://localhost:3107",
+      "port": 3107
+    }
+  ]
+}

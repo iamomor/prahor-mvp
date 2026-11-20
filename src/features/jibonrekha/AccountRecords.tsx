@@ -14,6 +14,7 @@ import { selectAccountPregnancy, type GuideSelection } from "./account-records-m
 
 import { accountSourceLabel } from "./account-provenance";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
+import { selectAccountPregnancy } from "./account-records-model";
 
 
 type Pregnancy = {
@@ -187,8 +188,6 @@ export function AccountRecords() {
   const savingRequest = useRef(false);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [pendingObservation, setPendingObservation] = useState<{ payload: unknown; form: HTMLFormElement; summary: string } | null>(null);
-  const [observationStep, setObservationStep] = useState<1 | 2 | 3>(1);
-  const [guideSelections, setGuideSelections] = useState<Record<string, GuideSelection | null>>({});
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   function openTask(next: Task, tab?: RecordsTab) {
     setTask(next);
@@ -319,10 +318,7 @@ export function AccountRecords() {
   }
   const selectedPregnancy = records ? selectAccountPregnancy(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
-  const guideKey = selectedPregnancy?.id ?? "no-pregnancy";
-  const guideSelection = guideSelections[guideKey] ?? null;
-  const shownJourney = journey && guideSelection ? { weeks: guideSelection.week, days: guideSelection.day } : journey;
-  const previewing = journey !== null && guideSelection !== null;
+
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);
 
@@ -536,7 +532,6 @@ export function AccountRecords() {
                     },
                   };
                   setPendingObservation({ payload, form, summary: `${subject === "mother" ? "মায়ের নথি" : `শিশুর নথি: ${visibleBabies.find((item) => item.id === selectedBabyId)?.label ?? ""}`} · ${labels[kind]}: ${String(data.get("value") ?? "")} ${kind === "note" ? "" : unit} · ${date}` });
-                   setObservationStep(3);
                   requestAnimationFrame(() => reviewHeading.current?.focus());
                 }}
               >

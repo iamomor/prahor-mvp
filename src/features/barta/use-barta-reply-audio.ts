@@ -26,7 +26,11 @@ export function useBartaReplyAudio() {
     const player = new Audio();
     let url: string | undefined;
     const id = owner.current;
-    const timeout = window.setTimeout(playFallback, 15_000);
+
+
+    const timeout = window.setTimeout(handleFallback, 15_000);
+
+
     const playback: Playback = {
       stop() {
         window.clearTimeout(timeout);
@@ -40,7 +44,11 @@ export function useBartaReplyAudio() {
       },
     };
 
-    function playFallback() {
+
+
+    function handleFallback() {
+
+
       if (current.current !== playback) return;
       stop();
       fallback();
@@ -59,7 +67,11 @@ export function useBartaReplyAudio() {
           playback.retry = () => { void play(); };
           setBlocked(input.language);
         } else {
-          playFallback();
+
+
+          handleFallback();
+
+
         }
       }
     }
@@ -67,13 +79,20 @@ export function useBartaReplyAudio() {
     current.current = playback;
     claimAudioSession({ id, stop });
     player.onended = stop;
-    player.onerror = playFallback;
+
+
+    player.onerror = handleFallback;
+
+
     void fetchBartaAudio(input, controller.signal).then((blob) => {
       if (current.current !== playback) return;
       url = URL.createObjectURL(blob);
       player.src = url;
       return play();
-    }).catch(playFallback);
+
+
+    }).catch(handleFallback);
+
   }, [stop]);
 
   return { start, stop, blocked, retry: () => current.current?.retry?.() };

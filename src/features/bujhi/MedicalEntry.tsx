@@ -55,15 +55,15 @@ export function MedicalEntry({ recordsHref = "/demo/jibonrekha", initialMethod =
   );
   return <div className="min-w-0 text-pro-text [overflow-wrap:anywhere]">
     <header className="w-full">
-      <div className="module-hero"><p>Understand your reports · রিপোর্ট বুঝুন</p></div>
+      <p className="text-sm font-semibold text-pro-primary">Understand your reports · <span lang="bn">রিপোর্ট বুঝুন</span></p>
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 pb-1 pt-2">
-        <h1 id="bujhi-title" tabIndex={-1} className="flex items-center gap-3"><FileText aria-hidden="true" className="size-5 text-pro-primary" />Bujhi · <span lang="bn">বুঝি</span></h1>
+        <h1 id="bujhi-title" tabIndex={-1} className="flex items-center gap-3 text-3xl font-semibold"><FileText aria-hidden="true" className="size-5 text-pro-primary" />Bujhi · <span lang="bn">বুঝি</span></h1>
         <AccessPreferencesControl />
       </div>
       <div className={method === null ? "mt-4 rounded-card border border-pro-border bg-pro-surface p-5 sm:p-7" : "pt-4"}>
-        {method === null && <div className="mb-5 grid gap-4"><WorkflowProgress current="add" language="bn" /><p className="max-w-[60ch] text-2xl font-semibold tracking-tight" lang="bn">সহজ ভাষায় রিপোর্ট বুঝুন</p><p className="mt-1 text-pro-muted">Check the results, read a plain-language explanation, and choose what to save.</p><p className="mt-2 text-pro-muted">Development demo · Synthetic data only.</p></div>}
-        {method === null && <button type="button" onClick={() => openPhotoPicker("camera")} className="mb-3 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-control bg-pro-primary px-4 py-3 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"><Camera aria-hidden="true" className="size-5 shrink-0" />ছবি তুলুন · Take a photo</button>}
-        {method === null && <div className="mb-3 grid min-w-0 grid-cols-2 gap-2">
+        {method === null && <div className="mb-5 grid gap-4"><WorkflowProgress current="add" language="bn" /><p className="max-w-[60ch] text-2xl font-semibold tracking-tight" lang="bn">সহজ ভাষায় রিপোর্ট বুঝুন</p><p className="mt-1 text-pro-muted">Check the results, read a plain-language explanation, and choose what to save.</p><p className="text-sm font-semibold text-pro-info">Development demo · Synthetic data only.</p></div>}
+        {method === null && <button type="button" onClick={() => openPhotoPicker("camera")} className="mb-3 inline-flex min-h-14 w-full sm:w-fit items-center justify-center gap-3 rounded-control bg-pro-primary px-4 py-3 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"><Camera aria-hidden="true" className="size-5 shrink-0" />ছবি তুলুন · Take a photo</button>}
+        {method === null && <div className="mb-4 grid min-w-0 gap-3 sm:grid-cols-2">
           <button type="button" onClick={() => openPhotoPicker("gallery")} aria-label="গ্যালারি — Gallery — Scan Report" className="flex min-h-14 min-w-0 flex-wrap items-center justify-center gap-2 rounded-control border border-pro-control-border bg-pro-elevated p-2 font-semibold text-pro-primary"><Images aria-hidden="true" className="size-5 shrink-0" /><span>গ্যালারি · Gallery</span></button>
           <button type="button" onClick={() => acceptDraft(normalizeReport(demoReport))} aria-label="নমুনা রিপোর্ট — Try a sample report" className="flex min-h-14 min-w-0 flex-wrap items-center justify-center gap-2 rounded-control border border-pro-control-border bg-pro-elevated p-2 font-semibold text-pro-primary"><FileText aria-hidden="true" className="size-5 shrink-0" /><span>নমুনা রিপোর্ট · Sample</span></button>
         </div>}

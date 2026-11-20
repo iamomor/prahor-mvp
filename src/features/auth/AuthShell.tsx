@@ -261,10 +261,10 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
                 <Link href="/app" className="inline-flex min-h-11 items-center gap-1.5 rounded-field pr-2 text-sm font-semibold text-pro-primary hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
                   <ArrowLeft size={16} aria-hidden="true" />{t({ en: "Home", bn: "হোম" })}
                 </Link>
-                <span className="inline-flex items-center gap-2 rounded-pill border border-pro-border bg-pro-surface px-3 py-1 text-sm font-semibold text-pro-primary">
+                <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 rounded-pill border border-pro-border bg-pro-surface px-3 py-1 text-sm font-semibold text-pro-primary">
                   <moduleItem.icon size={15} aria-hidden="true" />
                   <span lang="en">{moduleItem.module}</span>
-                  <span className="font-normal text-pro-muted">· {t(moduleItem)}</span>
+                  <span className="min-w-0 font-normal text-pro-muted [overflow-wrap:anywhere]">· {t(moduleItem)}</span>
                 </span>
               </div>
             )}

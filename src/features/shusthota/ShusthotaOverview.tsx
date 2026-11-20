@@ -78,14 +78,14 @@ export function ShusthotaOverview() {
     return (
         <main
             lang={language}
-            className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-12 pt-6 text-pro-text sm:gap-10 sm:px-6 sm:pt-10 lg:px-8"
+            className="mx-auto grid w-full grid-cols-[minmax(0,1fr)] max-w-6xl gap-8 px-4 pb-12 pt-6 text-pro-text sm:gap-10 sm:px-6 sm:pt-10 lg:px-8"
         >
             <header
                 className={`${styles.enter} relative isolate overflow-hidden rounded-hero border border-pro-border bg-pro-surface p-5 sm:p-8 lg:grid lg:min-h-72 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center lg:px-10`}
             >
-                <div className="relative z-10 grid max-w-3xl gap-4">
+                <div className="relative z-10 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-4">
                     <p className="pro-eyebrow tracking-normal">{t(copy.eyebrow)}</p>
-                    <h1 className="pro-display max-w-2xl text-4xl leading-tight sm:text-5xl">
+                    <h1 className="pro-display max-w-2xl [overflow-wrap:anywhere] text-4xl leading-tight sm:text-5xl">
                         {t(copy.title)} <span aria-hidden="true">/</span> <span lang="bn">সুস্থতা</span>
                     </h1>
                     <p className="pro-muted max-w-prose text-base leading-relaxed sm:text-lg">{t(copy.intro)}</p>

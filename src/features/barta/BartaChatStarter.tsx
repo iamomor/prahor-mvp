@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { AACComposer, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
 import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
-import { ChevronDown, LayoutGrid } from "lucide-react";
 import { NetworkStatus } from "@/components/pwa/NetworkStatus";
 import { detectBartaLanguage } from "./chat-language";
 import { BartaEducationChat } from "./BartaEducationChat";
@@ -33,12 +32,10 @@ function readErrorMessage(body: unknown): string {
 export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode?: "demo" | "education"; initialQuestion?: string }) {
   const demo = mode === "demo";
   const { prefs } = useAdaptPreferences();
-  const [aacOpen, setAacOpen] = useState<boolean | null>(null);
   const [incoming, setIncoming] = useState("");
   const storedDraft = useSyncExternalStore(subscribeDraft, getStoredAacDraft, () => null);
   const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
   const questionInput = useRef<HTMLTextAreaElement>(null);
-  const symbolSummary = useRef<HTMLElement>(null);
   const pendingRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -57,18 +54,10 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
     setQuestion(next); setIncoming(""); clearStoredAacDraft();
     questionInput.current?.focus();
   }
-  function openSymbols() {
-    setAacOpen(true);
-    symbolSummary.current?.focus();
-  }
-
-  const symbolsOpen = aacOpen ?? prefs.communication === "aac";
   const chatCopy = educationCopy[formLanguage];
-  const aacSection = <section className={styles.symbolPanel} aria-label={chatCopy.useSymbols} lang={formLanguage}>
-    <details id="barta-symbol-input" open={symbolsOpen} onToggle={event => setAacOpen(event.currentTarget.open)}>
-      <summary ref={symbolSummary}><LayoutGrid size={18} aria-hidden="true" /><span>{chatCopy.useSymbols} · AAC</span><ChevronDown size={18} aria-hidden="true" /></summary>
-      <AACComposer onInsert={insertText} targetLabel={chatCopy.insertQuestion} />
-    </details>
+  // Always open: asking with pictures is a first-class way to ask, not a hidden mode.
+  const aacSection = <section id="barta-symbol-input" tabIndex={-1} className={styles.symbolPanel} aria-label={chatCopy.useSymbols} lang={formLanguage}>
+    <AACComposer bare initialLanguage={formLanguage} onInsert={insertText} targetLabel={chatCopy.insertQuestion} />
     {storedDraft && <div className={styles.savedDraft}><p>{chatCopy.savedAacDraft}: {storedDraft}</p>
       <div className={styles.helpActions}>
         <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>{chatCopy.insertSavedAac}</button>
@@ -180,12 +169,11 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
 
   if (!demo) {
     return (
-      <><NetworkStatus message={educationCopy[formLanguage].offline} /><BartaEducationChat symbolPanel={aacSection}languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
+      <><NetworkStatus message={educationCopy[formLanguage].offline} /><BartaEducationChat symbolPanel={aacSection} languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
         question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
         onLanguage={setAnswerLanguage}
         onQuestion={setQuestion}
         onDictation={insertText}
-        symbolsOpen={symbolsOpen} onOpenSymbols={openSymbols}
         onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} /></>
     );
   }

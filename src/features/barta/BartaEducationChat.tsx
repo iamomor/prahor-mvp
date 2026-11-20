@@ -29,6 +29,8 @@ const additionalTopics = [
   "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
 ] as const satisfies readonly EducationTopic[];
 
+const starterTopics = ["ancVisits", "nutrition", "breastfeeding", "newborn"] as const satisfies readonly EducationTopic[];
+
 const QuestionOption = memo(function QuestionOption({ prompt, onSelect, disabled }: {
   prompt: string;
   onSelect: (question: string) => void;
@@ -185,7 +187,7 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 
 export function BartaEducationChat({
   languageChoice, formLanguage, question, questionInput, turns, reply, error, busy, hasPrefill,
-  onLanguage, onQuestion, onDictation, symbolsOpen, symbolPanel, onOpenSymbols, onSelect, onClear, onSubmit,
+  onLanguage, onQuestion, onDictation, symbolPanel, onSelect, onClear, onSubmit,
 }: {
   languageChoice: Language | "auto";
   formLanguage: Language;
@@ -199,10 +201,8 @@ export function BartaEducationChat({
   onLanguage: (language: Language | "auto") => void;
   onQuestion: (question: string) => void;
   onDictation: (question: string) => void;
-  symbolsOpen: boolean;
   /** The AAC symbol builder, shown inside the composer card. */
   symbolPanel?: ReactNode;
-  onOpenSymbols: () => void;
   onSelect: (question: string) => void;
   onClear: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -244,7 +244,7 @@ export function BartaEducationChat({
     }}>
       <section className={styles.chat} aria-label={formLanguage === "bn" ? "বার্তার কথোপকথন" : "Barta conversation"}>
 
-        {hasThread && (
+        {hasThread ? (
           <div className={styles.thread}>
             {turns.map((turn, index) => (
               <div key={index} className={styles.turn} ref={!transient && !error && index === turns.length - 1 ? latest : undefined}>
@@ -264,6 +264,28 @@ export function BartaEducationChat({
             </div>}
             {busy && <p className={styles.notice} lang={formLanguage}>{copy.checking}</p>}
             {error && <div ref={latest}><p className={styles.notice} lang={error.language} role="alert">{error.message}</p></div>}
+          </div>
+        ) : (
+          <div className={styles.welcome} lang={formLanguage}>
+            <div className={styles.welcomeHead}>
+              <span className={styles.avatar} aria-hidden="true"><HeartHandshake size={22} /></span>
+              <div>
+                <h2>{formLanguage === "bn" ? "হ্যালো, আমি বার্তা" : "Hi, I’m Barta"}</h2>
+                <p>{formLanguage === "bn"
+                  ? "গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে নিজের ভাষায় প্রশ্ন করুন। প্রতিটি উত্তরের সূত্র দেখতে পাবেন।"
+                  : "Ask about pregnancy, birth or caring for your newborn, in your own words. Every answer shows where it comes from."}</p>
+              </div>
+            </div>
+            <p className={styles.startersLabel}>{formLanguage === "bn" ? "শুরু করতে একটি বেছে নিন" : "Not sure where to start? Try one"}</p>
+            <ul className={styles.starters}>
+              {starterTopics.map((topic) => (
+                <li key={topic}>
+                  <button type="button" disabled={!ready || busy || audio.listening} onClick={() => onSelect(educationTopics[topic][formLanguage])}>
+                    {educationTopics[topic][formLanguage]}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -286,11 +308,12 @@ export function BartaEducationChat({
                 placeholder={copy.placeholder} aria-describedby="barta-privacy"
                 onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
               <div className={styles.composerBar}>
-                <button type="button" className={styles.tool} disabled={!ready || busy || audio.listening}
-                  aria-controls="barta-symbol-input" aria-expanded={symbolsOpen} onClick={onOpenSymbols}>
-                  <LayoutGrid size={18} aria-hidden="true" />
-                  {copy.useSymbols}
-                </button>
+                {symbolPanel && (
+                  <a href="#barta-symbol-input" className={styles.tool}>
+                    <LayoutGrid size={18} aria-hidden="true" />
+                    {copy.useSymbols}
+                  </a>
+                )}
                 <button type="button" className={styles.tool} disabled={!ready || busy}
                   aria-describedby="barta-voice-hint barta-voice-more" data-active={audio.listening || undefined}
                   onClick={() => {

@@ -1,7 +1,9 @@
 /* Public offline shell only. Never cache health, auth, API or Next.js bundles. */
 const CACHE_PREFIX = "prohor-public-shell-";
-const CACHE = `${CACHE_PREFIX}v5`;
-const INSTALL_ASSETS = ["/offline", "/offline-safety.txt", "/icon-192.png", "/icon-512.png"];
+
+const CACHE = `${CACHE_PREFIX}v5`; // v5: new PROHOR logo icons
+const INSTALL_ASSETS = ["/offline", "/icon-192.png", "/icon-512.png"];
+
 const PUBLIC_NAVIGATIONS = new Set(["/", "/accessibility", "/offline"]);
 const SAFETY_NAVIGATION = /^\/safety(?:\/information(?:\/(?:pregnancy|labour-and-childbirth|postpartum|perinatal-mental-health))?)?\/?$/;
 function mayCachePublicAsset(response) {

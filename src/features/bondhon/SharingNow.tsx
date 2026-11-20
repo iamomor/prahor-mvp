@@ -6,7 +6,7 @@ import { bondhonDetailSchema, type BondhonDetail } from "@/lib/contracts/bondhon
 import { careRecipientsSchema, type SupportRequest } from "@/lib/contracts/bondhon";
 import { careFetch } from "./client";
 import { fieldNames, recordNames, statusNames, words } from "./bondhon-copy";
-import { accessState, digits, formatLeft, fractionLeft, isOpenAccess, msLeft, ringNodes, sharingOverview, splitSharing, stopRequests, summariseStop, type StopResult } from "./bondhon-view";
+import { accessState, digits, formatLeft, fractionLeft, formatWhen, isOpenAccess, msLeft, ringNodes, sharingOverview, splitSharing, stopRequests, summariseStop, type StopResult } from "./bondhon-view";
 import { RevokeDialog } from "./RevokeDialog";
 import { SharingRing } from "./SharingRing";
 import styles from "./bondhon.module.css";
@@ -90,15 +90,21 @@ export function SharingNow({ account, items, now, ready, complete, onOpen, onNew
   const summary = summariseStop(outcome ?? []);
   return <section className={`${styles.workspace} ${styles.sharingHome}`} aria-labelledby={`${id}-now`}>
     <div className={styles.hero}>
+      <p className={styles.eyebrow}>{t(words("Your sharing circle", "আপনার শেয়ারের বৃত্ত"))}</p>
       <SharingRing nodes={ready ? nodes : []} label={heading} />
-      <h2 id={`${id}-now`}>{heading}</h2>
+      <h2 id={`${id}-now`} tabIndex={-1}>{heading}</h2>
       <p>{t(words("You choose the person, information and time. A ring shows that person’s next ending permission. These controls cover the listed requests.", "প্রাপক, তথ্য ও সময় আপনিই বাছবেন। বৃত্ত একজনের পরবর্তী শেষ হওয়া অনুমতি দেখায়। এই নিয়ন্ত্রণ দেখানো অনুরোধগুলোর জন্য।"))}</p>
       {ready && !complete && <p className={styles.notice}>{t(words("More requests remain to load. This is not your complete sharing history.", "আরও অনুরোধ আনা বাকি। এটি আপনার সম্পূর্ণ শেয়ারের ইতিহাস নয়।"))}</p>}
       {ready && unchecked && <p className={styles.notice}>{t(words("Older or unconfirmed permissions need review under Earlier requests. Do not assume that access has ended.", "আগের বা অনিশ্চিত অনুমতি ‘আগের অনুরোধ’ অংশে পর্যালোচনা করুন। প্রবেশ বন্ধ হয়েছে ধরে নেবেন না।"))}</p>}
       {ready && people > 3 && <p>{t(words(`The diagram shows 3 of ${people} people. All loaded requests are listed below.`, `চিত্রে ${digits(people, "bn")} জনের মধ্যে ৩ জন আছেন। আনা সব অনুরোধ নিচে আছে।`))}</p>}
     </div>
     <div className={styles.sharingContent}>
-    <button type="button" className="pro-btn pro-btn-primary" disabled={busy} onClick={onNew}><Plus size={18} aria-hidden="true" /> {t(words("Ask for help or prepare a visit", "সহায়তা চান বা সাক্ষাতের প্রস্তুতি নিন"))}</button>
+    <button type="button" className={`pro-btn pro-btn-primary ${styles.startRequest}`} disabled={busy} onClick={onNew}><Plus size={18} aria-hidden="true" /> {t(words("Ask for help or prepare a visit", "সহায়তা চান বা সাক্ষাতের প্রস্তুতি নিন"))}</button>
+    {ready && count === 0 && complete && !unchecked && <div className={styles.emptyState}>
+      <h3>{t(words("Start with what you need", "আপনার প্রয়োজন দিয়ে শুরু করুন"))}</h3>
+      <p>{t(words("Prepare for a visit, explain the support you want, or ask a routine question. You can send a message without adding health records.", "সাক্ষাতের প্রস্তুতি নিন, চাওয়া সহায়তা জানান বা সাধারণ প্রশ্ন করুন। স্বাস্থ্য রেকর্ড না দিয়েও বার্তা পাঠাতে পারেন।"))}</p>
+      <p className={styles.meta}>{t(words("Nothing is sent until you review and approve it.", "আপনি পর্যালোচনা করে অনুমতি না দেওয়া পর্যন্ত কিছুই পাঠানো হয় না।"))}</p>
+    </div>}
     {ready && [...peopleRequests.entries()].map(([personId, requests]) => {
       const person = who(requests[0]);
       return <article key={personId} className={styles.shareCard} aria-label={person}>
@@ -118,6 +124,7 @@ export function SharingNow({ account, items, now, ready, complete, onOpen, onNew
               <span className={`${styles.chip} ${soon ? styles.chipSoon : ""}`}><Clock size={14} aria-hidden="true" /> {formatLeft(msLeft(c.expiresAt, now), language)}</span>
             </div>
             <div aria-hidden="true" className={`${styles.meter} ${soon ? styles.meterSoon : ""}`}><span style={{ width: `${Math.round(fractionLeft(c, now) * 100)}%` }} /></div>
+            <p className={styles.meta}>{t(words("Ends", "শেষ হবে"))} {formatWhen(c.expiresAt, language, now)} · {t(words("Bangladesh time", "বাংলাদেশ সময়"))}</p>
             <SeeList account={account} id={item.id} now={now} />
             <div className={styles.rowActions}>
               <button type="button" className="pro-btn pro-btn-secondary" disabled={busy} onClick={() => onOpen(item.id)}>{t(words("Open request", "অনুরোধ খুলুন"))}</button>

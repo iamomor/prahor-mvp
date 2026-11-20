@@ -165,7 +165,9 @@ export function AccountReportReview({
       });
       setLocked(true);
     }
+
     pending.current = true; setSaving(true); setFeedback(t({ bn: "সংরক্ষণ করা হচ্ছে…", en: "Saving reviewed measurement…" }));
+
     try {
       const post = (url: string, body: unknown) => fetch(url, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const review = JSON.parse(snapshot.current ?? "{}") as { fieldId: string };
@@ -243,7 +245,7 @@ export function AccountReportReview({
           {t({ en: "Account saving supports maternal hemoglobin in g/dL. Other values are shown for reading only.", bn: "অ্যাকাউন্টে এখন শুধু হিমোগ্লোবিন (g/dL) সংরক্ষণ করা যায়। অন্য মানগুলো শুধু পড়ার জন্য দেখানো হয়।" })}
         </p>
       </header>
-      {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} />}
+      {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} showProgress={false} />}
       {draft && (
         <section
           className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
@@ -255,7 +257,9 @@ export function AccountReportReview({
             tabIndex={-1}
             className="text-2xl font-semibold xl:col-span-2"
           >
-            {draft.report.inputMethod === "manual" ? t({ en: "Check the printed value", bn: "ছাপানো মান দেখে নিন" }) : t({ en: "Check what was read", bn: "যা পড়া হয়েছে তা দেখে নিন" })}
+
+            {draft.report.inputMethod === "manual" ? t({ en: "Check the printed value", bn: "রিপোর্টে লেখা মান মিলিয়ে দেখুন" }) : t({ en: "Check what was read", bn: "যা পড়া হয়েছে মিলিয়ে দেখুন" })}
+
           </h3>
           <div className="grid min-w-0 gap-4">
           {draft.report.inputMethod === "manual" && <p className="rounded-field border border-pro-warning bg-pro-warning-soft p-4">{t({ en: "Manual entry from this report image. OCR did not read it. Check the printed value before saving.", bn: "এই রিপোর্টের ছবি থেকে হাতে লেখা। স্বয়ংক্রিয়ভাবে পড়া যায়নি। সংরক্ষণের আগে ছাপানো মান দেখে নিন।" })}</p>}
@@ -266,7 +270,9 @@ export function AccountReportReview({
             )) && (
             <details className="rounded-field border border-pro-border px-3">
               <summary className="min-h-12 cursor-pointer py-3 font-semibold text-pro-primary">
-                {t({ en: "OCR text and other fields", bn: "ছবি থেকে পড়া লেখা ও অন্যান্য ঘর" })}
+
+                {t({ en: "OCR text and other fields", bn: "পড়া লেখা ও অন্যান্য মান" })}
+
               </summary>
               <div className="grid min-w-0 gap-3 pb-3">
                 {draft.report.rawText && (
@@ -295,7 +301,9 @@ export function AccountReportReview({
             <>
               {supported.length > 1 && (
                 <label className="grid gap-2">
-                  {t({ en: "Hemoglobin field to review", bn: "যাচাইয়ের হিমোগ্লোবিন ঘর" })}
+
+                  {t({ en: "Hemoglobin field to review", bn: "যে হিমোগ্লোবিনের মান যাচাই করবেন" })}
+
                   <select
                     className={control}
                     value={fieldId}
@@ -314,7 +322,9 @@ export function AccountReportReview({
                       setConfirmed(false);
                     }}
                   >
-                    <option value="">{t({ en: "Choose a field", bn: "একটি ঘর বেছে নিন" })}</option>
+
+                    <option value="">{t({ en: "Choose a field", bn: "একটি মান বেছে নিন" })}</option>
+
                     {supported.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label} · {item.value} {item.unit}
@@ -338,7 +348,9 @@ export function AccountReportReview({
                     bn: `হিমোগ্লোবিন, আপনার লেখা মান: ${value || "এখনো লেখা হয়নি"} ${unit}। ছবি থেকে পড়া মূল লেখা: ${field.rawValue || "কিছু নেই"}। সংরক্ষণের আগে ছাপানো রিপোর্টের সঙ্গে মিলিয়ে নিন।` })} />
                   <div className="grid gap-4 sm:grid-cols-2">
                   <label className="grid gap-2 font-semibold">
-                    {t({ en: "Hemoglobin value from report", bn: "রিপোর্টের হিমোগ্লোবিনের মান" })}
+
+                    {t({ en: "Hemoglobin value from report", bn: "রিপোর্টে লেখা হিমোগ্লোবিনের মান" })}
+
                     <input
                       className={control}
                       value={value}
@@ -355,7 +367,9 @@ export function AccountReportReview({
                     <p className="mt-1 text-sm text-pro-muted">{t({ en: "Voice input is an unverified draft. Check the printed report and confirm the value and unit before saving.", bn: "কণ্ঠে লেখা তথ্য যাচাইহীন খসড়া। সংরক্ষণের আগে ছাপানো রিপোর্টের সঙ্গে মান ও একক মিলিয়ে নিশ্চিত করুন।" })}</p>
                   </div>
                   <label className="grid gap-2 font-semibold">
-                    {t({ en: "Printed unit", bn: "ছাপানো একক" })}
+
+                    {t({ en: "Printed unit", bn: "রিপোর্টে লেখা একক" })}
+
                     <input
                       className={control}
                       value={unit}
@@ -367,7 +381,9 @@ export function AccountReportReview({
                     />
                   </label>
                   <label className="grid gap-2 font-semibold sm:col-span-2">
-                    {t({ en: "Observation date", bn: "পর্যবেক্ষণের তারিখ" })}
+
+                    {t({ en: "Observation date", bn: "তথ্যের তারিখ" })}
+
                     <input
                       className={control}
                       type="date"
@@ -381,10 +397,12 @@ export function AccountReportReview({
                     />
                   </label>
                   <p id="account-report-date-hint" className="-mt-2 text-pro-muted sm:col-span-2">
-                    {t({ en: "If you can’t verify the date, leave this review unsaved.", bn: "তারিখ যাচাই করতে না পারলে এই যাচাই সংরক্ষণ করবেন না।" })}
+
+                    {t({ en: "If you can’t verify the date, leave this review unsaved.", bn: "তারিখ মিলিয়ে দেখতে না পারলে এই তথ্য সংরক্ষণ করবেন না।" })}
                   </p>
                   <label className="grid gap-2 font-semibold sm:col-span-2">
-                    {t({ en: "Pregnancy record", bn: "গর্ভকালের নথি" })}
+                    {t({ en: "Pregnancy record", bn: "গর্ভকালের রেকর্ড" })}
+
                     <select
                       className={control}
                       value={pregnancyId}
@@ -394,7 +412,9 @@ export function AccountReportReview({
                         setConfirmed(false);
                       }}
                     >
-                      <option value="">{t({ en: "Choose a record", bn: "একটি নথি বেছে নিন" })}</option>
+
+                      <option value="">{t({ en: "Choose a record", bn: "একটি রেকর্ড বেছে নিন" })}</option>
+
                       {pregnancies.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.label}
@@ -411,7 +431,9 @@ export function AccountReportReview({
                       disabled={locked || saved}
                       onChange={(event) => setConfirmed(event.target.checked)}
                     />
-                    {t({ en: "I checked the value, unit and date against the report and chose the correct pregnancy record.", bn: "আমি রিপোর্টের সঙ্গে মান, একক ও তারিখ মিলিয়ে দেখেছি এবং সঠিক গর্ভকালের নথি বেছেছি।" })}
+
+                    {t({ en: "I checked the value, unit and date against the report and chose the correct pregnancy record.", bn: "রিপোর্টের সঙ্গে মান, একক ও তারিখ মিলিয়েছি এবং সঠিক গর্ভকালের রেকর্ড বেছে নিয়েছি।" })}
+
                   </label>
                   {!saved && !reviewId.current && !locked && (
                     <button type="button" disabled={saving} onClick={() => void reject()} className="min-h-12 text-left text-pro-primary underline disabled:opacity-60">
@@ -428,7 +450,9 @@ export function AccountReportReview({
                       {saving
                         ? t({ en: "Saving…", bn: "সংরক্ষণ হচ্ছে…" })
                         : locked
-                          ? t({ en: "Retry account save", bn: "অ্যাকাউন্টে সংরক্ষণ আবার চেষ্টা করুন" })
+
+                          ? t({ en: "Retry account save", bn: "আবার সংরক্ষণ চেষ্টা করুন" })
+
                           : t({ en: "Save reviewed hemoglobin", bn: "যাচাই করা হিমোগ্লোবিন সংরক্ষণ করুন" })}
                     </button>
                   )}
@@ -459,7 +483,9 @@ export function AccountReportReview({
                 href="/app/jibonrekha"
                 className="inline-flex min-h-12 items-center text-pro-primary underline"
               >
-                {t({ en: "View Jibonrekha", bn: "জীবনরেখা দেখুন" })}
+
+                {t({ en: "View Jibonrekha", bn: "জীবনরেখায় দেখুন" })}
+
               </Link>
             )}
           </div>

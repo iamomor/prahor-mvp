@@ -27,7 +27,9 @@ export function useBartaReplyAudio() {
     let url: string | undefined;
     const id = owner.current;
 
+
     const timeout = window.setTimeout(handleFallback, 15_000);
+
 
     const playback: Playback = {
       stop() {
@@ -43,7 +45,9 @@ export function useBartaReplyAudio() {
     };
 
 
+
     function handleFallback() {
+
 
       if (current.current !== playback) return;
       stop();
@@ -64,7 +68,9 @@ export function useBartaReplyAudio() {
           setBlocked(input.language);
         } else {
 
+
           handleFallback();
+
 
         }
       }
@@ -74,13 +80,16 @@ export function useBartaReplyAudio() {
     claimAudioSession({ id, stop });
     player.onended = stop;
 
+
     player.onerror = handleFallback;
+
 
     void fetchBartaAudio(input, controller.signal).then((blob) => {
       if (current.current !== playback) return;
       url = URL.createObjectURL(blob);
       player.src = url;
       return play();
+
 
     }).catch(handleFallback);
 

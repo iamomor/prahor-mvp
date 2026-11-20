@@ -62,7 +62,6 @@ export function AccountWorkspace({
   const router = useRouter();
   const [account, setAccount] = useState<AccountAccess | null>(null);
   const [connections, setConnections] = useState<SupporterConnection[]>([]);
-  const [activity, setActivity] = useState<z.infer<typeof activitySchema>>([]);
   const [profile, setProfile] = useState(emptyRoleProfile);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);

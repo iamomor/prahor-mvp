@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { ArrowDown, ArrowRight, ArrowUpRight, Baby, BookOpen, CalendarDays, Check, FileCheck2, FileText, Heart, HeartHandshake, LockKeyhole, MapPin, MessageCircle, ShieldCheck, SlidersHorizontal, Sun, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroProductScene } from "./HeroProductScene";
+import { InclusivePhoto } from "./InclusiveJourney";
 import { MaternalFacts } from "./HomepageUpgrade";
 import { SectionEyebrow } from "./SectionEyebrow";
 import { useHome } from "./HomeContext";
@@ -23,13 +23,6 @@ const modules: ModuleStory[] = [
   { name: "Poth", bn: "পথ", icon: MapPin, heading: copy("Know where to go next.", "পরের গন্তব্যের খোঁজ নিন।"), body: copy("Find care information you can check, then prepare for the conversation. Make your questions and access needs part of the plan.", "যাচাই করার মতো সেবার তথ্য খুঁজে সাক্ষাতের প্রস্তুতি নিন। আপনার প্রশ্ন ও ব্যবহারগত চাহিদা থাকুক পরিকল্পনার অংশ।"), points: [copy("Sourced facility information", "সূত্রসহ প্রতিষ্ঠানের তথ্য"), copy("Questions to take with you", "সঙ্গে নেওয়ার মতো প্রশ্ন"), copy("Access details to check", "প্রবেশগম্যতার তথ্য যাচাই")], note: copy("A clearer next step.", "পরের ধাপ হোক পরিষ্কার।") },
   { name: "Bondhon", bn: "বন্ধন", icon: HeartHandshake, heading: copy("Your circle. Your permission.", "আপনার মানুষ। আপনার অনুমতি।"), body: copy("Bring people into the picture on your terms. Choose the person, the information and the purpose, then review before sharing.", "আপনার শর্তে মানুষকে যুক্ত করুন। প্রাপক, তথ্য ও উদ্দেশ্য বেছে নিয়ে শেয়ার করার আগে নিজে পর্যালোচনা করুন।"), points: [copy("Specific, revocable choices", "নির্দিষ্ট ও প্রত্যাহারযোগ্য পছন্দ"), copy("Review before sharing", "শেয়ারের আগে পর্যালোচনা"), copy("Private spaces stay private", "ব্যক্তিগত অংশ ব্যক্তিগতই থাকে")], note: copy("Support, with you in control.", "সহায়তা থাকুক আপনার নিয়ন্ত্রণে।") },
 ];
-
-function PhotoPanel({ available, hero = false }: { available: boolean; hero?: boolean }) {
-  const { t } = useHome();
-  return <div className={`story-photo ${hero ? "story-photo-hero" : "story-photo-problem"}`}>
-    {available ? <Image src="/images/hero-mother.jpg" alt={t(copy("A mother in an everyday moment of care.", "প্রতিদিনের যত্নের এক মুহূর্তে একজন মা।"))} fill sizes="(min-width: 1024px) 560px, 100vw" priority={hero} /> : <div className="story-photo-placeholder" role="img" aria-label={t(copy("Image placeholder. The supplied mother photograph is missing.", "ছবির স্থানধারক। নির্ধারিত মায়ের ছবিটি পাওয়া যায়নি।"))}><div className="story-placeholder-orbit" aria-hidden="true"><span /><span /><Heart size={48} strokeWidth={1.2} /></div></div>}
-  </div>;
-}
 
 export function HeroStory() {
   const { t, locale } = useHome();
@@ -52,7 +45,7 @@ export function HeroStory() {
           <Button href="#how-it-works" variant="secondary">{t(copy("See how it works", "কীভাবে কাজ করে দেখুন"))}<ArrowDown size={18} aria-hidden="true" /></Button>
         </div>
         <ul className="hero-capabilities" aria-label={t(copy("What you can do with PROHOR", "প্রহরে কী করতে পারবেন"))}>{capabilities.map(({ icon: Icon, label }) => <li key={label.en}><Icon size={15} aria-hidden="true" /><span>{t(label)}</span></li>)}</ul>
-        <p className="hero-no-account">{t(copy("Explore without an account.", "অ্যাকাউন্ট ছাড়াই ঘুরে দেখুন।"))}</p>
+        <p className="hero-inclusive"><HeartHandshake size={18} aria-hidden="true" /><span><strong>{t(copy("For every mother, with or without a disability.", "প্রতিবন্ধিতা থাকুক বা না থাকুক, প্রতিটি মায়ের জন্য।"))}</strong> {t(copy("One platform, no separate version. Explore without an account.", "এক প্ল্যাটফর্ম, আলাদা সংস্করণ নেই। অ্যাকাউন্ট ছাড়াই ঘুরে দেখুন।"))}</span></p>
       </div>
       <HeroProductScene />
     </div>
@@ -68,18 +61,18 @@ export function ValueStory() {
   ].map(({ icon: Icon, big, text }) => <li key={big.en}><Icon size={38} strokeWidth={1.5} aria-hidden="true" /><strong>{t(big)}</strong><p>{t(text)}</p></li>)}</ul></section>;
 }
 
-export function ProblemStory({ imageAvailable }: { imageAvailable: boolean }) {
+export function ProblemStory() {
   const { t } = useHome();
   return <section id="why-prohor" tabIndex={-1} className="story-problem story-section" aria-labelledby="problem-title"><div className="home-container story-problem-grid"><div className="story-problem-copy"><SectionEyebrow>{t(copy("Why PROHOR", "কেন প্রহর"))}</SectionEyebrow><h2 id="problem-title">{t(copy("Motherhood is a journey. ", "মাতৃত্ব একটি যাত্রা। "))}<em>{t(copy("Care shouldn’t feel like a puzzle.", "যত্ন যেন ধাঁধা না হয়।"))}</em></h2><ul className="story-problem-points">{[
     { icon: FileText, title: copy("Less scattered. More connected.", "ছড়ানো কমুক। সংযোগ বাড়ুক।"), body: copy("Keep records, questions and visits in the same story.", "রেকর্ড, প্রশ্ন ও সাক্ষাৎ থাকুক একই গল্পে।") },
     { icon: SlidersHorizontal, title: copy("Fewer barriers. More ways in.", "বাধা কমুক। পথ বাড়ুক।"), body: copy("Language, small text and voice-only tasks shouldn’t stand between you and care.", "ভাষা, ছোট লেখা ও শুধু কণ্ঠের কাজ যেন যত্নের পথে বাধা না হয়।") },
     { icon: Baby, title: copy("Beyond birth. Still about you.", "জন্মের পরেও। আপনার জন্যও।"), body: copy("A baby’s beginning is another chapter in the mother’s care.", "শিশুর শুরু মায়ের যত্নেরও আরেক অধ্যায়।") },
-  ].map(({ icon: Icon, title, body }) => <li key={title.en}><span><Icon size={25} aria-hidden="true" /></span><div><h3>{t(title)}</h3><p>{t(body)}</p></div></li>)}</ul><MaternalFacts /></div><div className="story-problem-visual"><PhotoPanel available={imageAvailable} /><div className="story-paper story-paper-one"><FileText size={27} aria-hidden="true" /><span>{t(copy("A report here.", "এখানে একটি রিপোর্ট।"))}</span></div><div className="story-paper story-paper-two"><CalendarDays size={27} aria-hidden="true" /><span>{t(copy("A visit there.", "ওখানে একটি সাক্ষাৎ।"))}</span></div><div className="story-photo-caption"><Heart size={23} aria-hidden="true" />{t(copy("Let the care hold the pieces.", "যত্নই রাখুক সব একসঙ্গে।"))}</div></div></div></section>;
+  ].map(({ icon: Icon, title, body }) => <li key={title.en}><span><Icon size={25} aria-hidden="true" /></span><div><h3>{t(title)}</h3><p>{t(body)}</p></div></li>)}</ul><MaternalFacts /></div><div className="story-problem-visual"><InclusivePhoto /></div></div></section>;
 }
 
 export function AdaptStory() {
   const { t } = useHome();
-  return <section id="your-way" tabIndex={-1} className="story-adapt story-section" aria-labelledby="adapt-title"><div className="home-container"><div className="story-section-heading"><div><SectionEyebrow>{t(copy("Designed around difference", "ভিন্ন পছন্দের কথা ভেবে"))}</SectionEyebrow><h2 id="adapt-title">{t(copy("One care. ", "একই যত্ন। "))}<em>{t(copy("Your way.", "আপনার মতো।"))}</em></h2></div><p>{t(copy("The same visit question, in three presentations. Try a question. Your words stay with you as you explore.", "সাক্ষাতের একই প্রশ্নের তিনটি উপস্থাপনা। প্রশ্ন লিখে দেখুন। উপস্থাপনা বদলালেও আপনার লেখা থাকবে।"))}</p></div><SharedVisitPhones /></div></section>;
+  return <section id="your-way" tabIndex={-1} className="story-adapt story-section" aria-labelledby="adapt-title"><div className="home-container"><SharedVisitPhones intro={<><SectionEyebrow>{t(copy("Designed around difference", "ভিন্নতার কথা ভেবে তৈরি"))}</SectionEyebrow><h2 id="adapt-title">{t(copy("One care. ", "একই যত্ন। "))}<em>{t(copy("Your way.", "আপনার মতো।"))}</em></h2><p className="adapt-lede">{t(copy("The same visit question, three ways to see and answer it. Type a question, then switch: your words stay put.", "সাক্ষাতের একই প্রশ্ন, দেখার ও উত্তর দেওয়ার তিনটি উপায়। প্রশ্ন লিখে উপস্থাপনা বদলান: আপনার লেখা থাকবে।"))}</p></>} /></div></section>;
 }
 
 export function ModulesStory() {

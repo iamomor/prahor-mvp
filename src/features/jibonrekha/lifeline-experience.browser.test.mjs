@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
 
-const url = (process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/jibonrekha";
+const url = (process.env.PROHOR_TEST_URL ?? "http://localhost:3000") + "/demo/jibonrekha";
 async function open(width = 390) {
   const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge" });
   const context = await browser.newContext({ viewport: { width, height: 844 } });
@@ -25,6 +25,23 @@ test("PDF Today design keeps the pregnancy line, sources and four tasks readable
     const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
     assert.deepEqual(result.violations.map(item => item.id), []);
     assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
+test("Jibonrekha module links open integrated app destinations", async () => {
+  const { browser, page } = await open();
+  try {
+    const navigation = page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last();
+    await navigation.getByRole("button", { name: "ভিজিট" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: /স্বাস্থ্যসেবা খুঁজুন/ })).toHaveAttribute("href", "/app/poth");
+    await navigation.getByRole("button", { name: "আজ" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: "অ্যাকাউন্টের জীবনরেখা" })).toHaveAttribute("href", "/app/jibonrekha");
+    await page.getByRole("button", { name: /নতুন তথ্য যোগ করুন · Add a record/ }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: /রিপোর্ট থেকে যোগ করতে বুঝি/ })).toHaveAttribute("href", "/app/bujhi");
+    await expect(page.getByRole("link", { name: "জরুরি সহায়তা" })).toHaveAttribute("href", "/safety");
   } finally { await browser.close(); }
 });
 

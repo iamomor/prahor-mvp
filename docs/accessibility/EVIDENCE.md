@@ -1,6 +1,31 @@
 # PROHOR accessibility — evidence and status
 
-**Source of truth for what is verified.** Last updated 20 Nov 2026, on branch `apurbo-mvp` (HEAD `3988bab`, with uncommitted STEP 02–05 work).
+**Source of truth for what is verified.** This document preserves the STEP 05 implementation results and records later audits separately.
+
+## Post-STEP 05 re-audit (20 Nov 2026)
+
+Latest verified remote `main`: `b3e60c3`. The accessibility commit `c4dc714bcb7ae2af35eb0b5b7da2e081f110c6c2` is an ancestor, and all 47 paths changed by that commit are present in the current main tree. The existing Adapt test command was restored as `npm run test:adapt` so the documented suite remains directly runnable.
+
+Current focused checks on `b3e60c3`:
+
+| Check | Result |
+|---|---|
+| `npm run test:adapt` | **25 / 25 pass** |
+| AAC catalog, Easy Read governance and Barta danger-sign unit checks | **16 / 16 pass** |
+| Barta safety and supplied-prompt routing contracts | **7 / 7 pass** |
+| Shusthota contract/route and API checks | **15 / 15 pass** |
+| `npm run check:contrast` | **18 / 18 pass** |
+| `git diff --check` | clean |
+
+The AAC test confirms 36 unique entries (the original 24 unchanged, plus 12), the recorded 65-phrase gate, and unchanged routing for all 808 question-bank rows. The later Barta safety-gate addition for current inability to pass urine routes to fixed urgent-care guidance; this is an implementation check, not clinical validation.
+
+The whole-repository checks are not currently clean: `npm run typecheck` reports an undefined `VolumeX` in `BartaEducationChat.tsx` and an undefined `w` in `AccountReportReview.tsx`. `npm run lint` reports the same undefined `VolumeX` and a Rules of Hooks violation in `use-barta-reply-audio.ts`. These files are outside the STEP 02–05 verification correction and were not changed by it.
+
+The existing accessibility browser suites cover public representative routes and explicitly exclude signed-in Shusthota pages. No new screen-reader, switch, braille or physical-device verification is claimed by this re-audit.
+
+### Original STEP 05 snapshot
+
+The results below were recorded on 20 Nov 2026 at the STEP 05 review snapshot (HEAD `3988bab`, before the accessibility work was committed). They describe that snapshot, not a fresh full-repository run on `b3e60c3`.
 
 **Target:** WCAG 2.2 AA. **Not claimed:** WCAG certification or conformance, full screen-reader support, switch or braille hardware support, clinical validation of Barta, or testing with disabled users. None of these has evidence yet.
 

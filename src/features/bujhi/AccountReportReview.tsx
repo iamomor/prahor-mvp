@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { useLanguage } from "@/i18n/use-language";
+
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
 
 import { fileSha256 } from "./sha256";
@@ -16,11 +18,28 @@ type Pregnancy = { id: string; label: string };
 
 type Draft = { report: ExtractedReport; source: File; reportId: string };
 
+/** Three-step strip: words first (never only colour); step 1 add photo, 2 check values, 3 saved. */
+function ReportSteps({ current }: { current: 0 | 1 | 2 }) {
+  const { t } = useLanguage();
+  const steps = [t({ en: "Add photo", bn: "ছবি দিন" }), t({ en: "Check values", bn: "মান মিলান" }), t({ en: "Save", bn: "সংরক্ষণ" })];
+  return (
+    <ol aria-label={t({ en: "Report steps", bn: "রিপোর্টের ধাপ" })} className="grid grid-cols-3 gap-2 text-sm font-semibold">
+      {steps.map((name, at) => (
+        <li key={name} aria-current={at === current ? "step" : undefined} className={`grid gap-1.5 ${at <= current ? "text-pro-text" : "text-pro-muted"}`}>
+          <span aria-hidden="true" className={`h-1.5 rounded-pill ${at <= current ? "bg-pro-primary" : "bg-pro-control-border/40"}`} />
+          <span>{at + 1}. {name}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export function AccountReportReview({
   pregnancies,
 }: {
   pregnancies: Pregnancy[];
 }) {
+  const { t } = useLanguage();
   const [draft, setDraft] = useState<Draft>();
   const [fieldId, setFieldId] = useState("");
   const [value, setValue] = useState("");
@@ -38,6 +57,7 @@ export function AccountReportReview({
   const snapshot = useRef<string | undefined>(undefined);
   const reviewFocus = useRef<HTMLHeadingElement>(null);
   const uploadFocus = useRef<HTMLHeadingElement>(null);
+
   const feedbackFocus = useRef<HTMLParagraphElement>(null);
 
   // OCR failed or found nothing: the mother types the printed value from the same image. rawValue stays empty, so it is never recorded as an OCR read.
@@ -99,9 +119,11 @@ export function AccountReportReview({
   const supported =
     draft?.report.fields.filter((item) => isHemoglobinLabel(item.label)) ?? [];
 
+
   async function save() {
     if (pending.current || !draft || !field || saved) return;
     if (!snapshot.current) {
+
       if (
         !pregnancyId ||
         !confirmed ||
@@ -121,9 +143,11 @@ export function AccountReportReview({
           "Check the pregnancy, printed value, g/dL unit and date, then confirm your review.",
         );
         requestAnimationFrame(() => feedbackFocus.current?.focus());
+
         return;
       }
       snapshot.current = JSON.stringify({
+
         reportId: draft.reportId,
         pregnancyId,
         sourceSha256: draft.report.sourceFileId,
@@ -134,13 +158,13 @@ export function AccountReportReview({
         reviewedUnit: "g/dL",
         observedOn: date,
         confirmSave: true,
+
       });
       setLocked(true);
     }
-    pending.current = true;
-    setSaving(true);
-    setFeedback("Saving reviewed measurement…");
+    pending.current = true; setSaving(true); setFeedback(t({ bn: "সংরক্ষণ করা হচ্ছে…", en: "Saving reviewed measurement…" }));
     try {
+
       const response = await fetch("/api/reports/commit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -177,33 +201,34 @@ export function AccountReportReview({
     "min-h-12 w-full rounded-field border border-pro-control-border bg-pro-bg px-3 text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus";
 
   return (
-    <div className="mx-auto grid w-full max-w-3xl min-w-0 gap-5 px-4 py-6 text-pro-text [overflow-wrap:anywhere] sm:px-6">
-      <header className="grid gap-2">
+    <div className="grid w-full min-w-0 gap-6 py-6 text-pro-text [overflow-wrap:anywhere]">
+      <header className="grid gap-4 border-b border-pro-border pb-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
         <h2 ref={uploadFocus} tabIndex={-1} className="text-2xl font-semibold">
-          Report review
+          {t({ en: "Report review", bn: "রিপোর্ট যাচাই" })}
         </h2>
-        <p className="text-pro-muted">
-          Prototype. Account saving supports maternal hemoglobin in g/dL.
+        <ReportSteps current={saved ? 2 : draft ? 1 : 0} />
+        <p className="max-w-[80ch] border-l-2 border-pro-info pl-4 text-pro-muted md:col-span-2">
+          <span className="font-semibold">{t({ en: "Prototype.", bn: "প্রোটোটাইপ।" })}</span>{" "}
+          {t({ en: "Account saving supports maternal hemoglobin in g/dL. Other values are shown for reading only.", bn: "অ্যাকাউন্টে এখন শুধু হিমোগ্লোবিন (g/dL) সংরক্ষণ করা যায়। অন্য মানগুলো শুধু পড়ার জন্য দেখানো হয়।" })}
         </p>
-        <p>Saved now: hemoglobin (g/dL). Other values are shown for reading only.</p>
-        <p lang="bn">এখন সংরক্ষণ করা যায়: হিমোগ্লোবিন (g/dL)। অন্য মানগুলো শুধু পড়ার জন্য দেখানো হয়।</p>
       </header>
       {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} />}
       {draft && (
         <section
-          className="grid min-w-0 gap-4 rounded-card border border-pro-border bg-pro-elevated p-4 sm:p-6"
+          className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
           aria-labelledby="account-report-heading"
         >
           <h3
             id="account-report-heading"
             ref={reviewFocus}
             tabIndex={-1}
-            className="text-xl font-semibold"
+            className="text-2xl font-semibold xl:col-span-2"
           >
             {draft.report.inputMethod === "manual" ? "Check the printed value" : "Check what was read"}
           </h3>
-          {draft.report.inputMethod === "manual" && <p>Manual entry from this report image. OCR did not read it. Check the printed value before saving.</p>}
-          <SourcePreview source={draft.source} />
+          <div className="grid min-w-0 gap-4">
+          {draft.report.inputMethod === "manual" && <p className="rounded-field border border-pro-warning bg-pro-warning-soft p-4">Manual entry from this report image. OCR did not read it. Check the printed value before saving.</p>}
+          <SourcePreview source={draft.source} expanded />
           {(draft.report.rawText ||
             draft.report.fields.some(
               (item) => !isHemoglobinLabel(item.label),
@@ -229,6 +254,9 @@ export function AccountReportReview({
               </div>
             </details>
           )}
+          </div>
+          <div className="grid min-w-0 gap-5 rounded-card border border-pro-border bg-pro-elevated p-4 sm:p-6">
+          <p className="border-b border-pro-border pb-4 font-semibold text-pro-primary">{t({ en: "Your review · nothing saves until you confirm", bn: "আপনার যাচাই · নিশ্চিত না করা পর্যন্ত সংরক্ষণ হবে না" })}</p>
           {!supported.length ? (
             <p role="status">
               No supported hemoglobin field found. Nothing can be saved to the
@@ -273,7 +301,8 @@ export function AccountReportReview({
                       {draft.report.inputMethod === "manual" ? "Enter the hemoglobin value printed on this image." : "The extracted digits are unclear. Enter the printed value from the image."}
                     </p>
                   )}
-                  <label className="grid gap-2">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="grid gap-2 font-semibold">
                     Hemoglobin value from report
                     <input
                       className={control}
@@ -286,7 +315,7 @@ export function AccountReportReview({
                       inputMode="decimal"
                     />
                   </label>
-                  <label className="grid gap-2">
+                  <label className="grid gap-2 font-semibold">
                     Printed unit
                     <input
                       className={control}
@@ -298,7 +327,7 @@ export function AccountReportReview({
                       }}
                     />
                   </label>
-                  <label className="grid gap-2">
+                  <label className="grid gap-2 font-semibold sm:col-span-2">
                     Observation date
                     <input
                       className={control}
@@ -312,10 +341,10 @@ export function AccountReportReview({
                       }}
                     />
                   </label>
-                  <p id="account-report-date-hint" className="text-pro-muted">
+                  <p id="account-report-date-hint" className="-mt-2 text-pro-muted sm:col-span-2">
                     If you can’t verify the date, leave this review unsaved.
                   </p>
-                  <label className="grid gap-2">
+                  <label className="grid gap-2 font-semibold sm:col-span-2">
                     Pregnancy record
                     <select
                       className={control}
@@ -334,6 +363,7 @@ export function AccountReportReview({
                       ))}
                     </select>
                   </label>
+                  </div>
                   <label className="flex min-h-12 items-start gap-3 rounded-field bg-pro-surface p-3">
                     <input
                       className="mt-1 size-5 shrink-0"
@@ -350,7 +380,7 @@ export function AccountReportReview({
                       type="button"
                       disabled={saving}
                       onClick={() => void save()}
-                      className="min-h-12 rounded-control bg-pro-primary px-4 font-semibold text-pro-on-primary disabled:opacity-60"
+                      className="min-h-12 rounded-control bg-pro-primary px-4 py-3 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus disabled:opacity-60"
                     >
                       {saving
                         ? "Saving…"
@@ -363,7 +393,7 @@ export function AccountReportReview({
               )}
             </>
           )}
-          <p ref={feedbackFocus} tabIndex={-1} role="status" aria-atomic="true" className="focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
+          <p ref={feedbackFocus} tabIndex={-1} role="status" aria-atomic="true" className={`${feedback ? "rounded-field border p-4 " + (saved ? "border-pro-success bg-pro-success-soft" : "border-pro-info bg-pro-info-soft") : ""} focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus`}>
             {feedback}
           </p>
           <Link href={`/ask?q=${encodeURIComponent(educationTopics.ironFolate.en)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center text-pro-primary underline">
@@ -390,8 +420,10 @@ export function AccountReportReview({
               </Link>
             )}
           </div>
+          </div>
         </section>
       )}
     </div>
   );
+
 }

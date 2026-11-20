@@ -365,7 +365,15 @@ export function BartaEducationChat({
         <div className={styles.composerCard}>
           <form className={styles.form} lang={formLanguage} onSubmit={(event) => {
             if (audio.listening) { event.preventDefault(); return; }
-            onSubmit(event);
+            if (speakerEnabled && !busy && question.trim()) {
+            delivered.current = undefined;
+            stopReplyAudio();
+            pauseAudio();
+            const submittedText = question.trim();
+            const language = /[\u0980-\u09ff]/u.test(submittedText) ? "bn" : "en";
+            playAudio("barta-question", submittedText, language, true);
+          }
+          onSubmit(event);
           }}>
             <div className={styles.formHead}>
               <label htmlFor="barta-question">{copy.question}</label>
@@ -376,6 +384,18 @@ export function BartaEducationChat({
               <textarea id="barta-question" ref={questionInput} value={question}
                 placeholder={copy.placeholder} aria-describedby="barta-privacy"
                 onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
+            {audio.listening && (
+              <div className={styles.dictationPreview} role="region" aria-label={copy.liveTranscript}>
+                <strong>{copy.liveTranscript}</strong>
+                <p lang={audio.transcript?.language ?? micLanguage}>
+                  {audio.transcript?.final && <span>{audio.transcript.final} </span>}
+                  {audio.transcript?.interim && <mark>{audio.transcript.interim}</mark>}
+                  {!audio.transcript?.final && !audio.transcript?.interim && (
+                    <span lang={formLanguage}>{copy.transcriptWaiting}</span>
+                  )}
+                </p>
+              </div>
+            )}
               <div className={styles.composerBar}>
                 {symbolPanel && (
                   <a href="#barta-symbol-input" className={styles.tool}>

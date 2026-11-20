@@ -7,7 +7,7 @@ export const accountKeys = ["theme", "highContrast", "textScale", "spaciousLayou
   "simplifiedContent", "communication", "language", "textSpacing", "readAloud"] as const;
 export type AccountKey = typeof accountKeys[number];
 
-/** Only supported, deliberate differences; no invented readAloud or device-only fields. */
+/** Only supported, deliberate differences; device-only fields (focusedView, font, compact, OS-following contrast) never sync. */
 export function accountPatch(device: DevicePreferences, account: AccessPreferences): PatchAccessPreferences {
   const proposed: AccessPreferences = {
     ...account, theme: device.access.theme,
@@ -15,6 +15,7 @@ export function accountPatch(device: DevicePreferences, account: AccessPreferenc
     textScale: device.access.textScale, spaciousLayout: device.access.layoutDensity === "spacious",
     reducedMotion: device.access.reducedMotion, simplifiedContent: device.access.simplifiedContent,
     communication: device.access.communication, language: device.access.language,
+    readAloud: device.access.readAloud ?? account.readAloud,
     textSpacing: device.reading.textSpacing === "relaxed" ? "increased" : "default",
   };
   return Object.fromEntries(accountKeys.filter(key => proposed[key] !== account[key])
@@ -28,7 +29,8 @@ export function applyAccount(account: AccessPreferences, device: DevicePreferenc
       highContrast: device.access.highContrast === null ? null : account.highContrast,
       spaciousLayout: account.spaciousLayout, layoutDensity: density,
       reducedMotion: account.reducedMotion, simplifiedContent: account.simplifiedContent,
-      communication: account.communication, language: account.language },
+      communication: account.communication, language: account.language,
+      readAloud: account.readAloud },
     reading: { ...device.reading, density, textSpacing: account.textSpacing === "increased" ? "relaxed" : "standard" },
   };
 }

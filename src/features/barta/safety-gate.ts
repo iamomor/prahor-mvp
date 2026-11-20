@@ -91,6 +91,13 @@ const swelling = new RegExp(String.raw`\b(?:swollen |swelling (?:of|in) (?:my )?
 const markedSwelling = /(?:\b(?:extreme|severe|sudden) (?:swelling|puffiness)\b|\b(?:suddenly|severely) swollen\b|(?:হঠাৎ|খুব|অনেক) ফুলে)/u;
 const headacheAny = /(?:\bheadache\b|মাথা ?ব্যথা|\bmatha (?:betha|byatha)\b)/u;
 
+// AAC symbol boards compose several short sentences ("I have a fever. I feel weak and tired.").
+// WHO PCPNC lists "fever and too weak to get out of bed" as go-immediately; swelling with headache is a pre-eclampsia warning.
+// Ported from the verified M2 kit patch (20 Nov 2026); these only ever escalate.
+const feverAny = /(?:\bfever\b|জ্বর|\bjor\b)/u;
+const tooWeak = /(?:\btoo weak\b|\bweak and tired\b|\bvery weak\b|খুব দুর্বল|অনেক দুর্বল|দুর্বল ও ক্লান্ত)/u;
+const swellingAny = /(?:\bswelling\b|\bswollen\b|ফোলা|ফুলে)/u;
+
 const outsideScope = [
   /\b(?:diagnose me|is my baby (?:okay|ok|safe)|prescribe|what (?:drug|medicine) should i take|can i take (?:this|that) (?:medicine|drug|tablet)|how (?:many pills|much medicine)|what dose|self-medicate|how (?:can i|to) (?:abort|end (?:my|a) pregnancy))\b/u,
   /\b(?:amar pa (?:fulay|fule|phule) (?:jacche|geche)|(?:ami )?\d+ maser pregnant.{0,30}ki test (?:lagbe|korbo)|(?:ei|eta) (?:oshudh|osudh) (?:khabo|khete pari))\b/u,
@@ -117,6 +124,8 @@ function routeQuestion(question: string): Route | undefined {
     || movementLost.test(text) || fits.test(text) || watersBroke.test(text) || severeBellyPainBangla.test(text)
     || ((pregnancy.test(text) || afterBirth.test(text)) && reportsHighFever(text))
     || (swelling.test(text) && (headacheAny.test(text) || blurredVision.test(text) || (markedSwelling.test(text) && (pregnancy.test(text) || afterBirth.test(text)))))
+    || (feverAny.test(text) && tooWeak.test(text))
+    || (swellingAny.test(text) && headacheAny.test(text))
     || breathingTrouble.test(text) || cannotKeepFluids.test(text)
     || (pregnancy.test(text) && pregnancyBleeding.test(text))
     || /^(?:i am|i['’]m) bleeding(?:\b|$)/u.test(text)
@@ -128,11 +137,19 @@ function routeQuestion(question: string): Route | undefined {
   if (outsideScope.some((pattern) => pattern.test(text))) return "outside_education_scope";
 }
 
+/** Multi-sentence messages (AAC compositions, long typed notes): an urgent or crisis sentence anywhere still routes. */
+function routeBySentence(question: string): Route | undefined {
+  const parts = question.split(/[.!?।\n]+/u).map(part => part.trim()).filter(Boolean);
+  if (parts.length < 2) return undefined;
+  const reasons = parts.map(routeQuestion);
+  return reasons.find(reason => reason === "crisis_support") ?? reasons.find(reason => reason === "urgent_care");
+}
+
 export function getBartaSafetyResponse(
   question: string,
   language: BartaRequest["language"],
 ): BartaAnswer | undefined {
-  const reason = routeQuestion(question);
+  const reason = routeQuestion(question) ?? routeBySentence(question);
   if (!reason) return undefined;
 
   return getBartaRouteResponse(reason, language);

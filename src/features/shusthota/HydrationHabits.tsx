@@ -139,6 +139,7 @@ export function HydrationHabits({ onSaved }: { onSaved?: () => void } = {}) {
         const value = Number(raw);
         if (!Number.isInteger(value) || value <= 0 || value > 5000) {
             setError(t(copy.invalid));
+            document.getElementById(`${id}-amount`)?.focus();
             return;
         }
         if (submitting.current) return;
@@ -265,6 +266,8 @@ export function HydrationHabits({ onSaved }: { onSaved?: () => void } = {}) {
                                 step="1"
                                 inputMode="numeric"
                                 value={amount}
+                                aria-invalid={error === t(copy.invalid) || undefined}
+                                aria-describedby={error ? `${id}-error` : undefined}
                                 onChange={event => setAmount(event.target.value)}
                                 placeholder={t(copy.custom)}
                                 className="min-h-12 w-full rounded-field border border-pro-control-border bg-pro-elevated px-3 text-base focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
@@ -280,7 +283,7 @@ export function HydrationHabits({ onSaved }: { onSaved?: () => void } = {}) {
                         </AppButton>
                     </form>
                     {error && (
-                        <p role="alert" className="text-pro-danger">
+                        <p id={`${id}-error`} role="alert" className="text-pro-danger">
                             {error}
                         </p>
                     )}

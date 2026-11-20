@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { Fraunces, JetBrains_Mono, Manrope, Noto_Sans_Bengali, Noto_Serif_Bengali } from "next/font/google";
 import { Homepage } from "@/components/marketing/Homepage";
 import { homepagePreferenceBootstrap } from "@/components/marketing/preference-bootstrap";
@@ -32,8 +30,7 @@ export default function HomePage() {
     <>
       <script dangerouslySetInnerHTML={{ __html: homepagePreferenceBootstrap }} />
       <script dangerouslySetInnerHTML={{ __html: homepageAssetRecovery }} />
-      <Homepage fontVariables={`${displayFont.variable} ${bodyFont.variable} ${tagFont.variable} ${banglaSans.variable} ${banglaSerif.variable}`}
-        teamImages={Object.fromEntries(["omor", "iftee", "ifty", "apubo", "samin"].map(name => [name, existsSync(join(process.cwd(), `public/team/${name}.jpg`))]))} />
+      <Homepage fontVariables={`${displayFont.variable} ${bodyFont.variable} ${tagFont.variable} ${banglaSans.variable} ${banglaSerif.variable}`} />
     </>
   );
 }

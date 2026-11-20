@@ -202,3 +202,37 @@
 /* Official mark: give the detailed logo enough room to read. */
 .pro-home .home-header .home-brand .prohor-mark { width: 2.25rem; height: 2.25rem; }
 .pro-home .refined-footer .home-brand .prohor-mark { width: 2.75rem; height: 2.75rem; }
+
+/* ── Team carousel (coverflow; drag, swipe, arrows, dots, keys) ───── */
+.pro-home .team-carousel { --card-w: min(19rem, 66vw); --step: calc(var(--card-w) * .58); margin-top: 2.5rem; }
+.pro-home .team-stage { position: relative; height: calc(var(--card-w) * 4 / 3 + 3rem); overflow: hidden; overflow: clip; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; border-radius: var(--pro-radius-hero); }
+.pro-home .team-stage[data-dragging] { cursor: grabbing; }
+.pro-home .team-stage:focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 4px; }
+.pro-home .team-card { position: absolute; left: 50%; top: 50%; width: var(--card-w); aspect-ratio: 3 / 4; margin: 0; border-radius: calc(var(--pro-radius-hero) * 4 / 3); overflow: hidden; background: var(--pro-surface-2); box-shadow: 0 18px 40px rgb(var(--pro-shadow-rgb) / calc(.24 - var(--abs) * .07));
+  z-index: calc(10 - var(--abs)); opacity: calc(1 - var(--abs) * .22);
+  transform: translate(-50%, -50%) translateX(calc(var(--offset) * var(--step) + var(--drag))) scale(calc(1 - var(--abs) * .13));
+  transition: transform 460ms var(--pro-ease), opacity 460ms var(--pro-ease), box-shadow 240ms var(--pro-ease); }
+.pro-home .team-stage[data-dragging] .team-card { transition: none; }
+.pro-home .team-card:not([data-offset="0"]) { cursor: pointer; }
+.pro-home .team-card:not([data-offset="0"])::after { content: ""; position: absolute; inset: 0; background: rgb(var(--pro-shadow-rgb) / .18); transition: background-color 240ms var(--pro-ease); }
+.pro-home .team-card:not([data-offset="0"]):hover::after { background: rgb(var(--pro-shadow-rgb) / .04); }
+.pro-home .team-card[data-offset="0"]:hover { box-shadow: 0 24px 48px rgb(var(--pro-shadow-rgb) / .3); }
+.pro-home .team-card-photo { position: absolute; inset: 0; }
+.pro-home .team-card-photo img { object-fit: cover; object-position: center 30%; pointer-events: none; transition: transform 600ms var(--pro-ease); }
+.pro-home .team-card[data-offset="0"]:hover .team-card-photo img { transform: scale(1.03); }
+.pro-home .team-card-initials { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(160deg, var(--pro-primary), var(--pro-primary-hover)); color: var(--pro-on-primary); font-family: var(--pro-font-display); font-size: calc(var(--card-w) * .32); letter-spacing: .02em; padding-bottom: 30%; }
+.pro-home .team-card-text { position: absolute; inset: auto 0 0; padding: 3.5rem 1.25rem 1.25rem; color: var(--pro-on-primary); background: linear-gradient(to top, rgb(var(--pro-shadow-rgb) / .94) 0%, rgb(var(--pro-shadow-rgb) / .84) 58%, rgb(var(--pro-shadow-rgb) / 0) 100%); }
+.pro-home .team-card-text h3 { font-family: var(--pro-font-display); font-weight: 500; font-size: 1.375rem; line-height: 1.2; color: var(--pro-on-primary); }
+.pro-home .team-card-role { margin-top: .375rem; font-weight: 600; font-size: .875rem; line-height: 1.4; }
+.pro-home .team-card-place { margin-top: .25rem; font-size: .8125rem; line-height: 1.4; color: var(--pro-on-primary-muted); }
+.pro-home .team-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.25rem; }
+.pro-home .team-arrow { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 1px solid var(--pro-control-border); background: var(--pro-elevated); color: var(--pro-text); cursor: pointer; transition: background-color 160ms var(--pro-ease), transform 160ms var(--pro-ease); }
+.pro-home .team-arrow:hover { background: var(--pro-surface); transform: translateY(-1px); }
+.pro-home .team-dots { display: flex; align-items: center; gap: .25rem; }
+.pro-home .team-dot { position: relative; width: 1.5rem; height: 2.75rem; border: 0; background: transparent; cursor: pointer; }
+.pro-home .team-dot::before { content: ""; position: absolute; left: 50%; top: 50%; width: .625rem; height: .625rem; border-radius: var(--pro-radius-pill); background: var(--pro-control-border); transform: translate(-50%, -50%); transition: width 240ms var(--pro-ease), background-color 240ms var(--pro-ease); }
+.pro-home .team-dot[aria-current="true"]::before { width: 1.5rem; background: var(--pro-primary); }
+.pro-home :is(.team-arrow, .team-dot):focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 2px; }
+@media (min-width: 48rem) { .pro-home .team-carousel { --card-w: 18.5rem; --step: 13.5rem; } }
+@media (min-width: 64rem) { .pro-home .team-carousel { --card-w: 20rem; --step: 15rem; } }
+@media (forced-colors: active) { .pro-home .team-card { border: 2px solid CanvasText; } .pro-home .team-dot[aria-current="true"]::before { background: Highlight; } }

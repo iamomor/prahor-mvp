@@ -10,7 +10,7 @@ import { AudiencePanels, CompanionStory, FinalCTA, JourneyStory, ProductStrip, R
 import { SignInNotice } from "./SignInNotice";
 import { copy, type Locale } from "./home-content";
 
-export function Homepage({ fontVariables, teamImages }: { fontVariables: string; teamImages: Record<string, boolean> }) {
+export function Homepage({ fontVariables }: { fontVariables: string }) {
   const [locale, setLocaleState] = useState<Locale>("en");
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [offline, setOffline] = useState(false);
@@ -95,7 +95,7 @@ export function Homepage({ fontVariables, teamImages }: { fontVariables: string;
       <SupportStory />
       <AudiencePanels />
       <ResponsibleCards />
-      <TeamStory images={teamImages} />
+      <TeamStory />
       <RoadmapStory />
       <FinalCTA />
     </main>

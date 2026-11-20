@@ -485,33 +485,6 @@ export function AACComposer({
         </div>
       )}
 
-
-        <div className="flex flex-wrap items-start gap-3">
-          <AppButton
-            variant="primary"
-            size="md"
-            onClick={handleInsert}
-            data-testid="aac-insert-draft"
-            disabled={!currentMessageText.trim()}
-            aria-disabled={!currentMessageText.trim()}
-            className="max-sm:w-full"
-          >
-            <Check size={18} aria-hidden="true" />
-            {targetLabel ?? (language === "bn" ? "বার্তায় যুক্ত করুন" : "Insert into message")}
-          </AppButton>
-          {currentMessageText && (
-            <ReadAloudButton
-              text={currentMessageText}
-              language={language}
-              label={language === "bn" ? "পড়ে শুনুন" : "Listen aloud"}
-            />
-          )}
-        </div>
-        <p className="text-sm text-pro-muted">
-          Inserting places this draft into your target form so you can review and submit when ready.
-        </p>
-      </div>
-
       {/* Screen Reader Live Region */}
 
       <InlineLiveRegion message={announcement} className="text-sm text-pro-muted" />

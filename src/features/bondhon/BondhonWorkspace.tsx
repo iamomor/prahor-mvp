@@ -125,10 +125,11 @@ function BondhonSession({ profile, embedded }: { profile: OwnProfile; embedded: 
   const queue = provider ? queueView(items, now, filter) : null;
   const earlier = provider ? [] : splitSharing(items as SupportRequest[], now).earlier;
   return <div ref={privateRoot} className={`${styles.workspace} ${styles.bondhonPage}`} lang={language}>
-    {!embedded && <nav className={styles.actions} aria-label={t(words("Care navigation", "সেবার পথ"))}>
-      <Link className="pro-btn pro-btn-secondary" href={provider ? "/provider" : "/app"}>{t(words("Dashboard", "ড্যাশবোর্ড"))}</Link>
+    {/* Mothers already have the app sidebar; only the provider shell needs these links. */}
+    {!embedded && provider && <nav className={styles.actions} aria-label={t(words("Care navigation", "সেবার পথ"))}>
+      <Link className="pro-btn pro-btn-secondary" href="/provider">{t(words("Dashboard", "ড্যাশবোর্ড"))}</Link>
       <Link className="pro-btn pro-btn-secondary" href="/poth">{t(words("Find care and visit preparation", "সেবা খোঁজা ও সাক্ষাতের প্রস্তুতি"))}</Link>
-      <Link className="pro-btn pro-btn-secondary" href={provider ? "/account" : "/app/account"}>{t(words("Account and roles", "অ্যাকাউন্ট ও পরিচয়"))}</Link>
+      <Link className="pro-btn pro-btn-secondary" href="/account">{t(words("Account and roles", "অ্যাকাউন্ট ও পরিচয়"))}</Link>
     </nav>}
     {!embedded && <header className={styles.pageHeader}>
       <p className={styles.eyebrow}>{t(words("PROHOR / Bondhon", "প্রহর / বন্ধন"))}</p>
@@ -139,7 +140,7 @@ function BondhonSession({ profile, embedded }: { profile: OwnProfile; embedded: 
     {view === "list" && !provider && <BondhonGuide />}
     <aside className={styles.simulationNote}>
       <p>{t(words("Simulated care coordination · synthetic information only. This is not a staffed medical or emergency service.", "সিমুলেটেড সেবা সমন্বয় · শুধু নমুনা তথ্য। এটি কর্মরত চিকিৎসা বা জরুরি সেবা নয়।"))}</p>
-      <Link className="underline inline-flex min-h-12 items-center" href="/poth#poth-sos" target="_blank" rel="noopener noreferrer">{t(words("Open emergency and care information (new tab)", "জরুরি ও সেবার তথ্য খুলুন (নতুন ট্যাব)"))}</Link>
+      <Link className="underline inline-flex min-h-12 items-center" href={provider ? "/poth#poth-sos" : "/app/poth#poth-sos"} target="_blank" rel="noopener noreferrer">{t(words("Open emergency and care information (new tab)", "জরুরি ও সেবার তথ্য খুলুন (নতুন ট্যাব)"))}</Link>
 
     </aside>
     {view === "new" && !provider && <>

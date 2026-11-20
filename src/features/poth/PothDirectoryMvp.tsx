@@ -60,8 +60,8 @@ export function PothDirectoryMvp({ embedded = false }: { embedded?: boolean }) {
       <footer className={`${styles.panel} ${styles.stack}`}>
         <h2>{t("Need help planning your care?", "সেবার পরিকল্পনায় সহায়তা চান?")}</h2>
         <div className={styles.ctaGrid}>
-          <Link className={styles.ctaCard} href="/ask"><span className={styles.iconTile}><MessageCircleQuestion size={22} aria-hidden="true" /></span><span><strong>{t("Ask Barta", "বার্তাকে জিজ্ঞাসা করুন")}</strong><span>{t("Learn with source-backed answers.", "উৎসসহ উত্তরে জানুন।")}</span></span><ArrowRight size={20} aria-hidden="true" /></Link>
-          <Link className={styles.ctaCard} href="/bondhon"><span className={styles.iconTile}><HeartHandshake size={22} aria-hidden="true" /></span><span><strong>{t("Explore Bondhon", "বন্ধন দেখুন")}</strong><span>{t("A separate request you control.", "আপনার নিয়ন্ত্রণে আলাদা অনুরোধ।")}</span></span><ArrowRight size={20} aria-hidden="true" /></Link>
+          <Link className={styles.ctaCard} href={embedded ? "/app/ask" : "/ask"}><span className={styles.iconTile}><MessageCircleQuestion size={22} aria-hidden="true" /></span><span><strong>{t("Ask Barta", "বার্তাকে জিজ্ঞাসা করুন")}</strong><span>{t("Learn with source-backed answers.", "উৎসসহ উত্তরে জানুন।")}</span></span><ArrowRight size={20} aria-hidden="true" /></Link>
+          <Link className={styles.ctaCard} href={embedded ? "/app/bondhon" : "/bondhon"}><span className={styles.iconTile}><HeartHandshake size={22} aria-hidden="true" /></span><span><strong>{t("Explore Bondhon", "বন্ধন দেখুন")}</strong><span>{t("A separate request you control.", "আপনার নিয়ন্ত্রণে আলাদা অনুরোধ।")}</span></span><ArrowRight size={20} aria-hidden="true" /></Link>
         </div>
       </footer>
     </div>

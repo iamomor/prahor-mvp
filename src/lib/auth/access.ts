@@ -54,6 +54,17 @@ export function authDestination(value: string | null, role: ActiveRole, onboarde
   return path;
 }
 
+// A signed-in mother stays inside /app until she signs out: public module pages map to their in-app twin.
+const appTwins: [string, string][] = [["/safety", "/app/safety"], ["/ask", "/app/ask"], ["/poth", "/app/poth"], ["/find-care", "/app/poth"],
+  ["/bondhon", "/app/bondhon"], ["/jibonrekha", "/app/jibonrekha"], ["/demo/jibonrekha", "/app/jibonrekha"], ["/demo/bujhi/kit", "/app/bujhi/kit"],
+  ["/demo/bujhi", "/app/bujhi"], ["/bujhi", "/app/bujhi"], ["/accessibility", "/app/accessibility"]];
+const marketingPages = new Set(["/", "/about", "/faq", "/features", "/for-mothers", "/for-providers", "/how-it-works", "/trust", "/demo", "/barta-demo"]);
+export function signedInAppPath(pathname: string): string | null {
+  for (const [from, to] of appTwins)
+    if (pathname === from || pathname.startsWith(`${from}/`)) return from === "/safety" ? to + pathname.slice(from.length) : to;
+  return marketingPages.has(pathname) ? "/app" : null;
+}
+
 export function signInPath(next: string): string {
   return `/sign-in?next=${encodeURIComponent(safeAuthReturnPath(next))}&status=session-required`;
 }

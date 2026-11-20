@@ -90,8 +90,9 @@ test('M8 two-account proof: two exact records, reply, real withdrawal and sign-o
     const pageA = await mother.newPage(), pageB = await provider.newPage();
     await pageA.goto('/app/bondhon');
     await pageA.getByRole('button', { name: 'Ask for help or prepare a visit', exact: true }).click();
-    await pageA.getByLabel('Purpose of this request', { exact: true }).fill('Demo visit preparation ' + randomUUID().slice(0, 8));
-    await pageA.getByLabel('Message for this recipient', { exact: true }).fill('Synthetic visit preparation ' + randomUUID().slice(0, 8));
+    await pageA.getByRole('radio', { name: 'Something else', exact: true }).check();
+    await pageA.getByLabel('In a few words, what is it about?', { exact: true }).fill('Demo visit preparation ' + randomUUID().slice(0, 8));
+    await pageA.getByLabel('2. Your message', { exact: true }).fill('Synthetic visit preparation ' + randomUUID().slice(0, 8));
     await continueStep(pageA);
     await pageA.locator(`input[name="recipient"][value="${providerMe.id}"]`).check();
     await continueStep(pageA); await continueStep(pageA);

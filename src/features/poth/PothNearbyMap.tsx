@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ClipboardCheck, ExternalLink, Info, Loader2, MapPin, Navigation, Phone, Search } from "lucide-react";
+import { Accessibility, ClipboardCheck, ExternalLink, Info, Loader2, MapPin, Navigation, Phone, Search, Siren } from "lucide-react";
 import { geoLabel } from "./geoLabels";
 import type { VisitFacility } from "./PothVisitPreparation";
 import styles from "./poth.module.css";
@@ -68,12 +68,15 @@ function TileMap({ center, places, selected, onSelect, radius }: {
     <div className={`relative w-full overflow-hidden rounded-xl border ${styles.mapCanvas}`} style={{ borderColor: "var(--pro-border)" }}>
       <div role="group" aria-label={t("Healthcare map with selectable place markers", "বাছাই করা যায় এমন স্থানসহ স্বাস্থ্যসেবার মানচিত্র")} className="relative h-[360px] w-full overflow-hidden sm:h-[430px]">
         <div className="absolute left-1/2 top-1/2" style={{ width: 900, height: 600, transform: "translate(-50%, -50%)" }}>
-          {tiles.map(tile => <div key={tile.key} aria-hidden="true" className={`absolute h-64 w-64 ${styles.mapCanvas}`} style={{ left: tile.left, top: tile.top, backgroundImage: `url(${tile.src})`, backgroundSize: "256px 256px" }} />)}
+          {/* OSM tile policy needs a Referer; the page sends none, so tiles opt in to the origin only. next/image would proxy tiles, which OSM forbids. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {tiles.map(tile => <img key={tile.key} src={tile.src} alt="" aria-hidden="true" referrerPolicy="origin" loading="lazy" draggable={false} width={256} height={256} className={`absolute h-64 w-64 max-w-none ${styles.mapCanvas}`} style={{ left: tile.left, top: tile.top }} />)}
           <div aria-hidden="true" className={`pointer-events-none absolute rounded-full ${styles.mapRadius}`} style={{ left: 450 - pan.x - radiusPixels, top: 300 - pan.y - radiusPixels, width: radiusPixels * 2, height: radiusPixels * 2 }} />
           <div aria-hidden="true" className={`pointer-events-none absolute h-3 w-3 rounded-full ${styles.mapCenter}`} style={{ left: 444 - pan.x, top: 294 - pan.y }} />
-          {pins.map(({ place, x, y }) => <button type="button" key={place.id} title={t(`${place.name} — ${place.distanceKm.toFixed(1)} km, unverified`, `${place.name} — ${place.distanceKm.toFixed(1)} কিমি, যাচাই হয়নি`)} aria-label={t(`Select ${place.name} on map`, `মানচিত্রে ${place.name} বাছুন`)}
+          {pins.map(({ place, x, y }) => { const n = places.indexOf(place) + 1; return <button type="button" key={place.id} title={t(`${n}. ${place.name} — ${place.distanceKm.toFixed(1)} km, unverified`, `${n}. ${place.name} — ${place.distanceKm.toFixed(1)} কিমি, যাচাই হয়নি`)} aria-label={t(`${n}. Select ${place.name} on map`, `${n}. মানচিত্রে ${place.name} বাছুন`)}
             onClick={() => onSelect(place)} className={`absolute flex h-11 w-11 items-center justify-center rounded-full font-bold ${styles.mapMarker} ${selected?.id === place.id ? styles.mapSelected : ""}`}
-            style={{ left: x - 22, top: y - 22 }}>+</button>)}
+            style={{ left: x - 22, top: y - 22 }}>{n}</button>; })}
+          <span aria-hidden="true" className={styles.mapYou} style={{ left: 450 - pan.x + 10, top: 300 - pan.y - 10 }}>{t("Search centre", "খোঁজার কেন্দ্র")}</span>
         </div>
         <div className="absolute right-2 top-2 flex flex-col gap-1" aria-label={t("Map controls", "মানচিত্রের নিয়ন্ত্রণ")}>
           <button type="button" onClick={() => setZoomOffset(z => clamp(z + 1, -3, 3))} aria-label={t("Zoom in", "জুম বাড়ান")} className={`h-11 w-11 rounded-lg font-bold ${styles.mapControl}`}>+</button>
@@ -88,7 +91,7 @@ function TileMap({ center, places, selected, onSelect, radius }: {
           <span/><button type="button" onClick={() => setPan(p => ({ ...p, y: p.y + 170 }))} aria-label={t("Move map south", "মানচিত্র দক্ষিণে সরান")} className={`h-11 w-11 rounded border ${styles.mapControl}`}>↓</button><span/>
         </div>
       </div>
-      <p className="px-3 py-2 text-sm">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors · ODbL</a> · Pins show community-map positions or feature centres, not verified entrances. Map tiles require internet.</p>
+      <p className="px-3 py-2 text-sm">{t("Numbers match the list. Only facts checked by a PROHOR reviewer say “verified”.", "নম্বরগুলো তালিকার সঙ্গে মেলে। শুধু প্রহরের পর্যালোচকের যাচাই করা তথ্যে “যাচাইকৃত” লেখা থাকে।")} © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors · ODbL</a> · {t("Pins are map positions, not verified entrances.", "পিনগুলো মানচিত্রের অবস্থান, যাচাইকৃত প্রবেশপথ নয়।")}</p>
       <p className="sr-only">Map has {places.length} selectable markers. All locations are also available in the accessible results list.</p>
     </div>
   );
@@ -96,7 +99,10 @@ function TileMap({ center, places, selected, onSelect, radius }: {
 export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility) => void } = {}) {
   const { language } = useLanguage();
   const t = (en: string, bn: string) => language === "bn" ? bn : en;
-  const [mapOpen, setMapOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(true);
+  const [emergencyOnly, setEmergencyOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [verified, setVerified] = useState<Record<string, string[]>>({});
   const [dataMode, setDataMode] = useState<"saved-snapshot" | "live-plus-snapshot" | null>(null);
   const [center, setCenter] = useState<Point>(cities[0]);
   const [cityChoice, setCityChoice] = useState("0");
@@ -136,11 +142,37 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
   }
   const matched = useMemo(() => {
     const q = query.trim().toLocaleLowerCase();
-    return places.filter(p => (filter === "all" || p.kind === filter) &&
+    return places.filter(p => (filter === "all" || p.kind === filter) && (!emergencyOnly || p.emergencyTagged) &&
+      (!verifiedOnly || Boolean(verified[p.id]?.length)) &&
       (!q || `${p.name} ${p.address || ""}`.toLocaleLowerCase().includes(q)))
       .sort((a, b) => sort === "nearest" ? a.distanceKm - b.distanceKm : a.name.localeCompare(b.name));
-  }, [places, filter, query, sort]);
+  }, [places, filter, query, sort, emergencyOnly, verifiedOnly, verified]);
   const shown = matched.slice(0, showCount);
+  // Reviewer-verified access facts for the nearest results; anything absent stays "not verified".
+  const evidenceIds = places.slice().sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 20).map(p => p.id)
+    .filter(id => /^(?:node|way|relation)\/[A-Za-z0-9_-]{1,80}$/.test(id)).join(",");
+  useEffect(() => {
+    if (!evidenceIds) return;
+    const controller = new AbortController();
+    fetch(`/api/poth/access-evidence?${evidenceIds.split(",").map(id => `facilityId=${encodeURIComponent(id)}`).join("&")}`, { signal: controller.signal })
+      .then(r => r.ok ? r.json() as Promise<{ claims: { facility_id: string; attribute: string; value: string }[] }> : { claims: [] })
+      .then(({ claims }) => {
+        const next: Record<string, string[]> = {};
+        for (const c of claims) if (c.value === "reported_available") (next[c.facility_id] ??= []).push(c.attribute);
+        setVerified(next);
+      })
+      .catch(() => { if (!controller.signal.aborted) setVerified({}); });
+    return () => controller.abort();
+  }, [evidenceIds]);
+  // Show places for the default area straight away (saved data only; no GPS, nothing sent to a provider).
+  useEffect(() => { void Promise.resolve().then(() => search()); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  function selectFromMap(place: CarePlace) {
+    setSelected(place);
+    const index = matched.indexOf(place);
+    if (index >= showCount) setShowCount(index + 1);
+    window.requestAnimationFrame(() => document.getElementById(`poth-near-${index}`)?.focus());
+  }
   function selectCity(index: number) {
     const next = cities[index]; if (!next) return;
     setCityChoice(String(index));
@@ -207,6 +239,8 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
     all: t("All types", "সব ধরন"), hospital: t("Hospitals", "হাসপাতাল"), clinic: t("Clinics", "ক্লিনিক"),
     maternity: t("Women’s / maternity care (tagged)", "নারী ও মাতৃসেবা (ট্যাগ)"), midwife: t("Midwives", "ধাত্রী"), doctor: t("Doctors", "চিকিৎসক"), pharmacy: t("Pharmacies", "ফার্মেসি"),
   };
+  const accessName = (key: string) => key === "wheelchair" ? t("Step-free / wheelchair entry", "সিঁড়িবিহীন / হুইলচেয়ার প্রবেশ")
+    : key === "accessibleToilet" ? t("Accessible toilet", "প্রবেশগম্য টয়লেট") : key === "hearingLoop" ? t("Hearing loop", "হিয়ারিং লুপ") : key;
   const area = cityChoice ? geoLabel(cities[Number(cityChoice)].name, language) : gps ? t("Your GPS area", "আপনার GPS এলাকা") : t("Your chosen point", "আপনার দেওয়া স্থান");
   function pin(place: CarePlace) {
     setSelected(place); setMapOpen(true);
@@ -243,6 +277,14 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
       </details>
     </details>
     <p role="status" aria-live="polite" className={styles.statusLine}>{busy ? <Loader2 size={18} aria-hidden="true" /> : <Info size={18} aria-hidden="true" />}<span>{language === "bn" ? message.bn : message.en}</span></p>
+    {dataMode && <div className={styles.chipRow} role="group" aria-label={t("Quick filters", "দ্রুত ফিল্টার")}>
+      {(["all", "maternity", "hospital", "clinic"] as const).map(key => <button key={key} type="button" className={styles.chip} aria-pressed={filter === key}
+        onClick={() => { setFilter(key); setShowCount(MAX_PAGE); }}>{{ all: t("All", "সব"), maternity: t("Maternity", "মাতৃসেবা"), hospital: kindNames.hospital, clinic: kindNames.clinic }[key]} ·{coverage.find(k => k.key === key)?.count.toLocaleString(language === "bn" ? "bn-BD" : "en")}</button>)}
+      <button type="button" className={styles.chip} aria-pressed={emergencyOnly} onClick={() => { setEmergencyOnly(v => !v); setShowCount(MAX_PAGE); }}><Siren size={16} aria-hidden="true" />{t("Emergency (map tag)", "জরুরি (মানচিত্রের ট্যাগ)")}</button>
+      <button type="button" className={styles.chip} aria-pressed={verifiedOnly} onClick={() => { setVerifiedOnly(v => !v); setShowCount(MAX_PAGE); }}><Accessibility size={16} aria-hidden="true" />{t("Verified access only", "শুধু যাচাইকৃত প্রবেশ সুবিধা")}</button>
+    </div>}
+    <div className={styles.nearbySplit}>
+    <div className={styles.stack}>
     {dataMode && <>
       <p className={styles.meta}>{dataMode === "saved-snapshot" ? t("Saved map data · not verified", "রাখা মানচিত্রের তথ্য · যাচাই হয়নি") : t("Live + saved map data · not verified", "সরাসরি ও রাখা তথ্য · যাচাই হয়নি")} · {t("Distances are straight-line, not travel time.", "দূরত্ব সরলরেখায়, যাতায়াতের সময় নয়।")}</p>
       <details className={styles.disclosure}>
@@ -255,9 +297,15 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
         <button type="button" className={styles.textButton} onClick={() => { setQuery(""); setFilter("all"); setSort("nearest"); setShowCount(MAX_PAGE); }}>{t("Clear result filters", "ফলাফলের ফিল্টার মুছুন")}</button>
       </details>
       {matched.length === 0 && <p className={styles.notice}><Info size={18} aria-hidden="true" />{t("No matching saved map record. This does not mean care is unavailable. Try another area or the directory above.", "রাখা মানচিত্রে মিল নেই। এর অর্থ সেবা নেই নয়। অন্য এলাকা বা ওপরের তালিকায় খুঁজুন।")}</p>}
-      <div className={styles.cards}>{shown.map(p => <article key={p.id} className={styles.card}>
-        <div className={styles.cardTop}><span className={`${styles.badge} ${styles.badgeWarn}`}><MapPin size={15} aria-hidden="true" />{t("Map listing · unverified", "মানচিত্রের তথ্য · যাচাই হয়নি")}</span><span className={styles.count}>{p.distanceKm.toLocaleString(language === "bn" ? "bn-BD" : "en", { maximumFractionDigits: 2 })} {t("km", "কিমি")}</span></div>
-        <h3 tabIndex={-1}>{p.name}</h3><p className={`${styles.meta} ${styles.small}`}>{kindNames[p.kind]}</p><p className={styles.line}><MapPin size={17} aria-hidden="true" /><span>{p.address ?? t("Address not supplied", "ঠিকানা দেওয়া নেই")}</span></p>
+      <div className={styles.cards}>{shown.map((p, index) => <article key={p.id} className={styles.card} data-selected={selected?.id === p.id || undefined}>
+        <div className={styles.cardTop}><span className={styles.pinNumber} aria-hidden="true">{(index + 1).toLocaleString(language === "bn" ? "bn-BD" : "en")}</span><span className={styles.count}>{p.distanceKm.toLocaleString(language === "bn" ? "bn-BD" : "en", { maximumFractionDigits: 1 })} {t("km away", "কিমি দূরে")}</span></div>
+        <h3 id={`poth-near-${index}`} tabIndex={-1}><span className="sr-only">{index + 1}. </span>{p.name}</h3><p className={`${styles.meta} ${styles.small}`}>{kindNames[p.kind]}</p><p className={styles.line}><MapPin size={17} aria-hidden="true" /><span>{p.address ?? t("Address not supplied", "ঠিকানা দেওয়া নেই")}</span></p>
+        <ul className={styles.factBadges} aria-label={t("What we know", "যা জানা আছে")}>
+          {(verified[p.id] ?? []).map(key => <li key={key} className={styles.badge}><Accessibility size={14} aria-hidden="true" />{accessName(key)} · {t("verified", "যাচাইকৃত")}</li>)}
+          {!verified[p.id]?.length && <li className={styles.badgeMuted}>{t("Access · not verified, call ahead", "প্রবেশ সুবিধা · যাচাই হয়নি, আগে ফোন করুন")}</li>}
+          {p.emergencyTagged && <li className={`${styles.badge} ${styles.badgeWarn}`}><Siren size={14} aria-hidden="true" />{t("Emergency · map tag, not verified", "জরুরি সেবা · মানচিত্রের ট্যাগ, যাচাই হয়নি")}</li>}
+          {p.hours && <li className={styles.badgeMuted}>{t("Hours listed · confirm by phone", "সময় দেওয়া আছে · ফোনে নিশ্চিত করুন")}</li>}
+        </ul>
         <div className={styles.cardActions}>
           {onPrepare && <button type="button" className={`${styles.button} ${styles.primary}`} onClick={() => onPrepare({ id: p.id, name: p.name, nameBn: /[\u0980-\u09ff]/u.test(p.name) ? p.name : null, area: p.address, phone: p.phone, sourceUrl: p.osmUrl })}><ClipboardCheck size={18} aria-hidden="true" />{t("Prepare a visit", "সাক্ষাতের প্রস্তুতি")}</button>}
           {p.phone && <a className={styles.button} href={phoneLink(p.phone)}><Phone size={17} aria-hidden="true" />{t("Call", "কল করুন")}</a>}
@@ -275,11 +323,12 @@ export function PothNearbyMap({ onPrepare }: { onPrepare?: (place: VisitFacility
       </div>
       {truncated && <p className={styles.meta}>{t("Results are limited. A smaller radius may show more local detail.", "ফলাফলের সীমা আছে। কম ব্যাসার্ধে খুঁজলে স্থানীয় আরও তথ্য পেতে পারেন।")}</p>}
     </>}
-    <details id="poth-optional-map" className={styles.disclosure} open={mapOpen} onToggle={event => setMapOpen(event.currentTarget.open)}>
-      <summary>{t("Show / hide map", "মানচিত্র দেখুন / বন্ধ করুন")}</summary>
-      <p>{t("Opening the map loads external tiles. All returned records remain in the list.", "মানচিত্র খুললে বাইরের সার্ভার থেকে ছবি আসে। আনা সব তথ্য তালিকাতেও থাকে।")}</p>
-      {mapOpen && <TileMap key={`${center.lat}:${center.lon}:${radius}:${selected?.id ?? ""}`} center={center} radius={radius} places={matched} selected={selected} onSelect={setSelected} />}
-      <a className={styles.textButton} href={external} target="_blank" rel="noopener noreferrer">{t("Open external map ↗", "বাইরের মানচিত্র খুলুন ↗")}</a>
+    </div>
+    <details id="poth-optional-map" className={`${styles.disclosure} ${styles.mapColumn}`} open={mapOpen} onToggle={event => setMapOpen(event.currentTarget.open)}>
+      <summary>{t("Map", "মানচিত্র")} · {mapOpen ? t("hide", "বন্ধ করুন") : t("show", "দেখুন")}</summary>
+      {mapOpen && <TileMap key={`${center.lat}:${center.lon}:${radius}:${selected?.id ?? ""}`} center={center} radius={radius} places={shown} selected={selected} onSelect={selectFromMap} />}
+      <p className={`${styles.meta} ${styles.small}`}>{t("The map loads pictures from OpenStreetMap. Every place is also in the list.", "মানচিত্রের ছবি OpenStreetMap থেকে আসে। সব জায়গা তালিকাতেও আছে।")} <a className={styles.attribution} href={external} target="_blank" rel="noopener noreferrer">{t("Open full map ↗", "পুরো মানচিত্র খুলুন ↗")}</a></p>
     </details>
+    </div>
   </section>;
 }

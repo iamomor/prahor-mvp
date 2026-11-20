@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { authDestination, readIdentity, workspaceRole } from "../../src/lib/auth/access";
+import { authDestination, readIdentity, signedInAppPath, workspaceRole } from "../../src/lib/auth/access";
 import { handleAuthPost, handleIdentityGet, type AuthAction } from "../../src/lib/auth/handlers";
 import { authCookieOptions } from "../../src/lib/auth/cookies";
 import { signUpSchema, siteOrigin } from "../../src/lib/auth/validation";
@@ -268,4 +268,15 @@ test("self-service sign-up accepts exactly one role", async () => {
   expect(onboardingSchema.safeParse({ ...base, purposes: ["mother"] }).success).toBe(true);
   expect(onboardingSchema.safeParse({ ...base, purposes: ["mother", "doctor"] }).success).toBe(false);
   expect(onboardingSchema.safeParse({ ...base, purposes: [] }).success).toBe(false);
+});
+
+test("signed-in mothers are kept inside /app: public pages map to their in-app twin", () => {
+  expect(signedInAppPath("/safety")).toBe("/app/safety");
+  expect(signedInAppPath("/safety/information/postpartum")).toBe("/app/safety/information/postpartum");
+  expect(signedInAppPath("/poth")).toBe("/app/poth");
+  expect(signedInAppPath("/demo/bujhi/kit")).toBe("/app/bujhi/kit");
+  expect(signedInAppPath("/")).toBe("/app");
+  expect(signedInAppPath("/sign-in")).toBeNull();
+  expect(signedInAppPath("/app/poth")).toBeNull();
+  expect(signedInAppPath("/safetynet")).toBeNull();
 });

@@ -11,6 +11,9 @@ import { DURATIONS, PACKS, countSelection, digits, expiryAt, formatWhen, packSel
 import { accommodations, displayValue, fieldNames, recordNames, words } from "./bondhon-copy";
 import { RecordPicker } from "./RecordPicker";
 import { composeIssue, reconcileSelection } from "./bondhon-journey";
+import { getBartaSafetyResponse } from "@/features/barta/safety-gate";
+import Link from "next/link";
+import { Accessibility, Baby, ClipboardList, Images, Lock, MessageSquareText, Mic, Milk, PenLine, Phone, Plus, Siren, TriangleAlert } from "lucide-react";
 import styles from "./bondhon.module.css";
 
 type RecordOption = z.infer<typeof availableRecordSchema>;
@@ -18,8 +21,11 @@ const recordKey = (record: { type: string; id: string }) => `${record.type}/${re
 type PendingSubmission = { key: string; body: CreateSupportRequestRequest & { coordination: CoordinationApproval } };
 /** "Share again": person, purpose and settings come back; the message and the records never do, so the mother chooses them afresh. */
 export type FormInitial = { recipient: string; purpose: string; method: "text" | "aac" | "call"; hours: number; allowReplies: boolean; needs: Accommodation[] };
-const purposeChoices = [words("Prepare for a visit", "সাক্ষাতের প্রস্তুতি"), words("After the birth", "প্রসবের পরের সেবা"),
-  words("Feeding my baby", "শিশুকে খাওয়ানো"), words("Access needs", "প্রবেশ ও সুবিধার চাহিদা")];
+const purposeChoices = [{ ...words("Prepare for a visit", "সাক্ষাতের প্রস্তুতি"), icon: ClipboardList }, { ...words("After the birth", "প্রসবের পরের সেবা"), icon: Baby },
+  { ...words("Feeding my baby", "শিশুকে খাওয়ানো"), icon: Milk }, { ...words("Access needs", "প্রবেশ ও সুবিধার চাহিদা"), icon: Accessibility }];
+const replyMethods = [{ key: "text", icon: MessageSquareText, label: words("Text / SMS", "লেখা / এসএমএস") },
+  { key: "aac", icon: Images, label: words("Pictures and text", "ছবি ও লেখা") },
+  { key: "call", icon: Phone, label: words("Phone call (this demo places no calls)", "ফোন কল (এই ডেমো কল করে না)") }] as const;
 export function CareRequestForm({ account, onCreated, initial, initialMessage = "", initialMethod = "text", onDraftChange, onSubmissionStateChange }: {
   account: string; onCreated: (request: SupportRequest) => void; initial?: FormInitial;
   initialMessage?: string; initialMethod?: "text" | "aac" | "call";
@@ -54,6 +60,11 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
   const [uncertain, setUncertain] = useState(false);
   const [error, setError] = useState("");
   const [incoming, setIncoming] = useState("");
+  const [ownPurpose, setOwnPurpose] = useState(() => Boolean(initial?.purpose) && !purposeChoices.some(c => c.en === initial?.purpose || c.bn === initial?.purpose));
+  const [helper, setHelper] = useState<"phrases" | "pictures" | "voice" | null>(initial?.method === "aac" || initialMethod === "aac" ? "pictures" : null);
+  // Reuses Barta's existing safety wording; no new triage rules here.
+  const gate = message.trim() ? getBartaSafetyResponse(message, language === "en" ? "en" : "bn") : undefined;
+  const safety = gate?.status === "abstained" && (gate.reason === "urgent_care" || gate.reason === "crisis_support") ? gate : undefined;
   const submitting = useRef(false);
   const draftListener = useRef(onDraftChange);
   useEffect(() => { draftListener.current = onDraftChange; }, [onDraftChange]);
@@ -150,7 +161,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     t(words("Permission expires", "অনুমতির মেয়াদ শেষ")), formatWhen(review.body.coordination.expiresAt, language, clock),
     ...selected.flatMap(item => Object.entries(item.record.fields).filter(([key]) => selection[recordKey(item.record)]?.includes(key))
       .map(([key, value]) => `${t(fieldNames[key] ?? words(key, key))} ${displayValue(value)}`))].join(". ") : "";
-  const stepNames = [words("What you need", "কী সহায়তা চান"), words("Who", "কার কাছে"), words("Support", "সহায়তার সুবিধা"), words("Information and time", "তথ্য ও সময়"), words("Review and approve", "পর্যালোচনা ও অনুমতি")];
+  const stepNames = [words("What you need", "কী সহায়তা চান"), words("Who", "কার কাছে"), words("Reply and access", "উত্তর ও সুবিধা"), words("Information and time", "তথ্য ও সময়"), words("Review and approve", "পর্যালোচনা ও অনুমতি")];
   const quickRequests = [
     words("I would like help preparing for a routine pregnancy visit.", "গর্ভকালীন সাধারণ সাক্ষাতের প্রস্তুতিতে সহায়তা চাই।"),
     words("I would like to discuss care after childbirth.", "প্রসবের পরের সেবা নিয়ে আলোচনা করতে চাই।"),
@@ -223,49 +234,61 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     <h2 id={`${id}-compose`} ref={composeHeading} tabIndex={-1}>{t(words("New routine care request", "নতুন সাধারণ সেবার অনুরোধ"))}</h2>
     <p role="status" className={styles.eyebrow}>{t(words("Step", "ধাপ"))} {digits(step + 1, language)}/{digits(5, language)} · {t(stepNames[step])}</p>
     <ol className={styles.formSteps} aria-label={t(words("Request steps", "অনুরোধের ধাপ"))}>{stepNames.map((name, index) => <li key={name.en} aria-current={index === step ? "step" : undefined}>{digits(index + 1, language)}. {t(name)}</li>)}</ol>
-    <p>{t(words("Use synthetic examples for this hackathon. Select what to share, then review before sending.", "এই হ্যাকাথনে নমুনা তথ্য ব্যবহার করুন। কী শেয়ার করবেন বেছে নিয়ে পাঠানোর আগে পর্যালোচনা করুন।"))}</p>
+    <p className={styles.meta}>{t(words("Demo: use sample information only. Nothing is sent until you review and approve.", "ডেমো: শুধু নমুনা তথ্য ব্যবহার করুন। পর্যালোচনা ও অনুমতি ছাড়া কিছু পাঠানো হয় না।"))}</p>
     {loading && <p role="status">{t(words("Loading approved simulated recipients…", "অনুমোদিত সিমুলেটেড প্রাপক আসছে…"))}</p>}
     {failed && <div className={styles.notice}>
       <p role="alert">{t(words("The recipient directory is unavailable. Check your connection and account configuration.", "প্রাপকের তালিকা পাওয়া যাচ্ছে না। সংযোগ ও অ্যাকাউন্টের সেটিং দেখুন।"))}</p>
       <button type="button" className="pro-btn pro-btn-secondary" onClick={() => { setLoading(true); setFailed(false); setRecordError(false); setRetryLoad(value => value + 1); }}>{t(words("Retry loading", "আবার আনুন"))}</button>
       </div>}
     {!loading && !failed && !recipients.length && <p className={styles.notice}>{t(words("No approved simulated provider is available. An administrator must approve a demo provider account before you can send.", "অনুমোদিত সিমুলেটেড সেবাদাতা নেই। পাঠানোর আগে প্রশাসককে একটি ডেমো সেবাদাতার অ্যাকাউন্ট অনুমোদন করতে হবে।"))}</p>}
-    {step === 0 && <>    <details className={styles.softDetails}>
-      <summary>{t(words("Need help finding the words?", "কী লিখবেন বুঝতে সহায়তা চান?"))}</summary>
-      <p>{t(words("Choose a phrase to add, then edit it in your own words. Nothing is sent until you review and approve.", "যোগ করার জন্য একটি বাক্য বাছুন, তারপর নিজের ভাষায় সম্পাদনা করুন। পর্যালোচনা ও অনুমতি ছাড়া কিছু পাঠানো হয় না।"))}</p>
-      <div className={styles.quickChoices}>{quickRequests.map(phrase => <button key={phrase.en} type="button" className="pro-btn pro-btn-secondary" onClick={() => {
+    {step === 0 && <>
+    <div className={styles.urgentStrip}>
+      <Siren size={20} aria-hidden="true" />
+      <p><strong>{t(words("Something wrong right now?", "এখনই সমস্যা হচ্ছে?"))}</strong> {t(words("Bleeding, severe pain, fits or less baby movement: don't wait for a reply here.", "রক্তপাত, তীব্র ব্যথা, খিঁচুনি বা শিশুর নড়াচড়া কম হলে এখানে উত্তরের অপেক্ষা করবেন না।"))}</p>
+      <span className={styles.actions}><a className="pro-btn pro-btn-primary" href="tel:999"><Phone size={16} aria-hidden="true" />{t(words("Call 999", "৯৯৯-এ কল করুন"))}</a><Link className="pro-btn pro-btn-secondary" href="/app/safety">{t(words("Warning signs", "সতর্কতার লক্ষণ"))}</Link></span>
+    </div>
+    <fieldset className={styles.choices}>
+      <legend className={styles.legend}>{t(words("1. What do you need help with?", "১. কী নিয়ে সাহায্য চান?"))}</legend>
+      <div className={styles.purposeGrid}>{purposeChoices.map(({ icon: Icon, ...choice }) => <label key={choice.en} className={styles.purposeCard}>
+        <input type="radio" name="purpose-choice" checked={purpose === t(choice)} onChange={() => { setPurpose(t(choice)); setOwnPurpose(false); }} />
+        <Icon size={22} aria-hidden="true" /><span>{t(choice)}</span>
+      </label>)}
+        <label className={styles.purposeCard}>
+          <input type="radio" name="purpose-choice" checked={ownPurpose} onChange={() => { setOwnPurpose(true); setPurpose(""); window.requestAnimationFrame(() => purposeInput.current?.focus()); }} />
+          <PenLine size={22} aria-hidden="true" /><span>{t(words("Something else", "অন্য কিছু"))}</span>
+        </label>
+      </div>
+    </fieldset>
+    {ownPurpose && <label className={styles.field}>
+      <span>{t(words("In a few words, what is it about?", "কয়েক শব্দে, বিষয়টি কী?"))}</span>
+      <input ref={purposeInput} className="pro-input" required maxLength={300} value={purpose} onChange={event => setPurpose(event.target.value)} placeholder={t(words("e.g. questions about my blood test", "যেমন রক্ত পরীক্ষা নিয়ে প্রশ্ন"))} />
+    </label>}
+    <div className={styles.composer}>
+      <label className={styles.field} htmlFor={`${id}-message`}><span className={styles.legend}>{t(words("2. Your message", "২. আপনার বার্তা"))}</span></label>
+      <textarea id={`${id}-message`} ref={messageInput} required rows={4} className="pro-input" maxLength={1000} value={message} onChange={event => setMessage(event.target.value)} aria-describedby={`${id}-privacy`}
+        placeholder={t(words("Write in your own words, or use a starter, pictures or your voice below.", "নিজের ভাষায় লিখুন, অথবা নিচের বাক্য, ছবি বা কণ্ঠ ব্যবহার করুন।"))} />
+      <p className={styles.meta}>{digits(message.length, language)}/{digits(1000, language)}</p>
+      {safety && <div role="alert" className={styles.urgentAlert}>
+        <TriangleAlert size={20} aria-hidden="true" />
+        <div><p><strong>{t(words("This may need care now", "এর জন্য এখনই চিকিৎসা লাগতে পারে"))}</strong></p><p>{safety.message}</p>
+          <span className={styles.actions}><a className="pro-btn pro-btn-primary" href="tel:999"><Phone size={16} aria-hidden="true" />{t(words("Call 999", "৯৯৯-এ কল করুন"))}</a><Link className="pro-btn pro-btn-secondary" href="/app/safety">{t(words("Open warning signs", "সতর্কতার লক্ষণ দেখুন"))}</Link></span>
+          <p className={styles.meta}>{t(words("You can still send this routine request, but nobody will answer it as an emergency.", "চাইলে সাধারণ অনুরোধটি পাঠাতে পারেন, তবে কেউ এটিকে জরুরি হিসেবে উত্তর দেবেন না।"))}</p></div>
+      </div>}
+      <div className={styles.composerTabs} role="group" aria-label={t(words("Ways to fill your message", "বার্তা লেখার উপায়"))}>
+        {([["phrases", MessageSquareText, words("Starter sentences", "শুরুর বাক্য")], ["pictures", Images, words("Say it with pictures", "ছবি দিয়ে বলুন")], ["voice", Mic, words("Speak", "বলে লিখুন")]] as const).map(([key, Icon, label]) =>
+          <button key={key} type="button" aria-pressed={helper === key} onClick={() => setHelper(helper === key ? null : key)}><Icon size={18} aria-hidden="true" />{t(label)}</button>)}
+      </div>
+      {helper === "phrases" && <div className={styles.quickChoices}>{quickRequests.map(phrase => <button key={phrase.en} type="button" className="pro-btn pro-btn-secondary" onClick={() => {
         const incomingText = t(phrase);
         const next = message ? `${message}\n${incomingText}` : incomingText;
         if (next.length <= 1000) { setMessage(next); setIncoming(""); messageInput.current?.focus(); }
         else setIncoming(incomingText);
-      }}>{t(phrase)}</button>)}</div>
-    </details>
-    <fieldset className={styles.choices}>
-      <legend className={styles.legend}>{t(words("What do you need help with?", "কী নিয়ে সহায়তা চান?"))}</legend>
-      <div className={styles.pillRow}>{purposeChoices.map(choice => <label key={choice.en} className={styles.pill}>
-        <input type="radio" name="purpose-choice" checked={purpose === t(choice)} onChange={() => { setPurpose(t(choice)); }} />{t(choice)}
-      </label>)}</div>
-    </fieldset>
-    <label className={styles.field}>
-      <span>{t(words("Purpose of this request", "এই অনুরোধের উদ্দেশ্য"))}</span>
-      <input ref={purposeInput} className="pro-input" required maxLength={300} value={purpose} onChange={event => setPurpose(event.target.value)} placeholder={t(words("Pick one above, or write your own", "উপরে থেকে বাছুন, অথবা নিজে লিখুন"))} />
-      </label>
-    <label className={styles.field}>
-      <span>{t(words("Preferred communication", "যোগাযোগের পছন্দ"))}</span>
-      <select className="pro-input" value={method} onChange={event => setMethod(event.target.value as typeof method)}>
-      <option value="text">{t(words("Text", "লেখা"))}</option>
-      <option value="aac">{t(words("Picture-and-text / AAC", "ছবি ও লেখা / এএসি"))}</option>
-      <option value="call">{t(words("Call preference (demo does not place calls)", "কলের পছন্দ (ডেমো কল করে না)"))}</option>
-      </select>
-      </label>
-    {method === "aac" && <AACComposer onInsert={text => { const next = mergeAacText(message, text); if (next.length > 1000) setIncoming(text); else { setMessage(next); setIncoming(""); messageInput.current?.focus(); } }} targetLabel={t(words("Insert into request", "অনুরোধে যোগ করুন"))} />}
-    <label className={styles.field}>
-      <span>{t(words("Message for this recipient", "এই প্রাপকের জন্য বার্তা"))}</span>
-      <textarea ref={messageInput} required rows={4} className="pro-input" maxLength={1000} value={message} onChange={event => setMessage(event.target.value)} aria-describedby={`${id}-privacy`} />
-      </label>
-    <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={message} maxLength={1000} onChange={setMessage} />
-    <p id={`${id}-privacy`}>{t(words("Everything you type in this message is shared after approval. Include only information needed for this purpose. Drafts stay in memory in this tab.", "অনুমতির পর এই বার্তায় লেখা সব তথ্য শেয়ার হবে। এই উদ্দেশ্যে প্রয়োজনীয় তথ্যই লিখুন। খসড়া এই ট্যাবের মেমরিতে থাকে।"))}</p>
-    {incoming && <HeldAacText text={incoming} value={message} maxLength={1000} lang={language === "bn" ? "bn" : "en"} onDismiss={() => setIncoming("")} onAdd={next => { setMessage(next); setIncoming(""); messageInput.current?.focus(); }} />}
+      }}><Plus size={16} aria-hidden="true" />{t(phrase)}</button>)}</div>}
+      {helper === "pictures" && <AACComposer onInsert={text => { const next = mergeAacText(message, text); if (next.length > 1000) setIncoming(text); else { setMessage(next); setIncoming(""); messageInput.current?.focus(); } }} targetLabel={t(words("Add to my message", "আমার বার্তায় যোগ করুন"))} />}
+      {helper === "voice" && <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={message} maxLength={1000} onChange={setMessage} />}
+      {incoming && <HeldAacText text={incoming} value={message} maxLength={1000} lang={language === "bn" ? "bn" : "en"} onDismiss={() => setIncoming("")} onAdd={next => { setMessage(next); setIncoming(""); messageInput.current?.focus(); }} />}
+      <p id={`${id}-privacy`} className={styles.meta}><Lock size={14} aria-hidden="true" /> {t(words("Only you see this until you review and approve. Write only what is needed for this purpose.", "পর্যালোচনা ও অনুমতি না দেওয়া পর্যন্ত এটি শুধু আপনি দেখেন। এই উদ্দেশ্যে যা দরকার, শুধু সেটুকু লিখুন।"))}</p>
+    </div>
 </>}
     {step === 1 && <>
     <fieldset className={styles.choices}>
@@ -278,7 +301,15 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     </fieldset>
     <p className={styles.meta}>{t(words("Only approved demo accounts are listed. These are simulated provider accounts operated for the demo. Approved users can access only what you authorize.", "শুধু অনুমোদিত ডেমো অ্যাকাউন্ট দেখানো হয়। এগুলো ডেমোর সিমুলেটেড সেবাদাতা অ্যাকাউন্ট। অনুমোদিত ব্যবহারকারী শুধু আপনার অনুমতি দেওয়া তথ্য দেখতে পারেন।"))}</p>
 </>}
-    {step === 2 && <>    <fieldset className={styles.choices}>
+    {step === 2 && <>
+    <fieldset className={styles.choices}>
+      <legend className={styles.legend}>{t(words("How would you like them to reply?", "উত্তর কীভাবে পেতে চান?"))}</legend>
+      <div className={styles.purposeGrid}>{replyMethods.map(({ key, icon: Icon, label }) => <label key={key} className={styles.purposeCard}>
+        <input type="radio" name="reply-method" checked={method === key} onChange={() => setMethod(key)} />
+        <Icon size={22} aria-hidden="true" /><span>{t(label)}</span>
+      </label>)}</div>
+    </fieldset>
+    <fieldset className={styles.choices}>
       <legend className={styles.legend}>{t(words("Optional accommodations", "ব্যবহারের সুবিধার ঐচ্ছিক অনুরোধ"))}</legend>
       <p>{t(words("Requests describe assistance you want. Availability must be confirmed separately.", "এখানে আপনার চাওয়া সহায়তা বাছুন। সুবিধা পাওয়া যাবে কি না আলাদাভাবে নিশ্চিত করতে হবে।"))}</p>
       {Object.entries(accommodations).map(([key, label]) => <label key={key} className={styles.check}>

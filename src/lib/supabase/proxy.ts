@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { authCookieOptions } from "@/lib/auth/cookies";
-import { signInPath, workspaceRole } from "@/lib/auth/access";
+import { signedInAppPath, signInPath, workspaceRole } from "@/lib/auth/access";
 import { siteOrigin } from "@/lib/auth/validation";
 import { publicSupabaseConfig } from "./config";
 
@@ -45,7 +45,16 @@ export async function updateSession(request: NextRequest) {
     try { signedIn = Boolean((await client.auth.getClaims()).data?.claims?.sub); } catch { /* treated as signed out */ }
     if (!signedIn) return finish(NextResponse.redirect(new URL(signInPath(request.nextUrl.pathname + request.nextUrl.search), origin!)));
   } else if (request.cookies.getAll().some(({ name }) => name.startsWith("sb-"))) {
-    try { await client.auth.getUser(); } catch { /* Public pages stay public during Auth outages. */ }
+    try {
+      const { data } = await client.auth.getUser();
+      const target = data.user?.email_confirmed_at && !data.user.is_anonymous ? signedInAppPath(request.nextUrl.pathname) : null;
+      // Only mothers have an /app twin; supporters and providers keep the public pages.
+      if (target && (await client.from("profiles").select("role").eq("user_id", data.user!.id).maybeSingle()).data?.role === "mother") {
+        const url = request.nextUrl.clone();
+        url.pathname = target;
+        return finish(NextResponse.redirect(url));
+      }
+    } catch { /* Public pages stay public during Auth outages. */ }
   }
   return finish(response);
 }

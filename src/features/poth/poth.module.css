@@ -194,3 +194,18 @@
   .printVisitRoot fieldset { break-inside: avoid; }
   .printVisitRoot details { display: none; }
 }
+
+/* Nearby: list on the left, map on the right (stacked on phones). Numbers link a card to its pin. */
+.nearbySplit { display: grid; gap: 1.25rem; align-items: start; }
+.nearbySplit .cards { grid-template-columns: minmax(0, 1fr); }
+.mapColumn { margin: 0; }
+@media (min-width: 64rem) {
+  .nearbySplit { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+  .mapColumn { position: sticky; top: 5.5rem; order: 2; }
+}
+.pinNumber { display: inline-grid; place-items: center; min-width: 2rem; height: 2rem; padding: 0 .4rem; border-radius: 999px; background: var(--pro-primary); color: var(--pro-on-primary); font-weight: 700; }
+.card[data-selected] { border: 2px solid var(--pro-primary); box-shadow: 0 0 0 4px var(--pro-surface); }
+.factBadges { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.badgeMuted { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .7rem; border-radius: 999px; font-weight: 600; font-size: .875rem; background: var(--pro-surface); color: var(--pro-muted); border: 1px solid var(--pro-border); }
+.mapYou { position: absolute; padding: .1rem .45rem; border-radius: 999px; background: var(--pro-elevated); color: var(--pro-text); font-size: .75rem; font-weight: 650; pointer-events: none; white-space: nowrap; }
+@media (forced-colors: active) { .pinNumber { forced-color-adjust: none; background: Highlight; color: HighlightText; } .card[data-selected] { outline: 2px solid Highlight; } .badgeMuted { border-color: CanvasText; } }

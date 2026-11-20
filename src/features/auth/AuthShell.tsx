@@ -100,9 +100,9 @@ const exploreNav: NavItem[] = [
     icon: MapPin,
     module: "Poth",
   },
-  // Public on purpose: warning signs must open even if the session has expired.
+  // Same reviewed content as public /safety; an expired session lands on sign-in, which links to /safety.
   {
-    href: "/safety",
+    href: "/app/safety",
     en: "Warning signs",
     bn: "সতর্কতার লক্ষণ",
     icon: ShieldCheck,
@@ -310,6 +310,10 @@ export function AuthShell({
           <div className="auth-header-inner">
             {brand("/")}
             <div className="auth-header-actions">
+              <Link href="/safety" className="inline-flex min-h-11 items-center gap-1.5 rounded-control border-2 border-pro-danger px-3 font-semibold text-pro-danger focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
+                <LifeBuoy size={17} aria-hidden="true" />
+                <span className="sr-only sm:not-sr-only">{t({ en: "Urgent help", bn: "জরুরি সাহায্য" })}</span>
+              </Link>
               {languageToggle}
               {accessPanel(false)}
               <Link href="/" className="auth-home-btn">
@@ -530,7 +534,7 @@ export function AuthShell({
             </div>
             <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5 sm:gap-2.5">
               <Link
-                href="/safety"
+                href="/app/safety"
                 className="inline-flex min-h-10 items-center gap-1.5 rounded-pill border border-pro-danger/60 px-3 text-sm font-semibold text-pro-danger hover:bg-pro-danger-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
               >
                 <LifeBuoy size={16} aria-hidden="true" />

@@ -227,18 +227,19 @@ test("opt-in speaks typed and AAC-drafted turns in order on mobile", async ({ pa
   ]);
 
   await page.getByLabel("Answer language").selectOption("bn");
-  await page.getByRole("button", { name: /Use symbols|প্রতীক ব্যবহার করুন/ }).press("Enter");
+  const banglaConversation = page.getByRole("region", { name: "বার্তার কথোপকথন" });
+  await banglaConversation.getByRole("link", { name: "ছবি দিয়ে বলুন" }).press("Enter");
+
   const aac = page.locator("#barta-symbol-input");
-  const composedMessage = aac.getByRole("textbox", { name: /Composed message|তৈরি হওয়া বাক্য/ });
-  const insert = aac.getByTestId("aac-insert-draft");
-  await expect(composedMessage).toBeVisible();
-  await expect(insert).toBeDisabled();
+  await aac.getByRole("button", { name: /^Pain \(ব্যথা\)/ }).press("Enter");
+  const composedMessage = aac.getByRole("textbox", { name: /Your sentence/ });
+  await expect(composedMessage).not.toHaveValue("");
   await composedMessage.fill("আমার একটি প্রশ্ন আছে।");
-  await expect(insert).toBeEnabled();
-  await insert.click();
-  await expect(page.getByRole("textbox", { name: "আপনার প্রশ্ন" })).toHaveValue("আমার একটি প্রশ্ন আছে।");
+  await aac.getByRole("button", { name: "আমার প্রশ্নে যোগ করুন" }).click();
+
+  await expect(banglaConversation.getByRole("textbox", { name: "আপনার প্রশ্ন" })).toHaveValue("আমার একটি প্রশ্ন আছে।");
   expect(await events()).toHaveLength(2);
-  await page.getByRole("button", { name: "বার্তাকে জিজ্ঞেস করুন" }).press("Enter");
+  await banglaConversation.getByRole("button", { name: "বার্তাকে জিজ্ঞেস করুন" }).press("Enter");
   await expect.poll(events).toEqual([
     { text: "Hello", lang: "en-GB" }, { text: "Hello from Barta.", lang: "en-GB" },
     { text: "আমার একটি প্রশ্ন আছে.", lang: "bn-BD" },
@@ -346,4 +347,26 @@ test("Barta language choices are independent and dictation highlights interim wo
   expect(sent).toBe(0);
   await page.getByRole("button", { name: "Ask Barta" }).press("Enter");
   await expect(page.getByText("Hello from Barta.", { exact: true })).toBeVisible();
+});
+
+test("Barta guide uses an installed voice directly and exposes the transcript", async ({ page }) => {
+  await page.addInitScript(() => {
+    class UtteranceStub { constructor(public text: string) {} }
+    Object.defineProperty(window, "SpeechSynthesisUtterance", { value: UtteranceStub });
+    Object.defineProperty(window, "speechSynthesis", { value: {
+      getVoices: () => [{ lang: "en-GB", localService: true }],
+      speak(utterance: SpeechSynthesisUtterance) {
+        Reflect.set(window, "bartaGuideSpeech", utterance.text);
+        queueMicrotask(() => utterance.onstart?.(new Event("start") as SpeechSynthesisEvent));
+      },
+      cancel() {},
+    } });
+  });
+  await page.goto("/ask");
+  await page.getByLabel(/Answer language|উত্তরের ভাষা/).selectOption("en");
+  await page.getByRole("button", { name: "Listen to the Barta guide" }).click();
+  await expect.poll(() => page.evaluate(() => Reflect.get(window, "bartaGuideSpeech"))).toContain("Welcome");
+  await page.getByRole("button", { name: "Stop reading" }).click();
+  await page.getByText("Read the guide transcript", { exact: true }).click();
+  await expect(page.getByText(/Check the transcript before sending/)).toBeVisible();
 });

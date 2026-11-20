@@ -85,8 +85,14 @@ export function useBartaAudio() {
       return;
     }
 
-    function speak(voice: SpeechSynthesisVoice) {
-      const utterance = new SpeechSynthesisUtterance(prepareSpeechText(text, language));
+    const speechText = prepareSpeechText(text, language);
+    // Keep guide utterances short so a browser can finish them one at a time.
+    const sections = id === "barta-guide"
+      ? speechText.split(/(?<=[.!?])\s+|\n+/u).map(part => part.trim()).filter(Boolean)
+      : [speechText];
+
+    function speak(voice: SpeechSynthesisVoice, index = 0) {
+      const utterance = new SpeechSynthesisUtterance(sections[index] ?? speechText);
       utterance.voice = voice;
       utterance.lang = voice.lang;
       utterance.rate = language === "bn" ? 0.84 : 0.9;
@@ -97,8 +103,12 @@ export function useBartaAudio() {
       utterance.onend = () => {
         if (activeSpeech.current !== utterance) return;
         activeSpeech.current = null;
-        releaseAudioSession(owner.current);
         window.clearTimeout(voiceStartupTimer.current);
+        if (index + 1 < sections.length && ownsAudioSession(owner.current)) {
+          speak(voice, index + 1);
+          return;
+        }
+        releaseAudioSession(owner.current);
         setSpeaking(undefined);
       };
       utterance.onerror = () => {

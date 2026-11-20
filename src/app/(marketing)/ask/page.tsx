@@ -1,3 +1,4 @@
+import { ModuleCommunication } from "@/components/accessibility/ModuleCommunication";
 import { homepagePreferenceBootstrap } from "@/components/marketing/preference-bootstrap";
 import { Brand } from "@/components/ui/Brand";
 import { PageHeading } from "@/components/ui/PageHeading";
@@ -59,6 +60,7 @@ export default async function AskBartaPage({ searchParams }: { searchParams: Pro
             নির্ণয়, ওষুধ দেওয়া বা চিকিৎসকের সঙ্গে যোগাযোগ করে না।
           </p>
         </div>
+        <ModuleCommunication placement="barta" />
         <BartaChatStarter mode="education" initialQuestion={query} />
         <section
           id="barta-help"

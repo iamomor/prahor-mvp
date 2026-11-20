@@ -26,7 +26,6 @@ function escapeXml(text: string) {
 
 export async function POST(request: Request) {
   const config = getSpeechConfig();
-  if (!config) return jsonNoStore({ message: "Generated audio is not configured." }, 503);
   let body: unknown;
   try {
     body = await boundedJson(request, 16_000);
@@ -38,7 +37,8 @@ export async function POST(request: Request) {
 
   const { language } = parsed.data;
   const text = "help" in parsed.data ? getBartaSpokenGuide(language) : parsed.data.text;
-  if ("ticket" in parsed.data && !verifyAudioTicket(config.key, parsed.data.ticket, text, language)) {
+  if ("ticket" in parsed.data && !config) return jsonNoStore({ message: "Generated audio is not configured." }, 503);
+  if ("ticket" in parsed.data && config && !verifyAudioTicket(config.key, parsed.data.ticket, text, language)) {
     return jsonNoStore({ message: "This audio request is not authorized." }, 403);
   }
 
@@ -57,6 +57,10 @@ export async function POST(request: Request) {
   const mp3 = (bytes: Uint8Array<ArrayBuffer>, source: string) => new Response(bytes, { headers: {
     "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-Barta-Audio-Id": id, "X-Barta-Audio-Source": source,
   } });
+  if (!config) {
+    const bytes = await readBundledSpeech(text, language);
+    return bytes ? mp3(bytes, "bundled") : jsonNoStore({ message: "No recording is available for this guide." }, 503);
+  }
   const mode = fishAudioMode();
   const voice = mode ? getBartaFishVoice(language) : undefined;
   if (voice) {

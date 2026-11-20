@@ -34,7 +34,6 @@ const additionalTopics = [
   "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
 ] as const satisfies readonly EducationTopic[];
 
-const starterTopics = ["ancVisits", "nutrition", "breastfeeding", "newborn"] as const satisfies readonly EducationTopic[];
 
 const QuestionOption = memo(function QuestionOption({ prompt, onSelect, disabled }: {
   prompt: string;
@@ -344,16 +343,6 @@ export function BartaEducationChat({
                   : "Ask about pregnancy, birth or caring for your newborn, in your own words. Every answer shows where it comes from."}</p>
               </div>
             </div>
-            <p className={styles.startersLabel}>{formLanguage === "bn" ? "শুরু করতে একটি বেছে নিন" : "Not sure where to start? Try one"}</p>
-            <ul className={styles.starters}>
-              {starterTopics.map((topic) => (
-                <li key={topic}>
-                  <button type="button" disabled={!ready || busy || audio.listening} onClick={() => onSelect(educationTopics[topic][formLanguage])}>
-                    {educationTopics[topic][formLanguage]}
-                  </button>
-                </li>
-              ))}
-            </ul>
           </div>
         )}
 
@@ -536,7 +525,11 @@ export function BartaEducationChat({
         <BartaAudioFile key={formLanguage} guideLabel={copy.readGuide}
           text={spokenGuide} language={formLanguage} disabled={!ready || busy || audio.listening}
           browserReading={audio.speaking === "barta-guide"}
-          onBrowserRead={() => readAnswer("barta-guide", spokenGuide, formLanguage)} />
+          browserFailed={audio.notice?.replyId === "barta-guide"}
+          onBrowserRead={() => {
+            stopReplyAudio();
+            readAnswer("barta-guide", spokenGuide, formLanguage);
+          }} />
         {playbackMessage("barta-guide") && (
           <p role="status" className={styles.playbackNotice}>{playbackMessage("barta-guide")}</p>
         )}

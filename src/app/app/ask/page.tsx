@@ -1,3 +1,4 @@
+import { ModuleCommunication } from "@/components/accessibility/ModuleCommunication";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowDown, MessageCircle, Phone, ShieldCheck, TriangleAlert, UserRound } from "lucide-react";
@@ -44,6 +45,7 @@ export default async function AppAskPage({ searchParams }: { searchParams: Promi
           </a>
         </div>
       </header>
+      <ModuleCommunication placement="barta" />
       <BartaChatStarter mode="education" initialQuestion={initialQuestion} />
       <section id="ask-help" tabIndex={-1} aria-labelledby="ask-help-title" className="grid max-w-3xl scroll-mt-6 gap-3 rounded-hero border border-pro-control-border bg-pro-elevated p-5 sm:p-6">
         <h2 id="ask-help-title" className="flex flex-wrap items-center gap-x-2.5 text-xl font-semibold">

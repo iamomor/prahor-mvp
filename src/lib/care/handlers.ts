@@ -286,7 +286,7 @@ export async function handleCare(
       return unavailable();
     }
     // The open RPC returns a denial (instead of raising) so its audit row commits; never reveal why.
-    if (operation === "shonket-open" && (result.data as { denied?: unknown } | null)?.denied === true)
+    if ((result.data as { denied?: unknown } | null)?.denied === true)
       return fail("not_found", 404, "This resource is unavailable.");
     const parsed = responseSchema.safeParse(result.data);
     if (!parsed.success) return unavailable();

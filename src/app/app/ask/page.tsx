@@ -1,85 +1,144 @@
 import { ModuleCommunication } from "@/components/accessibility/ModuleCommunication";
+import { BartaChatStarter } from "@/features/barta/BartaChatStarter";
+import {
+  ArrowDown,
+  Phone,
+  ShieldCheck,
+  TriangleAlert,
+  UserRound,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDown, MessageCircle, Phone, ShieldCheck, TriangleAlert, UserRound } from "lucide-react";
-import { BartaChatStarter } from "@/features/barta/BartaChatStarter";
 
 export const metadata: Metadata = {
   title: "Ask PROHOR | Barta",
-  description: "Ask a maternal-health education question in Bangla or English and see the sources.",
+  description:
+    "Ask a maternal-health education question in Bangla or English and see the sources.",
 };
 
-const helpLink = "flex min-h-16 items-start gap-3 rounded-card border px-4 py-3 font-semibold no-underline transition-colors duration-[var(--pro-duration-fast)] ease-pro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus";
+const helpLink =
+  "flex min-h-16 items-start gap-3 rounded-card border px-4 py-3 font-semibold no-underline transition-colors duration-[var(--pro-duration-fast)] ease-pro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus";
 
 /** Barta inside the signed-in shell. The public /ask page stays available without sign-in. */
-export default async function AppAskPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+export default async function AppAskPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
   const { q } = await searchParams;
   const initialQuestion = typeof q === "string" ? q.slice(0, 1200) : "";
   return (
     <div className="grid min-w-0 max-w-[71rem] grid-cols-[minmax(0,1fr)] gap-5">
-      <header className="grid max-w-3xl gap-3">
-        <p className="flex items-center gap-2.5 font-semibold text-pro-muted">
-          <span className="grid size-10 place-items-center rounded-control bg-pro-surface text-pro-primary" aria-hidden="true">
-            <MessageCircle size={20} />
-          </span>
-          Barta · Your questions matter
-        </p>
-        <h1>
+      <header className="grid min-w-0 gap-2.5">
+        <h1 className="text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl">
           Ask PROHOR
-          <span lang="bn" className="mt-1 block text-[0.68em] font-semibold text-pro-primary">প্রহরকে জিজ্ঞাসা করুন</span>
+          <span
+            lang="bn"
+            className="ms-3 text-[0.62em] leading-snug font-bold text-pro-primary"
+          >
+            প্রহরকে জিজ্ঞাসা করুন
+          </span>
         </h1>
-        <p className="max-w-[65ch] text-base leading-relaxed text-pro-muted">
-          Ask about pregnancy, birth or newborn care and see the sources behind each answer.
-          {" "}<span lang="bn">গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে প্রশ্ন করুন; প্রতিটি উত্তরের সূত্র দেখুন।</span>
+        <p className="max-w-[70ch] text-[0.95rem] leading-snug text-pro-muted">
+          Ask about pregnancy, birth or newborn care and see the sources behind
+          each answer.{" "}
+          <span lang="bn">
+            গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে প্রশ্ন করুন; উত্তরের সূত্র
+            দেখুন।
+          </span>
         </p>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 rounded-card border border-pro-border bg-pro-elevated px-4 py-3">
-          <p className="flex min-w-0 flex-[1_1_22rem] items-start gap-2.5 text-pro-text">
-            <ShieldCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-pro-primary" />
-            <span>
-              <strong>Educational, not a diagnosis.</strong> Barta cannot diagnose, prescribe or contact a clinician for you.
-              {" "}<span lang="bn">বার্তা রোগ নির্ণয়, ওষুধ দেওয়া বা চিকিৎসকের সঙ্গে যোগাযোগ করে না।</span>
+        <section
+          aria-labelledby="ask-notice"
+          className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-card bg-pro-warning-soft px-3.5 py-2 text-sm text-pro-text"
+        >
+          <ShieldCheck
+            size={18}
+            aria-hidden="true"
+            className="shrink-0 text-pro-warning"
+          />
+          <p className="min-w-0 flex-[1_1_16rem] leading-snug">
+            <strong id="ask-notice">Educational, not a diagnosis.</strong>{" "}
+            Barta cannot diagnose, prescribe or contact a clinician.{" "}
+            <span lang="bn">
+              বার্তা রোগ নির্ণয়, ওষুধ বা চিকিৎসকের সঙ্গে যোগাযোগ করে না।
             </span>
           </p>
-          <a href="#ask-help" className="inline-flex min-h-11 items-center gap-1.5 rounded-control font-semibold text-pro-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
-            Need help now? · <span lang="bn">এখনই সাহায্য</span><ArrowDown size={16} aria-hidden="true" />
+          <a
+            href="#ask-help"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-pill bg-pro-text px-4 text-sm font-bold whitespace-nowrap text-pro-bg no-underline transition-colors duration-[var(--pro-duration-fast)] hover:bg-pro-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus motion-reduce:transition-none"
+          >
+            Need help now? <span lang="bn">এখনই সাহায্য</span>
+            <ArrowDown size={16} aria-hidden="true" />
           </a>
-        </div>
+        </section>
+        <ModuleCommunication placement="barta" />
       </header>
-      <ModuleCommunication placement="barta" />
       <BartaChatStarter mode="education" initialQuestion={initialQuestion} />
-      <details className="rounded-card border border-pro-border bg-pro-surface px-4 text-sm">
-        <summary className="min-h-11 cursor-pointer py-2.5 font-semibold">
-          Barta features and status · <span lang="bn">সুবিধা ও অবস্থা</span>
-        </summary>
-        <dl className="grid gap-2 pb-3">
-          <div>
-            <dt className="inline font-semibold">Available</dt>
-            <dd className="inline"> · Bangla and English education chat, voice dictation, pictures, emoji and text input.</dd>
-          </div>
-          <div>
-            <dt className="inline font-semibold">Limited availability</dt>
-            <dd className="inline"> · Configured Bangla and English read-aloud voices, emergency guidance links and conversation history.</dd>
-          </div>
-        </dl>
-      </details>
-      <section id="ask-help" tabIndex={-1} aria-labelledby="ask-help-title" className="grid scroll-mt-6 gap-3 rounded-hero border border-pro-control-border bg-pro-elevated p-5 sm:p-6">
-        <h2 id="ask-help-title" className="flex flex-wrap items-center gap-x-2.5 text-xl font-semibold">
-          <TriangleAlert size={22} aria-hidden="true" className="shrink-0 text-pro-danger" />
+      <section
+        id="ask-help"
+        tabIndex={-1}
+        aria-labelledby="ask-help-title"
+        className="grid scroll-mt-6 gap-3 rounded-hero border border-pro-control-border bg-pro-elevated p-5 sm:p-6"
+      >
+        <h2
+          id="ask-help-title"
+          className="flex flex-wrap items-center gap-x-2.5 text-xl font-semibold"
+        >
+          <TriangleAlert
+            size={22}
+            aria-hidden="true"
+            className="shrink-0 text-pro-danger"
+          />
           Help without chat · <span lang="bn">চ্যাট ছাড়া সাহায্য</span>
         </h2>
-        <p className="max-w-[65ch]">If you need urgent medical care, go to a hospital or maternity facility. Please do not wait for a chat reply.</p>
+        <p className="max-w-[65ch]">
+          If you need urgent medical care, go to a hospital or maternity
+          facility. Please do not wait for a chat reply.
+        </p>
         <div className="grid gap-2.5 sm:grid-cols-3">
-          <a href="tel:999" className={`${helpLink} border-pro-danger bg-pro-danger text-pro-on-primary hover:bg-pro-danger/90`}>
+          <a
+            href="tel:999"
+            className={`${helpLink} border-pro-danger bg-pro-danger text-pro-on-primary hover:bg-pro-danger/90`}
+          >
             <Phone size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
-            <span>Call 999 <span lang="bn" className="block font-normal">৯৯৯-এ কল করুন</span></span>
+            <span>
+              Call 999{" "}
+              <span lang="bn" className="block font-normal">
+                ৯৯৯-এ কল করুন
+              </span>
+            </span>
           </a>
-          <Link href="/safety" className={`${helpLink} border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface`}>
-            <TriangleAlert size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-pro-primary" />
-            <span>Warning signs <span lang="bn" className="block font-normal text-pro-muted">সতর্কতার লক্ষণ</span></span>
+          <Link
+            href="/safety"
+            className={`${helpLink} border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface`}
+          >
+            <TriangleAlert
+              size={20}
+              aria-hidden="true"
+              className="mt-0.5 shrink-0 text-pro-primary"
+            />
+            <span>
+              Warning signs{" "}
+              <span lang="bn" className="block font-normal text-pro-muted">
+                সতর্কতার লক্ষণ
+              </span>
+            </span>
           </Link>
-          <Link href="/app/care" className={`${helpLink} border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface`}>
-            <UserRound size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-pro-primary" />
-            <span>Ask a person <span lang="bn" className="block font-normal text-pro-muted">মানুষের সাহায্য</span></span>
+          <Link
+            href="/app/care"
+            className={`${helpLink} border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface`}
+          >
+            <UserRound
+              size={20}
+              aria-hidden="true"
+              className="mt-0.5 shrink-0 text-pro-primary"
+            />
+            <span>
+              Ask a person{" "}
+              <span lang="bn" className="block font-normal text-pro-muted">
+                মানুষের সাহায্য
+              </span>
+            </span>
           </Link>
         </div>
       </section>

@@ -26,7 +26,7 @@ export default function Fixture() { return <main><BujhiTasks /><div id="report-r
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error" && /hydrat/i.test(message.text())) errors.push(message.text()); });
   await page.goto((process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/bujhi-review-qa");
-  const image = page.getByRole("region", { name: "Image OCR entry" });
+  const image = page.getByTestId("bujhi-image-entry");
   await expect(image.getByRole("heading", { name: /Scan Medical Report/ })).toBeVisible();
   await page.screenshot({ path: path.join(artifacts, "report-start-desktop.png"), fullPage: true, caret: "initial" });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -41,8 +41,9 @@ export default function Fixture() { return <main><BujhiTasks /><div id="report-r
     ctx.fillText("Fasting glucose 92 mg/dL 70-100 mg/dL", 50, 270);
     return canvas.toDataURL("image/png").split(",")[1];
   });
-  await image.getByLabel(/Allow downloads/).check();
-  await image.getByLabel(/Photo Upload/).setInputFiles({ name: "synthetic-account-report.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") });
+  await image.getByRole("checkbox", { name: /report reader|রিপোর্ট রিডার/ }).check();
+  await image.locator("#bujhi-photo-gallery").setInputFiles({ name: "synthetic-account-report.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") });
+  await image.getByRole("button", { name: /Read my report|রিপোর্ট পড়ুন/ }).click();
   await expect(page.getByRole("heading", { name: "মূল রিপোর্টের সঙ্গে মিলিয়ে দেখুন" })).toBeVisible({ timeout: 180000 });
   await page.getByLabel("ব্যাখ্যার ভাষা").selectOption("en");
   const explain = page.getByRole("button", { name: "Explain checked results" });

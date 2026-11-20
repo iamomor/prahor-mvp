@@ -1,11 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-import { Pause, Play, Volume2 } from "lucide-react";
-import { educationCopy, type Language } from "./barta-education-copy";
-import { fetchBartaAudio } from "./barta-audio-file";
-import styles from "./barta-education.module.css";
 import { claimAudioSession, releaseAudioSession } from "@/lib/audio-session";
+import { Pause, Play, Volume2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { fetchBartaAudio } from "./barta-audio-file";
+import { educationCopy, type Language } from "./barta-education-copy";
+import styles from "./barta-education.module.css";
 
-export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, disabled, browserReading, browserFailed, onBrowserRead }: {
+export function BartaAudioFile({
+  text,
+  language,
+  ticket,
+  clipUrl,
+  guideLabel,
+  disabled,
+  browserReading,
+  browserFailed,
+  onBrowserRead,
+}: {
   text: string;
   language: Language;
   ticket?: string;
@@ -28,11 +38,14 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
   const owner = useRef(Symbol("barta-media"));
   const ready = Boolean(audioUrl && !failed);
 
-  useEffect(() => () => {
-    request.current?.abort();
-    releaseAudioSession(owner.current);
-    if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
-  }, []);
+  useEffect(
+    () => () => {
+      request.current?.abort();
+      releaseAudioSession(owner.current);
+      if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+    },
+    [],
+  );
 
   async function load() {
     if (request.current || (!clipUrl && !ticket && !guideLabel)) return;
@@ -44,7 +57,10 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
     setLoading(true);
     const timer = window.setTimeout(() => controller.abort(), 25_000);
     try {
-      const content = await fetchBartaAudio({ text, language, ticket, clipUrl, help: Boolean(guideLabel) }, controller.signal);
+      const content = await fetchBartaAudio(
+        { text, language, ticket, clipUrl, help: Boolean(guideLabel) },
+        controller.signal,
+      );
       if (controller.signal.aborted) return;
       const url = URL.createObjectURL(content);
       if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
@@ -66,8 +82,17 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
       return;
     }
     const media = player.current;
-    if (guideLabel && !ready && !failed && !browserFailed &&
-      window.speechSynthesis?.getVoices().some(voice => voice.localService && voice.lang.toLowerCase().split(/[-_]/u)[0] === language)) {
+    if (
+      guideLabel &&
+      !ready &&
+      !failed &&
+      !browserFailed &&
+      window.speechSynthesis
+        ?.getVoices()
+        .some(
+          (voice) => voice.lang.toLowerCase().split(/[-_]/u)[0] === language,
+        )
+    ) {
       onBrowserRead();
       return;
     }
@@ -79,19 +104,48 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
     else media.pause();
   }
 
-  const label = browserReading ? copy.stopReading : loading ? copy.preparingAudio : failed ? copy.retryAudio
-    : ready ? (playing ? copy.pauseAudio : copy.playAudio) : (guideLabel ?? copy.readAloud);
+  const label = browserReading
+    ? copy.stopReading
+    : loading
+      ? copy.preparingAudio
+      : failed
+        ? copy.retryAudio
+        : ready
+          ? playing
+            ? copy.pauseAudio
+            : copy.playAudio
+          : (guideLabel ?? copy.readAloud);
 
   return (
     <div className={styles.audioFile} lang={language}>
-      <button type="button" className={styles.read} disabled={disabled} aria-disabled={loading || undefined} onClick={activate}>
-        {ready ? (playing ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />)
-          : <Volume2 size={16} aria-hidden="true" />} {label}
+      <button
+        type="button"
+        className={styles.read}
+        disabled={disabled}
+        aria-disabled={loading || undefined}
+        onClick={activate}
+      >
+        {ready ? (
+          playing ? (
+            <Pause size={16} aria-hidden="true" />
+          ) : (
+            <Play size={16} aria-hidden="true" />
+          )
+        ) : (
+          <Volume2 size={16} aria-hidden="true" />
+        )}{" "}
+        {label}
       </button>
       {ready && (
         <>
           <p role="status">{playing ? copy.audioPlaying : copy.audioReady}</p>
-          <audio ref={player} controls preload="auto" data-barta-audio src={audioUrl} aria-label={guideLabel ?? copy.readAloud}
+          <audio
+            ref={player}
+            controls
+            preload="auto"
+            data-barta-audio
+            src={audioUrl}
+            aria-label={guideLabel ?? copy.readAloud}
             onCanPlay={(event) => {
               if (!audioUrl || firstPlay.current === audioUrl) return;
               firstPlay.current = audioUrl;
@@ -99,21 +153,38 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
             }}
             onPlay={(event) => {
               const current = event.currentTarget;
-              claimAudioSession({ id: owner.current, stop: () => current.pause() });
-              document.querySelectorAll<HTMLAudioElement>("audio[data-barta-audio]").forEach((audio) => {
-                if (audio !== current && !audio.paused) audio.pause();
+              claimAudioSession({
+                id: owner.current,
+                stop: () => current.pause(),
               });
+              document
+                .querySelectorAll<HTMLAudioElement>("audio[data-barta-audio]")
+                .forEach((audio) => {
+                  if (audio !== current && !audio.paused) audio.pause();
+                });
             }}
             onPlaying={() => setPlaying(true)}
-            onPause={() => { releaseAudioSession(owner.current); setPlaying(false); }}
-            onEnded={() => { releaseAudioSession(owner.current); setPlaying(false); }}
-            onError={() => { releaseAudioSession(owner.current); setFailed(true); }} />
+            onPause={() => {
+              releaseAudioSession(owner.current);
+              setPlaying(false);
+            }}
+            onEnded={() => {
+              releaseAudioSession(owner.current);
+              setPlaying(false);
+            }}
+            onError={() => {
+              releaseAudioSession(owner.current);
+              setFailed(true);
+            }}
+          />
         </>
       )}
       {guideLabel && (
         <details>
           <summary className="cursor-pointer font-semibold text-pro-primary">
-            {language === "bn" ? "নির্দেশনার লেখা পড়ুন" : "Read the guide transcript"}
+            {language === "bn"
+              ? "নির্দেশনার লেখা পড়ুন"
+              : "Read the guide transcript"}
           </summary>
           <p className="mt-2 whitespace-pre-line">{text}</p>
         </details>
@@ -121,7 +192,12 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
       {failed && (
         <>
           <p role="status">{copy.generatedAudioFailed}</p>
-          <button type="button" className={styles.read} disabled={disabled} onClick={onBrowserRead}>
+          <button
+            type="button"
+            className={styles.read}
+            disabled={disabled}
+            onClick={onBrowserRead}
+          >
             {browserReading ? copy.stopReading : copy.useBrowserVoice}
           </button>
         </>

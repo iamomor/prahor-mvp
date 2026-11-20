@@ -2,18 +2,21 @@ export const educationCopy = {
   en: {
     answerLanguage: "Answer language",
     question: "Your question",
-    prefillExplanation: "Review, edit or clear this question. Barta receives it only after you choose Ask Barta.",
+    prefillExplanation:
+      "Review, edit or clear this question. Barta receives it only after you choose Ask Barta.",
     useSymbols: "Use symbols",
     insertQuestion: "Add to my question",
     savedAacDraft: "Your saved picture sentence",
     insertSavedAac: "Add saved sentence",
     dismissSavedAac: "Discard saved sentence",
-    aacLimit: "The combined question would exceed 1,200 characters. Your draft is unchanged. Shorten the question before inserting this text:",
+    aacLimit:
+      "The combined question would exceed 1,200 characters. Your draft is unchanged. Shorten the question before inserting this text:",
     placeholder: "Ask about pregnancy, birth or newborn care…",
     privacy: "Leave out names, reports and personal details.",
     submit: "Ask Barta",
     checking: "Looking through reviewed sources…",
-    offline: "You are offline. Barta needs an internet connection and is unavailable offline. Your question has not been sent.",
+    offline:
+      "You are offline. Barta needs an internet connection and is unavailable offline. Your question has not been sent.",
     failure: "Barta could not load a response. Try again.",
     timeout: "Barta took too long to respond. Try again.",
     you: "You",
@@ -34,65 +37,89 @@ export const educationCopy = {
     callEmergency: "Call 999 in Bangladesh",
     findCare: "Find care",
     saveVisitQuestion: "Save question for my doctor",
-    visitQuestionPrivacy: "Saving keeps the question in this tab for you to review in Poth.",
+    visitQuestionPrivacy:
+      "Saving keeps the question in this tab for you to review in Poth.",
     reviewVisitQuestions: "Review saved questions in Poth",
     visitQuestionStatus: {
       saved: "Question saved in this tab.",
       full: "Your list is full. Remove a question in Poth to save another.",
-      unavailable: "This browser could not save the question. You can write it down.",
+      unavailable:
+        "This browser could not save the question. You can write it down.",
     },
-    scope: "Barta shares general information. For a diagnosis or advice about your own care, talk with a health professional.",
+    scope:
+      "Barta shares general information. For a diagnosis or advice about your own care, talk with a health professional.",
     replyReady: "Barta has replied.",
     readAloud: "Read aloud",
     speaker: "Speaker",
     speakerOn: "on",
     speakerOff: "off",
     speakerHint: "Turn on to hear questions and replies automatically.",
-    questionVoiceUnavailable: "An on-device voice couldn’t read the question. Barta can still read the reply when audio is available.",
-    speakerBlocked: "Your browser paused automatic playback. Choose Play audio to hear this reply.",
+    speakerPress:
+      "Press Speaker to hear every question and reply read aloud. Press it again to turn it off.",
+    voiceHelp: "Voice help",
+    voiceSteps: "Tap mic → Speak → Stop → Review or edit → Send",
+    voicePermission:
+      "Microphone permission is required. If dictation is unavailable, type in this same field.",
+    questionVoiceUnavailable:
+      "An on-device voice couldn’t read the question. Barta can still read the reply when audio is available.",
+    speakerBlocked:
+      "Your browser paused automatic playback. Choose Play audio to hear this reply.",
     readGuide: "Listen to the Barta guide",
     preparingAudio: "Preparing audio…",
     audioReady: "Audio is ready. Press Play.",
     retryAudio: "Try audio again",
-    generatedAudioFailed: "The audio service is unavailable. You can try a browser voice.",
+    generatedAudioFailed:
+      "The audio service is unavailable. You can try a browser voice.",
     useBrowserVoice: "Use browser voice",
     stopReading: "Stop reading",
     voiceLanguage: "Speech language",
     voiceAuto: "Auto",
-    voiceAutoHint: "Auto uses the language of your draft when recognized, otherwise English. Microphone language:",
+    voiceAutoHint:
+      "Auto uses the language of your draft when recognized, otherwise English. Microphone language:",
     playAudio: "Play audio",
     pauseAudio: "Pause audio",
-    voicePrivacy: "Your browser may send audio to its speech service. Review the text before sending.",
+    voicePrivacy:
+      "Your browser may send audio to its speech service. Review the text before sending.",
     startListening: "Start microphone",
     stopListening: "Stop microphone",
     liveTranscript: "Live transcript",
     transcriptWaiting: "Speak to see your words here.",
-    speechLanguageUnavailable: "This browser’s speech service doesn’t support the selected language. Choose another language or type your question.",
+    speechLanguageUnavailable:
+      "This browser’s speech service doesn’t support the selected language. Choose another language or type your question.",
     listening: "Listening. Stop the microphone when you finish.",
-    noVoice: "This browser has no voice for this language. The answer is available as text.",
-    playError: "The browser voice did not play. Try again or use the audio service if it’s configured.",
-    noDictation: "Voice input is unavailable in this browser. You can type your question.",
+    noVoice:
+      "This browser has no voice for this language. The answer is available as text.",
+    playError:
+      "The browser voice did not play. Try again or use the audio service if it’s configured.",
+    noDictation:
+      "Voice input is unavailable in this browser. You can type your question.",
     dictationError: "Voice input couldn’t finish. You can try again or type.",
-    micBlocked: "Microphone access is blocked. Allow microphone access in your browser or type.",
-    micUnavailable: "No microphone could be opened. Check your input device or type.",
-    speechNetwork: "The browser’s speech service is unreachable. Try again or type.",
+    micBlocked:
+      "Microphone access is blocked. Allow microphone access in your browser or type.",
+    micUnavailable:
+      "No microphone could be opened. Check your input device or type.",
+    speechNetwork:
+      "The browser’s speech service is unreachable. Try again or type.",
     noSpeech: "No speech was detected. Try speaking again or type.",
   },
   bn: {
     answerLanguage: "উত্তরের ভাষা",
     question: "আপনার প্রশ্ন",
-    prefillExplanation: "প্রশ্নটি দেখে নিন, সম্পাদনা করুন বা মুছে ফেলুন। আপনি বার্তাকে জিজ্ঞেস করুন চাপলেই শুধু বার্তায় যাবে।",
+    prefillExplanation:
+      "প্রশ্নটি দেখে নিন, সম্পাদনা করুন বা মুছে ফেলুন। আপনি বার্তাকে জিজ্ঞেস করুন চাপলেই শুধু বার্তায় যাবে।",
     useSymbols: "প্রতীক ব্যবহার করুন",
     insertQuestion: "আমার প্রশ্নে যোগ করুন",
     savedAacDraft: "আপনার সংরক্ষিত ছবির বাক্য",
     insertSavedAac: "সংরক্ষিত বাক্য যোগ করুন",
     dismissSavedAac: "সংরক্ষিত বাক্য বাদ দিন",
-    aacLimit: "প্রশ্নটি ১,২০০ অক্ষরের সীমা ছাড়িয়ে যাবে। খসড়া বদলানো হয়নি। এই লেখা যুক্ত করার আগে প্রশ্নটি ছোট করুন:",
+    aacLimit:
+      "প্রশ্নটি ১,২০০ অক্ষরের সীমা ছাড়িয়ে যাবে। খসড়া বদলানো হয়নি। এই লেখা যুক্ত করার আগে প্রশ্নটি ছোট করুন:",
     placeholder: "গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে জিজ্ঞেস করুন…",
     privacy: "নাম, রিপোর্ট বা ব্যক্তিগত তথ্য দেবেন না।",
     submit: "বার্তাকে জিজ্ঞেস করুন",
     checking: "যাচাই করা সূত্র খোঁজা হচ্ছে…",
-    offline: "আপনি অফলাইনে আছেন। বার্তা ব্যবহার করতে ইন্টারনেট দরকার; অফলাইনে এটি পাওয়া যায় না। আপনার প্রশ্ন পাঠানো হয়নি।",
+    offline:
+      "আপনি অফলাইনে আছেন। বার্তা ব্যবহার করতে ইন্টারনেট দরকার; অফলাইনে এটি পাওয়া যায় না। আপনার প্রশ্ন পাঠানো হয়নি।",
     failure: "বার্তার উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।",
     timeout: "বার্তার উত্তর আসতে বেশি সময় লাগছে। আবার চেষ্টা করুন।",
     you: "আপনি",
@@ -113,48 +140,68 @@ export const educationCopy = {
     callEmergency: "বাংলাদেশে ৯৯৯-এ কল করুন",
     findCare: "সেবা খুঁজুন",
     saveVisitQuestion: "ডাক্তারকে করার জন্য প্রশ্নটি রাখুন",
-    visitQuestionPrivacy: "প্রশ্নটি রাখলে শুধু এই ট্যাবেই থাকবে। পথে গিয়ে দেখতে পারবেন।",
+    visitQuestionPrivacy:
+      "প্রশ্নটি রাখলে শুধু এই ট্যাবেই থাকবে। পথে গিয়ে দেখতে পারবেন।",
     reviewVisitQuestions: "পথে রাখা প্রশ্নগুলো দেখুন",
     visitQuestionStatus: {
       saved: "প্রশ্নটি এই ট্যাবে রাখা হয়েছে।",
       full: "তালিকাটি পূর্ণ। আরেকটি প্রশ্ন রাখতে পথে গিয়ে একটি প্রশ্ন সরান।",
       unavailable: "এই ব্রাউজারে প্রশ্নটি রাখা যায়নি। চাইলে লিখে রাখুন।",
     },
-    scope: "বার্তা সাধারণ তথ্য দেয়। রোগ নির্ণয় বা নিজের সেবা নিয়ে পরামর্শের জন্য স্বাস্থ্যকর্মীর সঙ্গে কথা বলুন।",
+    scope:
+      "বার্তা সাধারণ তথ্য দেয়। রোগ নির্ণয় বা নিজের সেবা নিয়ে পরামর্শের জন্য স্বাস্থ্যকর্মীর সঙ্গে কথা বলুন।",
     replyReady: "বার্তা উত্তর দিয়েছে।",
     readAloud: "পড়ে শোনান",
     speaker: "স্পিকার",
     speakerOn: "চালু",
     speakerOff: "বন্ধ",
     speakerHint: "প্রশ্ন ও উত্তর স্বয়ংক্রিয়ভাবে শুনতে স্পিকার চালু করুন।",
-    questionVoiceUnavailable: "ডিভাইসের কণ্ঠে প্রশ্নটি পড়া যায়নি। অডিও পাওয়া গেলে বার্তা উত্তরটি পড়ে শোনাবে।",
-    speakerBlocked: "ব্রাউজার স্বয়ংক্রিয় অডিও আটকে দিয়েছে। এই উত্তর শুনতে অডিও চালান।",
+    speakerPress:
+      "প্রতিটি প্রশ্ন ও উত্তর পড়ে শুনতে স্পিকার চাপুন। বন্ধ করতে আবার চাপুন।",
+    voiceHelp: "ভয়েস সহায়তা",
+    voiceSteps: "মাইক্রোফোন চাপুন → বলুন → থামান → লেখা দেখে ঠিক করুন → পাঠান",
+    voicePermission:
+      "মাইক্রোফোনের অনুমতি লাগবে। মাইক কাজ না করলে এখানেই টাইপ করুন।",
+    questionVoiceUnavailable:
+      "ডিভাইসের কণ্ঠে প্রশ্নটি পড়া যায়নি। অডিও পাওয়া গেলে বার্তা উত্তরটি পড়ে শোনাবে।",
+    speakerBlocked:
+      "ব্রাউজার স্বয়ংক্রিয় অডিও আটকে দিয়েছে। এই উত্তর শুনতে অডিও চালান।",
     readGuide: "বার্তা ব্যবহারের নির্দেশনা শুনুন",
     preparingAudio: "অডিও তৈরি হচ্ছে…",
     audioReady: "অডিও প্রস্তুত। প্লে চাপুন।",
     retryAudio: "অডিও আবার চেষ্টা করুন",
-    generatedAudioFailed: "অডিও সেবা পাওয়া যাচ্ছে না। ব্রাউজারের কণ্ঠ ব্যবহার করে দেখতে পারেন।",
+    generatedAudioFailed:
+      "অডিও সেবা পাওয়া যাচ্ছে না। ব্রাউজারের কণ্ঠ ব্যবহার করে দেখতে পারেন।",
     useBrowserVoice: "ব্রাউজারের কণ্ঠ ব্যবহার করুন",
     stopReading: "পড়া বন্ধ করুন",
     voiceLanguage: "কথার ভাষা",
     voiceAuto: "স্বয়ংক্রিয়",
-    voiceAutoHint: "স্বয়ংক্রিয় মোডে খসড়ার ভাষা বোঝা গেলে সেটি, নইলে ইংরেজি বেছে নেওয়া হয়। মাইক্রোফোনের ভাষা:",
+    voiceAutoHint:
+      "স্বয়ংক্রিয় মোডে খসড়ার ভাষা বোঝা গেলে সেটি, নইলে ইংরেজি বেছে নেওয়া হয়। মাইক্রোফোনের ভাষা:",
     playAudio: "অডিও চালান",
     pauseAudio: "অডিও থামান",
-    voicePrivacy: "আপনার ব্রাউজার শব্দ শনাক্ত করতে নিজস্ব সেবায় অডিও পাঠাতে পারে। পাঠানোর আগে লেখাটি দেখে নিন।",
+    voicePrivacy:
+      "আপনার ব্রাউজার শব্দ শনাক্ত করতে নিজস্ব সেবায় অডিও পাঠাতে পারে। পাঠানোর আগে লেখাটি দেখে নিন।",
     startListening: "মাইক্রোফোন চালু করুন",
     stopListening: "মাইক্রোফোন বন্ধ করুন",
     liveTranscript: "কথা থেকে লেখা",
     transcriptWaiting: "বলতে শুরু করলে আপনার কথা এখানে দেখা যাবে।",
-    speechLanguageUnavailable: "ব্রাউজারের কথা শনাক্ত করার সেবায় নির্বাচিত ভাষাটি নেই। অন্য ভাষা বেছে নিন বা প্রশ্নটি লিখুন।",
+    speechLanguageUnavailable:
+      "ব্রাউজারের কথা শনাক্ত করার সেবায় নির্বাচিত ভাষাটি নেই। অন্য ভাষা বেছে নিন বা প্রশ্নটি লিখুন।",
     listening: "শোনা হচ্ছে। কথা শেষ হলে মাইক্রোফোন বন্ধ করুন।",
     noVoice: "এই ভাষার কণ্ঠ আপনার ডিভাইসে নেই। উত্তরটি লেখায় পড়তে পারবেন।",
-    playError: "ব্রাউজারের কণ্ঠে অডিও বাজেনি। আবার চেষ্টা করুন, অথবা অডিও সেবা চালু থাকলে সেটি ব্যবহার করুন।",
-    noDictation: "এই ব্রাউজারে কথা বলে প্রশ্ন করা যাচ্ছে না। প্রশ্নটি লিখতে পারেন।",
-    dictationError: "কথা থেকে লেখা তৈরি হয়নি। আবার চেষ্টা করুন বা প্রশ্নটি লিখুন।",
-    micBlocked: "মাইক্রোফোনের অনুমতি দেওয়া নেই। ব্রাউজারে অনুমতি দিন বা প্রশ্নটি লিখুন।",
-    micUnavailable: "মাইক্রোফোন চালু করা যায়নি। ডিভাইসটি দেখুন বা প্রশ্নটি লিখুন।",
-    speechNetwork: "ব্রাউজারের কথা শনাক্ত করার সেবা পাওয়া যাচ্ছে না। আবার চেষ্টা করুন বা লিখুন।",
+    playError:
+      "ব্রাউজারের কণ্ঠে অডিও বাজেনি। আবার চেষ্টা করুন, অথবা অডিও সেবা চালু থাকলে সেটি ব্যবহার করুন।",
+    noDictation:
+      "এই ব্রাউজারে কথা বলে প্রশ্ন করা যাচ্ছে না। প্রশ্নটি লিখতে পারেন।",
+    dictationError:
+      "কথা থেকে লেখা তৈরি হয়নি। আবার চেষ্টা করুন বা প্রশ্নটি লিখুন।",
+    micBlocked:
+      "মাইক্রোফোনের অনুমতি দেওয়া নেই। ব্রাউজারে অনুমতি দিন বা প্রশ্নটি লিখুন।",
+    micUnavailable:
+      "মাইক্রোফোন চালু করা যায়নি। ডিভাইসটি দেখুন বা প্রশ্নটি লিখুন।",
+    speechNetwork:
+      "ব্রাউজারের কথা শনাক্ত করার সেবা পাওয়া যাচ্ছে না। আবার চেষ্টা করুন বা লিখুন।",
     noSpeech: "কোনো কথা শোনা যায়নি। আবার বলুন বা প্রশ্নটি লিখুন।",
   },
 };

@@ -5,7 +5,10 @@ import { useRef, useState } from "react";
 import { useLanguage } from "@/i18n/use-language";
 import { ReadAloudButton, VoiceDictationButton } from "@/features/adapt";
 
+import { ArrowRight, Check, CircleCheckBig, RotateCcw } from "lucide-react";
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
+import { ReportOverviewCard } from "./ReportOverviewCard";
+import { SaveReportSummary } from "./SaveReportSummary";
 
 import { fileSha256 } from "./sha256";
 
@@ -19,20 +22,46 @@ type Pregnancy = { id: string; label: string };
 
 type Draft = { report: ExtractedReport; source: File; reportId: string };
 
-/** Three-step strip: words first (never only colour); step 1 add photo, 2 check values, 3 saved. */
-function ReportSteps({ current }: { current: 0 | 1 | 2 }) {
-  const { t } = useLanguage();
-  const steps = [t({ en: "Add photo", bn: "ছবি দিন" }), t({ en: "Check values", bn: "মান মিলান" }), t({ en: "Save", bn: "সংরক্ষণ" })];
+const digit = (n: number, language: string) => language === "bn" ? String(n).replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]) : String(n);
+
+/**
+ * Guided three-step map. Each step says what happens in it and its state in words
+ * ("Done", "You are here", "Next"), so progress never depends on colour alone.
+ */
+function ReportSteps({ current }: { current: 0 | 1 | 2 | 3 }) {
+  const { t, language } = useLanguage();
+  const steps = [
+    { title: t({ en: "Add a photo", bn: "ছবি দিন" }), text: t({ en: "Take or choose a photo of your report.", bn: "রিপোর্টের ছবি তুলুন বা বাছুন।" }) },
+    { title: t({ en: "Check the values", bn: "মান মিলিয়ে নিন" }), text: t({ en: "Compare what was read with your paper report.", bn: "যা পড়া হয়েছে তা কাগজের রিপোর্টের সঙ্গে মেলান।" }) },
+    { title: t({ en: "Save", bn: "সংরক্ষণ করুন" }), text: t({ en: "Save it to your pregnancy record, if you want.", bn: "চাইলে গর্ভকালের রেকর্ডে রাখুন।" }) },
+  ];
+  const state = (at: number) => at < current ? t({ en: "Done", bn: "শেষ" }) : at === current ? t({ en: "You are here", bn: "আপনি এখানে" }) : t({ en: "Next", bn: "পরে" });
   return (
-    <ol aria-label={t({ en: "Report steps", bn: "রিপোর্টের ধাপ" })} className="grid grid-cols-3 gap-2 text-sm font-semibold">
-      {steps.map((name, at) => (
-        <li key={name} aria-current={at === current ? "step" : undefined} className={`grid gap-1.5 ${at <= current ? "text-pro-text" : "text-pro-muted"}`}>
-          <span aria-hidden="true" className={`h-1.5 rounded-pill ${at <= current ? "bg-pro-primary" : "bg-pro-control-border/40"}`} />
-          <span>{at + 1}. {name}</span>
-        </li>
-      ))}
+    <div className="grid min-w-0 gap-3">
+    <ol aria-label={t({ en: "Report steps", bn: "রিপোর্টের ধাপ" })} className="grid min-w-0 grid-cols-3 gap-2 sm:gap-4">
+      {steps.map((step, at) => {
+        const done = at < current, now = at === current;
+        return <li key={step.title} aria-current={now ? "step" : undefined} className={`grid min-w-0 content-start gap-2 rounded-card border-2 p-3 transition-colors duration-200 motion-reduce:transition-none sm:p-4 ${now ? "border-pro-primary bg-pro-surface" : "border-pro-border bg-pro-bg"}`}>
+          <span className="flex min-w-0 flex-wrap items-center gap-2">
+            <span aria-hidden="true" className={`grid size-8 shrink-0 place-items-center rounded-pill text-sm font-bold ${done || now ? "bg-pro-primary text-pro-on-primary" : "border-2 border-pro-control-border text-pro-muted"}`}>{done ? <Check className="size-4" /> : digit(at + 1, language)}</span>
+            <span className={`text-xs font-semibold uppercase tracking-wide ${now ? "text-pro-primary" : "text-pro-muted"}`}>{state(at)}</span>
+          </span>
+          <span className={`font-semibold leading-snug ${done || now ? "text-pro-text" : "text-pro-muted"}`}>{step.title}</span>
+          <span className="hidden text-sm text-pro-muted sm:block">{step.text}</span>
+        </li>;
+      })}
     </ol>
+    {current < 3 && <p aria-hidden="true" className="rounded-field bg-pro-surface px-4 py-3 text-pro-text sm:hidden">{steps[current].text}</p>}
+    </div>
   );
+}
+
+/** A lettered part of the check form, so a long form reads as a short checklist. */
+function Part({ letter, title, hint }: { letter: string; title: string; hint: string }) {
+  return <div className="flex items-start gap-3 border-t border-pro-border pt-4 sm:col-span-2">
+    <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-pill bg-pro-surface text-sm font-bold text-pro-primary">{letter}</span>
+    <span className="grid gap-0.5"><span className="font-semibold">{title}</span><span className="text-sm font-normal text-pro-muted">{hint}</span></span>
+  </div>;
 }
 
 export function AccountReportReview({
@@ -54,6 +83,8 @@ export function AccountReportReview({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [locked, setLocked] = useState(false);
+  const [rejected, setRejected] = useState(false);
+  const [summaryStage, setSummaryStage] = useState<"none" | "read" | "saved">("none");
   const pending = useRef(false);
   const snapshot = useRef<string | undefined>(undefined);
   const reviewId = useRef<string | undefined>(undefined);
@@ -111,6 +142,7 @@ export function AccountReportReview({
     setFeedback("");
     setSaved(false);
     setLocked(false);
+    setRejected(false);
     snapshot.current = undefined;
     reviewId.current = undefined;
     requestAnimationFrame(() => reviewFocus.current?.focus());
@@ -224,7 +256,7 @@ export function AccountReportReview({
         reportId: draft.reportId, pregnancyId, fieldId: crypto.randomUUID(), sourceSha256: draft.report.sourceFileId,
         rawLabel: field.label, rawValue: field.rawValue ?? field.value, rawUnit: field.unit,
         reviewedValue: value, reviewedUnit: unit, observedOn: date || new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(new Date()), decision: "rejected" }) });
-      if (response.ok) { setLocked(true); setSaved(true); setFeedback(t({ en: "Recorded as not saved. This value will not be added to your account or Jibonrekha.", bn: "সংরক্ষণ হবে না বলে নথিভুক্ত হয়েছে। এই মান আপনার অ্যাকাউন্টে বা জীবনরেখায় যোগ হবে না।" })); }
+      if (response.ok) { setLocked(true); setSaved(true); setRejected(true); setFeedback(t({ en: "Recorded as not saved. This value will not be added to your account or Jibonrekha.", bn: "সংরক্ষণ হবে না বলে নথিভুক্ত হয়েছে। এই মান আপনার অ্যাকাউন্টে বা জীবনরেখায় যোগ হবে না।" })); }
       else setFeedback(t({ en: "Your decision could not be recorded. Nothing was saved. You can try again.", bn: "আপনার সিদ্ধান্ত নথিভুক্ত করা যায়নি। কিছুই সংরক্ষণ হয়নি। আবার চেষ্টা করতে পারেন।" }));
     } catch { setFeedback(t({ en: "Your decision could not be recorded. Check your connection. Nothing was saved.", bn: "আপনার সিদ্ধান্ত নথিভুক্ত করা যায়নি। সংযোগ দেখুন। কিছুই সংরক্ষণ হয়নি।" })); }
     finally { pending.current = false; setSaving(false); requestAnimationFrame(() => feedbackFocus.current?.focus()); }
@@ -235,34 +267,42 @@ export function AccountReportReview({
 
   return (
     <div className="grid w-full min-w-0 gap-6 py-6 text-pro-text [overflow-wrap:anywhere]">
-      <header className="grid gap-4 border-b border-pro-border pb-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
-        <h2 ref={uploadFocus} tabIndex={-1} className="text-2xl font-semibold">
-          {t({ en: "Report review", bn: "রিপোর্ট যাচাই" })}
-        </h2>
-        <ReportSteps current={saved ? 2 : draft ? 1 : 0} />
-        <p className="max-w-[80ch] border-l-2 border-pro-info pl-4 text-pro-muted md:col-span-2">
-          <span className="font-semibold">{t({ en: "Prototype.", bn: "প্রোটোটাইপ।" })}</span>{" "}
-          {t({ en: "Account saving supports maternal hemoglobin in g/dL. Other values are shown for reading only.", bn: "অ্যাকাউন্টে এখন শুধু হিমোগ্লোবিন (g/dL) সংরক্ষণ করা যায়। অন্য মানগুলো শুধু পড়ার জন্য দেখানো হয়।" })}
+      <header className="grid gap-5 border-b border-pro-border pb-6">
+        <div className="grid gap-2">
+          <h2 ref={uploadFocus} tabIndex={-1} className="text-2xl font-semibold sm:text-3xl">
+            {t({ en: "Check a medical report in 3 steps", bn: "৩টি ধাপে মেডিকেল রিপোর্ট যাচাই" })}
+          </h2>
+          <p className="max-w-[65ch] text-pro-muted">
+            {t({ en: "You don't need to know medical words. We guide you through each step, and nothing is saved unless you choose to save it.", bn: "চিকিৎসার শব্দ জানা লাগবে না। প্রতিটি ধাপে আমরা পথ দেখাব, আর আপনি না চাইলে কিছুই সংরক্ষণ হবে না।" })}
+          </p>
+        </div>
+        <ReportSteps current={saved && !rejected ? 3 : summaryStage === "saved" ? 3 : saved ? 2 : draft || summaryStage === "read" ? 1 : 0} />
+        <p className="max-w-[80ch] text-sm text-pro-muted">
+          <span className="font-semibold text-pro-text">{t({ en: "What can be saved now:", bn: "এখন যা সংরক্ষণ করা যায়:" })}</span>{" "}
+          {t({ en: "hemoglobin (g/dL) from a blood test. Other parts of a report are explained in simple words, but not saved.", bn: "রক্তপরীক্ষার হিমোগ্লোবিন (g/dL)। রিপোর্টের অন্য অংশ সহজ ভাষায় বোঝানো হয়, তবে সংরক্ষণ হয় না।" })}
         </p>
       </header>
-      {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} showProgress={false} />}
+      {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} showProgress={false} onStage={(stage) => setSummaryStage(stage === "read" ? "read" : "none")} renderSave={(rawText) => <SaveReportSummary rawText={rawText} pregnancies={pregnancies} onSaved={() => setSummaryStage("saved")} />} />}
       {draft && (
         <section
-          className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+          className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8"
           aria-labelledby="account-report-heading"
         >
+          <div className="grid gap-2 lg:col-span-2">
           <h3
             id="account-report-heading"
             ref={reviewFocus}
             tabIndex={-1}
-            className="text-2xl font-semibold xl:col-span-2"
+            className="text-2xl font-semibold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
           >
-
-            {draft.report.inputMethod === "manual" ? t({ en: "Check the printed value", bn: "রিপোর্টে লেখা মান মিলিয়ে দেখুন" }) : t({ en: "Check what was read", bn: "যা পড়া হয়েছে মিলিয়ে দেখুন" })}
-
+            {saved && !rejected ? t({ en: "Saved", bn: "সংরক্ষিত হয়েছে" }) : draft.report.inputMethod === "manual" ? t({ en: "Type the value from your report", bn: "রিপোর্ট দেখে মানটি লিখুন" }) : t({ en: "Check what was read", bn: "যা পড়া হয়েছে মিলিয়ে নিন" })}
           </h3>
-          <div className="grid min-w-0 gap-4">
-          {draft.report.inputMethod === "manual" && <p className="rounded-field border border-pro-warning bg-pro-warning-soft p-4">{t({ en: "Manual entry from this report image. OCR did not read it. Check the printed value before saving.", bn: "এই রিপোর্টের ছবি থেকে হাতে লেখা। স্বয়ংক্রিয়ভাবে পড়া যায়নি। সংরক্ষণের আগে ছাপানো মান দেখে নিন।" })}</p>}
+          {!saved && <p className="max-w-[70ch] text-pro-muted">
+            {t({ en: "Keep your paper report next to you. Your photo is shown here so you can compare. Fill in or correct each part, then save.", bn: "কাগজের রিপোর্টটি পাশে রাখুন। মিলিয়ে দেখার জন্য আপনার ছবি এখানে দেখানো হচ্ছে। প্রতিটি অংশ পূরণ বা ঠিক করুন, তারপর সংরক্ষণ করুন।" })}
+          </p>}
+          </div>
+          <div className="grid min-w-0 gap-4 lg:sticky lg:top-24">
+          {draft.report.inputMethod === "manual" && <p className="rounded-field border border-pro-warning bg-pro-warning-soft p-4">{t({ en: "The value could not be read from this photo, so you type it in. Look at the photo or your paper report.", bn: "এই ছবি থেকে মানটি পড়া যায়নি, তাই আপনি নিজে লিখবেন। ছবি বা কাগজের রিপোর্ট দেখে নিন।" })}</p>}
           <SourcePreview source={draft.source} expanded />
           {(draft.report.rawText ||
             draft.report.fields.some(
@@ -271,10 +311,11 @@ export function AccountReportReview({
             <details className="rounded-field border border-pro-border px-3">
               <summary className="min-h-12 cursor-pointer py-3 font-semibold text-pro-primary">
 
-                {t({ en: "OCR text and other fields", bn: "পড়া লেখা ও অন্যান্য মান" })}
+                {t({ en: "Other parts of this report, in simple words", bn: "রিপোর্টের অন্য অংশ, সহজ ভাষায়" })}
 
               </summary>
               <div className="grid min-w-0 gap-3 pb-3">
+                {draft.report.rawText && <ReportOverviewCard rawText={draft.report.rawText} />}
                 {draft.report.rawText && (
                   <pre className="whitespace-pre-wrap font-body [overflow-wrap:anywhere]">
                     {draft.report.rawText}
@@ -292,8 +333,17 @@ export function AccountReportReview({
           )}
           </div>
           <div className="grid min-w-0 gap-5 rounded-card border border-pro-border bg-pro-elevated p-4 sm:p-6">
-          <p className="border-b border-pro-border pb-4 font-semibold text-pro-primary">{t({ en: "Your review · nothing saves until you confirm", bn: "আপনার যাচাই · নিশ্চিত না করা পর্যন্ত সংরক্ষণ হবে না" })}</p>
-          {!supported.length ? (
+          {!(saved && !rejected) && <p className="border-b border-pro-border pb-4 font-semibold text-pro-primary">{t({ en: "Your review · nothing saves until you confirm", bn: "আপনার যাচাই · নিশ্চিত না করা পর্যন্ত সংরক্ষণ হবে না" })}</p>}
+          {saved && !rejected && <div className="grid gap-4 rounded-card border-2 border-pro-success bg-pro-success-soft p-5">
+            <p className="flex items-center gap-3 text-xl font-semibold"><CircleCheckBig aria-hidden="true" className="size-7 shrink-0 text-pro-success" />{t({ en: "Saved to your pregnancy record", bn: "আপনার গর্ভকালের রেকর্ডে সংরক্ষিত হয়েছে" })}</p>
+            <dl className="grid gap-2 sm:grid-cols-2">
+              <div><dt className="text-sm text-pro-muted">{t({ en: "Hemoglobin", bn: "হিমোগ্লোবিন" })}</dt><dd className="text-lg font-semibold tabular-nums">{value} {unit}</dd></div>
+              <div><dt className="text-sm text-pro-muted">{t({ en: "Test date", bn: "পরীক্ষার তারিখ" })}</dt><dd className="text-lg font-semibold tabular-nums">{date}</dd></div>
+            </dl>
+            <p className="text-pro-muted">{t({ en: "You checked this value yourself. A doctor has not reviewed it.", bn: "এই মান আপনি নিজে মিলিয়েছেন। কোনো চিকিৎসক এটি পর্যালোচনা করেননি।" })}</p>
+            <Link href="/app/jibonrekha" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-pro-primary px-5 py-3 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus sm:w-fit">{t({ en: "See it in Jibonrekha", bn: "জীবনরেখায় দেখুন" })}<ArrowRight aria-hidden="true" className="size-4" /></Link>
+          </div>}
+          {saved && !rejected ? null : !supported.length ? (
             <p role="status">
               {t({ en: "No supported hemoglobin field found. Nothing can be saved to the account.", bn: "সমর্থিত কোনো হিমোগ্লোবিনের ঘর পাওয়া যায়নি। অ্যাকাউন্টে কিছু সংরক্ষণ করা যাবে না।" })}
             </p>
@@ -341,12 +391,13 @@ export function AccountReportReview({
                     </p>
                   )}
                   <p className="rounded-field bg-pro-surface p-3">
-                    {field.rawValue ? `Original text read from the image: “${field.rawValue} ${field.unit}”. Correct it below if it is wrong.` : t({ en: "Nothing was read from the image for this value.", bn: "এই মানের জন্য ছবি থেকে কিছু পড়া যায়নি।" })}
+                    {field.rawValue ? t({ en: `Read from your photo: “${field.rawValue} ${field.unit}”. If it is different on paper, correct it below.`, bn: `আপনার ছবি থেকে পড়া: “${field.rawValue} ${field.unit}”। কাগজে অন্যরকম লেখা থাকলে নিচে ঠিক করে দিন।` }) : t({ en: "Nothing was read from the photo for this value. Type it from your report.", bn: "এই মানের জন্য ছবি থেকে কিছু পড়া যায়নি। রিপোর্ট দেখে লিখুন।" })}
                   </p>
                   <ReadAloudButton sensitive language={language === "bn" ? "bn" : "en"} label={t({ en: "Read this value aloud", bn: "এই মান পড়ে শোনান" })} text={t({
                     en: `Hemoglobin, as you have entered it: ${value || "not entered yet"} ${unit}. Original text read from the image: ${field.rawValue || "nothing"}. Check it against the printed report before you save.`,
                     bn: `হিমোগ্লোবিন, আপনার লেখা মান: ${value || "এখনো লেখা হয়নি"} ${unit}। ছবি থেকে পড়া মূল লেখা: ${field.rawValue || "কিছু নেই"}। সংরক্ষণের আগে ছাপানো রিপোর্টের সঙ্গে মিলিয়ে নিন।` })} />
                   <div className="grid gap-4 sm:grid-cols-2">
+                  <Part letter={t({ en: "A", bn: "ক" })} title={t({ en: "Hemoglobin value and unit", bn: "হিমোগ্লোবিনের মান ও একক" })} hint={t({ en: "Copy the number and unit (for example g/dL) exactly as printed.", bn: "ছাপা সংখ্যা ও একক (যেমন g/dL) হুবহু লিখুন।" })} />
                   <label className="grid gap-2 font-semibold">
 
                     {t({ en: "Hemoglobin value from report", bn: "রিপোর্টে লেখা হিমোগ্লোবিনের মান" })}
@@ -380,6 +431,7 @@ export function AccountReportReview({
                       }}
                     />
                   </label>
+                  <Part letter={t({ en: "B", bn: "খ" })} title={t({ en: "Date of the test", bn: "পরীক্ষার তারিখ" })} hint={t({ en: "The date printed on the report, not today's date.", bn: "রিপোর্টে ছাপা তারিখ, আজকের তারিখ নয়।" })} />
                   <label className="grid gap-2 font-semibold sm:col-span-2">
 
                     {t({ en: "Observation date", bn: "তথ্যের তারিখ" })}
@@ -400,6 +452,7 @@ export function AccountReportReview({
 
                     {t({ en: "If you can’t verify the date, leave this review unsaved.", bn: "তারিখ মিলিয়ে দেখতে না পারলে এই তথ্য সংরক্ষণ করবেন না।" })}
                   </p>
+                  <Part letter={t({ en: "C", bn: "গ" })} title={t({ en: "Where to keep it", bn: "কোথায় রাখবেন" })} hint={t({ en: "Choose the pregnancy this report belongs to.", bn: "রিপোর্টটি কোন গর্ভকালের, তা বেছে নিন।" })} />
                   <label className="grid gap-2 font-semibold sm:col-span-2">
                     {t({ en: "Pregnancy record", bn: "গর্ভকালের রেকর্ড" })}
 
@@ -423,6 +476,7 @@ export function AccountReportReview({
                     </select>
                   </label>
                   </div>
+                  <Part letter={t({ en: "D", bn: "ঘ" })} title={t({ en: "Confirm and save", bn: "নিশ্চিত করে সংরক্ষণ করুন" })} hint={t({ en: "Tick only if everything above matches your paper report.", bn: "ওপরের সব কাগজের রিপোর্টের সঙ্গে মিললে তবেই টিক দিন।" })} />
                   <label className="flex min-h-12 items-start gap-3 rounded-field bg-pro-surface p-3">
                     <input
                       className="mt-1 size-5 shrink-0"
@@ -476,18 +530,9 @@ export function AccountReportReview({
                 requestAnimationFrame(() => uploadFocus.current?.focus());
               }}
             >
-              {t({ en: "Choose another image", bn: "অন্য ছবি বেছে নিন" })}
+              <RotateCcw aria-hidden="true" className="mr-2 inline size-4" />{saved ? t({ en: "Check another report", bn: "আরেকটি রিপোর্ট যাচাই করুন" }) : t({ en: "Start again with another photo", bn: "অন্য ছবি দিয়ে আবার শুরু করুন" })}
             </button>
-            {saved && (
-              <Link
-                href="/app/jibonrekha"
-                className="inline-flex min-h-12 items-center text-pro-primary underline"
-              >
-
-                {t({ en: "View Jibonrekha", bn: "জীবনরেখায় দেখুন" })}
-
-              </Link>
-            )}
+            
           </div>
           </div>
         </section>

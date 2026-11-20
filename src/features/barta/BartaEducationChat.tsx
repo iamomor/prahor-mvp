@@ -1,53 +1,127 @@
+import {
+  ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
+  BookOpen,
+  ChevronDown,
+  HeartHandshake,
+  LayoutGrid,
+  Lock,
+  MousePointerClick,
+  ShieldCheck,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
-
-
-import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, HeartHandshake, LayoutGrid, Lock, Mic, ShieldCheck, Volume2, VolumeX } from "lucide-react";
-
-
-import Link from "next/link";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
+import { useAdaptPreferences, VoiceDictationButton } from "@/features/adapt";
+import {
+  saveVisitQuestion,
+  visitQuestionsHref,
+} from "@/features/shared/visit-questions";
 import type { BartaAnswer } from "@/lib/contracts/barta";
+import { useHydrated } from "@/lib/use-hydrated";
+import Link from "next/link";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { educationCopy, type Language } from "./barta-education-copy";
-import { educationTopics, type EducationTopic } from "./education-topics";
-import { detectBartaLanguage } from "./chat-language";
+import styles from "./barta-education.module.css";
 import { buildBartaSpeechText, getBartaSpokenGuide } from "./barta-spoken-text";
 import { BartaAudioFile } from "./BartaAudioFile";
 import { BartaLearningResources } from "./BartaLearningResources";
+import { detectBartaLanguage } from "./chat-language";
+import { educationTopics, type EducationTopic } from "./education-topics";
 import { useBartaAudio } from "./use-barta-audio";
 import { useBartaReplyAudio } from "./use-barta-reply-audio";
-import styles from "./barta-education.module.css";
-import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
-import { useHydrated } from "@/lib/use-hydrated";
-import { useAdaptPreferences } from "@/features/adapt";
-import { VoiceDictationButton } from "@/features/adapt";
-import { saveVisitQuestion, visitQuestionsHref } from "@/features/shared/visit-questions";
 
-type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
+type Turn = {
+  question: string;
+  questionLanguage?: string;
+  result: BartaAnswer;
+  language: Language;
+};
 type Reply = { result: BartaAnswer; language: Language };
 
 const topicGroups = [
   { name: "pregnancy", topics: ["anc", "ancVisits", "nutrition"] },
   { name: "afterBirth", topics: ["postnatal", "breastfeeding", "newborn"] },
-] as const satisfies readonly { name: "pregnancy" | "afterBirth"; topics: readonly EducationTopic[] }[];
+] as const satisfies readonly {
+  name: "pregnancy" | "afterBirth";
+  topics: readonly EducationTopic[];
+}[];
 
-const additionalTopics = [
-  "pregnancyBasics", "balancedMeals", "warningSigns", "maternalHealth", "mentalWellbeing", "birthPlan",
-  "firstCheckup", "ultrasound", "foodSafety", "morningSickness",
-  "pregnancyTest", "ironFolate", "fetalMovement",
-  "ancCard", "bloodPressureCheck", "exercise", "birthCompanion", "breastfeedingPosition", "milkSupply", "glucoseCheck",
-  "babySleep", "babyBath", "cordCare", "diaper", "solidFood", "babyPlay", "homeSafety", "babyWater",
-  "feedingAtWork", "babyCrying", "postnatalVisits", "everydayWellbeing", "babyHygiene",
-  "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
+const starterTopics = [
+  "anc",
+  "breastfeeding",
+  "newborn",
 ] as const satisfies readonly EducationTopic[];
 
+const additionalTopics = [
+  "pregnancyBasics",
+  "balancedMeals",
+  "warningSigns",
+  "maternalHealth",
+  "mentalWellbeing",
+  "birthPlan",
+  "firstCheckup",
+  "ultrasound",
+  "foodSafety",
+  "morningSickness",
+  "pregnancyTest",
+  "ironFolate",
+  "fetalMovement",
+  "ancCard",
+  "bloodPressureCheck",
+  "exercise",
+  "birthCompanion",
+  "breastfeedingPosition",
+  "milkSupply",
+  "glucoseCheck",
+  "babySleep",
+  "babyBath",
+  "cordCare",
+  "diaper",
+  "solidFood",
+  "babyPlay",
+  "homeSafety",
+  "babyWater",
+  "feedingAtWork",
+  "babyCrying",
+  "postnatalVisits",
+  "everydayWellbeing",
+  "babyHygiene",
+  "pregnancySleep",
+  "pregnancyHeartburn",
+  "pregnancyBackache",
+  "pregnancyTravel",
+  "pregnancyConstipation",
+] as const satisfies readonly EducationTopic[];
 
-const QuestionOption = memo(function QuestionOption({ prompt, onSelect, disabled }: {
+const QuestionOption = memo(function QuestionOption({
+  prompt,
+  onSelect,
+  disabled,
+}: {
   prompt: string;
   onSelect: (question: string) => void;
   disabled: boolean;
 }) {
   return (
-    <button type="button" className={styles.option} disabled={disabled} onClick={() => onSelect(prompt)}>
+    <button
+      type="button"
+      className={styles.option}
+      disabled={disabled}
+      onClick={() => onSelect(prompt)}
+    >
       <span>{prompt}</span>
       <ArrowRight size={17} aria-hidden="true" />
     </button>
@@ -56,30 +130,73 @@ const QuestionOption = memo(function QuestionOption({ prompt, onSelect, disabled
 
 function shortPublisher(publisher: string, locale: Language): string {
   switch (publisher) {
-    case "World Health Organization": return locale === "bn" ? "বিশ্ব স্বাস্থ্য সংস্থা" : "WHO";
-    case "Directorate General of Health Services, Bangladesh": return locale === "bn" ? "স্বাস্থ্য অধিদপ্তর" : "DGHS Bangladesh";
-    default: return publisher;
+    case "World Health Organization":
+      return locale === "bn" ? "বিশ্ব স্বাস্থ্য সংস্থা" : "WHO";
+    case "Directorate General of Health Services, Bangladesh":
+      return locale === "bn" ? "স্বাস্থ্য অধিদপ্তর" : "DGHS Bangladesh";
+    default:
+      return publisher;
   }
 }
 
-function SpeakerSwitch({ enabled, locale, disabled, onToggle }: {
-  enabled: boolean; locale: Language; disabled: boolean; onToggle: () => void;
+function SpeakerSwitch({
+  enabled,
+  locale,
+  disabled,
+  onToggle,
+  cue = false,
+}: {
+  enabled: boolean;
+  locale: Language;
+  disabled: boolean;
+  onToggle: () => void;
+  cue?: boolean;
 }) {
   const copy = educationCopy[locale];
   return (
-    <button type="button" role="switch" aria-checked={enabled} className={styles.read}
-      lang={locale} disabled={disabled} onClick={onToggle}>
-      {enabled ? <Volume2 size={16} aria-hidden="true" /> : <VolumeX size={16} aria-hidden="true" />}
-      {copy.speaker} <span aria-hidden="true">{enabled ? copy.speakerOn : copy.speakerOff}</span>
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      className={styles.read}
+      data-cue={cue || undefined}
+      lang={locale}
+      disabled={disabled}
+      onClick={onToggle}
+    >
+      {enabled ? (
+        <Volume2 size={16} aria-hidden="true" />
+      ) : (
+        <VolumeX size={16} aria-hidden="true" />
+      )}
+      {copy.speaker}{" "}
+      <span aria-hidden="true">
+        {enabled ? copy.speakerOn : copy.speakerOff}
+      </span>
     </button>
   );
 }
 
 function isUrgent(result: BartaAnswer) {
-  return result.status === "abstained" && (result.reason === "urgent_care" || result.reason === "crisis_support");
+  return (
+    result.status === "abstained" &&
+    (result.reason === "urgent_care" || result.reason === "crisis_support")
+  );
 }
 
-const Answer = memo(function Answer({ result, locale, question, turnId, showOptions, onSelect, busy, speakerEnabled, speakerDisabled, onToggleSpeaker, allowAudio }: {
+const Answer = memo(function Answer({
+  result,
+  locale,
+  question,
+  turnId,
+  showOptions,
+  onSelect,
+  busy,
+  speakerEnabled,
+  speakerDisabled,
+  onToggleSpeaker,
+  allowAudio,
+}: {
   result: BartaAnswer;
   locale: Language;
   question?: string;
@@ -94,97 +211,182 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 }) {
   const ready = useHydrated();
   const copy = educationCopy[locale];
-  const [saveStatus, setSaveStatus] = useState<ReturnType<typeof saveVisitQuestion>>();
+  const [saveStatus, setSaveStatus] =
+    useState<ReturnType<typeof saveVisitQuestion>>();
   const urgent = isUrgent(result);
-  const careHandoff = urgent || (result.status === "abstained"
-    && (result.reason === "outside_education_scope" || result.reason === "mental_health_support"));
-  const optionHeading = result.status === "grounded" ? copy.followUp : copy.clarify;
+  const careHandoff =
+    urgent ||
+    (result.status === "abstained" &&
+      (result.reason === "outside_education_scope" ||
+        result.reason === "mental_health_support"));
+  const optionHeading =
+    result.status === "grounded" ? copy.followUp : copy.clarify;
   const options = showOptions
-    ? result.status === "clarification" || result.status === "abstained" ? (result.suggestions ?? [])
-      : result.status === "grounded" && result.followUp ? [result.followUp] : []
+    ? result.status === "clarification" || result.status === "abstained"
+      ? (result.suggestions ?? [])
+      : result.status === "grounded" && result.followUp
+        ? [result.followUp]
+        : []
     : [];
 
   return (
-    <div className={styles.answer} lang={locale} data-urgent={urgent || undefined}>
+    <div
+      className={styles.answer}
+      lang={locale}
+      data-urgent={urgent || undefined}
+    >
       <header className={styles.answerHeading}>
-        <span className={styles.mark}><HeartHandshake size={18} aria-hidden="true" /></span>
-        <strong lang={locale === "bn" ? "bn" : "en"}>{locale === "bn" ? "বার্তা" : "Barta"}</strong>
-        {urgent && <strong className={styles.urgentLabel}>{copy.urgent}</strong>}
-        {allowAudio && <SpeakerSwitch enabled={speakerEnabled} locale={locale} disabled={speakerDisabled} onToggle={onToggleSpeaker} />}
+        <span className={styles.mark}>
+          <HeartHandshake size={18} aria-hidden="true" />
+        </span>
+        <strong lang={locale === "bn" ? "bn" : "en"}>
+          {locale === "bn" ? "বার্তা" : "Barta"}
+        </strong>
+        {urgent && (
+          <strong className={styles.urgentLabel}>{copy.urgent}</strong>
+        )}
+        {allowAudio && (
+          <SpeakerSwitch
+            enabled={speakerEnabled}
+            locale={locale}
+            disabled={speakerDisabled}
+            onToggle={onToggleSpeaker}
+          />
+        )}
       </header>
       {result.status === "grounded" ? (
         <>
-          {result.claims ? result.citations.map((citation, index) => {
-            const claims = result.claims?.filter((claim) => claim.chunkId === citation.chunkId);
-            if (!claims?.length) return null;
-            const number = index + 1;
-            return (
-              <div key={citation.chunkId} className={styles.answerBody}>
-                {claims.map((claim, claimIndex) => (
-                  <p key={claimIndex} className={styles.answerText}>
-                    {claim.text}{" "}
-                    {claimIndex === claims.length - 1 && (
-                      <a className={styles.marker} href={`#${turnId}-source-${number}`}
-                        aria-label={`${copy.source} ${number}`}>[{number}]</a>
-                    )}
-                  </p>
-                ))}
-              </div>
-            );
-          }) : <p className={styles.answerText}>{result.answer}</p>}
+          {result.claims ? (
+            result.citations.map((citation, index) => {
+              const claims = result.claims?.filter(
+                (claim) => claim.chunkId === citation.chunkId,
+              );
+              if (!claims?.length) return null;
+              const number = index + 1;
+              return (
+                <div key={citation.chunkId} className={styles.answerBody}>
+                  {claims.map((claim, claimIndex) => (
+                    <p key={claimIndex} className={styles.answerText}>
+                      {claim.text}{" "}
+                      {claimIndex === claims.length - 1 && (
+                        <a
+                          className={styles.marker}
+                          href={`#${turnId}-source-${number}`}
+                          aria-label={`${copy.source} ${number}`}
+                        >
+                          [{number}]
+                        </a>
+                      )}
+                    </p>
+                  ))}
+                </div>
+              );
+            })
+          ) : (
+            <p className={styles.answerText}>{result.answer}</p>
+          )}
           <section className={styles.sources} aria-label={copy.sources}>
-            <h3><BookOpen size={16} aria-hidden="true" /> {copy.sources}</h3>
+            <h3>
+              <BookOpen size={16} aria-hidden="true" /> {copy.sources}
+            </h3>
             <ul>
               {result.citations.map((citation, index) => (
                 <li key={citation.chunkId} id={`${turnId}-source-${index + 1}`}>
-                  <a className={styles.sourceLink} href={citation.url}
-                    aria-describedby={`${turnId}-source-${index + 1}-title`}>
-                    <span className={styles.sourceNumber} aria-hidden="true">{index + 1}</span>
-                    <span>{shortPublisher(citation.publisher, locale)}
-                      {citation.publicationYear ? ` · ${citation.publicationYear}` : ""}
+                  <a
+                    className={styles.sourceLink}
+                    href={citation.url}
+                    aria-describedby={`${turnId}-source-${index + 1}-title`}
+                  >
+                    <span className={styles.sourceNumber} aria-hidden="true">
+                      {index + 1}
+                    </span>
+                    <span>
+                      {shortPublisher(citation.publisher, locale)}
+                      {citation.publicationYear
+                        ? ` · ${citation.publicationYear}`
+                        : ""}
                     </span>
                     <ArrowUpRight size={15} aria-hidden="true" />
                   </a>
                   <details className={styles.citationDetails}>
                     <summary>{copy.referenceDetails}</summary>
-                    <p lang="en" id={`${turnId}-source-${index + 1}-title`}>{citation.title}</p>
-                    <p>{citation.locator}{citation.page ? ` · ${copy.page} ${citation.page}` : ""}</p>
-                    <p>{copy.sourceVersion} <bdi>{citation.sourceVersion}</bdi></p>
+                    <p lang="en" id={`${turnId}-source-${index + 1}-title`}>
+                      {citation.title}
+                    </p>
+                    <p>
+                      {citation.locator}
+                      {citation.page ? ` · ${copy.page} ${citation.page}` : ""}
+                    </p>
+                    <p>
+                      {copy.sourceVersion} <bdi>{citation.sourceVersion}</bdi>
+                    </p>
                   </details>
                 </li>
               ))}
             </ul>
           </section>
-          <BartaLearningResources citations={result.citations} locale={locale} />
+          <BartaLearningResources
+            citations={result.citations}
+            locale={locale}
+          />
         </>
-      ) : <p className={styles.answerText} role={urgent && showOptions ? "alert" : undefined}>{result.message}</p>}
+      ) : (
+        <p
+          className={styles.answerText}
+          role={urgent && showOptions ? "alert" : undefined}
+        >
+          {result.message}
+        </p>
+      )}
       {careHandoff && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {urgent && <a href="tel:999" className={styles.read}>{copy.callEmergency}</a>}
-          <Link href="/find-care" className={styles.read}>{copy.findCare}</Link>
+          {urgent && (
+            <a href="tel:999" className={styles.read}>
+              {copy.callEmergency}
+            </a>
+          )}
+          <Link href="/find-care" className={styles.read}>
+            {copy.findCare}
+          </Link>
         </div>
       )}
       {result.status === "grounded" && question && (
         <div className="mt-3 space-y-2">
           <p id={`${turnId}-visit-privacy`}>{copy.visitQuestionPrivacy}</p>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className={styles.read} disabled={!ready}
+            <button
+              type="button"
+              className={styles.read}
+              disabled={!ready}
               aria-describedby={`${turnId}-visit-privacy`}
-              onClick={() => setSaveStatus(saveVisitQuestion(question))}>
+              onClick={() => setSaveStatus(saveVisitQuestion(question))}
+            >
               {copy.saveVisitQuestion}
             </button>
             {(saveStatus === "saved" || saveStatus === "full") && (
-              <Link href={visitQuestionsHref} className={styles.read}>{copy.reviewVisitQuestions}</Link>
+              <Link href={visitQuestionsHref} className={styles.read}>
+                {copy.reviewVisitQuestions}
+              </Link>
             )}
           </div>
-          <p role="status">{saveStatus && copy.visitQuestionStatus[saveStatus]}</p>
+          <p role="status">
+            {saveStatus && copy.visitQuestionStatus[saveStatus]}
+          </p>
         </div>
       )}
       {options.length > 0 && (
         <section className={styles.next} aria-label={optionHeading}>
           <h3>{optionHeading}</h3>
           <ul>
-            {options.map((prompt) => <li key={prompt}><QuestionOption prompt={prompt} onSelect={onSelect} disabled={!ready || busy} /></li>)}
+            {options.map((prompt) => (
+              <li key={prompt}>
+                <QuestionOption
+                  prompt={prompt}
+                  onSelect={onSelect}
+                  disabled={!ready || busy}
+                />
+              </li>
+            ))}
           </ul>
         </section>
       )}
@@ -193,8 +395,22 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
 });
 
 export function BartaEducationChat({
-  languageChoice, formLanguage, question, questionInput, turns, reply, error, busy, hasPrefill,
-  onLanguage, onQuestion, symbolPanel, onSelect, onClear, onSubmit,
+  languageChoice,
+  formLanguage,
+  question,
+  questionInput,
+  turns,
+  reply,
+  pendingQuestion,
+  error,
+  busy,
+  hasPrefill,
+  onLanguage,
+  onQuestion,
+  symbolPanel,
+  onSelect,
+  onClear,
+  onSubmit,
 }: {
   languageChoice: Language | "auto";
   formLanguage: Language;
@@ -203,6 +419,8 @@ export function BartaEducationChat({
   questionInput: RefObject<HTMLTextAreaElement | null>;
   turns: Turn[];
   reply?: Reply;
+  /** The question that was just sent and is still waiting for its answer. */
+  pendingQuestion?: string;
   error?: { message: string; language: Language };
   busy: boolean;
   onLanguage: (language: Language | "auto") => void;
@@ -217,7 +435,12 @@ export function BartaEducationChat({
   const copy = educationCopy[formLanguage];
   const audio = useBartaAudio();
   const { play: playAudio, stopSpeaking } = audio;
-  const { start: startReplyAudio, stop: stopReplyAudio, blocked, retry } = useBartaReplyAudio();
+  const {
+    start: startReplyAudio,
+    stop: stopReplyAudio,
+    blocked,
+    retry,
+  } = useBartaReplyAudio();
   const { prefs: adaptPrefs } = useAdaptPreferences();
   // Explicit "off" in Adapt hides Barta's speaker switch and keeps replies text-only.
   const audioAllowed = adaptPrefs.readAloud !== false;
@@ -225,19 +448,51 @@ export function BartaEducationChat({
   const [voiceListening, setVoiceListening] = useState(false);
   const speakerEnabled = speakerOn && audioAllowed;
   const delivered = useRef<BartaAnswer | string | undefined>(undefined);
-  const spokenGuide = useMemo(() => getBartaSpokenGuide(formLanguage), [formLanguage]);
+  const spokenGuide = useMemo(
+    () => getBartaSpokenGuide(formLanguage),
+    [formLanguage],
+  );
   const [voiceLanguage, setVoiceLanguage] = useState<Language | "auto">("auto");
-  const micLanguage = voiceLanguage === "auto" ? detectBartaLanguage(question) ?? "en" : voiceLanguage;
+  const micLanguage =
+    voiceLanguage === "auto"
+      ? (detectBartaLanguage(question) ?? "en")
+      : voiceLanguage;
+  const voiceHint =
+    voiceLanguage === "auto" ? (
+      <>
+        {copy.voiceAutoHint}{" "}
+        <span lang={micLanguage}>
+          {micLanguage === "bn" ? "বাংলা" : "English"}
+        </span>
+        .
+      </>
+    ) : (
+      copy.voicePrivacy
+    );
   const layout = useRef<HTMLDivElement>(null);
-  const transient = reply && reply.result !== turns.at(-1)?.result ? reply : undefined;
+  const transient =
+    reply && reply.result !== turns.at(-1)?.result ? reply : undefined;
   const latest = useRef<HTMLDivElement>(null);
-  const playbackMessage = (id: string) => audio.notice?.replyId === id
-    ? educationCopy[audio.notice.language][audio.notice.kind] : undefined;
+  const stage = useRef<HTMLDivElement>(null);
+  const playbackMessage = (id: string) =>
+    audio.notice?.replyId === id
+      ? educationCopy[audio.notice.language][audio.notice.kind]
+      : undefined;
   const hasThread = turns.length > 0 || reply || busy || error;
 
+  // The page never jumps: only the conversation box scrolls. A new answer starts at its top so it reads from the beginning.
   useEffect(() => {
-    if (reply || error) latest.current?.scrollIntoView({ block: "nearest" });
-  }, [reply, error]);
+    const box = stage.current;
+    if (!box) return;
+    const smooth =
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+      document.documentElement.dataset.motion !== "reduce";
+    const top =
+      busy || !latest.current
+        ? box.scrollHeight
+        : Math.max(0, latest.current.offsetTop - 12);
+    box.scrollTo({ top, behavior: smooth ? "smooth" : "auto" });
+  }, [reply, error, busy, pendingQuestion]);
 
   const pauseAudio = useCallback((except?: HTMLAudioElement) => {
     layout.current?.querySelectorAll("audio").forEach((player) => {
@@ -245,36 +500,62 @@ export function BartaEducationChat({
     });
   }, []);
 
-  const readAnswer = useCallback((id: string, text: string, language: Language) => {
-    pauseAudio();
-    playAudio(id, text, language);
-  }, [playAudio, pauseAudio]);
+  const readAnswer = useCallback(
+    (id: string, text: string, language: Language) => {
+      pauseAudio();
+      playAudio(id, text, language);
+    },
+    [playAudio, pauseAudio],
+  );
 
-  const readReply = useCallback(({ result, language }: Reply) => {
-    const text = (result.status === "not_connected" ? undefined : result.audioText) ?? buildBartaSpeechText(result, language);
-    const ticket = result.status === "not_connected" ? undefined : result.audioTicket;
-    const clipUrl = result.status === "not_connected" ? undefined : result.audioClipUrl;
-    pauseAudio();
-    stopSpeaking();
-    if (ticket || clipUrl) {
-      startReplyAudio({ text, language, ticket, clipUrl }, () => playAudio("barta-reply", text, language));
-    } else {
-      stopReplyAudio();
-      playAudio("barta-reply", text, language);
-    }
-  }, [pauseAudio, stopSpeaking, startReplyAudio, stopReplyAudio, playAudio]);
+  const readReply = useCallback(
+    ({ result, language }: Reply) => {
+      const text =
+        (result.status === "not_connected" ? undefined : result.audioText) ??
+        buildBartaSpeechText(result, language);
+      const ticket =
+        result.status === "not_connected" ? undefined : result.audioTicket;
+      const clipUrl =
+        result.status === "not_connected" ? undefined : result.audioClipUrl;
+      pauseAudio();
+      stopSpeaking();
+      if (ticket || clipUrl) {
+        startReplyAudio({ text, language, ticket, clipUrl }, () =>
+          playAudio("barta-reply", text, language),
+        );
+      } else {
+        stopReplyAudio();
+        playAudio("barta-reply", text, language);
+      }
+    },
+    [pauseAudio, stopSpeaking, startReplyAudio, stopReplyAudio, playAudio],
+  );
 
   useEffect(() => {
     if (!speakerEnabled || audio.listening) return;
     const next = reply?.result ?? error?.message;
     if (!next || delivered.current === next) return;
-    if (audio.speaking === "barta-question" && !(reply && isUrgent(reply.result))) return;
+    if (
+      audio.speaking === "barta-question" &&
+      !(reply && isUrgent(reply.result))
+    )
+      return;
     delivered.current = next;
     if (reply) readReply(reply);
     else if (error) playAudio("barta-reply", error.message, error.language);
-  }, [speakerEnabled, audio.listening, audio.speaking, reply, error, readReply, playAudio]);
+  }, [
+    speakerEnabled,
+    audio.listening,
+    audio.speaking,
+    reply,
+    error,
+    readReply,
+    playAudio,
+  ]);
 
-  function toggleSpeaker(selected = busy ? undefined : reply ?? turns.at(-1)) {
+  function toggleSpeaker(
+    selected = busy ? undefined : (reply ?? turns.at(-1)),
+  ) {
     setSpeakerEnabled(!speakerEnabled);
     if (speakerEnabled) {
       stopReplyAudio();
@@ -290,247 +571,577 @@ export function BartaEducationChat({
   }
 
   return (
-    <div ref={layout} className={styles.layout} onPlayCapture={(event) => {
-      if (!(event.target instanceof HTMLAudioElement)) return;
-      stopReplyAudio();
-      stopSpeaking();
-      pauseAudio(event.target);
-    }}>
-      <ModuleFeatureOverview module="barta" />
-      <section className={styles.chat} aria-label={formLanguage === "bn" ? "বার্তার কথোপকথন" : "Barta conversation"}>
-
-
-        <div className={styles.speakerBar}>
-          {audioAllowed && <SpeakerSwitch enabled={speakerEnabled} locale={formLanguage}
-            disabled={!ready || (!speakerEnabled && audio.listening)} onToggle={() => toggleSpeaker()} />}
-          {audioAllowed && <p lang={formLanguage}>{copy.speakerHint}</p>}
-        </div>
-
-        {hasThread ? (
-
-          <div className={styles.thread}>
-            {turns.map((turn, index) => (
-              <div key={index} className={styles.turn} ref={!transient && !error && index === turns.length - 1 ? latest : undefined}>
-                <div className={styles.question} lang={turn.language}>
-                  <span>{educationCopy[turn.language].you}</span>
-                  <p lang={turn.questionLanguage}>{turn.question}</p>
-                </div>
-                <Answer result={turn.result} locale={turn.language} question={turn.question} turnId={`barta-turn-${index}`}
-                  showOptions={reply?.result === turn.result} onSelect={onSelect} busy={busy || audio.listening}
-                  allowAudio={audioAllowed} speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
-                  onToggleSpeaker={() => toggleSpeaker(turn)} />
-              </div>
-            ))}
-            {transient && <div ref={latest}>
-              <Answer result={transient.result} locale={transient.language} turnId="barta-current"
-                showOptions onSelect={onSelect} busy={busy || audio.listening}
-                allowAudio={audioAllowed} speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
-                onToggleSpeaker={() => toggleSpeaker(transient)} />
-            </div>}
-            {speakerEnabled && blocked && (
-              <div className={styles.playbackNotice} lang={blocked}>
-                <p role="status">{educationCopy[blocked].speakerBlocked}</p>
-                <button type="button" className={styles.read} onClick={retry}>{educationCopy[blocked].playAudio}</button>
-              </div>
-            )}
-            {speakerEnabled && audio.notice?.replyId === "barta-question" && (
-              <p role="status" className={styles.playbackNotice} lang={audio.notice.language}>
-                {educationCopy[audio.notice.language].questionVoiceUnavailable}
-              </p>
-            )}
-            {speakerEnabled && playbackMessage("barta-reply") && (
-              <p role="status" className={styles.playbackNotice} lang={audio.notice?.language}>{playbackMessage("barta-reply")}</p>
-            )}
-            {busy && <p className={styles.notice} lang={formLanguage}>{copy.checking}</p>}
-            {error && <div ref={latest}><p className={styles.notice} lang={error.language} role="alert">{error.message}</p></div>}
-          </div>
-        ) : (
-          <div className={styles.welcome} lang={formLanguage}>
-            <div className={styles.welcomeHead}>
-              <span className={styles.avatar} aria-hidden="true"><HeartHandshake size={22} /></span>
-              <div>
-                <h2>{formLanguage === "bn" ? "হ্যালো, আমি বার্তা" : "Hi, I’m Barta"}</h2>
-                <p>{formLanguage === "bn"
-                  ? "গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে নিজের ভাষায় প্রশ্ন করুন। প্রতিটি উত্তরের সূত্র দেখতে পাবেন।"
-                  : "Ask about pregnancy, birth or caring for your newborn, in your own words. Every answer shows where it comes from."}</p>
+    <div
+      ref={layout}
+      className={styles.layout}
+      onPlayCapture={(event) => {
+        if (!(event.target instanceof HTMLAudioElement)) return;
+        stopReplyAudio();
+        stopSpeaking();
+        pauseAudio(event.target);
+      }}
+    >
+      <ModuleFeatureOverview
+        module="barta"
+        language={formLanguage}
+      />
+      <section
+        className={styles.chat}
+        aria-label={
+          formLanguage === "bn" ? "বার্তার কথোপকথন" : "Barta conversation"
+        }
+      >
+        {audioAllowed && (
+          <div className={styles.speakerBar}>
+            <div className={styles.speakerWrap}>
+              <SpeakerSwitch
+                enabled={speakerEnabled}
+                locale={formLanguage}
+                cue={!speakerEnabled && !hasThread}
+                disabled={!ready || (!speakerEnabled && audio.listening)}
+                onToggle={() => toggleSpeaker()}
+              />
+              <div
+                className={styles.speakerTip}
+                role="note"
+                lang={formLanguage}
+              >
+                <span className={styles.pressDemo} aria-hidden="true">
+                  <span className={styles.pressBtn}>
+                    <Volume2 size={15} />
+                  </span>
+                  <span className={styles.pressRing} />
+                  <MousePointerClick size={18} className={styles.pressHand} />
+                </span>
+                <p>{copy.speakerPress}</p>
               </div>
             </div>
           </div>
         )}
 
-        <p className={styles.announce} role="status" lang={reply?.language ?? formLanguage}>
-          {busy ? copy.checking : reply && (reply.result.status !== "abstained" || !["urgent_care", "crisis_support"].includes(reply.result.reason))
-            ? educationCopy[reply.language].replyReady : ""}
+        <div
+          ref={stage}
+          className={styles.stage}
+          tabIndex={0}
+          role="region"
+          aria-label={
+            formLanguage === "bn"
+              ? "কথোপকথন, স্ক্রল করে আগের বার্তা দেখুন"
+              : "Conversation, scroll to see earlier messages"
+          }
+        >
+          {hasThread ? (
+            <div className={styles.thread}>
+              {turns.map((turn, index) => (
+                <div
+                  key={index}
+                  className={styles.turn}
+                  ref={
+                    !transient && !error && index === turns.length - 1
+                      ? latest
+                      : undefined
+                  }
+                >
+                  <div className={styles.question} lang={turn.language}>
+                    <span>{educationCopy[turn.language].you}</span>
+                    <p lang={turn.questionLanguage}>{turn.question}</p>
+                  </div>
+                  <Answer
+                    result={turn.result}
+                    locale={turn.language}
+                    question={turn.question}
+                    turnId={`barta-turn-${index}`}
+                    showOptions={reply?.result === turn.result}
+                    onSelect={onSelect}
+                    busy={busy || audio.listening}
+                    allowAudio={audioAllowed}
+                    speakerEnabled={speakerEnabled}
+                    speakerDisabled={
+                      !ready || (!speakerEnabled && (busy || audio.listening))
+                    }
+                    onToggleSpeaker={() => toggleSpeaker(turn)}
+                  />
+                </div>
+              ))}
+              {transient && (
+                <div ref={latest}>
+                  <Answer
+                    result={transient.result}
+                    locale={transient.language}
+                    turnId="barta-current"
+                    showOptions
+                    onSelect={onSelect}
+                    busy={busy || audio.listening}
+                    allowAudio={audioAllowed}
+                    speakerEnabled={speakerEnabled}
+                    speakerDisabled={
+                      !ready || (!speakerEnabled && (busy || audio.listening))
+                    }
+                    onToggleSpeaker={() => toggleSpeaker(transient)}
+                  />
+                </div>
+              )}
+              {speakerEnabled && blocked && (
+                <div className={styles.playbackNotice} lang={blocked}>
+                  <p role="status">{educationCopy[blocked].speakerBlocked}</p>
+                  <button type="button" className={styles.read} onClick={retry}>
+                    {educationCopy[blocked].playAudio}
+                  </button>
+                </div>
+              )}
+              {speakerEnabled && audio.notice?.replyId === "barta-question" && (
+                <p
+                  role="status"
+                  className={styles.playbackNotice}
+                  lang={audio.notice.language}
+                >
+                  {
+                    educationCopy[audio.notice.language]
+                      .questionVoiceUnavailable
+                  }
+                </p>
+              )}
+              {speakerEnabled && playbackMessage("barta-reply") && (
+                <p
+                  role="status"
+                  className={styles.playbackNotice}
+                  lang={audio.notice?.language}
+                >
+                  {playbackMessage("barta-reply")}
+                </p>
+              )}
+              {busy && pendingQuestion && (
+                <div
+                  className={styles.question}
+                  lang={detectBartaLanguage(pendingQuestion) ?? formLanguage}
+                >
+                  <span>{copy.you}</span>
+                  <p>{pendingQuestion}</p>
+                </div>
+              )}
+              {busy && (
+                <p className={styles.typing} lang={formLanguage}>
+                  <span className={styles.typingDots} aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  {copy.checking}
+                </p>
+              )}
+              {error && (
+                <div ref={latest}>
+                  <p
+                    className={styles.notice}
+                    lang={error.language}
+                    role="alert"
+                  >
+                    {error.message}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.welcome} lang={formLanguage}>
+              <div className={styles.welcomeHead}>
+                <span className={styles.avatar} aria-hidden="true">
+                  <HeartHandshake size={22} />
+                </span>
+                <div>
+                  <h2>
+                    {formLanguage === "bn"
+                      ? "হ্যালো, আমি বার্তা"
+                      : "Hi, I’m Barta"}
+                  </h2>
+                  <p>
+                    {formLanguage === "bn"
+                      ? "গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে নিজের ভাষায় প্রশ্ন করুন। প্রতিটি উত্তরের সূত্র দেখতে পাবেন।"
+                      : "Ask about pregnancy, birth or caring for your newborn, in your own words. Every answer shows where it comes from."}
+                  </p>
+                </div>
+              </div>
+              <div
+                className={styles.starters}
+                role="group"
+                aria-label={
+                  formLanguage === "bn" ? "শুরু করার প্রশ্ন" : "Ways to start"
+                }
+              >
+                <p>
+                  {formLanguage === "bn"
+                    ? "এখান থেকে শুরু করতে পারেন"
+                    : "Try one of these"}
+                </p>
+                <ul>
+                  {starterTopics.map((topic) => (
+                    <li key={topic}>
+                      <button
+                        type="button"
+                        className={styles.starter}
+                        disabled={!ready || busy}
+                        onClick={() =>
+                          onSelect(educationTopics[topic][formLanguage])
+                        }
+                      >
+                        {educationTopics[topic][formLanguage]}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <p
+          className={styles.announce}
+          role="status"
+          lang={reply?.language ?? formLanguage}
+        >
+          {busy
+            ? copy.checking
+            : reply &&
+                (reply.result.status !== "abstained" ||
+                  !["urgent_care", "crisis_support"].includes(
+                    reply.result.reason,
+                  ))
+              ? educationCopy[reply.language].replyReady
+              : ""}
         </p>
 
         <div className={styles.composerCard}>
-          <form className={styles.form} lang={formLanguage} onSubmit={(event) => {
-            if (voiceListening) { event.preventDefault(); return; }
-            if (audio.listening || voiceListening) { event.preventDefault(); return; }
-            if (speakerEnabled && !busy && question.trim()) {
-            delivered.current = undefined;
-            stopReplyAudio();
-            pauseAudio();
-            const submittedText = question.trim();
-            const language = /[\u0980-\u09ff]/u.test(submittedText) ? "bn" : "en";
-            playAudio("barta-question", submittedText, language, true);
-          }
-          onSubmit(event);
-          }}>
+          <form
+            className={styles.form}
+            lang={formLanguage}
+            onSubmit={(event) => {
+              if (voiceListening) {
+                event.preventDefault();
+                return;
+              }
+              if (audio.listening || voiceListening) {
+                event.preventDefault();
+                return;
+              }
+              if (speakerEnabled && !busy && question.trim()) {
+                delivered.current = undefined;
+                stopReplyAudio();
+                pauseAudio();
+                const submittedText = question.trim();
+                const language = /[\u0980-\u09ff]/u.test(submittedText)
+                  ? "bn"
+                  : "en";
+                playAudio("barta-question", submittedText, language, true);
+              }
+              onSubmit(event);
+            }}
+          >
             <div className={styles.formHead}>
               <label htmlFor="barta-question">{copy.question}</label>
-              <span>{formLanguage === "bn" ? "বাংলা বা ইংরেজিতে" : "Bangla or English"}</span>
+              <span>
+                {formLanguage === "bn"
+                  ? "বাংলা বা ইংরেজিতে"
+                  : "Bangla or English"}
+              </span>
             </div>
-            {hasPrefill && <p className="text-sm text-pro-muted">{copy.prefillExplanation}</p>}
+            {hasPrefill && (
+              <p className="text-sm text-pro-muted">
+                {copy.prefillExplanation}
+              </p>
+            )}
             <div className={styles.composer}>
-              <textarea id="barta-question" ref={questionInput} value={question}
-                placeholder={copy.placeholder} aria-describedby="barta-privacy"
-                onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
-              <div className="grid gap-2 px-3 pb-2">
-                <p className="text-sm text-pro-muted">
-                  {formLanguage === "bn"
-                    ? "মাইক্রোফোন চাপুন → বলুন → থামান → লেখা দেখে ঠিক করুন → পাঠান"
-                    : "Tap mic → Speak → Stop → Review or edit → Send"}
-                </p>
-                <VoiceDictationButton language={voiceLanguage === "auto" ? micLanguage : voiceLanguage} hideLanguageSelect disabled={!ready || busy} value={question} maxLength={1200} onChange={onQuestion} onListeningChange={setVoiceListening} focusTargetRef={questionInput} />
+              <textarea
+                id="barta-question"
+                ref={questionInput}
+                value={question}
+                placeholder={copy.placeholder}
+                aria-describedby="barta-privacy"
+                onChange={(event) => onQuestion(event.currentTarget.value)}
+                readOnly={!ready || busy}
+                maxLength={1200}
+                aria-required="true"
+                rows={3}
+              />
+              <p id="barta-voice-hint" className="sr-only">
+                {voiceHint}
+              </p>
+              <div className={styles.voiceStrip}>
+                <VoiceDictationButton
+                  compact
+                  language={
+                    voiceLanguage === "auto" ? micLanguage : voiceLanguage
+                  }
+                  uiLanguage={formLanguage}
+                  helpLabel={copy.voiceHelp}
+                  hideCounter
+                  hideLanguageSelect
+                  disabled={!ready || busy}
+                  value={question}
+                  maxLength={1200}
+                  onChange={onQuestion}
+                  onListeningChange={setVoiceListening}
+                  focusTargetRef={questionInput}
+                  helpContent={
+                    <>
+                      <p className="font-semibold">{copy.voiceSteps}</p>
+                      <p>{voiceHint}</p>
+                      <p>
+                        {copy.voicePrivacy} {copy.voicePermission}
+                      </p>
+                    </>
+                  }
+                />
               </div>
               <div className={styles.composerBar}>
                 {symbolPanel && (
-                  <button type="button" className={styles.tool} aria-controls="barta-symbol-input"
-                    onClick={() => document.getElementById("barta-symbol-input")?.focus()}>
+                  <button
+                    type="button"
+                    className={styles.tool}
+                    aria-controls="barta-symbol-body"
+                    onClick={() => {
+                      const toggle =
+                        document.getElementById("barta-symbol-toggle");
+                      if (toggle?.getAttribute("aria-expanded") === "false")
+                        toggle.click();
+                      toggle?.focus();
+                    }}
+                  >
                     <LayoutGrid size={18} aria-hidden="true" />
                     {copy.useSymbols}
                   </button>
                 )}
                 <div className={styles.sendGroup}>
-                <span className={styles.counter} data-near={question.length > 1100 || undefined}>
-                  <bdi>{question.length}</bdi>/1200
-                </span>
-                <button type="submit" className={styles.send}
-                  disabled={!ready || busy || audio.listening || voiceListening || !question.trim()}>
-                  {copy.submit}<ArrowUp size={18} aria-hidden="true" />
-                </button>
+                  <span
+                    className={styles.counter}
+                    data-near={question.length > 1100 || undefined}
+                  >
+                    <bdi>{question.length}</bdi>/1200
+                  </span>
+                  <button
+                    type="submit"
+                    className={styles.send}
+                    disabled={
+                      !ready ||
+                      busy ||
+                      audio.listening ||
+                      voiceListening ||
+                      !question.trim()
+                    }
+                  >
+                    {copy.submit}
+                    <ArrowUp size={18} aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </div>
             <div className={styles.chatPreferences}>
-
               <label className={styles.language}>
                 <span>{copy.voiceLanguage}</span>
-                <select value={voiceLanguage} disabled={!ready || busy || audio.listening} aria-describedby="barta-voice-hint"
+                <select
+                  value={voiceLanguage}
+                  disabled={!ready || busy || audio.listening}
+                  aria-describedby="barta-voice-hint"
                   onChange={(event) => {
                     const value = event.currentTarget.value;
-                    if (value === "auto" || value === "bn" || value === "en") setVoiceLanguage(value);
-                  }}>
+                    if (value === "auto" || value === "bn" || value === "en")
+                      setVoiceLanguage(value);
+                  }}
+                >
                   <option value="auto">{copy.voiceAuto}</option>
-                  <option value="bn" lang="bn">বাংলা</option>
-                  <option value="en" lang="en">English</option>
+                  <option value="bn" lang="bn">
+                    বাংলা
+                  </option>
+                  <option value="en" lang="en">
+                    English
+                  </option>
                 </select>
               </label>
               <label className={styles.language}>
                 <span>{copy.answerLanguage}</span>
-                <select value={languageChoice} disabled={!ready || busy || audio.listening}
+                <select
+                  value={languageChoice}
+                  disabled={!ready || busy || audio.listening}
                   onChange={(event) => {
                     const selected = event.currentTarget.value;
-                    onLanguage(selected === "en" || selected === "auto" ? selected : "bn");
-                  }}>
-                  <option value="auto">{formLanguage === "bn" ? "স্বয়ংক্রিয়" : "Auto"}</option>
-                  <option value="bn" lang="bn">বাংলা</option>
+                    onLanguage(
+                      selected === "en" || selected === "auto"
+                        ? selected
+                        : "bn",
+                    );
+                  }}
+                >
+                  <option value="auto">
+                    {formLanguage === "bn" ? "স্বয়ংক্রিয়" : "Auto"}
+                  </option>
+                  <option value="bn" lang="bn">
+                    বাংলা
+                  </option>
                   <option value="en">English</option>
                 </select>
               </label>
               {(turns.length > 0 || reply || error) && (
-                <button type="button" className={styles.clear} disabled={!ready || busy} onClick={() => { audio.resetAudio(); onClear(); }} lang={formLanguage}>{copy.clear}</button>
+                <button
+                  type="button"
+                  className={styles.clear}
+                  disabled={!ready || busy}
+                  onClick={() => {
+                    audio.resetAudio();
+                    onClear();
+                  }}
+                  lang={formLanguage}
+                >
+                  {copy.clear}
+                </button>
               )}
             </div>
 
             <div className={styles.hints}>
-              <p id="barta-privacy"><Lock size={16} aria-hidden="true" /><span>{copy.privacy}</span></p>
-              <p id="barta-voice-hint"><Mic size={16} aria-hidden="true" /><span>
-                {voiceLanguage === "auto"
-                  ? <>{copy.voiceAutoHint} <span lang={micLanguage}>{micLanguage === "bn" ? "বাংলা" : "English"}</span>.</>
-                  : copy.voicePrivacy}
-              </span></p>
-              <details className={styles.voiceMore}>
-                <summary>{formLanguage === "bn" ? "ভয়েস ইনপুট কীভাবে কাজ করে" : "How voice input works"}<ChevronDown size={16} aria-hidden="true" /></summary>
-                <p id="barta-voice-more">
-                  {copy.voicePrivacy}{" "}
-                  {formLanguage === "bn"
-                    ? "মাইক্রোফোনের অনুমতি লাগবে। মাইক কাজ না করলে এখানেই টাইপ করুন।"
-                    : "Microphone permission is required. If dictation is unavailable, type in this same field."}
-                </p>
-              </details>
+              <p id="barta-privacy">
+                <Lock size={16} aria-hidden="true" />
+                <span>{copy.privacy}</span>
+              </p>
             </div>
-            <p role="status" lang={audio.notice?.language ?? formLanguage} className={styles.audioStatus}>
-              {audio.notice && !audio.notice.replyId ? educationCopy[audio.notice.language][audio.notice.kind] : audio.listening ? copy.listening : ""}
+            <p
+              role="status"
+              lang={audio.notice?.language ?? formLanguage}
+              className={styles.audioStatus}
+            >
+              {audio.notice && !audio.notice.replyId
+                ? educationCopy[audio.notice.language][audio.notice.kind]
+                : audio.listening
+                  ? copy.listening
+                  : ""}
             </p>
           </form>
           {symbolPanel}
         </div>
-
       </section>
 
       <aside className={styles.sidebar} lang={formLanguage}>
         <div className={styles.topicPanel}>
-          <h2><BookOpen size={20} aria-hidden="true" /> {copy.topics}</h2>
+          <h2>
+            <BookOpen size={20} aria-hidden="true" /> {copy.topics}
+          </h2>
           {topicGroups.map((group) => (
             <section key={group.name} className={styles.topicGroup}>
               <h3>{copy[group.name]}</h3>
               <ul>
                 {group.topics.map((topic) => (
-                  <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={!ready || busy || audio.listening} /></li>
+                  <li key={topic}>
+                    <QuestionOption
+                      prompt={educationTopics[topic][formLanguage]}
+                      onSelect={onSelect}
+                      disabled={!ready || busy || audio.listening}
+                    />
+                  </li>
                 ))}
               </ul>
             </section>
           ))}
           <details className={styles.moreTopics}>
-            <summary>{formLanguage === "bn" ? "মাতৃসেবায় প্রবেশগম্যতা ও সহায়তা" : "Accessible maternity care"}<ChevronDown size={16} aria-hidden="true" /></summary>
+            <summary>
+              {formLanguage === "bn"
+                ? "মাতৃসেবায় প্রবেশগম্যতা ও সহায়তা"
+                : "Accessible maternity care"}
+              <ChevronDown size={16} aria-hidden="true" />
+            </summary>
             <ul>
-              {(["accessVisit","accessWheelchair","accessHearing","accessVision","accessEasyRead","accessCommunication","accessSensory","accessBirthPlan","accessConsent","accessAfterBirth","accessSupportPerson","accessFollowUp"] as const).map(topic => (
-                <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={!ready || busy || audio.listening} /></li>
+              {(
+                [
+                  "accessVisit",
+                  "accessWheelchair",
+                  "accessHearing",
+                  "accessVision",
+                  "accessEasyRead",
+                  "accessCommunication",
+                  "accessSensory",
+                  "accessBirthPlan",
+                  "accessConsent",
+                  "accessAfterBirth",
+                  "accessSupportPerson",
+                  "accessFollowUp",
+                ] as const
+              ).map((topic) => (
+                <li key={topic}>
+                  <QuestionOption
+                    prompt={educationTopics[topic][formLanguage]}
+                    onSelect={onSelect}
+                    disabled={!ready || busy || audio.listening}
+                  />
+                </li>
               ))}
             </ul>
-            <button type="button" className={`${styles.read} ${styles.collapseTopics}`}
+            <button
+              type="button"
+              className={`${styles.read} ${styles.collapseTopics}`}
               onClick={(event) => {
                 const details = event.currentTarget.closest("details");
                 if (!details) return;
                 details.open = false;
                 details.querySelector("summary")?.focus();
-              }}>
-              {formLanguage === "bn" ? "সহায়তার তালিকা গুটিয়ে নিন" : "Collapse accessibility questions"}
+              }}
+            >
+              {formLanguage === "bn"
+                ? "সহায়তার তালিকা গুটিয়ে নিন"
+                : "Collapse accessibility questions"}
             </button>
           </details>
           <details className={styles.moreTopics}>
-            <summary>{copy.moreTopics}<ChevronDown size={16} aria-hidden="true" /></summary>
+            <summary>
+              {copy.moreTopics}
+              <ChevronDown size={16} aria-hidden="true" />
+            </summary>
             <ul>
               {additionalTopics.map((topic) => (
-                <li key={topic}><QuestionOption prompt={educationTopics[topic][formLanguage]} onSelect={onSelect} disabled={!ready || busy || audio.listening} /></li>
+                <li key={topic}>
+                  <QuestionOption
+                    prompt={educationTopics[topic][formLanguage]}
+                    onSelect={onSelect}
+                    disabled={!ready || busy || audio.listening}
+                  />
+                </li>
               ))}
             </ul>
-            <button type="button" className={`${styles.read} ${styles.collapseTopics}`}
+            <button
+              type="button"
+              className={`${styles.read} ${styles.collapseTopics}`}
               onClick={(event) => {
                 const details = event.currentTarget.closest("details");
                 if (!details) return;
                 details.open = false;
                 details.querySelector("summary")?.focus();
-              }}>
-              {formLanguage === "bn" ? "প্রশ্নের তালিকা গুটিয়ে নিন" : "Collapse questions"}
+              }}
+            >
+              {formLanguage === "bn"
+                ? "প্রশ্নের তালিকা গুটিয়ে নিন"
+                : "Collapse questions"}
             </button>
           </details>
         </div>
         <div className={styles.sideNote}>
-        {audioAllowed && <BartaAudioFile key={formLanguage} guideLabel={copy.readGuide}
-          text={spokenGuide} language={formLanguage} disabled={!ready || busy || audio.listening}
-          browserReading={audio.speaking === "barta-guide"}
-          browserFailed={audio.notice?.replyId === "barta-guide"}
-          onBrowserRead={() => {
-            stopReplyAudio();
-            readAnswer("barta-guide", spokenGuide, formLanguage);
-          }} />}
-        {playbackMessage("barta-guide") && (
-          <p role="status" className={styles.playbackNotice}>{playbackMessage("barta-guide")}</p>
-        )}
-        <p className={styles.scope}><ShieldCheck size={19} aria-hidden="true" /><span>{copy.scope}</span></p>
+          {audioAllowed && (
+            <BartaAudioFile
+              key={formLanguage}
+              guideLabel={copy.readGuide}
+              text={spokenGuide}
+              language={formLanguage}
+              disabled={!ready || busy || audio.listening}
+              browserReading={audio.speaking === "barta-guide"}
+              browserFailed={audio.notice?.replyId === "barta-guide"}
+              onBrowserRead={() => {
+                stopReplyAudio();
+                readAnswer("barta-guide", spokenGuide, formLanguage);
+              }}
+            />
+          )}
+          {playbackMessage("barta-guide") && (
+            <p role="status" className={styles.playbackNotice}>
+              {playbackMessage("barta-guide")}
+            </p>
+          )}
+          <p className={styles.scope}>
+            <ShieldCheck size={19} aria-hidden="true" />
+            <span>{copy.scope}</span>
+          </p>
         </div>
       </aside>
     </div>

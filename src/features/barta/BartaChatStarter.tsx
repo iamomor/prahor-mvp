@@ -1,45 +1,90 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { AACComposer, HeldAacText, VoiceDictationButton, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
-import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
 import { NetworkStatus } from "@/components/pwa/NetworkStatus";
-import { detectBartaLanguage } from "./chat-language";
+import {
+  AACComposer,
+  HeldAacText,
+  VoiceDictationButton,
+  clearStoredAacDraft,
+  getStoredAacDraft,
+  mergeAacText,
+  useAdaptPreferences,
+} from "@/features/adapt";
+import { useLanguage } from "@/i18n/use-language";
+import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
+import { ChevronDown, Images } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
 import { BartaEducationChat } from "./BartaEducationChat";
 import { educationCopy, type Language } from "./barta-education-copy";
-import { bartaDemoQuestions, getBartaDemoLanguage } from "./demo-questions";
 import styles from "./barta-education.module.css";
+import { detectBartaLanguage } from "./chat-language";
+import { bartaDemoQuestions, getBartaDemoLanguage } from "./demo-questions";
 
 type ChatState =
   | { status: "idle" | "checking" }
   | { status: "response"; result: BartaAnswer; language: "bn" | "en" }
   | { status: "error"; message: string; language: "en" | "bn" };
 
-type Turn = { question: string; questionLanguage?: string; result: BartaAnswer; language: Language };
+type Turn = {
+  question: string;
+  questionLanguage?: string;
+  result: BartaAnswer;
+  language: Language;
+};
 const subscribeDraft = (callback: () => void) => {
   window.addEventListener("prohor-aac-draft-change", callback);
   return () => window.removeEventListener("prohor-aac-draft-change", callback);
 };
 
 function readErrorMessage(body: unknown): string {
-  return body !== null && typeof body === "object" && "message" in body
-    && typeof body.message === "string" && body.message.trim()
+  return body !== null &&
+    typeof body === "object" &&
+    "message" in body &&
+    typeof body.message === "string" &&
+    body.message.trim()
     ? body.message
     : "Barta is unavailable. Try again.";
 }
 
 /** `initialQuestion` only pre-fills the editable draft (e.g. from the dashboard); it is never sent automatically. */
-export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode?: "demo" | "education"; initialQuestion?: string }) {
+export function BartaChatStarter({
+  mode = "demo",
+  initialQuestion = "",
+}: {
+  mode?: "demo" | "education";
+  initialQuestion?: string;
+}) {
   const demo = mode === "demo";
   useAdaptPreferences();
+  const { language: siteLanguage } = useLanguage();
   const [incoming, setIncoming] = useState("");
-  const storedDraft = useSyncExternalStore(subscribeDraft, getStoredAacDraft, () => null);
-  const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
+  const [symbolsOpen, setSymbolsOpen] = useState(false);
+  const storedDraft = useSyncExternalStore(
+    subscribeDraft,
+    getStoredAacDraft,
+    () => null,
+  );
+  const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">(
+    "auto",
+  );
   const questionInput = useRef<HTMLTextAreaElement>(null);
   const pendingRequest = useRef<AbortController | null>(null);
-  const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
+  const [question, setQuestion] = useState(() =>
+    initialQuestion.slice(0, 1200),
+  );
   const [turns, setTurns] = useState<Turn[]>([]);
-  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? "en" : answerLanguage;
+  const [pendingQuestion, setPendingQuestion] = useState<string>();
+  const formLanguage =
+    answerLanguage === "auto"
+      ? (turns.at(-1)?.language ?? siteLanguage)
+      : answerLanguage;
   const [previousChunkId, setPreviousChunkId] = useState<string>();
   const [state, setState] = useState<ChatState>({ status: "idle" });
   const busy = state.status === "checking";
@@ -50,26 +95,108 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
 
   function insertText(text: string) {
     const next = mergeAacText(question, text);
-    if (next.length > 1200) { setIncoming(text); return; }
-    setQuestion(next); setIncoming(""); clearStoredAacDraft();
+    if (next.length > 1200) {
+      setIncoming(text);
+      return;
+    }
+    setQuestion(next);
+    setIncoming("");
+    clearStoredAacDraft();
     questionInput.current?.focus();
   }
   const chatCopy = educationCopy[formLanguage];
   // Always open: asking with pictures is a first-class way to ask, not a hidden mode.
-  const aacSection = <section id="barta-symbol-input" tabIndex={-1} className={styles.symbolPanel} aria-label={chatCopy.useSymbols} lang={formLanguage}>
-    <AACComposer bare initialLanguage={formLanguage} onInsert={insertText} targetLabel={chatCopy.insertQuestion} />
-    {storedDraft && <div className={styles.savedDraft}><p>{chatCopy.savedAacDraft}: {storedDraft}</p>
-      <div className={styles.helpActions}>
-        <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>{chatCopy.insertSavedAac}</button>
-        <button type="button" className="pro-btn pro-btn-secondary" onClick={clearStoredAacDraft}>{chatCopy.dismissSavedAac}</button>
-      </div></div>}
-    {incoming && <HeldAacText text={incoming} value={question} maxLength={1200} lang={formLanguage === "bn" ? "bn" : "en"} onDismiss={() => setIncoming("")} onAdd={next => { setQuestion(next); setIncoming(""); clearStoredAacDraft(); questionInput.current?.focus(); }} />}
-  </section>;
+  const aacSection = (
+    <section
+      id="barta-symbol-input"
+      tabIndex={-1}
+      className={styles.symbolPanel}
+      aria-label={chatCopy.useSymbols}
+      lang={formLanguage}
+    >
+      <button
+        type="button"
+        id="barta-symbol-toggle"
+        className={styles.symbolToggle}
+        aria-expanded={symbolsOpen}
+        aria-controls="barta-symbol-body"
+        onClick={() => setSymbolsOpen((open) => !open)}
+      >
+        <span className={styles.symbolToggleIcon} aria-hidden="true">
+          <Images size={22} />
+        </span>
+        <span className={styles.symbolToggleText}>
+          <strong>
+            Say it with pictures · <span lang="bn">ছবি দিয়ে বলুন</span>
+          </strong>
+          <span>
+            {formLanguage === "bn"
+              ? "লিখতে বা বলতে কষ্ট হলে ছবিতে চাপ দিন। কিছুই নিজে নিজে পাঠানো হয় না।"
+              : "Tap pictures to build a question. Nothing is sent by itself."}
+          </span>
+        </span>
+        <ChevronDown
+          size={20}
+          aria-hidden="true"
+          className={styles.symbolToggleChevron}
+        />
+      </button>
+      <div id="barta-symbol-body" hidden={!symbolsOpen}>
+        <AACComposer
+          bare
+          initialLanguage={formLanguage}
+          onInsert={insertText}
+          targetLabel={chatCopy.insertQuestion}
+        />
+      </div>
+      {storedDraft && (
+        <div className={styles.savedDraft}>
+          <p>
+            {chatCopy.savedAacDraft}: {storedDraft}
+          </p>
+          <div className={styles.helpActions}>
+            <button
+              type="button"
+              className="pro-btn pro-btn-secondary"
+              onClick={() => insertText(storedDraft)}
+            >
+              {chatCopy.insertSavedAac}
+            </button>
+            <button
+              type="button"
+              className="pro-btn pro-btn-secondary"
+              onClick={clearStoredAacDraft}
+            >
+              {chatCopy.dismissSavedAac}
+            </button>
+          </div>
+        </div>
+      )}
+      {incoming && (
+        <HeldAacText
+          text={incoming}
+          value={question}
+          maxLength={1200}
+          lang={formLanguage === "bn" ? "bn" : "en"}
+          onDismiss={() => setIncoming("")}
+          onAdd={(next) => {
+            setQuestion(next);
+            setIncoming("");
+            clearStoredAacDraft();
+            questionInput.current?.focus();
+          }}
+        />
+      )}
+    </section>
+  );
 
-  useEffect(() => () => {
-    pendingRequest.current?.abort();
-    pendingRequest.current = null;
-  }, []);
+  useEffect(
+    () => () => {
+      pendingRequest.current?.abort();
+      pendingRequest.current = null;
+    },
+    [],
+  );
 
   const fillQuestion = useCallback((text: string) => {
     setQuestion(text);
@@ -90,10 +217,15 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
     if (busy || pendingRequest.current || !text) return;
 
     const previousReply = turns.at(-1)?.result;
-    const followUpContext = previousReply?.status === "clarification" ? previousReply.followUpContext : undefined;
+    const followUpContext =
+      previousReply?.status === "clarification"
+        ? previousReply.followUpContext
+        : undefined;
     const detected = detectBartaLanguage(text);
-    const requestedLanguage = answerLanguage === "auto" ? detected ?? formLanguage : answerLanguage;
+    const requestedLanguage =
+      answerLanguage === "auto" ? (detected ?? formLanguage) : answerLanguage;
     setState({ status: "checking" });
+    if (!demo) setPendingQuestion(text);
     const controller = new AbortController();
     pendingRequest.current = controller;
     const timeout = window.setTimeout(() => controller.abort(), 60_000);
@@ -102,41 +234,70 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(demo
-          ? { question: text }
-          : {
-            question: text,
-            language: requestedLanguage,
-            retention: { mode: "ephemeral" },
-            ...(previousChunkId && { previousChunkId }),
-            ...(followUpContext && { followUpContext }),
-          }),
+        body: JSON.stringify(
+          demo
+            ? { question: text }
+            : {
+                question: text,
+                language: requestedLanguage,
+                retention: { mode: "ephemeral" },
+                ...(previousChunkId && { previousChunkId }),
+                ...(followUpContext && { followUpContext }),
+              },
+        ),
       });
       const body: unknown = await response.json();
       if (pendingRequest.current !== controller) return;
       const parsed = bartaAnswerSchema.safeParse(body);
       if (!demo && parsed.success && parsed.data.status === "not_connected") {
-        setState({ status: "error", message: parsed.data.message, language: requestedLanguage });
+        setState({
+          status: "error",
+          message: parsed.data.message,
+          language: requestedLanguage,
+        });
         return;
       }
       if (!demo && !response.ok) {
-        setState({ status: "error", language: requestedLanguage,
-          message: parsed.success && parsed.data.status !== "grounded"
-            ? parsed.data.message : educationCopy[requestedLanguage].failure });
+        setState({
+          status: "error",
+          language: requestedLanguage,
+          message:
+            parsed.success && parsed.data.status !== "grounded"
+              ? parsed.data.message
+              : educationCopy[requestedLanguage].failure,
+        });
         return;
       }
       if (parsed.success && response.ok) {
         const result = parsed.data;
-        const replyText = result.status === "grounded" ? result.answer : result.message;
+        const replyText =
+          result.status === "grounded" ? result.answer : result.message;
         if (!demo) {
           // Keep the thread in memory for this tab. Send only the current
           // question, an optional public chunk ID and a fixed follow-up code.
-          const questionLanguage = /[\u0980-\u09ff]/u.test(text) ? "bn" : detected === "bn" ? "bn-Latn" : detected;
-          setTurns((history) => [...history, { question: text, questionLanguage, result, language: requestedLanguage }]);
-          if (result.status !== "grounded" && result.status !== "conversation" && result.status !== "clarification") {
+          const questionLanguage = /[\u0980-\u09ff]/u.test(text)
+            ? "bn"
+            : detected === "bn"
+              ? "bn-Latn"
+              : detected;
+          setTurns((history) => [
+            ...history,
+            {
+              question: text,
+              questionLanguage,
+              result,
+              language: requestedLanguage,
+            },
+          ]);
+          if (
+            result.status !== "grounded" &&
+            result.status !== "conversation" &&
+            result.status !== "clarification"
+          ) {
             setPreviousChunkId(undefined);
           }
-          if (result.status === "grounded") setPreviousChunkId(result.citations[0].chunkId);
+          if (result.status === "grounded")
+            setPreviousChunkId(result.citations[0].chunkId);
           setQuestion("");
         }
         setState({
@@ -149,7 +310,10 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
 
       setState({
         status: "error",
-        message: demo && !response.ok ? readErrorMessage(body) : educationCopy[demo ? "en" : requestedLanguage].failure,
+        message:
+          demo && !response.ok
+            ? readErrorMessage(body)
+            : educationCopy[demo ? "en" : requestedLanguage].failure,
         language: demo ? "en" : requestedLanguage,
       });
     } catch {
@@ -163,7 +327,10 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
       });
     } finally {
       window.clearTimeout(timeout);
-      if (pendingRequest.current === controller) pendingRequest.current = null;
+      if (pendingRequest.current === controller) {
+        pendingRequest.current = null;
+        setPendingQuestion(undefined);
+      }
     }
   }
 
@@ -171,12 +338,25 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
     return (
       <div className={styles.workspace}>
         <NetworkStatus message={educationCopy[formLanguage].offline} />
-        <BartaEducationChat symbolPanel={aacSection} languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
-        question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
-        onLanguage={setAnswerLanguage}
-        onQuestion={setQuestion}
-          onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} />
-        </div>
+        <BartaEducationChat
+          symbolPanel={aacSection}
+          languageChoice={answerLanguage}
+          formLanguage={formLanguage}
+          hasPrefill={Boolean(initialQuestion)}
+          question={question}
+          questionInput={questionInput}
+          turns={turns}
+          reply={educationReply}
+          pendingQuestion={pendingQuestion}
+          error={educationError}
+          busy={busy}
+          onLanguage={setAnswerLanguage}
+          onQuestion={setQuestion}
+          onSelect={fillQuestion}
+          onClear={clearConversation}
+          onSubmit={submit}
+        />
+      </div>
     );
   }
 
@@ -184,7 +364,9 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
     <section className="max-w-3xl rounded-2xl border border-pro-border bg-pro-elevated p-4 sm:p-6">
       <form onSubmit={submit} className="grid gap-4">
         <div className="grid gap-2" lang="en">
-          <label htmlFor="barta-question" className="font-semibold">Your question (Bangla or English)</label>
+          <label htmlFor="barta-question" className="font-semibold">
+            Your question (Bangla or English)
+          </label>
           <details className="text-pro-muted">
             <summary className="w-fit cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-pro-focus">
               Choose a sample question
@@ -193,13 +375,21 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
               {Object.values(bartaDemoQuestions).flatMap((examples) =>
                 (["en", "bn"] as const).map((locale) => (
                   <li key={examples[locale]}>
-                    <button type="button" lang={locale}
+                    <button
+                      type="button"
+                      lang={locale}
                       className="min-h-11 rounded px-2 text-start text-pro-primary underline focus-visible:outline-2 focus-visible:outline-pro-focus"
-                      disabled={busy} onClick={(event) => {
+                      disabled={busy}
+                      onClick={(event) => {
                         setQuestion(examples[locale]);
                         setState({ status: "idle" });
-                        event.currentTarget.form?.querySelector<HTMLTextAreaElement>("#barta-question")?.focus();
-                      }}>
+                        event.currentTarget.form
+                          ?.querySelector<HTMLTextAreaElement>(
+                            "#barta-question",
+                          )
+                          ?.focus();
+                      }}
+                    >
                       {examples[locale]}
                     </button>
                   </li>
@@ -207,35 +397,78 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
               )}
             </ul>
           </details>
-          <textarea id="barta-question" ref={questionInput} readOnly={busy}
+          <textarea
+            id="barta-question"
+            ref={questionInput}
+            readOnly={busy}
             className="min-h-32 w-full rounded-xl border border-pro-control-border bg-pro-bg p-3 text-pro-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus"
-            value={question} onChange={(event) => {
+            value={question}
+            onChange={(event) => {
               setQuestion(event.currentTarget.value);
               setState({ status: "idle" });
             }}
-            maxLength={1200} required />
-          <VoiceDictationButton language={formLanguage} value={question} maxLength={1200} onChange={next => { setQuestion(next); setState({ status: "idle" }); }} focusTargetRef={questionInput} />
+            maxLength={1200}
+            required
+          />
+          <VoiceDictationButton
+            language={formLanguage}
+            value={question}
+            maxLength={1200}
+            onChange={(next) => {
+              setQuestion(next);
+              setState({ status: "idle" });
+            }}
+            focusTargetRef={questionInput}
+          />
         </div>
-        <button type="submit" className="pro-btn pro-btn-primary w-fit" disabled={busy || !question.trim()} lang="en">
+        <button
+          type="submit"
+          className="pro-btn pro-btn-primary w-fit"
+          disabled={busy || !question.trim()}
+          lang="en"
+        >
           {busy ? "Checking…" : "Ask PROHOR"}
         </button>
       </form>
       <div role="status" aria-atomic="true">
-        {busy && <p lang="en" className="mt-6 text-pro-muted">Checking the demo source…</p>}
-        {state.status === "error" && <p lang={state.language} className="mt-6">{state.message}</p>}
-        {reply && reply.status !== "grounded" && <p lang={language} className="mt-6">{reply.message}</p>}
+        {busy && (
+          <p lang="en" className="mt-6 text-pro-muted">
+            Checking the demo source…
+          </p>
+        )}
+        {state.status === "error" && (
+          <p lang={state.language} className="mt-6">
+            {state.message}
+          </p>
+        )}
+        {reply && reply.status !== "grounded" && (
+          <p lang={language} className="mt-6">
+            {reply.message}
+          </p>
+        )}
         {reply?.status === "grounded" && (
           <div className="mt-6 space-y-3 border-t border-pro-border pt-5">
-            <h2 lang="en" className="text-lg font-semibold">Sample answer</h2>
+            <h2 lang="en" className="text-lg font-semibold">
+              Sample answer
+            </h2>
             <p lang={language}>{reply.answer}</p>
-            <h3 lang="en" className="font-semibold">Synthetic source</h3>
+            <h3 lang="en" className="font-semibold">
+              Synthetic source
+            </h3>
             <ul className="list-disc space-y-1 ps-5">
               {reply.citations.map((citation) => (
-                <li key={citation.chunkId}>{citation.title}. {citation.locator}.</li>
+                <li key={citation.chunkId}>
+                  {citation.title}. {citation.locator}.
+                </li>
               ))}
             </ul>
-            <ul lang={language} className="list-disc space-y-1 ps-5 text-pro-muted">
-              {reply.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+            <ul
+              lang={language}
+              className="list-disc space-y-1 ps-5 text-pro-muted"
+            >
+              {reply.limitations.map((limitation) => (
+                <li key={limitation}>{limitation}</li>
+              ))}
             </ul>
           </div>
         )}

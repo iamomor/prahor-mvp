@@ -63,15 +63,16 @@ test("real English OCR starts after consent and saves only checked synthetic fie
     const gallery = page.waitForEvent("filechooser");
     await page.getByRole("button", { name: /Gallery/ }).click();
     await (await gallery).setFiles([]);
-    const image = page.getByRole("region", { name: "Image OCR entry" });
+    const image = page.getByTestId("bujhi-image-entry");
     const png = await page.evaluate(() => {
       const canvas = document.createElement("canvas"); canvas.width = 1200; canvas.height = 300;
       const ctx = canvas.getContext("2d"); ctx.fillStyle = "white"; ctx.fillRect(0, 0, 1200, 300); ctx.fillStyle = "black"; ctx.font = "36px Arial";
       ctx.fillText("FICTIONAL LAB - DEMO ONLY", 40, 65); ctx.fillText("Beta-hCG 2,745.39 mIU/mL", 40, 145); ctx.fillText("Hemoglobin 11.2 g/dL", 40, 225);
       return canvas.toDataURL("image/png").split(",")[1];
     });
-    await image.getByLabel(/Allow downloads/).check();
-    await image.getByLabel(/Photo Upload/).setInputFiles({ name: "synthetic-report.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") });
+    await image.getByRole("checkbox", { name: /report reader|রিপোর্ট রিডার/ }).check();
+    await image.locator("#bujhi-photo-gallery").setInputFiles({ name: "synthetic-report.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") });
+    await image.getByRole("button", { name: /Read my report|রিপোর্ট পড়ুন/ }).click();
     await expect(page.getByRole("heading", { name: "Check what was read" })).toBeVisible({ timeout: 180000 });
     await page.getByText(/^Raw OCR text/).click();
     await expect(page.locator("details:visible pre").first()).toContainText("Beta-hCG 2,745.39 mIU/mL");
@@ -182,7 +183,7 @@ test("unsupported speech falls back to manual transcript; only three input metho
     for (const input of await page.locator('input[type="file"]').all()) {
       await expect(input).toHaveAttribute("accept", ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp");
     }
-    await expect(page.getByRole("region", { name: "Image OCR entry" }).getByLabel(/Photo Upload/)).toBeVisible();
+    await expect(page.getByTestId("bujhi-image-entry").locator("#bujhi-photo-gallery")).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem("prohor-demo-health-v1"))).toBe(null);
   } finally { await browser.close(); }
 });
@@ -303,19 +304,20 @@ test("downloadable PNG goes through local OCR and keeps the original optional", 
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: "Bujhi · বুঝি" })).toBeFocused();
 
-    const scanner = page.getByRole("region", { name: "Image OCR entry" });
+    const scanner = page.getByTestId("bujhi-image-entry");
     const sample = scanner.getByRole("link", { name: "Download sample report (PNG)" });
     const download = page.waitForEvent("download");
     await sample.focus();
     await page.keyboard.press("Enter");
     const downloaded = await download;
     expect(downloaded.suggestedFilename()).toBe("prohor-synthetic-lab-v1.png");
-    await scanner.getByLabel(/Allow downloads/).check();
-    await scanner.getByLabel(/Photo Upload/).setInputFiles({
+    await scanner.getByRole("checkbox", { name: /report reader|রিপোর্ট রিডার/ }).check();
+    await scanner.locator("#bujhi-photo-gallery").setInputFiles({
       name: downloaded.suggestedFilename(),
       mimeType: "image/png",
       buffer: await readFile(await downloaded.path()),
     });
+    await scanner.getByRole("button", { name: /Read my report|রিপোর্ট পড়ুন/ }).click();
 
     await expect(page.getByRole("heading", { name: "Check what was read" })).toBeVisible({ timeout: 180000 });
     const hemoglobin = page.getByRole("group", { name: "Hemoglobin", exact: true });

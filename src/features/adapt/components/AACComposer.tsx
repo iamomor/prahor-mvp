@@ -18,7 +18,7 @@
  * - Safety: NEVER automatically submits forms or sends requests.
  */
 
-import { useState, useId, useMemo } from "react";
+import { useState, useId, useMemo, type KeyboardEvent } from "react";
 import {
   Check,
   X,
@@ -230,6 +230,24 @@ export function AACComposer({
     );
   }
 
+  function onTabKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const index = AAC_CATALOG.findIndex((cat) => cat.id === activeCategory);
+    const last = AAC_CATALOG.length - 1;
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? last
+          : event.key === "ArrowRight"
+            ? (index + 1) % AAC_CATALOG.length
+            : (index - 1 + AAC_CATALOG.length) % AAC_CATALOG.length;
+    setActiveCategory(AAC_CATALOG[next].id);
+    document.getElementById(`${composerId}-tab-${AAC_CATALOG[next].id}`)?.focus();
+  }
+
   const activeCatalog = AAC_CATALOG.find((cat) => cat.id === activeCategory) ?? AAC_CATALOG[0];
 
   const selectedOrder = new Map(selected.map((item, index) => [item.id, index + 1]));
@@ -250,7 +268,7 @@ export function AACComposer({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold leading-snug text-pro-text">
+          <h2 className={bare ? "sr-only" : "text-lg font-semibold leading-snug text-pro-text"}>
             Say it with pictures{" "}
             <span className="font-normal text-pro-muted" lang="bn">· ছবি দিয়ে বলুন</span>
           </h2>
@@ -289,7 +307,8 @@ export function AACComposer({
         <div
           role="tablist"
           aria-labelledby={`${composerId}-tabs-label`}
-          className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin] sm:flex-wrap"
+          onKeyDown={onTabKeyDown}
+          className="flex gap-1.5 overflow-x-auto rounded-pill bg-pro-surface p-1 [scrollbar-width:thin] sm:flex-wrap sm:rounded-card"
         >
           {AAC_CATALOG.map((cat) => {
             const isActive = cat.id === activeCategory;
@@ -300,14 +319,15 @@ export function AACComposer({
                 role="tab"
                 id={`${composerId}-tab-${cat.id}`}
                 aria-selected={isActive}
+                tabIndex={isActive ? 0 : -1}
                 aria-controls={`${composerId}-panel-${cat.id}`}
                 onClick={() => setActiveCategory(cat.id)}
                 className={[
                   "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-pill border px-4 text-sm font-semibold transition-colors duration-[var(--pro-duration-fast)] ease-pro",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
                   isActive
-                    ? "border-pro-primary bg-pro-primary text-pro-on-primary"
-                    : "border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface",
+                    ? "border-pro-primary bg-pro-primary text-pro-on-primary shadow-pro-1"
+                    : "border-transparent bg-transparent text-pro-text hover:bg-pro-elevated",
                 ].join(" ")}
               >
                 <span lang="en">{cat.labelEn}</span>
@@ -326,7 +346,7 @@ export function AACComposer({
         role="tabpanel"
         id={`${composerId}-panel-${activeCategory}`}
         aria-labelledby={`${composerId}-tab-${activeCategory}`}
-        className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,6.5rem),1fr))] gap-2.5"
+        className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,5.6rem),1fr))] gap-2.5 sm:gap-3"
       >
         {activeCatalog.items.map((item) => {
           const order = selectedOrder.get(item.id);
@@ -339,24 +359,25 @@ export function AACComposer({
               aria-describedby={`${composerId}-phrase-help`}
               onClick={() => toggleItem(item)}
               className={[
-                "group relative flex min-h-28 flex-col items-center justify-center gap-1.5 rounded-card p-2.5 text-center",
+                "group relative flex min-h-32 flex-col items-center justify-center gap-1.5 rounded-[1.25rem] p-3 text-center",
                 "transition-[background-color,border-color,transform,box-shadow] duration-[var(--pro-duration-fast)] ease-pro motion-safe:active:scale-[0.97]",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
                 isSelected
-                  ? "border-2 border-pro-primary bg-pro-surface-2 text-pro-text"
-                  : "border border-pro-border bg-pro-elevated text-pro-text hover:border-pro-control-border hover:shadow-pro-1",
+                  ? "border-2 border-pro-primary bg-pro-surface-2 text-pro-text shadow-pro-1"
+                  : "border-2 border-transparent bg-pro-surface text-pro-text hover:border-pro-control-border hover:bg-pro-elevated hover:shadow-pro-1",
               ].join(" ")}
             >
               {isSelected && (
                 <span
                   aria-hidden="true"
-                  className="absolute end-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-pro-primary text-xs font-bold text-pro-on-primary tabular-nums"
+                  className="absolute end-1.5 top-1.5 inline-flex h-6 min-w-6 items-center justify-center gap-0.5 rounded-pill bg-pro-primary px-1.5 text-xs font-bold text-pro-on-primary tabular-nums"
                 >
+                  <Check size={12} strokeWidth={3} />
                   {order}
                 </span>
               )}
               <span
-                className="grid size-12 place-items-center rounded-full bg-pro-surface text-[1.65rem] transition-transform duration-[var(--pro-duration-normal)] ease-pro motion-safe:group-hover:scale-105"
+                className="grid size-14 place-items-center rounded-full bg-pro-elevated text-[2rem] shadow-pro-1 transition-transform duration-[var(--pro-duration-normal)] ease-pro motion-safe:group-hover:scale-105"
                 aria-hidden="true"
               >
                 {item.emoji}
@@ -373,7 +394,7 @@ export function AACComposer({
 
       {/* Sentence: a quiet hint until something is picked, then the full editor */}
       {!hasSentence ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-field bg-pro-surface px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-dashed border-pro-control-border bg-pro-elevated px-4 py-3">
           <p className="text-sm text-pro-text">
             {bn ? "একটি ছবিতে চাপ দিয়ে শুরু করুন।" : "Tap a picture to start your sentence."}
           </p>
@@ -385,7 +406,7 @@ export function AACComposer({
           )}
         </div>
       ) : (
-        <div className="grid gap-3 rounded-card border border-pro-control-border bg-pro-elevated p-3 shadow-pro-1 sm:p-4">
+        <div className="grid gap-3 rounded-card border-2 border-pro-primary bg-pro-elevated p-3 shadow-[0_0.75rem_2rem_-0.75rem_rgb(var(--pro-shadow-rgb)/0.4)] sm:p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="flex items-center gap-2 font-semibold text-pro-text">
               <span>Picked <span className="font-normal text-pro-muted" lang="bn">· বাছাই করা ছবি</span></span>
@@ -479,7 +500,7 @@ export function AACComposer({
           <div className="flex flex-wrap items-center gap-3">
             <AppButton
               variant="primary"
-              size="md"
+              size="lg"
               onClick={handleInsert}
               disabled={!currentMessageText.trim()}
               aria-disabled={!currentMessageText.trim()}

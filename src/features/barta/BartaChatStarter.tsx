@@ -31,7 +31,7 @@ function readErrorMessage(body: unknown): string {
 /** `initialQuestion` only pre-fills the editable draft (e.g. from the dashboard); it is never sent automatically. */
 export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode?: "demo" | "education"; initialQuestion?: string }) {
   const demo = mode === "demo";
-  const { prefs } = useAdaptPreferences();
+  useAdaptPreferences();
   const [incoming, setIncoming] = useState("");
   const storedDraft = useSyncExternalStore(subscribeDraft, getStoredAacDraft, () => null);
   const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");

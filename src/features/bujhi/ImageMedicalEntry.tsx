@@ -9,10 +9,8 @@ import { recognizeReportImage } from "./ocr-service";
 import { WorkflowProgress } from "./WorkflowProgress";
 import type { ExtractedReport } from "./types";
 
-import { useLanguage } from "@/i18n/use-language";
 import { isHemoglobinLabel } from "./validation";
 export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFile }: { active?: boolean; onDraft: (report: ExtractedReport, source?: File) => void; onManual?: () => void; onManualFile?: (file: File) => void }) {
-  const { t } = useLanguage();
   const [fallbackFile, setFallbackFile] = useState<File | null>(null);
 
   const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false);

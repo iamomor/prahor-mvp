@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { useLanguage } from "@/i18n/use-language";
 
-import { Check, FileCheck2 } from "lucide-react";
-
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
 
 import { fileSha256 } from "./sha256";
@@ -19,10 +17,6 @@ import { educationTopics } from "../barta/education-topics";
 type Pregnancy = { id: string; label: string };
 
 type Draft = { report: ExtractedReport; source: File; reportId: string };
-type Stage = "check" | "learn" | "save";
-const primary = "inline-flex min-h-12 items-center justify-center rounded-control bg-pro-primary px-5 py-3 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus disabled:opacity-60";
-const secondary = "inline-flex min-h-12 items-center justify-center rounded-control border border-pro-control-border px-4 py-3 font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus disabled:opacity-60";
-const control = "min-h-12 w-full min-w-0 rounded-field border border-pro-control-border bg-pro-bg px-3 py-3 text-pro-text focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus";
 
 /** Three-step strip: words first (never only colour); step 1 add photo, 2 check values, 3 saved. */
 function ReportSteps({ current }: { current: 0 | 1 | 2 }) {
@@ -47,9 +41,6 @@ export function AccountReportReview({
 }) {
   const { t } = useLanguage();
   const [draft, setDraft] = useState<Draft>();
-  const [fields, setFields] = useState<ExtractedReportField[]>([]);
-  const [stage, setStage] = useState<Stage>("check");
-  const [language, setLanguage] = useState<"bn" | "en">("bn");
   const [fieldId, setFieldId] = useState("");
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
@@ -155,7 +146,6 @@ export function AccountReportReview({
 
         return;
       }
-      const original = draft.report.fields.find((item) => item.id === field.id)!;
       snapshot.current = JSON.stringify({
 
         reportId: draft.reportId,

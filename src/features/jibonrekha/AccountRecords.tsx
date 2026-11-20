@@ -191,7 +191,6 @@ export function AccountRecords() {
   const savingRequest = useRef(false);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [pendingObservation, setPendingObservation] = useState<{ payload: unknown; form: HTMLFormElement; summary: string } | null>(null);
-  const [guideSelections, setGuideSelections] = useState<Record<string, GuideSelection | null>>({});
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   function openTask(next: Task, tab?: RecordsTab) {
     setTask(next);

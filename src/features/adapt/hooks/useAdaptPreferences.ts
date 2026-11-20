@@ -45,7 +45,7 @@ function subscribeAccess(callback: () => void): () => void {
   if (typeof window === "undefined") return () => {};
 
   const handleStorage = (event: StorageEvent) => {
-    if (event.key !== ACCESS_PREFERENCES_KEY && event.key !== READING_PREFS_KEY) return;
+    if (event.key !== null && event.key !== ACCESS_PREFERENCES_KEY && event.key !== READING_PREFS_KEY) return;
     applyAllPreferences(readLocalPreferences(), readReadingPreferences());
     callback();
   };
@@ -73,7 +73,7 @@ function subscribeReading(callback: () => void): () => void {
   if (typeof window === "undefined") return () => {};
 
   const handleStorage = (event: StorageEvent) => {
-    if (event.key !== READING_PREFS_KEY && event.key !== ACCESS_PREFERENCES_KEY) return;
+    if (event.key !== null && event.key !== READING_PREFS_KEY && event.key !== ACCESS_PREFERENCES_KEY) return;
     applyAllPreferences(readLocalPreferences(), readReadingPreferences());
     callback();
   };

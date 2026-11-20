@@ -34,6 +34,7 @@ export const educationTopics = {
   bloodPressureCheck: { en: "Why is blood pressure checked during pregnancy?", bn: "গর্ভাবস্থায় রক্তচাপ কেন পরীক্ষা করা হয়?" },
   exercise: { en: "Can I exercise during pregnancy?", bn: "গর্ভাবস্থায় ব্যায়াম করা যাবে?" },
   birthCompanion: { en: "Who can be with me during delivery?", bn: "প্রসবের সময় সঙ্গে কে থাকতে পারবে?" },
+  milkSupply: { en: "How can I tell if my baby is getting enough breast milk?", bn: "শিশু পর্যাপ্ত বুকের দুধ পাচ্ছে কি না কীভাবে বুঝব?" },
   breastfeedingPosition: { en: "How do I position my baby for breastfeeding?", bn: "বুকের দুধ খাওয়াতে শিশুকে কীভাবে ধরব?" },
   glucoseCheck: { en: "What is the glucose tolerance test during pregnancy?", bn: "গর্ভাবস্থায় গ্লুকোজ টলারেন্স টেস্ট কী?" },
   birthPlan: { en: "How do I prepare a birth plan?", bn: "প্রসবের জন্য কীভাবে প্রস্তুতি নেব?" },
@@ -54,6 +55,7 @@ export const educationTopics = {
   pregnancyHeartburn: { en: "What everyday changes can help mild heartburn in pregnancy?", bn: "গর্ভাবস্থায় হালকা বুকজ্বালায় দৈনন্দিন কী পরিবর্তন কাজে আসতে পারে?" },
   pregnancyBackache: { en: "What everyday habits may ease mild backache in pregnancy?", bn: "গর্ভাবস্থায় হালকা পিঠব্যথায় কোন দৈনন্দিন অভ্যাস কাজে আসতে পারে?" },
   pregnancyTravel: { en: "How can I plan a road journey during pregnancy?", bn: "গর্ভাবস্থায় সড়ক ভ্রমণের প্রস্তুতি কীভাবে নেব?" },
+  looseStools: { en: "When should I get help for loose or watery stools?", bn: "পাতলা পায়খানা হলে কখন চিকিৎসা নিতে হবে?" },
   pregnancyConstipation: { en: "What everyday habits can help prevent constipation in pregnancy?", bn: "গর্ভাবস্থায় কোষ্ঠকাঠিন্য এড়াতে প্রতিদিন কী করা যায়?" },
 } as const;
 
@@ -76,9 +78,9 @@ export const educationTopicIds = [
   "pregnancyBasics", "balancedMeals", "warningSigns", "maternalHealth", "mentalWellbeing", "birthPlan",
   "firstCheckup", "ultrasound", "foodSafety", "morningSickness",
   "pregnancyTest", "ironFolate", "fetalMovement", "periodCare",
-  "ancCard", "bloodPressureCheck", "exercise", "birthCompanion", "breastfeedingPosition", "glucoseCheck",
+  "ancCard", "bloodPressureCheck", "exercise", "birthCompanion", "breastfeedingPosition", "milkSupply", "glucoseCheck",
   "babySleep", "babyBath", "cordCare", "diaper", "solidFood",
   "babyPlay", "homeSafety", "babyWater", "feedingAtWork", "babyCrying",
   "postnatalVisits", "everydayWellbeing", "babyHygiene",
-  "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
+  "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation", "looseStools",
 ] as const satisfies readonly EducationTopic[];

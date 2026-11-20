@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play, Volume2 } from "lucide-react";
 import { educationCopy, type Language } from "./barta-education-copy";
+import { fetchBartaAudio } from "./barta-audio-file";
 import styles from "./barta-education.module.css";
 import { claimAudioSession, releaseAudioSession } from "@/lib/audio-session";
 
@@ -42,16 +43,7 @@ export function BartaAudioFile({ text, language, ticket, clipUrl, guideLabel, di
     setLoading(true);
     const timer = window.setTimeout(() => controller.abort(), 25_000);
     try {
-      const isAudio = (value?: Response) => value?.ok && /^(?:audio\/(?:wav|x-wav|wave|mpeg))(?:;|$)/iu
-        .test(value.headers.get("content-type") ?? "");
-      const response = clipUrl ? await fetch(clipUrl, { signal: controller.signal }) : await fetch("/api/ai/barta-audio", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(guideLabel ? { help: true, language } : { text, language, ticket }),
-        signal: controller.signal,
-      });
-      if (!isAudio(response)) throw new Error("Audio unavailable");
-      const content = await response.blob();
+      const content = await fetchBartaAudio({ text, language, ticket, clipUrl, help: Boolean(guideLabel) }, controller.signal);
       if (controller.signal.aborted) return;
       const url = URL.createObjectURL(content);
       if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);

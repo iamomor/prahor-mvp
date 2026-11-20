@@ -29,6 +29,15 @@ type Concept = {
   missing?: Record<Language, string>;
 };
 
+const hardStools = rx(
+  "hard (?:stools?|poo)|constipat\\w*|(?:shokto|sokto) (?:paykhana|paikhana|pott?y|hagu)|(?:paykhana|paikhana|pott?y|hagu) (?:shokto|sokto|kosh?to|(?:hoy|hocche|hochhe) na)|(?:i )?cant (?:poo|poop)",
+  "কোষ্ঠকাঠিন্য|শক্ত পায়খানা|পায়খানা শক্ত|পায়খানা হয় না|পায়খানা হচ্ছে না",
+);
+const looseStools = rx(
+  "diarrh(?:oe|e)a|loose stools?|watery (?:poo|stools?)|(?:patla|pani moto) (?:paykhana|paikhana|poykhana|pott?y|hagu)|(?:paykhana|paikhana|poykhana|pott?y|hagu) patla",
+  "পাতলা পায়খানা|পায়খানা পাতলা|পানির মতো পায়খানা|ডায়রিয়া",
+);
+
 // Order matters: specific concepts first, broad ones last.
 const concepts: Concept[] = [
   { id: "wheelchair", pattern: rx("wheel ?chair|cannot walk|cant walk|hatte pari na", "হুইলচেয়ার|হাঁটতে পারি না"), topics: ["accessWheelchair", "accessVisit"] },
@@ -60,13 +69,15 @@ const concepts: Concept[] = [
   { id: "backache", pattern: rx("back ?(?:pain|ache|hurts?)|backache|lower back|komor\\w*|kumor|pith ?e? ?betha|pithe ?betha", "কোমর|পিঠে ব্যথা|পিঠ ব্যথা"), topics: ["pregnancyBackache"] },
   { id: "nausea", pattern: rx("nause\\w*|vomit\\w*|morning sickness|sick in the morning|throw(?:ing)? up|bomi\\w*", "বমি"), topics: ["morningSickness"] },
   { id: "heartburn", pattern: rx("heart ?burn|acidity|acid reflux|reflux|gastric|gastrik|buk ?jol\\w*|buk ?jala|ombol", "বুক জ্বাল|অম্বল|গ্যাস্ট্রিক"), topics: ["pregnancyHeartburn"] },
-  { id: "constipation", pattern: rx("constipat\\w*|paykhana|paikhana|pai khana|kosthokathinno|kosto kathinno|hard stool", "কোষ্ঠ|পায়খানা"), topics: ["pregnancyConstipation"] },
+  { id: "looseStools", pattern: looseStools, topics: ["looseStools"] },
+  { id: "constipation", pattern: hardStools, topics: ["pregnancyConstipation"] },
   { id: "tired", pattern: rx("tired|exhaust\\w*|fatigue\\w*|weak|weakness|klanto|durbol", "ক্লান্ত|দুর্বল"), topics: ["everydayWellbeing", "ironFolate", "pregnancySleep"] },
   { id: "iron", pattern: rx("iron|folic|folate|anaemi\\w*|anemi\\w*|roktoshunno\\w*|rokto ?shunnota|rokto ?kom|haemoglobin|hemoglobin|hb", "আয়রন|ফলিক|রক্তশূন্য|রক্তস্বল্প"), topics: ["ironFolate"] },
   { id: "foodSafety", pattern: rx("avoid|safe to eat|can i eat|khawa jabe|khaoa jabe|khete parbo|raw|kacha|papaya|pepe|coffee|caffeine|fish|mach|alcohol|tea", "কাঁচা|এড়িয়ে|খাওয়া যাবে|খেতে পারব|পেঁপে|কফি|মাছ"), topics: ["foodSafety", "balancedMeals"], babyTopics: ["solidFood", "breastfeeding"] },
   { id: "solidFood", pattern: rx("solids?|solid food|complementary|weaning|khichuri|suji|cerelac|baby food|barti khabar", "খিচুড়ি|বাড়তি খাবার|সুজি"), topics: ["solidFood"] },
   { id: "babyWater", pattern: rx("water|pani", "পানি"), requires: babyWords, topics: ["babyWater"] },
   { id: "feedingAtWork", pattern: rx("work|office|job|chakri", "অফিস|চাকরি|কাজে"), requires: rx("breast\\w*|dudh|feed\\w*|pump\\w*", "দুধ"), topics: ["feedingAtWork"] },
+  { id: "milkSupply", pattern: rx("milk supply|low (?:breast )?milk(?: supply)?|(?:isnt getting|not getting|get(?:ting)?) enough (?:breast )?milk|buker dudh kom|dudh kom|dudh pacche na|dudh pay na", "বুকের দুধ কম|পর্যাপ্ত (?:বুকের )?দুধ|যথেষ্ট (?:বুকের )?দুধ"), topics: ["milkSupply", "breastfeedingPosition"] },
   { id: "breastfeeding", pattern: rx("breast ?feed\\w*|breast ?milk|nursing|latch\\w*|bukh?er dudh|buker dudh|dudh khawa\\w*|dudh|milk supply|not enough milk", "বুকের দুধ|দুধ"), topics: ["breastfeedingPosition", "breastfeeding", "feedingAtWork"] },
   { id: "food", pattern: rx("eat|eating|food|foods|diet|meals?|khabo|khabar|khawa|khaoa|khete|nutrition|pushti", "খাব|খাওয়া|খাবার|পুষ্টি"), topics: ["balancedMeals", "foodSafety", "nutrition"], babyTopics: ["solidFood", "breastfeeding"] },
   { id: "babySleepOrPregnancySleep", pattern: rx("sleep\\w*|insomnia|ghum\\w*|shoyabo|shoyano|rest", "ঘুম|শোয়াব|শোয়ানো|বিশ্রাম"), topics: ["pregnancySleep", "everydayWellbeing"], babyTopics: ["babySleep", "homeSafety"] },
@@ -185,6 +196,41 @@ export function getBartaStageReply(question: string): Reply | undefined {
   return stageReplies.find(({ pattern }) => pattern.test(text))?.reply;
 }
 
+const feedingConcern = whole(
+  "(?:(?:i have|there is) )?(?:a )?(?:breast ?milk|breast ?feeding|feeding) (?:issue|problem)s?(?: (?:what (?:should|can|do) i do|what (?:do )?i need to do|help))?|(?:buker dudh|dudh khawano) (?:somossa|shomossha|problem)(?: ki korbo)?",
+  "বুকের দুধ(?: খাওয়ানো নিয়ে| খাওয়াতে)? সমস্যা(?: হচ্ছে)?(?: কী করব| কি করব)?",
+);
+
+const bowelConcern = rx(
+  "(?:ha(?:ga|gu|goo)|paykhana|paikhana|poykhana|pott?y) (?:dho?re|dho?rse|dhorche|dhortese|hoy|hocche|hochhe|lage|lagche|ase|ashe) (?:(?:onk|onek|khub)\\b|bar ?bar)|(?:(?:onk|onek)(?: bar)?|bar ?bar) (?:ha(?:ga|gu|goo)|paykhana|paikhana|poykhana|pott?y)|(?:haga|hagu|paykhana|paikhana|poykhana|pott?y) (?:dho?re|dho?rse|dhorche|dhortese|na|(?:hoy|hocche|hochhe) na|kosh?to)|(?:i (?:keep|need to) (?:poo|poop)|frequent (?:poo|pooping|bowel movements)|bowel (?:problem|problems)|cant poo|cant poop)",
+  "বারবার (?:পায়খানা|পায়খানা|হাগা)|(?:পায়খানা|পায়খানা|হাগা) (?:বারবার|হয় না|হচ্ছে না|ধরে|করতে কষ্ট)|পায়খানার সমস্যা",
+);
+const educationalQuestion = /^(?:what (?:is|are|does|can help)|when should (?:i|someone)|how (?:can i|do i) (?:prevent|tell)|কখন|কীভাবে|কিভাবে)/u;
+
+function bowelClarification(text: string): Reply | undefined {
+  if (educationalQuestion.test(text)) return undefined;
+  const loose = looseStools.test(text);
+  const hard = hardStools.test(text);
+  if (!loose && !hard && !bowelConcern.test(text)) return undefined;
+
+  const baby = babyWords.test(text);
+  if (loose && !hard) return {
+    id: "loose_stools", topics: ["looseStools"],
+    en: "How long have the stools been loose or watery? Is this for you or your baby? Get prompt medical advice if there is blood in the stool, you can’t keep fluids down, or your baby feeds less or has fewer wet nappies.",
+    bn: "কতক্ষণ ধরে পাতলা বা পানির মতো পায়খানা হচ্ছে? আপনার, নাকি শিশুর? পায়খানায় রক্ত দেখা গেলে, তরল পেটে রাখতে না পারলে, অথবা শিশু কম দুধ খেলে বা তার ডায়াপার কম ভিজলে দ্রুত চিকিৎসা পরামর্শ নিন।",
+  };
+  if (hard && !loose) return {
+    id: "hard_stools", topics: baby ? ["newborn"] : ["pregnancyConstipation"],
+    en: "Do you mean hard stools or difficulty passing stool? Is this for you during pregnancy, after birth, or for your baby? Tell me how long it has been happening.",
+    bn: "পায়খানা শক্ত, নাকি পায়খানা করতে কষ্ট হচ্ছে? আপনার গর্ভাবস্থায় বা প্রসবের পরে হচ্ছে, নাকি শিশুর? কতদিন ধরে হচ্ছে বলুন।",
+  };
+  return {
+    id: "ambiguous_bowel", topics: baby ? ["looseStools", "newborn"] : ["looseStools", "pregnancyConstipation"],
+    en: "Do you feel the urge to pass stool often, are your stools loose or watery, or is it hard to pass stool? Is this for you or your baby?",
+    bn: "বারবার পায়খানার চাপ লাগছে, পায়খানা পাতলা বা পানির মতো হচ্ছে, নাকি পায়খানা করতে কষ্ট হচ্ছে? আপনার, নাকি শিশুর?",
+  };
+}
+
 /** A fixed reply for short social messages or a stage menu. */
 export function getBartaUnderstoodReply(question: string): Reply | undefined {
   const text = normalizeBartaText(question);
@@ -193,6 +239,13 @@ export function getBartaUnderstoodReply(question: string): Reply | undefined {
     return { id: "ambiguous_stage", topics: ["postnatalVisits", "ancVisits"],
       en: "Do you mean after giving birth, or something else? Tell me what you mean in a few words.",
       bn: "প্রসবের পরের কথা বলছেন, নাকি অন্য কিছু? কয়েকটি শব্দে বলুন।" };
+  }
+  const bowel = bowelClarification(text);
+  if (bowel) return bowel;
+  if (feedingConcern.test(text)) {
+    return { id: "feeding_concern", topics: ["milkSupply", "breastfeedingPosition", "breastfeeding"],
+      en: "Are you worried about how much milk your baby gets, how to position your baby, or what to feed them? Choose a question below or tell me a little more.",
+      bn: "শিশু কতটা দুধ পাচ্ছে, খাওয়াতে কীভাবে ধরবেন, নাকি কী খাওয়াবেন—কোনটি নিয়ে চিন্তা হচ্ছে? নিচে একটি প্রশ্ন বেছে নিন বা আরেকটু বলুন।" };
   }
   // The follow-up path has already had its chance (route order), so a bare stage word gets the menu.
   const stage = getBartaStageReply(text);

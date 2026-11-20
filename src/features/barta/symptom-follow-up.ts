@@ -14,6 +14,9 @@ const durationOnly = /^(?:(?:since )?(?:yesterday|this morning|last night|today)
 
 export function getBartaSymptomContext(question: string, isSymptomReport: boolean): BartaFollowUp | undefined {
   if (headacheReport.test(normalizeBartaText(question))) return "headache_stage";
+  // AAC compositions: "I have a headache. I feel dizzy." still gets the stage question (ported from the M2 kit patch).
+  const parts = question.split(/[.!?।\n]+/u).map(part => normalizeBartaText(part)).filter(Boolean);
+  if (parts.length > 1 && parts.some(part => headacheReport.test(part))) return "headache_stage";
   if (isSymptomReport) return "symptom_stage";
 }
 

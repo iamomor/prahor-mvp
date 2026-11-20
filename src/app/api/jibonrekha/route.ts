@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     : record;
   const result = await auth.db.rpc("jr_save", { p_action: type, p_data: data, p_key: key });
   if (result.error) {
-    const status = result.error.code === "40001" || result.error.code === "23505" ? 409 :
+    const status = ["PT409", "40001", "23505"].includes(result.error.code) ? 409 :
       result.error.code === "42501" ? 403 : ["22023", "22007", "22008", "22P02", "23514"].includes(result.error.code) ? 400 : 503;
     return jsonNoStore({ message: status === 409 ? "This record changed. Reload to review before trying again." : status === 403 ? "That record is not available in your account." : status === 400 ? "Check the date, value, unit and destination." : "Account save is unavailable. Try again." }, status);
   }

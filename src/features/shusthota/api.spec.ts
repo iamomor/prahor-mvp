@@ -10,6 +10,13 @@ import {
 
 const id = "10000000-0000-4000-8000-000000000001";
 const stamp = "2026-11-19T05:40:12.123Z";
+type CapturedRequest = { input: RequestInfo | URL; init?: RequestInit };
+
+function getCapturedRequest(requests: readonly CapturedRequest[], index: number): CapturedRequest {
+  const request = requests[index];
+  if (!request) throw new Error(`Expected request ${index} to be captured`);
+  return request;
+}
 
 function withFetch(handler: typeof fetch): () => void {
   const original = globalThis.fetch;
@@ -22,7 +29,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 test("wellness GET validates the snake_case registry response and uses same-origin no-store credentials", async () => {
-  const captured: { input: RequestInfo | URL; init?: RequestInit }[] = [];
+  const captured: CapturedRequest[] = [];
   const restore = withFetch(async (input, init) => {
     captured.push({ input, init });
     return jsonResponse({ entries: [{
@@ -35,13 +42,14 @@ test("wellness GET validates the snake_case registry response and uses same-orig
     const entries = await loadWellnessEntries();
     expect(entries[0]).toMatchObject({ mood: "mixed", energy: "low", activity_note: "Synthetic activity note" });
     expect(captured).toHaveLength(1);
-    expect(captured[0].input).toBe("/api/wellness");
-    expect(captured[0].init).toMatchObject({ method: "GET", credentials: "same-origin", cache: "no-store" });
+    const request = getCapturedRequest(captured, 0);
+    expect(request.input).toBe("/api/wellness");
+    expect(request.init).toMatchObject({ method: "GET", credentials: "same-origin", cache: "no-store" });
   } finally { restore(); }
 });
 
 test("wellness POST sends only its camelCase contract fields and validates the saved id", async () => {
-  const captured: { input: RequestInfo | URL; init?: RequestInit }[] = [];
+  const captured: CapturedRequest[] = [];
   const restore = withFetch(async (input, init) => {
     captured.push({ input, init });
     return jsonResponse({ saved: true, id }, 201);
@@ -51,9 +59,10 @@ test("wellness POST sends only its camelCase contract fields and validates the s
     const result = await saveWellnessEntry({ mood: "mixed" });
     expect(result).toEqual({ saved: true, id });
     expect(captured).toHaveLength(1);
-    expect(captured[0].input).toBe("/api/wellness");
-    expect(captured[0].init).toMatchObject({ method: "POST", credentials: "same-origin", cache: "no-store" });
-    const body = JSON.parse(String(captured[0].init?.body)) as Record<string, unknown>;
+    const request = getCapturedRequest(captured, 0);
+    expect(request.input).toBe("/api/wellness");
+    expect(request.init).toMatchObject({ method: "POST", credentials: "same-origin", cache: "no-store" });
+    const body = JSON.parse(String(request.init?.body)) as Record<string, unknown>;
     expect(body).toMatchObject({ mood: "mixed", energy: null, activityNote: null, restNote: null });
     expect(typeof body.occurredAt).toBe("string");
     expect(body).not.toHaveProperty("text");

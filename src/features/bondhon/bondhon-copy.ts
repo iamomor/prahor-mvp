@@ -2,11 +2,11 @@ import type { Accommodation } from "@/lib/contracts/coordination";
 import type { ShareableRecord } from "@/lib/contracts/sharing";
 export const words = (en: string, bn: string) => ({ en, bn });
 export const accommodations: Record<Accommodation, { en: string; bn: string }> = {
-  written: words("Written communication", "লিখিত যোগাযোগ"),
+  written: words("Written communication requested", "লিখিত যোগাযোগের অনুরোধ"),
   interpreter: words("Interpreter requested", "দোভাষীর অনুরোধ"),
   step_free: words("Step-free access requested", "সিঁড়িবিহীন প্রবেশের অনুরোধ"),
   quiet: words("Quiet appointment space requested", "শান্ত সাক্ষাতের জায়গার অনুরোধ"),
-  easy_read: words("Plain-language explanations", "সহজ ভাষায় ব্যাখ্যা"),
+  easy_read: words("Plain-language explanations requested", "সহজ ভাষায় ব্যাখ্যার অনুরোধ"),
   support_person: words("Bring my chosen support person", "আমার বাছাই করা সহায়ককে সঙ্গে নেওয়া"),
 };
 export const recordNames: Record<ShareableRecord["type"], { en: string; bn: string }> = {

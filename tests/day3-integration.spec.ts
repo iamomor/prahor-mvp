@@ -118,17 +118,18 @@ test("denied browser storage keeps settings functional without React update loop
 });
 
 test("AAC inserts once without sending; over-limit incoming text remains available", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("prohor-access-preferences-v1", JSON.stringify({ language: "en", _schemaVersion: 4 })));
   const f = await accounts(page); f.setActive(null); let sent = 0;
   page.on("request", request => { if (request.url().endsWith("/api/ai/chat")) sent++; });
   await page.goto("/ask"); await page.locator("#barta-question").fill("Existing question");
-  await page.locator("summary").filter({ hasText: "(AAC)" }).click();
-  const aac = page.getByRole("region", { name: "Alternative question input" });
+  await page.locator("#barta-symbol-input > summary").click();
+  const aac = page.getByRole("region", { name: /AAC Phrase Builder/ });
   const output = aac.locator("textarea"); await output.fill("Synthetic AAC message");
   await aac.getByRole("button", { name: /Insert into question/ }).click();
   await expect(page.locator("#barta-question")).toHaveValue("Existing question\n\nSynthetic AAC message"); expect(sent).toBe(0);
   await page.locator("#barta-question").fill("q".repeat(1198)); await output.fill("Preserved incoming text");
   await aac.getByRole("button", { name: /Insert into question/ }).click();
-  await expect(aac.getByRole("alert")).toContainText("Preserved incoming text");
+  await expect(page.getByRole("alert").filter({ hasText: "Preserved incoming text" })).toContainText("exceed 1,200 characters");
   await expect(page.locator("#barta-question")).toHaveValue("q".repeat(1198)); expect(sent).toBe(0);
 });
 
@@ -183,8 +184,8 @@ test("AAC speech and Barta microphone/read-aloud stop the previous owner; dictat
   await expect(input).toHaveValue("Existing draft\n\nOne dictated phrase");
   await barta.getByRole("button", { name: "Ask Barta", exact: true }).click();
   await expect(barta.getByText("Synthetic educational greeting.")).toBeVisible();
-  await page.locator("summary").filter({ hasText: "(AAC)" }).click();
-  const aac = page.getByRole("region", { name: "Alternative question input" }); await aac.locator("textarea").fill("Synthetic AAC preview");
+  await page.locator("#barta-symbol-input > summary").click();
+  const aac = page.getByRole("region", { name: /AAC Phrase Builder/ }); await aac.locator("textarea").fill("Synthetic AAC preview");
   await aac.getByRole("button", { name: "Listen aloud", exact: true }).click();
   await expect(aac.getByRole("button", { name: "Stop reading", exact: true })).toBeVisible();
   await barta.getByRole("button", { name: "Start microphone" }).click();
@@ -193,7 +194,7 @@ test("AAC speech and Barta microphone/read-aloud stop the previous owner; dictat
   await aac.getByRole("button", { name: "Listen aloud", exact: true }).click();
   await expect(barta.getByRole("button", { name: "Start microphone" })).toBeVisible();
   expect(await page.evaluate(() => Reflect.get(window, "day3Audio").aborted)).toBe(1);
-  await barta.getByRole("button", { name: "Read aloud", exact: true }).click();
+  await barta.getByRole("switch", { name: "Speaker", exact: true }).last().click();
   await expect(aac.getByRole("button", { name: "Stop reading", exact: true })).toHaveCount(0);
   expect(await page.evaluate(() => Reflect.get(window, "day3Audio").cancelled)).toBe(2);
   await barta.getByRole("button", { name: "Clear conversation" }).click();
@@ -223,8 +224,8 @@ test("Barta dictation inserts once and Adapt read-aloud stops microphone ownersh
   await page.getByRole("button", { name: "Start microphone", exact: true }).click();
   await page.getByRole("button", { name: "Stop microphone", exact: true }).click();
   await expect(question).toHaveValue("Existing question\n\nSynthetic transcript");
-  await page.locator("summary").filter({ hasText: "(AAC)" }).click();
-  const aac = page.getByRole("region", { name: "Alternative question input" }); await aac.locator("textarea").fill("Synthetic AAC preview");
+  await page.locator("#barta-symbol-input > summary").click();
+  const aac = page.getByRole("region", { name: /AAC Phrase Builder/ }); await aac.locator("textarea").fill("Synthetic AAC preview");
   await page.getByRole("button", { name: "Start microphone", exact: true }).click();
   await aac.getByRole("button", { name: "Listen aloud", exact: true }).click();
   await expect(page.getByRole("button", { name: "Start microphone", exact: true })).toBeVisible();

@@ -15,7 +15,8 @@ async function requestSnapshot(fetcher: typeof fetch, init: RequestInit, patch?:
   catch { throw new PreferencesApiError(500); }
   const result = preferencesResponseSchema.safeParse(payload);
   if (!result.success) throw new PreferencesApiError(500);
-  const etag = response.headers.get("etag");
+  // Compressing hosts (Vercel) weaken ETags to W/"..."; the version value is unchanged.
+  const etag = response.headers.get("etag")?.replace(/^W\//, "") ?? null;
   if (etag !== JSON.stringify(result.data.updatedAt ?? "missing")) throw new PreferencesApiError(500);
   if (patch && (result.data.updatedAt === null || Object.entries(patch).some(([key, value]) =>
     value !== undefined && result.data.data[key as keyof AccessPreferences] !== value))) {

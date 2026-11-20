@@ -1,10 +1,18 @@
 /* Public offline shell only. Never cache health, auth, API or Next.js bundles. */
 const CACHE_PREFIX = "prohor-public-shell-";
-const CACHE = `${CACHE_PREFIX}v3`;
+const CACHE = `${CACHE_PREFIX}v4`;
 const INSTALL_ASSETS = ["/offline", "/icon-192.png", "/icon-512.png"];
 const PUBLIC_NAVIGATIONS = new Set(["/", "/accessibility", "/offline"]);
+const SAFETY_NAVIGATION = /^\/safety(?:\/information(?:\/(?:pregnancy|labour-and-childbirth|postpartum|perinatal-mental-health))?)?\/?$/;
 function mayCachePublicAsset(response) {
   return response.ok && !/\b(private|no-store|no-cache)\b/i.test(response.headers.get("Cache-Control") || "");
+}
+function mayCacheSafetyPage(response) {
+  return response.status === 200
+    && /^text\/html\b/i.test(response.headers.get("Content-Type") || "")
+    && !response.headers.has("Set-Cookie")
+    && !/\b(private|no-store|no-cache)\b/i.test(response.headers.get("Cache-Control") || "")
+    && !/\bcookie\b/i.test(response.headers.get("Vary") || "");
 }
 
 self.addEventListener("install", event => {
@@ -45,6 +53,19 @@ self.addEventListener("fetch", event => {
   if (url.pathname.startsWith("/_next/")) return;
 
   if (request.mode === "navigate") {
+    if (SAFETY_NAVIGATION.test(url.pathname) && !url.search) {
+      event.respondWith((async () => {
+        const cache = await caches.open(CACHE);
+        try {
+          const response = await fetch(request);
+          if (mayCacheSafetyPage(response)) await cache.put(url.pathname, response.clone());
+          return response;
+        } catch {
+          return (await cache.match(url.pathname)) || (await caches.match("/offline")) || Response.error();
+        }
+      })());
+      return;
+    }
     if (!PUBLIC_NAVIGATIONS.has(url.pathname)) return;
     event.respondWith(
       fetch(request).catch(async () => (await caches.match("/offline")) || Response.error()),

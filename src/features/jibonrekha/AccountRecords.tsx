@@ -8,6 +8,7 @@ import { CareGuide } from "./CareGuide";
 import { AccountVisitPack } from "./AccountVisitPack";
 import { accountJourney } from "./account-journey";
 import { filterAccountHistory } from "./account-history";
+import { accountSourceLabel } from "./account-provenance";
 
 
 type Pregnancy = {
@@ -33,6 +34,7 @@ type Observation = {
   observed_at: string;
   source: string;
   verification: string;
+  source_note?: string | null;
 };
 type Condition = {
   id: string;
@@ -152,11 +154,7 @@ function formatBnDate(value: string) {
 
 const bengaliNumber = (value: number) => new Intl.NumberFormat("bn-BD").format(value);
 function sourceLabel(item: Observation) {
-  if (item.source === "self_reported") return "আপনি লিখেছেন";
-  if (item.source === "document_extracted") return item.verification === "user_verified" ? "রিপোর্ট থেকে · আপনি যাচাই করেছেন" : "রিপোর্ট থেকে · যাচাই বাকি";
-  if (item.source === "clinician_confirmed" && item.verification === "clinician_confirmed") return "চিকিৎসক নিশ্চিত করেছেন";
-  if (item.source === "clinician_entered") return "চিকিৎসক লিখেছেন · নিশ্চিতকরণ বাকি";
-  return "উৎস যাচাই করুন";
+  return accountSourceLabel(item);
 }
 
 export function AccountRecords() {

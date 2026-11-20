@@ -73,6 +73,30 @@ test("care guide covers early, current and late weeks with sources and a note pa
   } finally { await browser.close(); }
 });
 
+test("PDF topics remain source-linked and usable through keyboard at 320px", async () => {
+  const { browser, page, errors } = await open(320);
+  try {
+    await page.getByRole("button", { name: /সপ্তাহভিত্তিক গাইড খুলুন/ }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "গর্ভাবস্থা থেকে জন্মের পর" })).toBeVisible();
+    const week40 = page.locator("summary").filter({ hasText: "৪০ সপ্তাহ ও সম্ভাব্য প্রসবের তারিখ" });
+    await week40.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "তারিখ ও গর্ভকাল কী বোঝায়" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /NHS · Due date calculator/ })).toHaveAttribute("href", "https://www.nhs.uk/pregnancy/finding-out/due-date-calculator/");
+    await page.getByRole("combobox", { name: "গর্ভকালের সপ্তাহ" }).selectOption("40");
+    await expect(page.getByRole("heading", { name: "৪০ সপ্তাহের দিকে: তারিখটি একটি অনুমান" })).toBeVisible();
+    const warning = page.locator("summary").filter({ hasText: "যেসব লক্ষণে অপেক্ষা করবেন না" });
+    await warning.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: /RCOG · Umbilical cord prolapse/ })).toBeVisible();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    assert.deepEqual(axe.violations.map(item => item.id), []);
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
 test("pregnancy label clears the arc and page reflows at phone widths", async () => {
   const { browser, page } = await open(320);
   try {

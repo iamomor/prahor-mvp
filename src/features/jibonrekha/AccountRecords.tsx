@@ -10,6 +10,7 @@ import { CareGuide } from "./CareGuide";
 import { AccountVisitPack } from "./AccountVisitPack";
 import { accountJourney } from "./account-journey";
 import { filterAccountHistory } from "./account-history";
+import { selectAccountPregnancy, type GuideSelection } from "./account-records-model";
 
 import { accountSourceLabel } from "./account-provenance";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
@@ -223,6 +224,8 @@ export function AccountRecords() {
   }, [load]);
 
   async function save(payload: unknown, form: HTMLFormElement, label: string, afterTab: RecordsTab) {
+    if (savingRequest.current) return false;
+    savingRequest.current = true;
 
     setBusy(true);
     setError("");
@@ -315,6 +318,7 @@ export function AccountRecords() {
   }
   const selectedPregnancy = records ? selectAccountPregnancy(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
+
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);
 
@@ -383,19 +387,20 @@ export function AccountRecords() {
                   </div>
                   {journey ? <>
                     <div className="relative mx-auto w-full max-w-xs pb-8 max-[360px]:pb-10">
-                      <LifelineArc weeks={journey.weeks} days={journey.days} />
+                      <LifelineArc weeks={shownJourney!.weeks} days={shownJourney!.days} />
                       <div className="pointer-events-none absolute inset-x-0 top-[4.5rem] text-center min-[360px]:top-[6.75rem]" aria-hidden="true">
-                        <p className="text-[clamp(1.125rem,5vw,1.5rem)] font-semibold leading-tight">{bengaliNumber(journey.weeks)} সপ্তাহ {bengaliNumber(journey.days)} দিন</p>
-                        <p className="mt-1 text-sm leading-tight text-pro-on-primary-muted">{["প্রথম", "দ্বিতীয়", "তৃতীয়"][journey.weeks < 14 ? 0 : journey.weeks < 28 ? 1 : 2]} ত্রৈমাসিক</p>
+                        <p className="text-[clamp(1.125rem,5vw,1.5rem)] font-semibold leading-tight">{bengaliNumber(shownJourney!.weeks)} সপ্তাহ {bengaliNumber(shownJourney!.days)} দিন</p>
+                        <p className="mt-1 text-sm leading-tight text-pro-on-primary-muted">{["প্রথম", "দ্বিতীয়", "তৃতীয়"][shownJourney!.weeks < 14 ? 0 : shownJourney!.weeks < 28 ? 1 : 2]} ত্রৈমাসিক</p>
                       </div>
                     </div>
                     <ol className="grid grid-cols-3 gap-1.5 text-center text-sm font-semibold" aria-label="ত্রৈমাসিক">
                       {["১ম", "২য়", "৩য়"].map((name, index) => {
-                        const current = index === (journey.weeks < 14 ? 0 : journey.weeks < 28 ? 1 : 2);
-                        const done = index < (journey.weeks < 14 ? 0 : journey.weeks < 28 ? 1 : 2);
+                        const current = index === (shownJourney!.weeks < 14 ? 0 : shownJourney!.weeks < 28 ? 1 : 2);
+                        const done = index < (shownJourney!.weeks < 14 ? 0 : shownJourney!.weeks < 28 ? 1 : 2);
                         return <li key={name} className={`border-t-[3px] pt-1 ${done || current ? "border-pro-accent" : "border-dashed border-pro-on-primary-muted"}`} aria-current={current ? "step" : undefined}>{name} ত্রৈমাসিক{current ? " · এখন" : ""}</li>;
                       })}
                     </ol>
+                    {previewing && <p className="text-sm font-semibold text-pro-on-primary">গাইডে বাছা সপ্তাহের প্রিভিউ · নথির তারিখ বদলায়নি</p>}
                     <div className="border-t border-pro-on-primary-muted/50 pt-4"><p className="text-lg font-semibold">প্রসবের আনুমানিক তারিখ: {formatBnDate(journey.dueDate)}</p><p className="mt-1 text-sm text-pro-on-primary-muted">সূত্র: {journey.source} · হিসাবটি চিকিৎসকের নিশ্চিতকরণ নয়</p></div>
                   </> : <div className="grid gap-3 py-6"><p className="text-xl font-semibold">গর্ভকালের তারিখ এখনও দেখানো যাচ্ছে না</p><p className="text-pro-on-primary-muted">তারিখ না থাকলে বা সম্ভাব্য তারিখ পেরিয়ে গেলে সপ্তাহ অনুমান করে দেখানো হয় না।</p><button type="button" onClick={() => openTask("pregnancy")} className="inline-flex min-h-12 w-fit items-center gap-2 rounded-pill bg-pro-elevated px-5 font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-on-primary"><Plus className="size-5" aria-hidden="true" />গর্ভকালের তারিখ যোগ করুন</button></div>}
                 </section>
@@ -464,7 +469,7 @@ export function AccountRecords() {
               </section>
             </>}
 
-            {task === "guide" && <CareGuide currentWeek={journey?.weeks ?? null} currentDay={journey?.days ?? 0} headingRef={taskHeading} onBack={() => openTask("home")} onAddNote={() => openTask("note")} bujhiHref="/app/bujhi" />}
+            {task === "guide" && <CareGuide currentWeek={journey?.weeks ?? null} currentDay={journey?.days ?? 0} selection={guideSelection} onSelectionChange={(next) => setGuideSelections((previous) => ({ ...previous, [guideKey]: next }))} headingRef={taskHeading} onBack={() => openTask("home")} onAddNote={() => openTask("note")} bujhiHref="/app/bujhi" />}
             {task === "share" && <AccountVisitPack headingRef={taskHeading} rows={recent.map((item) => ({ id: item.id, subject: item.subject, label: labels[item.kind] ?? item.kind, value: item.value, unit: item.unit, observedAt: formatBnDate(item.observed_at), source: accountSourceLabel(item) }))} onBack={() => openTask("home")} />}
 
             {task === "pregnancy" && <form

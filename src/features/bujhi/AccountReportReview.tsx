@@ -162,7 +162,9 @@ export function AccountReportReview({
       });
       setLocked(true);
     }
+
     pending.current = true; setSaving(true); setFeedback(t({ bn: "সংরক্ষণ করা হচ্ছে…", en: "Saving reviewed measurement…" }));
+
     try {
 
       const response = await fetch("/api/reports/commit", {

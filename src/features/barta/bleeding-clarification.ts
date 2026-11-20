@@ -19,7 +19,16 @@ const ordinaryPeriod = /(?:\busual period|ordinary period|normal period|স্�
 const plainBleedingReport = /^(?:i am experiencing bleeding|i have vaginal bleeding|vaginal bleeding|আমার রক্তপাত হচ্ছে|(?:আমার )?(?:যোনিপথে|যোনি দিয়ে|যোনিপথ দিয়ে) রক্ত (?:যাচ্ছে|পড়ছে))[.!।]?$/u;
 const currentBleeding = /(?:\b(?:bleeding|spotting)\b|রক্তপাত|রক্ত যাচ্ছে)/u;
 
+/** AAC boards add sentences after the symptom ("I am experiencing bleeding. I want to mention my lower pelvis too."). Ported from the M2 kit patch. */
 export function getBartaBleedingClarification(question: string, language: BartaRequest["language"]): BartaAnswer | undefined {
+  const whole = clarifyBleeding(question, language);
+  if (whole) return whole;
+  const parts = question.split(/[.!?।\n]+/u).map(part => part.trim()).filter(Boolean);
+  if (parts.length < 2) return undefined;
+  for (const part of parts) { const answer = clarifyBleeding(part, language); if (answer) return answer; }
+}
+
+function clarifyBleeding(question: string, language: BartaRequest["language"]): BartaAnswer | undefined {
   const text = question.normalize("NFKC").toLowerCase().replace(/[’‘]/gu, "'").replace(/\s+/gu, " ").trim();
   const bleeding = currentBleeding.test(text) || plainBleedingReport.test(text);
   if (!period.test(text) && !bleeding) return undefined;

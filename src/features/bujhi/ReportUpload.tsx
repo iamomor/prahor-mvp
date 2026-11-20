@@ -81,27 +81,33 @@ export function ReportUpload({ onContinue, autoContinue = false, continueLabel =
     void Promise.resolve().then(() => onContinue(selected.file, selected.kind));
   }, [autoContinue, onContinue, previewReady, selected]);
 
-  return <section aria-labelledby={`${id}-heading`} className="grid min-w-0 grid-cols-1 gap-[var(--pro-gap-field)] rounded-card border border-pro-border bg-pro-elevated p-[var(--pro-pad-card)]">
-    <h2 id={`${id}-heading`} className="text-2xl font-semibold">Choose a photo</h2>
-    <p id={`${id}-privacy`} className="text-pro-muted">Choose a fictional report. The photo stays in this browser.</p>
-    <button type="button" className={button + " justify-self-start text-pro-primary"} onClick={() => cameraInput.current?.click()}>ছবি তুলুন · Take a photo</button>
-    <input id="bujhi-photo-camera" ref={cameraInput} type="file" hidden capture="environment" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => void choose(event, "photo")} />
-    <div className="grid min-w-0 gap-2">
-      <label htmlFor="bujhi-photo-gallery" className="font-semibold">Photo Upload · <span lang="bn">ছবি নির্বাচন</span></label>
-      <p id={`${id}-photo-hint`} className="text-pro-muted">JPG, PNG or WebP · Up to 10 MiB</p>
-      <input ref={photoInput} id="bujhi-photo-gallery" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" className={control} onChange={(event) => void choose(event, "photo")} aria-describedby={`${id}-photo-hint ${id}-privacy ${id}-error`} aria-invalid={Boolean(error)} />
+  return <section aria-labelledby={`${id}-heading`} className="grid min-w-0 grid-cols-1 gap-4">
+    <div className="grid gap-1">
+      <h3 id={`${id}-heading`} className="text-lg font-semibold">Choose a photo</h3>
+      <p id={`${id}-privacy`} className="text-pro-muted">Choose a fictional report. The photo stays in this browser.</p>
     </div>
-    <p role="status" aria-atomic="true">{message}</p>
+    <div className="grid min-w-0 gap-3 rounded-card border-2 border-dashed border-pro-control-border bg-pro-bg p-4">
+      <button type="button" className={button + " text-pro-primary sm:justify-self-start"} onClick={() => cameraInput.current?.click()}>ছবি তুলুন · Take a photo</button>
+      <input id="bujhi-photo-camera" ref={cameraInput} type="file" hidden capture="environment" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => void choose(event, "photo")} />
+      <div className="grid min-w-0 gap-2">
+        <label htmlFor="bujhi-photo-gallery" className="font-semibold">Photo Upload · <span lang="bn">ছবি নির্বাচন</span></label>
+        <p id={`${id}-photo-hint`} className="text-sm text-pro-muted">JPG, PNG or WebP · Up to 10 MiB</p>
+        <input ref={photoInput} id="bujhi-photo-gallery" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" className={control} onChange={(event) => void choose(event, "photo")} aria-describedby={`${id}-photo-hint ${id}-privacy ${id}-error`} aria-invalid={Boolean(error)} />
+      </div>
+    </div>
+    <p role="status" aria-atomic="true" className="text-pro-muted">{message}</p>
     <p id={`${id}-error`} role="alert" className="text-pro-danger">{error}</p>
-    {selected && <section aria-label="Selected file preview" className="grid min-w-0 gap-3 rounded-field border border-pro-border p-3">
+    {selected && <section aria-label="Selected file preview" className="grid min-w-0 gap-3 rounded-card border border-pro-border bg-pro-bg p-4">
       <p className="font-semibold [overflow-wrap:anywhere]">{selected.file.name}</p>
       {/* Blob URLs stay in the browser; no image optimization request is needed. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img key={selected.url} src={selected.url} alt="Local preview of your selected fictional photo" className="h-auto max-h-96 w-full min-w-0 object-contain" onLoad={ready} onError={previewFailed} />
-      <p className="text-pro-muted">Preview only. Nothing has been analyzed.</p>
+      <img key={selected.url} src={selected.url} alt="Local preview of your selected fictional photo" className="h-auto max-h-96 w-full min-w-0 rounded-field object-contain" onLoad={ready} onError={previewFailed} />
+      <p className="text-sm text-pro-muted">Preview only. Nothing has been analyzed.</p>
     </section>}
-    {(selected || validating) && <button type="button" onClick={remove} className={`${button} text-pro-primary`}>Remove selected file</button>}
-    <button type="button" disabled={!selected || validating || !previewReady || Boolean(error)} onClick={() => { if (selected && previewReady && !error) onContinue(selected.file, selected.kind); }} className={`${button} bg-pro-primary text-pro-on-primary disabled:text-pro-on-primary`}>{continueLabel}</button>
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-pro-border pt-4">
+      {(selected || validating) ? <button type="button" onClick={remove} className="min-h-12 whitespace-normal rounded-control px-3 py-3 font-semibold text-pro-primary underline underline-offset-4 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus">Remove selected file</button> : <span />}
+      <button type="button" disabled={!selected || validating || !previewReady || Boolean(error)} onClick={() => { if (selected && previewReady && !error) onContinue(selected.file, selected.kind); }} className={`${button} bg-pro-primary text-pro-on-primary disabled:text-pro-on-primary sm:min-w-56`}>{continueLabel}</button>
+    </div>
   </section>;
 }
 

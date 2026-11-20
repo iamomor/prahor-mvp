@@ -1,15 +1,20 @@
 "use client";
 
 import Link from "next/link";
+
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Baby, CalendarDays, CalendarPlus, ChevronRight, FileSearch, History, Info, PenLine, Plus, Printer, ShieldCheck } from "lucide-react";
+
 import { LifelineArc } from "./LifelineArc";
 import { CareGuide } from "./CareGuide";
 import { AccountVisitPack } from "./AccountVisitPack";
 import { accountJourney } from "./account-journey";
 import { filterAccountHistory } from "./account-history";
+
 import { accountSourceLabel } from "./account-provenance";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
+import { selectAccountPregnancy } from "./account-records-model";
+
 
 type Pregnancy = {
   id: string;
@@ -75,6 +80,7 @@ type Records = {
   visits: Visit[];
   corrections: Correction[];
 };
+
 const labels: Record<string, string> = {
   weight: "ওজন",
   temperature: "তাপমাত্রা",
@@ -110,6 +116,7 @@ const unitOptions: Record<string, string[]> = {
 };
 
 type Task = "home" | "guide" | "share" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records";
+
 type RecordsTab = "measures" | "notes" | "visits" | "profiles";
 const taskCopy: Record<Exclude<Task, "home" | "guide" | "share">, { title: string; description: string }> = {
   observation: { title: "মাপ বা নোট যোগ করুন", description: "কার নথি বেছে নিন, মান লিখুন, তারপর দেখে সংরক্ষণ করুন। প্রতিটি মানের তারিখ ও উৎস থাকে।" },
@@ -121,6 +128,7 @@ const taskCopy: Record<Exclude<Task, "home" | "guide" | "share">, { title: strin
 };
 const subjectOptions = [{ value: "mother" as const, label: "মা" }, { value: "baby" as const, label: "শিশু" }];
 const pageSize = 10;
+
 
 function today() {
   const parts = Object.fromEntries(
@@ -175,7 +183,8 @@ export function AccountRecords() {
   const homeHeading = useRef<HTMLHeadingElement>(null);
   const statusFocus = useRef<HTMLParagraphElement>(null);
   const errorFocus = useRef<HTMLDivElement>(null);
-  const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
+  const pendingRequests = useRef(new Map<string, string>());
+  const savingRequest = useRef(false);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [pendingObservation, setPendingObservation] = useState<{ payload: unknown; form: HTMLFormElement; summary: string } | null>(null);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
@@ -189,16 +198,20 @@ export function AccountRecords() {
     try {
       const response = await fetch("/api/jibonrekha", { cache: "no-store" });
       if (!response.ok)
+
         throw new Error("নথি আনা যায়নি। আবার চেষ্টা করুন।");
       const next = (await response.json()) as Records;
+
       setRecords(next);
-      setBabyId((previous) => previous || next.babies[0]?.id || "");
+      setBabyId((previous) => next.babies.some((baby) => baby.id === previous) ? previous : "");
       setError("");
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
+
           : "নথি আনা যায়নি।",
+
       );
       requestAnimationFrame(() => errorFocus.current?.focus());
     } finally {
@@ -208,34 +221,38 @@ export function AccountRecords() {
   useEffect(() => {
     void Promise.resolve().then(load);
   }, [load]);
+
   async function save(payload: unknown, form: HTMLFormElement, label: string, afterTab: RecordsTab) {
+
     setBusy(true);
     setError("");
     setMessage("");
+    const body = JSON.stringify(payload);
+    const key = pendingRequests.current.get(body) ?? crypto.randomUUID();
+    pendingRequests.current.set(body, key);
     try {
-      const body = JSON.stringify(payload);
-      if (pendingRequest.current?.payload !== body)
-        pendingRequest.current = { payload: body, key: crypto.randomUUID() };
       const response = await fetch("/api/jibonrekha", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Idempotency-Key": pendingRequest.current.key,
+          "Idempotency-Key": key,
         },
         body,
       });
-      const result = (await response.json()) as {
+      const result = (await response.json().catch(() => null)) as {
         saved?: boolean;
         id?: string;
         message?: string;
+
       };
       if (!response.ok || !result.saved || !result.id)
         throw new Error(
           result.message ||
             "কিছু সংরক্ষণ হয়নি। ঘরগুলো দেখে আবার চেষ্টা করুন।",
         );
-      pendingRequest.current = null;
+      pendingRequests.current.delete(body);
       setMessage(`${label} অ্যাকাউন্টে সংরক্ষিত হয়েছে। কাউকে পাঠানো হয়নি। এই MVP-তে শুধু কাল্পনিক তথ্য ব্যবহার করুন।`);
+
       form.reset();
       setCorrectingId(null);
       await load();
@@ -244,13 +261,18 @@ export function AccountRecords() {
       return true;
     } catch (cause) {
       setError(
-        cause instanceof Error
+        cause instanceof TypeError
+          ? "সংরক্ষণ নিশ্চিত হয়নি। সংযোগ দেখে একই তথ্য আবার চেষ্টা করুন।"
+          : cause instanceof Error
           ? cause.message
+
           : "কিছু সংরক্ষণ হয়নি। সংযোগ দেখে আবার চেষ্টা করুন।",
+
       );
       requestAnimationFrame(() => errorFocus.current?.focus());
       return false;
     } finally {
+      savingRequest.current = false;
       setBusy(false);
     }
   }
@@ -266,7 +288,7 @@ export function AccountRecords() {
     ) ?? [];
   const selectedBabyId = visibleBabies.some((baby) => baby.id === babyId)
     ? babyId
-    : (visibleBabies[0]?.id ?? "");
+    : "";
   const superseded = new Set(
     records?.corrections.map((item) => item.old_observation_id) ?? [],
   );
@@ -291,12 +313,11 @@ export function AccountRecords() {
     }
     return history;
   }
-  const selectedPregnancy = records?.pregnancies.find((item) => item.id === pregnancyId)
-    ?? records?.pregnancies.find((item) => item.estimated_due_date || item.last_menstrual_period_date)
-    ?? records?.pregnancies[0];
+  const selectedPregnancy = records ? selectAccountPregnancy(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);
+
   const sortedVisits = [...(records?.visits ?? [])].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
   const recentVisit = sortedVisits[0] ?? null;
   const notesCount = (records?.conditions.length ?? 0) + (records?.symptomNotes.length ?? 0);
@@ -327,6 +348,7 @@ export function AccountRecords() {
         <p className="font-semibold text-pro-primary">প্রহর · জীবনরেখা</p>
         <h1 ref={homeHeading} tabIndex={-1} className="text-4xl font-semibold leading-tight focus-visible:outline-3 focus-visible:outline-pro-focus">জীবনরেখা</h1>
         <p className="text-pro-muted">আপনার ও শিশুর যাত্রা, এক রেখায়।</p>
+
       </header>
         : task !== "guide" && task !== "share" && <SubviewHeader title={taskCopy[task].title} description={taskCopy[task].description} onBack={() => openTask("home")} headingRef={taskHeading} />}
       {message && <p ref={statusFocus} tabIndex={-1} role="status" className="rounded-field border border-pro-success bg-pro-success-soft p-4 focus-visible:outline-3 focus-visible:outline-pro-focus">{message}</p>}
@@ -334,13 +356,16 @@ export function AccountRecords() {
         <div ref={errorFocus} tabIndex={-1} className="grid gap-3 rounded-field border border-pro-danger bg-pro-danger-soft p-4 focus-visible:outline-3 focus-visible:outline-pro-focus">
           <p role="alert" className="font-semibold text-pro-danger">{error}</p>
           {!records && !loading && (
+
             <button type="button" onClick={() => void load()} className={`${ui.primary} w-fit`}>
               আবার চেষ্টা করুন
+
             </button>
           )}
         </div>
       )}
       {loading ? (
+
         <p role="status" className="text-pro-muted">নথি আনা হচ্ছে…</p>
       ) : (
         records && (
@@ -486,6 +511,7 @@ export function AccountRecords() {
               <form
                 className="grid gap-5"
                 hidden={pendingObservation !== null}
+
                 onSubmit={(event) => {
                   event.preventDefault();
                   const form = event.currentTarget;
@@ -504,6 +530,7 @@ export function AccountRecords() {
                   requestAnimationFrame(() => reviewHeading.current?.focus());
                 }}
               >
+
                 <label className={ui.field}>কী লিখবেন
                   <select value={kind} onChange={(event) => { const selected = choices[subject].find((choice) => choice[0] === event.target.value); setKind(selected?.[0] ?? "weight"); setUnit(selected?.[1] ?? "kg"); }} className={ui.input}>
                     {choices[subject].map(([value]) => <option key={value} value={value}>{labels[value]}</option>)}
@@ -530,6 +557,7 @@ export function AccountRecords() {
                 <h2 id="observation-review-title" ref={reviewHeading} tabIndex={-1} className="text-xl font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus">সংরক্ষণের আগে দেখুন</h2>
                 <p className="text-lg [overflow-wrap:anywhere]">{pendingObservation.summary}</p><p className={ui.tag}>উৎস: আপনার লেখা · চিকিৎসক যাচাই করেননি</p>
                 <div className="flex flex-wrap gap-3"><button type="button" disabled={busy} onClick={() => { void save(pendingObservation.payload, pendingObservation.form, "তথ্যটি", "measures").then((saved) => { if (saved) setPendingObservation(null); }); }} className={`${ui.primary} max-sm:w-full`}>{busy ? "সংরক্ষণ হচ্ছে…" : "অ্যাকাউন্টে সংরক্ষণ করুন"}</button><button type="button" disabled={busy} onClick={() => setPendingObservation(null)} className={`${ui.secondary} max-sm:w-full`}>বদলাতে ফিরে যান</button></div>
+
               </section>}
             </section>}
 
@@ -722,7 +750,9 @@ export function AccountRecords() {
           </>
         )
       )}
+
       <p className="flex flex-wrap items-start gap-2 border-t border-pro-border pt-4 text-sm text-pro-muted"><span className={ui.limitedTag}>MVP</span><span className="min-w-0 flex-1">শুধু কাল্পনিক পরীক্ষার তথ্য ব্যবহার করুন। এখানকার নথি অ্যাকাউন্টে সংরক্ষিত হয়; আগের ব্রাউজার-শুধু নমুনার সঙ্গে মেশে না।</span></p>
+
     </div>
   );
 }

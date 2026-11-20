@@ -111,15 +111,14 @@ test("compact citations expose their full titles on request", async ({ page }) =
   await expect(sourceTitle).toBeVisible();
 });
 
-test("Barta's symbol shortcut and emoji suggestions lead to an editable draft", async ({ page }) => {
+test("Barta's always-open picture builder and emoji suggestions lead to an editable draft", async ({ page }) => {
   await page.goto("/ask");
   await page.getByLabel(/Answer language|উত্তরের ভাষা/).selectOption("en");
 
-  const shortcut = page.getByRole("button", { name: "Use symbols" });
-  await shortcut.press("Enter");
-  await expect(shortcut).toHaveAttribute("aria-expanded", "true");
-  await expect(page.locator("#barta-symbol-input > summary")).toBeFocused();
+  // Pictures are visible without opening anything; the composer link only moves focus to them.
   await expect(page.getByRole("button", { name: /Headache/ })).toBeVisible();
+  await page.getByRole("link", { name: "Say it with pictures" }).press("Enter");
+  await expect(page.locator("#barta-symbol-input")).toBeFocused();
 
   const question = page.getByRole("textbox", { name: "Your question" });
   await question.fill("🤕");

@@ -199,6 +199,8 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
     const moduleItem = pathname === "/app" ? undefined
       : [...careNav, ...exploreNav].find(item => item.module && (isCurrent(pathname, item.href) || (item.module === "Adapt" && pathname?.startsWith("/app/adapt"))));
 
+    const subPage = Boolean(moduleItem && pathname?.startsWith(`${moduleItem.href}/`));
+
     return (
       <div lang={language} className="flex min-h-dvh bg-pro-bg text-pro-text">
         <a href="#auth-main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-control focus:bg-pro-elevated focus:p-3 focus:text-pro-primary focus:shadow-pro-3">
@@ -258,8 +260,9 @@ export function AuthShell({ children, entry = false, nav, userName }: { children
           <main id="auth-main" tabIndex={-1} className="app-module mx-auto w-full max-w-[1200px] flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-8">
             {moduleItem && (
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <Link href="/app" className="inline-flex min-h-11 items-center gap-1.5 rounded-field pr-2 text-sm font-semibold text-pro-primary hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
-                  <ArrowLeft size={16} aria-hidden="true" />{t({ en: "Home", bn: "হোম" })}
+                {/* One back path: on a sub-page (e.g. /app/bujhi/kit) it goes up to the module, not Home. */}
+                <Link href={subPage ? moduleItem.href : "/app"} className="inline-flex min-h-11 items-center gap-1.5 rounded-field pr-2 text-sm font-semibold text-pro-primary hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
+                  <ArrowLeft size={16} aria-hidden="true" />{subPage ? t(moduleItem) : t({ en: "Home", bn: "হোম" })}
                 </Link>
                 <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 rounded-pill border border-pro-border bg-pro-surface px-3 py-1 text-sm font-semibold text-pro-primary">
                   <moduleItem.icon size={15} aria-hidden="true" />

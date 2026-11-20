@@ -277,6 +277,12 @@ button { cursor: pointer; }
   animation: pro-wv 1.2s ease-in-out infinite;
 }
 
+/* Jibonrekha pregnancy arc: one-time draw-in when the page opens. */
+@keyframes jr-arc-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes jr-arc-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+.jr-arc-draw { stroke-dasharray: 1; animation: jr-arc-draw 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.jr-arc-pop { transform-box: fill-box; transform-origin: center; animation: jr-arc-pop 240ms ease-out 450ms both; }
+
 /* Phone Mockup Frame */
 .pro-phone-frame {
   position: relative;
@@ -318,14 +324,14 @@ button { cursor: pointer; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pro-btn, .pro-float-1, .pro-float-2, .pro-float-3, .pro-wave-bar {
+  .pro-btn, .pro-float-1, .pro-float-2, .pro-float-3, .pro-wave-bar, .jr-arc-draw, .jr-arc-pop {
     animation: none !important;
     transition: none !important;
     transform: none !important;
   }
 }
 /* Her own Reduced motion choice must do the same as the operating-system signal. */
-:root[data-motion="reduce"] :is(.pro-btn, .pro-float-1, .pro-float-2, .pro-float-3, .pro-wave-bar) {
+:root[data-motion="reduce"] :is(.pro-btn, .pro-float-1, .pro-float-2, .pro-float-3, .pro-wave-bar, .jr-arc-draw, .jr-arc-pop) {
   animation: none !important;
   transition: none !important;
   transform: none !important;

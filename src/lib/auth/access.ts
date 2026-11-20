@@ -3,7 +3,8 @@ import { safeAuthReturnPath } from "../routes";
 import { accountAccessSchema, type ActiveRole, type WorkspaceRole } from "../contracts/account";
 
 export type { WorkspaceRole } from "../contracts/account";
-export type OwnProfile = { user_id: string; display_name: string; role: ActiveRole; roles?: WorkspaceRole[]; onboarded?: boolean };
+export type OwnProfile = { user_id: string; display_name: string; role: ActiveRole; roles?: WorkspaceRole[]; onboarded?: boolean;
+  email?: string; pendingEmail?: string | null };
 export type IdentityResult = { status: 200; profile: OwnProfile } | { status: 401 } |
   { status: 503; reason?: "profile_missing" };
 
@@ -26,10 +27,11 @@ export async function readIdentity(client: SupabaseClient | null): Promise<Ident
         !["mother", "provider", "supporter", "member"].includes(profile.role) || typeof profile.display_name !== "string") return { status: 503 };
     // Preserve existing deployed mother/provider accounts before the forward migration.
     if (accessError?.code === "PGRST202" && ["mother", "provider"].includes(profile.role))
-      return { status: 200, profile: profile as OwnProfile };
+      return { status: 200, profile: { ...(profile as OwnProfile), email: data.user.email, pendingEmail: data.user.new_email ?? null } };
     const parsed = accountAccessSchema.safeParse(access);
     if (accessError || !parsed.success || parsed.data.userId !== data.user.id) return { status: 503 };
     return { status: 200, profile: { user_id: data.user.id, display_name: parsed.data.displayName,
+      email: data.user.email, pendingEmail: data.user.new_email ?? null,
       role: parsed.data.activeRole, onboarded: parsed.data.onboarded,
       roles: parsed.data.roles.filter(r => r.status === "approved").map(r => r.role) } };
   } catch { return { status: 503 }; }

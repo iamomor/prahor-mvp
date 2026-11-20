@@ -9,6 +9,8 @@ import { Baby, CalendarDays, CalendarPlus, ChevronRight, FileSearch, History, In
 import { LifelineArc } from "./LifelineArc";
 import { CareGuide } from "./CareGuide";
 import { AccountVisitPack } from "./AccountVisitPack";
+import { FamilyProfiles, GettingStarted } from "./FamilyProfiles";
+import { useCountUp } from "./use-count-up";
 import { accountJourney } from "./account-journey";
 import { filterAccountHistory } from "./account-history";
 import type { GuideSelection } from "./account-records-model";
@@ -192,8 +194,12 @@ export function AccountRecords() {
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [pendingObservation, setPendingObservation] = useState<{ payload: unknown; form: HTMLFormElement; summary: string } | null>(null);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
+  const profilesHeading = useRef<HTMLHeadingElement>(null);
+  // Set only when the pregnancy/baby form is editing an existing record.
+  const [editingId, setEditingId] = useState<string | null>(null);
   function openTask(next: Task, tab?: RecordsTab) {
     setTask(next);
+    setEditingId(null);
     if (tab) setRecordsTab(tab);
     const heading = next === "home" ? homeHeading : taskHeading;
     requestAnimationFrame(() => heading.current?.focus());
@@ -225,6 +231,29 @@ export function AccountRecords() {
   useEffect(() => {
     void Promise.resolve().then(load);
   }, [load]);
+  // The account page links here with ?open=… (a form) or #profiles; both need records loaded first.
+  const hasRecords = records !== null;
+  useEffect(() => {
+    if (!records) return;
+    const params = new URLSearchParams(window.location.search);
+    const open = params.get("open");
+    const id = params.get("id") ?? "";
+    if (open) {
+      window.history.replaceState(null, "", window.location.pathname);
+      void Promise.resolve().then(() => {
+        if (open === "edit-pregnancy" && records.pregnancies.some((item) => item.id === id)) editRecord("pregnancy", id);
+        else if (open === "edit-baby" && records.babies.some((item) => item.id === id)) editRecord("baby", id);
+        else if (open === "new-pregnancy") openTask("pregnancy");
+        else if (open === "new-baby") openTask("baby");
+      });
+      return;
+    }
+    if (window.location.hash !== "#profiles") return;
+    profilesHeading.current?.scrollIntoView({ block: "start" });
+    profilesHeading.current?.focus({ preventScroll: true });
+    // Runs once, when records first arrive.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasRecords]);
 
   async function save(payload: unknown, form: HTMLFormElement, label: string, afterTab: RecordsTab) {
     if (savingRequest.current) return false;
@@ -331,10 +360,26 @@ export function AccountRecords() {
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);
 
+  const shownWeeks = useCountUp(shownJourney?.weeks ?? 0);
+  function addForMother() { selectSubject("mother"); openTask("observation"); }
+  function editRecord(next: "pregnancy" | "baby", id: string) { openTask(next); setEditingId(id); }
+  const editingPregnancy = records?.pregnancies.find((item) => item.id === editingId);
+  const editingBaby = records?.babies.find((item) => item.id === editingId);
+  const editCopy = task === "pregnancy" && editingPregnancy
+    ? { title: L("Edit pregnancy record", "গর্ভকালের নথি বদলান"), description: L("Change the name or dates. The earlier values are kept in your account's history.", "নাম বা তারিখ বদলান। আগের তথ্য আপনার অ্যাকাউন্টের ইতিহাসে রাখা থাকে।") }
+    : task === "baby" && editingBaby
+      ? { title: L("Edit baby record", "শিশুর নথি বদলান"), description: L("Change the name, birth date or linked pregnancy. The earlier values are kept in your account's history.", "নাম, জন্মের তারিখ বা গর্ভকাল বদলান। আগের তথ্য আপনার অ্যাকাউন্টের ইতিহাসে রাখা থাকে।") }
+      : null;
+  function addForBaby(id: string) {
+    setPregnancyId(records?.babies.find((item) => item.id === id)?.pregnancy_id ?? "");
+    selectSubject("baby");
+    setBabyId(id);
+    openTask("observation");
+  }
   const sortedVisits = [...(records?.visits ?? [])].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
   const recentVisit = sortedVisits[0] ?? null;
   const notesCount = (records?.conditions.length ?? 0) + (records?.symptomNotes.length ?? 0);
-  const pregnancySelect = (name: string) => <select name={name} className={ui.input}>
+  const pregnancySelect = (name: string, defaultValue = "") => <select name={name} defaultValue={defaultValue} className={ui.input}>
     <option value="">কোনো গর্ভকাল বেছে নেওয়া নেই</option>
     {records?.pregnancies.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
   </select>;
@@ -363,7 +408,7 @@ export function AccountRecords() {
         <p className="text-pro-muted">আপনার ও শিশুর যাত্রা, এক রেখায়।</p>
 
       </header>
-        : task !== "guide" && task !== "share" && <SubviewHeader title={L(taskCopy[task].titleEn, taskCopy[task].title)} description={L(taskCopy[task].descriptionEn, taskCopy[task].description)} onBack={() => openTask("home")} headingRef={taskHeading} />}
+        : task !== "guide" && task !== "share" && <SubviewHeader title={editCopy?.title ?? L(taskCopy[task].titleEn, taskCopy[task].title)} description={editCopy?.description ?? L(taskCopy[task].descriptionEn, taskCopy[task].description)} onBack={() => openTask("home")} headingRef={taskHeading} />}
       {message && <p ref={statusFocus} tabIndex={-1} role="status" className="rounded-field border border-pro-success bg-pro-success-soft p-4 focus-visible:outline-3 focus-visible:outline-pro-focus">{message}</p>}
       {error && (
         <div ref={errorFocus} tabIndex={-1} className="grid gap-3 rounded-field border border-pro-danger bg-pro-danger-soft p-4 focus-visible:outline-3 focus-visible:outline-pro-focus">
@@ -384,6 +429,7 @@ export function AccountRecords() {
         records && (
           <>
             {task === "home" && <>
+              <GettingStarted hasDates={records.pregnancies.some((item) => item.estimated_due_date || item.last_menstrual_period_date)} hasEntries={records.observations.length > 0} hasBaby={records.babies.length > 0} onAddPregnancy={() => openTask("pregnancy")} onAddEntry={addForMother} onAddBaby={() => openTask("baby")} />
               <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(17rem,1fr)]">
                 <section className="grid min-w-0 content-start gap-4 rounded-hero bg-pro-primary p-5 text-pro-on-primary sm:p-6" aria-label="গর্ভকালের রেখা">
                   <div className="flex flex-wrap items-end justify-between gap-3">
@@ -398,7 +444,7 @@ export function AccountRecords() {
                     <div className="relative mx-auto w-full max-w-xs pb-8 max-[360px]:pb-10">
                       <LifelineArc weeks={shownJourney!.weeks} days={shownJourney!.days} />
                       <div className="pointer-events-none absolute inset-x-0 top-[4.5rem] text-center min-[360px]:top-[6.75rem]" aria-hidden="true">
-                        <p className="text-[clamp(1.125rem,5vw,1.5rem)] font-semibold leading-tight">{bengaliNumber(shownJourney!.weeks)} সপ্তাহ {bengaliNumber(shownJourney!.days)} দিন</p>
+                        <p className="text-[clamp(1.125rem,5vw,1.5rem)] font-semibold leading-tight">{bengaliNumber(shownWeeks)} সপ্তাহ {bengaliNumber(shownJourney!.days)} দিন</p>
                         <p className="mt-1 text-sm leading-tight text-pro-on-primary-muted">{["প্রথম", "দ্বিতীয়", "তৃতীয়"][shownJourney!.weeks < 14 ? 0 : shownJourney!.weeks < 28 ? 1 : 2]} ত্রৈমাসিক</p>
                       </div>
                     </div>
@@ -433,6 +479,8 @@ export function AccountRecords() {
                   <p className="flex gap-2.5 rounded-field bg-pro-info-soft p-4 text-pro-info"><ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />এই তথ্য শুধু আপনার অ্যাকাউন্টে আছে। কাউকে পাঠানো হয়নি।</p>
                 </div>
               </div>
+
+              <FamilyProfiles headingRef={profilesHeading} pregnancyId={selectedPregnancy?.id ?? null} pregnancyLabel={selectedPregnancy?.label ?? null} weekText={journey ? L(`Week ${journey.weeks}, day ${journey.days}`, `${bengaliNumber(journey.weeks)} সপ্তাহ ${bengaliNumber(journey.days)} দিন`) : null} dueDate={journey?.dueDate ?? null} babies={records.babies} onAddForMother={addForMother} onEditPregnancy={(id) => editRecord("pregnancy", id)} onNewPregnancy={() => openTask("pregnancy")} onAddForBaby={addForBaby} onEditBaby={(id) => editRecord("baby", id)} onAddBaby={() => openTask("baby")} />
 
               <nav aria-labelledby="todo-title" className="grid gap-3">
                 <h2 id="todo-title" className="text-2xl font-semibold">কী করতে চান?</h2>
@@ -485,39 +533,43 @@ export function AccountRecords() {
 
 
             {task === "pregnancy" && <form
+              key={editingPregnancy?.id ?? "new"}
               className={formCard}
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = event.currentTarget;
                 const data = new FormData(form);
-                void save({ type: "pregnancy", record: { label: data.get("label"), estimatedDueDate: data.get("due") || null, lastMenstrualPeriodDate: data.get("period") || null } }, form, "গর্ভকালের নথি", "profiles");
+                const record = { label: data.get("label"), estimatedDueDate: data.get("due") || null, lastMenstrualPeriodDate: data.get("period") || null };
+                void save(editingPregnancy ? { type: "edit_pregnancy", record: { ...record, id: editingPregnancy.id } } : { type: "pregnancy", record }, form, "গর্ভকালের নথি", "profiles");
               }}
             >
               <label className={ui.field}>গর্ভকালটি কী নামে রাখবেন?<span className={ui.hint}>যেমন: প্রথম গর্ভকাল</span>
-                <input name="label" maxLength={100} required className={ui.input} />
+                <input name="label" maxLength={100} required defaultValue={editingPregnancy?.label} className={ui.input} />
               </label>
               <div className="grid gap-5 sm:grid-cols-2">
-                <label className={ui.field}>প্রসবের সম্ভাব্য তারিখ<span className={ui.hint}>ঐচ্ছিক · রিপোর্ট বা চিকিৎসকের দেওয়া</span><input name="due" type="date" className={ui.input} /></label>
-                <label className={ui.field}>শেষ মাসিকের প্রথম দিন<span className={ui.hint}>ঐচ্ছিক</span><input name="period" type="date" className={ui.input} /></label>
+                <label className={ui.field}>প্রসবের সম্ভাব্য তারিখ<span className={ui.hint}>ঐচ্ছিক · রিপোর্ট বা চিকিৎসকের দেওয়া</span><input name="due" type="date" defaultValue={editingPregnancy?.estimated_due_date ?? ""} className={ui.input} /></label>
+                <label className={ui.field}>শেষ মাসিকের প্রথম দিন<span className={ui.hint}>ঐচ্ছিক</span><input name="period" type="date" defaultValue={editingPregnancy?.last_menstrual_period_date ?? ""} className={ui.input} /></label>
               </div>
-              {formActions("নথি সংরক্ষণ করুন")}
+              {formActions(editingPregnancy ? "পরিবর্তন সংরক্ষণ করুন" : "নথি সংরক্ষণ করুন")}
             </form>}
 
             {task === "baby" && <form
+              key={editingBaby?.id ?? "new"}
               className={formCard}
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = event.currentTarget;
                 const data = new FormData(form);
-                void save({ type: "baby", record: { label: data.get("label"), pregnancyId: data.get("pregnancy") || null, birthDate: data.get("birth") || null } }, form, "শিশুর নথি", "profiles");
+                const record = { label: data.get("label"), pregnancyId: data.get("pregnancy") || null, birthDate: data.get("birth") || null };
+                void save(editingBaby ? { type: "edit_baby", record: { ...record, id: editingBaby.id } } : { type: "baby", record }, form, "শিশুর নথি", "profiles");
               }}
             >
               <label className={ui.field}>শিশুর নথির নাম<span className={ui.hint}>যেমন: শিশু ক</span>
-                <input name="label" maxLength={100} required className={ui.input} />
+                <input name="label" maxLength={100} required defaultValue={editingBaby?.label} className={ui.input} />
               </label>
-              <label className={ui.field}>কোন গর্ভকালের সঙ্গে<span className={ui.hint}>ঐচ্ছিক</span>{pregnancySelect("pregnancy")}</label>
-              <label className={ui.field}>জন্মের তারিখ<span className={ui.hint}>ঐচ্ছিক</span><input name="birth" type="date" max={today()} className={ui.input} /></label>
-              {formActions("শিশুর নথি সংরক্ষণ করুন")}
+              <label className={ui.field}>কোন গর্ভকালের সঙ্গে<span className={ui.hint}>ঐচ্ছিক</span>{pregnancySelect("pregnancy", editingBaby?.pregnancy_id ?? "")}</label>
+              <label className={ui.field}>জন্মের তারিখ<span className={ui.hint}>ঐচ্ছিক</span><input name="birth" type="date" max={today()} defaultValue={editingBaby?.birth_date ?? ""} className={ui.input} /></label>
+              {formActions(editingBaby ? "পরিবর্তন সংরক্ষণ করুন" : "শিশুর নথি সংরক্ষণ করুন")}
             </form>}
 
             {task === "observation" && <section className={formCard} aria-label="মাপ বা নোট">
@@ -754,12 +806,12 @@ export function AccountRecords() {
               {recordsTab === "profiles" && <section className="grid gap-5 sm:grid-cols-2" aria-label="গর্ভকাল ও শিশুর নথি">
                 <div className="grid content-start gap-2">
                   <h2 className="text-lg font-semibold">গর্ভকাল</h2>
-                  {records.pregnancies.length ? <ul className="grid gap-2">{records.pregnancies.map((item) => <li key={item.id} className="rounded-card border border-pro-border bg-pro-elevated px-4 py-3"><p className="font-semibold [overflow-wrap:anywhere]">{item.label}</p>{item.estimated_due_date && <p className="text-sm text-pro-muted">লেখা সম্ভাব্য তারিখ: {formatBnDate(item.estimated_due_date)}</p>}</li>)}</ul> : <p className="text-pro-muted">এখনও কোনো গর্ভকালের নথি নেই।</p>}
+                  {records.pregnancies.length ? <ul className="grid gap-2">{records.pregnancies.map((item) => <li key={item.id} className="grid gap-2 rounded-card border border-pro-border bg-pro-elevated px-4 py-3"><p className="font-semibold [overflow-wrap:anywhere]">{item.label}</p>{item.estimated_due_date && <p className="text-sm text-pro-muted">লেখা সম্ভাব্য তারিখ: {formatBnDate(item.estimated_due_date)}</p>}<button type="button" onClick={() => editRecord("pregnancy", item.id)} className={`${ui.link} w-fit`}>বদলান<span className="sr-only"> · {item.label}</span></button></li>)}</ul> : <p className="text-pro-muted">এখনও কোনো গর্ভকালের নথি নেই।</p>}
                   <button type="button" onClick={() => openTask("pregnancy")} className={`${ui.secondary} ${ui.small} w-fit`}><Plus className="size-4" aria-hidden="true" />গর্ভকাল যোগ করুন</button>
                 </div>
                 <div className="grid content-start gap-2">
                   <h2 className="text-lg font-semibold">শিশু</h2>
-                  {records.babies.length ? <ul className="grid gap-2">{records.babies.map((item) => <li key={item.id} className="rounded-card border border-pro-border bg-pro-elevated px-4 py-3"><p className="font-semibold [overflow-wrap:anywhere]">{item.label}</p>{item.birth_date && <p className="text-sm text-pro-muted">জন্ম: {formatBnDate(item.birth_date)}</p>}</li>)}</ul> : <p className="text-pro-muted">এখনও কোনো শিশুর নথি নেই।</p>}
+                  {records.babies.length ? <ul className="grid gap-2">{records.babies.map((item) => <li key={item.id} className="grid gap-2 rounded-card border border-pro-border bg-pro-elevated px-4 py-3"><p className="font-semibold [overflow-wrap:anywhere]">{item.label}</p>{item.birth_date && <p className="text-sm text-pro-muted">জন্ম: {formatBnDate(item.birth_date)}</p>}<button type="button" onClick={() => editRecord("baby", item.id)} className={`${ui.link} w-fit`}>বদলান<span className="sr-only"> · {item.label}</span></button></li>)}</ul> : <p className="text-pro-muted">এখনও কোনো শিশুর নথি নেই।</p>}
                   <button type="button" onClick={() => openTask("baby")} className={`${ui.secondary} ${ui.small} w-fit`}><Plus className="size-4" aria-hidden="true" />শিশুর নথি যোগ করুন</button>
                 </div>
               </section>}

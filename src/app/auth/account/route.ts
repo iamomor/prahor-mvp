@@ -31,7 +31,8 @@ export async function GET() {
     if (connections.error) return failure(connections.error);
     // Activity history is additive: if its migration is not applied yet, the page still works and shows no history.
     const activity = await client.rpc("prohor_supporter_activity");
-    return respond({ account, connections: z.array(supporterConnectionSchema).parse(connections.data),
+    return respond({ account, email: identity.profile.email ?? "", pendingEmail: identity.profile.pendingEmail ?? null,
+      connections: z.array(supporterConnectionSchema).parse(connections.data),
       activity: activity.error ? [] : z.array(z.strictObject({ id: z.uuid(), action: z.enum(["supporter_invited", "supporter_accepted", "supporter_revoked"]),
         occurredAt: z.string(), connectionId: z.uuid().nullable(), byYou: z.boolean() })).catch([]).parse(activity.data) });
   } catch { return respond({ code: "unconfirmed" }, 503); }
@@ -69,6 +70,36 @@ export async function POST(request: Request) {
         if (identity.profile.role !== "supporter") return respond({ code: "access-denied" }, 403);
         result = await client.rpc("prohor_accept_supporter", { p_code: action.code }); break;
       case "revoke": result = await client.rpc("prohor_revoke_supporter", { p_id: action.connectionId }); break;
+      case "profile": {
+        result = await client.rpc("prohor_update_profile", { p_name: action.displayName, p_details: action.details });
+        if (result.error) return failure(result.error);
+        const account = accountAccessSchema.parse(result.data);
+        if (account.userId !== identity.profile.user_id) return respond({ code: "unconfirmed" }, 503);
+        return respond({ account, code: "profile-saved" });
+      }
+      case "email": {
+        if (action.email === identity.profile.email) return respond({ code: "same-email" }, 400);
+        const callback = new URL("/auth/callback", origin);
+        callback.searchParams.set("next", "/account");
+        const { error } = await client.auth.updateUser({ email: action.email }, { emailRedirectTo: callback.href });
+        if (error?.status === 429 || ["email_send_rate_limited", "over_email_send_rate_limit"].includes(error?.code ?? ""))
+          return respond({ code: "email-rate-limited" }, 429);
+        if (["email_exists", "user_already_exists"].includes(error?.code ?? "")) return respond({ code: "email-taken" }, 409);
+        if (error) return respond({ code: "unconfirmed" }, 503);
+        return respond({ code: "check-email" });
+      }
+      case "password": {
+        // Re-check the current password so a borrowed unlocked phone cannot take over the account.
+        if (!identity.profile.email) return respond({ code: "unconfirmed" }, 503);
+        const check = await client.auth.signInWithPassword({ email: identity.profile.email, password: action.currentPassword });
+        if (check.error?.status === 429) return respond({ code: "rate-limited" }, 429);
+        if (check.error || check.data.user?.id !== identity.profile.user_id) return respond({ code: "wrong-password" }, 400);
+        const { error } = await client.auth.updateUser({ password: action.newPassword });
+        if (error?.code === "same_password") return respond({ code: "same-password" }, 400);
+        if (error?.code === "weak_password") return respond({ code: "weak-password" }, 400);
+        if (error) return respond({ code: "unconfirmed" }, 503);
+        return respond({ code: "password-saved" });
+      }
     }
     if (result.error) return failure(result.error);
     if (action.action === "onboard" || action.action === "switch") {

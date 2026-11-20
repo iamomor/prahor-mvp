@@ -22,12 +22,12 @@ export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type");
   const next = safeAuthReturnPath(request.nextUrl.searchParams.get("next") ??
     request.cookies.get("prohor-auth-next")?.value ?? null);
-  if (code || (token_hash && (type === "signup" || type === "email" || type === "magiclink"))) {
+  if (code || (token_hash && (type === "signup" || type === "email" || type === "magiclink" || type === "email_change"))) {
     try {
       const client = await createServerSupabase();
       if (client) {
         const { error } = code ? await client.auth.exchangeCodeForSession(code) :
-          await client.auth.verifyOtp({ token_hash: token_hash!, type: type as "signup" | "email" | "magiclink" });
+          await client.auth.verifyOtp({ token_hash: token_hash!, type: type as "signup" | "email" | "magiclink" | "email_change" });
         if (!error) {
           const identity = await readIdentity(client);
           if (identity.status === 200) return redirect(origin, authDestination(next, identity.profile.role, identity.profile.onboarded));

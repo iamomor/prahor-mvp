@@ -8,6 +8,8 @@ import { createBabyRequestSchema, createMaternalConditionRequestSchema, createOb
 const saveSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("pregnancy"), record: createPregnancyRequestSchema }),
   z.strictObject({ type: z.literal("baby"), record: createBabyRequestSchema }),
+  z.strictObject({ type: z.literal("edit_pregnancy"), record: createPregnancyRequestSchema.extend({ id: z.uuid() }) }),
+  z.strictObject({ type: z.literal("edit_baby"), record: createBabyRequestSchema.extend({ id: z.uuid() }) }),
   z.strictObject({ type: z.literal("observation"), record: createObservationRequestSchema }),
   z.strictObject({ type: z.literal("condition"), record: createMaternalConditionRequestSchema }),
   z.strictObject({ type: z.literal("symptom_note"), record: createSymptomNoteRequestSchema }),
@@ -56,17 +58,20 @@ export async function POST(request: Request) {
   if (!auth.db) return jsonNoStore({ message: "Sign in as a mother to save account records." }, auth.status);
   const { type, record } = parsed.data;
   if (type === "observation" && !measurementFitsDestination(record.destination, record.measurement)) return jsonNoStore({ message: "That measurement is not supported for this record." }, 400);
-  const data = type === "pregnancy" ? { label: record.label, due: record.estimatedDueDate, period: record.lastMenstrualPeriodDate }
-    : type === "baby" ? record
+  const data = type === "pregnancy" || type === "edit_pregnancy" ? { label: record.label, due: record.estimatedDueDate, period: record.lastMenstrualPeriodDate }
+    : type === "baby" || type === "edit_baby" ? { label: record.label, pregnancyId: record.pregnancyId, birthDate: record.birthDate }
     : type === "observation" ? { subject: record.destination.subject,
         parentId: record.destination.subject === "mother" ? record.destination.pregnancyId : record.destination.babyId,
         kind: record.measurement.kind, value: record.measurement.value, unit: record.measurement.unit,
         observedAt: record.observedAt, sourceNote: record.sourceNote }
     : record;
-  const result = await auth.db.rpc("jr_save", { p_action: type, p_data: data, p_key: key });
+  // Edits overwrite in place (previous values are logged server-side), so they are naturally idempotent and need no operation key.
+  const result = type === "edit_pregnancy" || type === "edit_baby"
+    ? await auth.db.rpc("jr_edit_profile", { p_subject: type === "edit_pregnancy" ? "pregnancy" : "baby", p_id: record.id, p_data: data })
+    : await auth.db.rpc("jr_save", { p_action: type, p_data: data, p_key: key });
   if (result.error) {
     const status = ["PT409", "40001", "23505"].includes(result.error.code) ? 409 :
-      result.error.code === "42501" ? 403 : ["22023", "22007", "22008", "22P02", "23514"].includes(result.error.code) ? 400 : 503;
+      ["42501", "P0002"].includes(result.error.code) ? 403 : ["22023", "22007", "22008", "22P02", "23514"].includes(result.error.code) ? 400 : 503;
     return jsonNoStore({ message: status === 409 ? "This record changed. Reload to review before trying again." : status === 403 ? "That record is not available in your account." : status === 400 ? "Check the date, value, unit and destination." : "Account save is unavailable. Try again." }, status);
   }
   return jsonNoStore({ saved: true, id: result.data }, 201);

@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CalendarDays, Plus, ShieldCheck } from "lucide-react";
+import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import { LifelineArc } from "./LifelineArc";
 import { CareGuide } from "./CareGuide";
 import { AccountVisitPack } from "./AccountVisitPack";
 import { accountJourney } from "./account-journey";
 import { filterAccountHistory } from "./account-history";
+import { accountRecordsSchema, belongsToPregnancy, selectAccountPregnancy, type GuideSelection } from "./account-records-model";
 
 
 type Pregnancy = {
@@ -73,7 +75,7 @@ type Records = {
   visits: Visit[];
   corrections: Correction[];
 };
-const box = "rounded-card border border-pro-border bg-pro-surface p-4 sm:p-6";
+const box = "rounded-card border border-pro-border bg-pro-surface p-5 sm:p-8";
 const input =
   "min-h-11 w-full rounded-field border border-pro-border bg-pro-bg px-3 py-2 text-pro-text focus-visible:outline-3 focus-visible:outline-pro-focus";
 const action =
@@ -118,12 +120,12 @@ type Task = "home" | "guide" | "share" | "observation" | "pregnancy" | "baby" | 
 const tasks: { id: Exclude<Task, "home">; label: string; hint: string }[] = [
   { id: "guide", label: "সপ্তাহভিত্তিক যত্ন", hint: "১–৪১ সপ্তাহের তথ্য ও উৎস" },
   { id: "share", label: "ভিজিটের প্যাকেট", hint: "বেছে দেখে তারপর প্রিন্ট" },
-  { id: "observation", label: "Add a measurement", hint: "Record a measurement or note for a mother or baby" },
-  { id: "records", label: "View account records", hint: "See entries and correction history" },
-  { id: "pregnancy", label: "Add a pregnancy", hint: "Keep the dates you enter" },
-  { id: "baby", label: "Add a baby record", hint: "Keep a separate record for each baby" },
-  { id: "note", label: "Write a health note", hint: "Record a symptom or a condition you noted" },
-  { id: "visit", label: "Record a visit", hint: "Keep details of a visit that happened" },
+  { id: "observation", label: "নতুন স্বাস্থ্যতথ্য", hint: "মা বা শিশুর মাপ ও নোট" },
+  { id: "records", label: "নথির ইতিহাস", hint: "লেখা তথ্য ও সংশোধন" },
+  { id: "pregnancy", label: "গর্ভকালের নথি যোগ", hint: "আপনার লেখা তারিখ রাখুন" },
+  { id: "baby", label: "শিশুর নথি যোগ", hint: "প্রতিটি শিশুর আলাদা নথি" },
+  { id: "note", label: "স্বাস্থ্য নোট লিখুন", hint: "আপনার দেখা উপসর্গ বা অবস্থা" },
+  { id: "visit", label: "ভিজিট লিখুন", hint: "হয়ে যাওয়া ভিজিটের তথ্য" },
 
 ];
 
@@ -179,9 +181,12 @@ export function AccountRecords() {
   const guideHeading = useRef<HTMLHeadingElement>(null);
   const statusFocus = useRef<HTMLParagraphElement>(null);
   const errorFocus = useRef<HTMLDivElement>(null);
-  const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
+  const pendingRequests = useRef(new Map<string, string>());
+  const savingRequest = useRef(false);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [pendingObservation, setPendingObservation] = useState<{ payload: unknown; form: HTMLFormElement; summary: string } | null>(null);
+  const [observationStep, setObservationStep] = useState<1 | 2 | 3>(1);
+  const [guideSelections, setGuideSelections] = useState<Record<string, GuideSelection | null>>({});
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   function openTask(next: Task) {
     setTask(next);
@@ -194,16 +199,16 @@ export function AccountRecords() {
     try {
       const response = await fetch("/api/jibonrekha", { cache: "no-store" });
       if (!response.ok)
-        throw new Error("Account records could not be loaded. Try again.");
-      const next = (await response.json()) as Records;
+        throw new Error("নথি আনা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।");
+      const next = accountRecordsSchema.parse(await response.json()) as Records;
       setRecords(next);
-      setBabyId((previous) => previous || next.babies[0]?.id || "");
+      setBabyId((previous) => next.babies.some((baby) => baby.id === previous) ? previous : "");
       setError("");
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : "Account records could not be loaded.",
+          : "নথি আনা যায়নি। আবার চেষ্টা করুন।",
       );
       requestAnimationFrame(() => errorFocus.current?.focus());
     } finally {
@@ -214,32 +219,33 @@ export function AccountRecords() {
     void Promise.resolve().then(load);
   }, [load]);
   async function save(payload: unknown, form: HTMLFormElement, label: string) {
+    if (savingRequest.current) return false;
+    savingRequest.current = true;
     setBusy(true);
     setError("");
     setMessage("");
+    const body = JSON.stringify(payload);
+    const key = pendingRequests.current.get(body) ?? crypto.randomUUID();
+    pendingRequests.current.set(body, key);
     try {
-      const body = JSON.stringify(payload);
-      if (pendingRequest.current?.payload !== body)
-        pendingRequest.current = { payload: body, key: crypto.randomUUID() };
       const response = await fetch("/api/jibonrekha", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Idempotency-Key": pendingRequest.current.key,
+          "Idempotency-Key": key,
         },
         body,
       });
-      const result = (await response.json()) as {
+      const result = (await response.json().catch(() => null)) as {
         saved?: boolean;
         id?: string;
         message?: string;
-      };
-      if (!response.ok || !result.saved || !result.id)
-        throw new Error(
-          result.message ||
-            "Nothing was saved. Check the fields and try again.",
-        );
-      pendingRequest.current = null;
+      } | null;
+      if (!response.ok || result?.saved !== true || !result.id) {
+        if (response.status >= 400 && response.status < 500) pendingRequests.current.delete(body);
+        throw new Error(result?.message || "সংরক্ষণ নিশ্চিত হয়নি। একই তথ্য আবার চেষ্টা করুন।");
+      }
+      pendingRequests.current.delete(body);
       setMessage(`${label} অ্যাকাউন্টে সংরক্ষিত হয়েছে। এই MVP-তে শুধু কাল্পনিক তথ্য ব্যবহার করুন।`);
       form.reset();
       setCorrectingId(null);
@@ -249,13 +255,16 @@ export function AccountRecords() {
       return true;
     } catch (cause) {
       setError(
-        cause instanceof Error
+        cause instanceof TypeError
+          ? "সংরক্ষণ নিশ্চিত হয়নি। সংযোগ দেখে একই তথ্য আবার চেষ্টা করুন।"
+          : cause instanceof Error
           ? cause.message
-          : "Nothing was saved. Check your connection and try again.",
+          : "সংরক্ষণ নিশ্চিত হয়নি। সংযোগ দেখে একই তথ্য আবার চেষ্টা করুন।",
       );
       requestAnimationFrame(() => errorFocus.current?.focus());
       return false;
     } finally {
+      savingRequest.current = false;
       setBusy(false);
     }
   }
@@ -271,7 +280,7 @@ export function AccountRecords() {
     ) ?? [];
   const selectedBabyId = visibleBabies.some((baby) => baby.id === babyId)
     ? babyId
-    : (visibleBabies[0]?.id ?? "");
+    : "";
   const superseded = new Set(
     records?.corrections.map((item) => item.old_observation_id) ?? [],
   );
@@ -295,26 +304,29 @@ export function AccountRecords() {
     }
     return history;
   }
-  const selectedPregnancy = records?.pregnancies.find((item) => item.id === pregnancyId)
-    ?? records?.pregnancies.find((item) => item.estimated_due_date || item.last_menstrual_period_date)
-    ?? records?.pregnancies[0];
+  const selectedPregnancy = records ? selectAccountPregnancy(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
+  const guideKey = selectedPregnancy?.id ?? "no-pregnancy";
+  const guideSelection = guideSelections[guideKey] ?? null;
+  const shownJourney = guideSelection ? { weeks: guideSelection.week, days: guideSelection.day } : journey;
+  const previewing = guideSelection !== null;
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);
-  const recentVisit = records?.visits.length
-    ? [...records.visits].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at))[0]
+  const scopedVisits = records?.visits.filter((item) => belongsToPregnancy(item, selectedPregnancy?.id, records.babies)) ?? [];
+  const recentVisit = scopedVisits.length
+    ? [...scopedVisits].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at))[0]
     : null;
 
 
   return (
-    <div className="mx-auto grid w-full min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-6 px-4 py-6 text-pro-text sm:px-6">
+    <div className="mx-auto grid w-full min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 px-4 py-8 text-pro-text [overflow-wrap:anywhere] sm:px-6 lg:gap-10 lg:py-10">
       <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="font-semibold text-pro-primary">প্রহর · জীবনরেখা</p>
           <h1 ref={homeHeading} tabIndex={-1} className="mt-1 text-4xl font-semibold">জীবনরেখা</h1>
           <p className="mt-2">আপনার ও শিশুর যাত্রা, এক রেখায়।</p>
         </div>
-        <div className="flex flex-wrap gap-2"><Link href="/accessibility" className="inline-flex min-h-11 items-center rounded-field border border-pro-control-border px-4 font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-pro-focus">পছন্দ বদলান</Link><Link href="/poth#poth-sos" className="inline-flex min-h-11 items-center rounded-field border border-pro-danger px-4 font-semibold text-pro-danger focus-visible:outline-3 focus-visible:outline-pro-focus">জরুরি সহায়তা</Link></div>
+        <div className="flex flex-wrap gap-2"><AccessPreferencesControl compact /><Link href="/safety" className="inline-flex min-h-11 items-center rounded-field border border-pro-danger px-4 font-semibold text-pro-danger focus-visible:outline-3 focus-visible:outline-pro-focus">জরুরি সহায়তা</Link></div>
       </header>
       {message && <p ref={statusFocus} tabIndex={-1} role="status" className="rounded-field border border-pro-success bg-pro-success-soft p-4 focus-visible:outline-3 focus-visible:outline-pro-focus">{message}</p>}
       {error && (
@@ -322,54 +334,57 @@ export function AccountRecords() {
           <p role="alert" className="text-pro-danger">{error}</p>
           {!records && !loading && (
             <button type="button" onClick={() => void load()} className={action}>
-              Retry loading records
+              নথি আবার আনুন
             </button>
           )}
 
         </div>
       )}
       {loading ? (
-        <p role="status">Loading account records…</p>
+        <p role="status">নথি আনা হচ্ছে…</p>
       ) : (
         records && (
           <>
             {task === "home" && (
-              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(17rem,1fr)]">
-                <section className="min-w-0 rounded-hero bg-pro-primary p-5 text-pro-on-primary sm:p-6" aria-label="গর্ভকালের রেখা">
-                  <div className="flex flex-wrap justify-between gap-2 font-semibold"><span>{selectedPregnancy?.label ?? "আমার গর্ভকাল"}</span><span>{formatBnDate(today())} পর্যন্ত</span></div>
-                  {records.pregnancies.length > 1 && <label className="mt-3 grid min-w-0 gap-1 text-sm font-semibold">কোন গর্ভকালের নথি দেখবেন
-                    <select value={selectedPregnancy?.id ?? ""} onChange={(event) => setPregnancyId(event.target.value)} className="min-h-11 w-full min-w-0 max-w-full rounded-field border border-pro-on-primary bg-pro-primary px-3 text-pro-on-primary">{records.pregnancies.map((item) => <option key={item.id} value={item.id} className="bg-pro-bg text-pro-text">{item.label}</option>)}</select>
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(17rem,1fr)]">
+                <section className="grid min-w-0 content-start gap-6 rounded-hero bg-pro-primary p-5 text-pro-on-primary sm:p-8" aria-label="গর্ভকালের রেখা">
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3"><h2 className="min-w-0 text-xl font-semibold">{selectedPregnancy?.label ?? "আমার গর্ভকাল"}</h2><span className="text-sm">{formatBnDate(today())} পর্যন্ত</span></div>
+                  {records.pregnancies.length > 1 && <label className="grid min-w-0 gap-2 font-semibold">কোন গর্ভকালের নথি দেখবেন
+                    <select value={selectedPregnancy?.id ?? ""} onChange={(event) => setPregnancyId(event.target.value)} className="min-h-12 w-full min-w-0 max-w-full rounded-field border border-pro-on-primary bg-pro-primary px-3 text-pro-on-primary focus-visible:outline-3 focus-visible:outline-pro-focus">{records.pregnancies.map((item) => <option key={item.id} value={item.id} className="bg-pro-bg text-pro-text">{item.label}</option>)}</select>
                   </label>}
-                  {journey ? <>
-                    <div className="relative mx-auto mt-4 max-w-xs pb-8 max-[360px]:pb-10">
-                      <LifelineArc weeks={journey.weeks} days={journey.days} />
-                      <div className="pointer-events-none absolute inset-x-0 top-[4.5rem] text-center min-[360px]:top-[6.75rem]">
-                        <p className="text-[clamp(1rem,5vw,1.375rem)] font-semibold leading-tight">{bengaliNumber(journey.weeks)} সপ্তাহ {bengaliNumber(journey.days)} দিন</p>
-                        <p className="mt-1 text-sm leading-tight">{["প্রথম", "দ্বিতীয়", "তৃতীয়"][journey.weeks < 14 ? 0 : journey.weeks < 28 ? 1 : 2]} ত্রৈমাসিক</p>
-                      </div>
-                    </div>
-                    <div className="flex justify-between gap-2 text-sm font-semibold"><span>শুরু</span><span>১ম | ২য় | ৩য় ত্রৈমাসিক</span><span>প্রসব</span></div>
-                    <div className="mt-4 border-t border-pro-on-primary-muted/50 pt-4"><p className="font-semibold">প্রসবের আনুমানিক তারিখ: {formatBnDate(journey.dueDate)}</p><p className="mt-2 text-sm">সূত্র: {journey.source} · হিসাবটি চিকিৎসকের নিশ্চিতকরণ নয়</p></div>
-                  </> : <div className="grid gap-3 py-8"><p className="text-xl font-semibold">গর্ভকালের তারিখ এখনও দেখানো যাচ্ছে না</p><p>তারিখ না থাকলে বা সম্ভাব্য তারিখ পেরিয়ে গেলে সপ্তাহ অনুমান করে দেখানো হয় না।</p><button type="button" onClick={() => openTask("pregnancy")} className="w-fit min-h-11 rounded-field border border-pro-on-primary px-4 py-2 font-semibold">গর্ভকালের তথ্য যোগ করুন</button></div>}
+                  {shownJourney ? <>
+                    <div className="mx-auto w-full max-w-sm" aria-hidden="true"><LifelineArc weeks={shownJourney.weeks} days={shownJourney.days} /></div>
+                    <div className="grid gap-2 text-center" role="status"><p className="text-sm font-semibold">{previewing ? "গাইডে বেছে নেওয়া সপ্তাহ · প্রিভিউ" : "নথির তারিখ অনুযায়ী আজ"}</p><p className="text-[clamp(1.5rem,5vw,2rem)] font-semibold leading-snug">{bengaliNumber(shownJourney.weeks)} সপ্তাহ {bengaliNumber(shownJourney.days)} দিন</p><p>{["প্রথম", "দ্বিতীয়", "তৃতীয়"][shownJourney.weeks < 14 ? 0 : shownJourney.weeks < 28 ? 1 : 2]} ত্রৈমাসিক</p></div>
+                    {previewing && <div className="grid gap-3 rounded-field border border-pro-on-primary p-4"><p>এই সপ্তাহটি শুধু গাইড দেখার জন্য। আপনার নথির তারিখ বদলায়নি।</p><button type="button" onClick={() => setGuideSelections((previous) => ({ ...previous, [guideKey]: null }))} className="min-h-11 justify-self-start rounded-field border border-pro-on-primary px-4 font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus">নথির বর্তমান সপ্তাহ দেখুন</button></div>}
+                    <div className="grid gap-2 border-t border-pro-on-primary pt-5">{journey ? <><p className="font-semibold">নথি অনুযায়ী সম্ভাব্য প্রসবের তারিখ: {formatBnDate(journey.dueDate)}</p><p className="text-sm">সূত্র: {journey.source} · হিসাবটি চিকিৎসকের নিশ্চিতকরণ নয়</p></> : <p>নথির তারিখ থেকে বর্তমান সপ্তাহ হিসাব করা যাচ্ছে না।</p>}</div>
+                  </> : <div className="grid gap-4 py-4"><p className="text-xl font-semibold">গর্ভকালের তারিখ এখনও দেখানো যাচ্ছে না</p><p>তারিখ না থাকলে বা সম্ভাব্য তারিখ পেরিয়ে গেলে সপ্তাহ অনুমান করে দেখানো হয় না। গাইডে সপ্তাহ বেছে নিয়ে বিষয়গুলো দেখতে পারেন।</p><button type="button" onClick={() => openTask("pregnancy")} className="w-fit min-h-11 rounded-field border border-pro-on-primary px-4 py-2 font-semibold">গর্ভকালের তথ্য যোগ করুন</button></div>}
+                  <button type="button" onClick={() => openTask("guide")} className="min-h-12 w-fit rounded-field border border-pro-on-primary px-5 py-2 font-semibold focus-visible:outline-3 focus-visible:outline-pro-focus">সপ্তাহভিত্তিক যত্ন দেখুন →</button>
                 </section>
                 <div className="grid content-start gap-4">
                   <section className="rounded-card border border-pro-border bg-pro-elevated p-5">
                     <div className="flex items-center gap-2"><CalendarDays className="size-5 text-pro-primary" aria-hidden="true" /><h2 className="text-xl font-semibold">সাম্প্রতিক ভিজিট</h2></div>
-                    {recentVisit ? <p className="mt-3">{formatBnDate(recentVisit.occurred_at)} · {recentVisit.place_note || "স্থান লেখা নেই"}</p> : <p className="mt-3 text-pro-muted">এই অ্যাকাউন্টে এখনও কোনো ভিজিট লেখা নেই।</p>}
+                    {recentVisit ? <p className="mt-3">{formatBnDate(recentVisit.occurred_at)} · {recentVisit.place_note || "স্থান লেখা নেই"}</p> : <p className="mt-3 text-pro-muted">এই নথিতে এখনও কোনো ভিজিট লেখা নেই।</p>}
                     <button type="button" onClick={() => openTask("visit")} className="mt-4 min-h-11 font-semibold text-pro-primary underline">ভিজিট লিখুন বা দেখুন</button>
                   </section>
                   <p className="rounded-field border border-pro-info bg-pro-info-soft p-4 text-pro-info"><ShieldCheck className="mr-2 inline size-4" aria-hidden="true" />এই তথ্য আপনার অ্যাকাউন্টের নথি থেকে দেখানো হচ্ছে। কাউকে পাঠানো হয়নি।</p>
+                  <section className="grid gap-4 rounded-card border border-pro-border bg-pro-elevated p-5 sm:p-6" aria-labelledby="journey-next-heading">
+                    <h2 id="journey-next-heading" className="text-xl font-semibold">আজকের সহজ পথ</h2>
+                    <ol className="grid gap-4">
+                      <li className="flex gap-3"><span aria-hidden="true" className="font-semibold text-pro-primary">১</span><span><strong className="block">সপ্তাহের যত্ন দেখুন</strong><span className="text-pro-muted">প্রশ্ন ও পরীক্ষার তথ্য উৎসসহ পড়ুন।</span></span></li>
+                      <li className="flex gap-3"><span aria-hidden="true" className="font-semibold text-pro-primary">২</span><span><strong className="block">মা বা শিশুর তথ্য লিখুন</strong><span className="text-pro-muted">সঠিক নথি বেছে, মান মিলিয়ে সংরক্ষণ করুন।</span></span></li>
+                      <li className="flex gap-3"><span aria-hidden="true" className="font-semibold text-pro-primary">৩</span><span><strong className="block">ইতিহাস দেখে রাখুন</strong><span className="text-pro-muted">ভিজিটের আগে দরকারি তথ্য নিজে বেছে নিন।</span></span></li>
+                    </ol>
+                  </section>
                 </div>
               </div>
             )}
-            {task === "home" && <section className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-pro-border bg-pro-elevated p-5"><div><h2 className="text-xl font-semibold">এই সপ্তাহের যত্ন</h2><p className="mt-1 text-pro-muted">সপ্তাহ অনুযায়ী পরীক্ষা, প্রশ্ন ও দৈনিক নোটের পথ।</p></div><button type="button" onClick={() => openTask("guide")} className="min-h-11 rounded-field border border-pro-control-border px-4 font-semibold text-pro-primary">সপ্তাহভিত্তিক গাইড খুলুন →</button></section>}
-            {task === "guide" && <CareGuide currentWeek={journey?.weeks ?? null} currentDay={journey?.days ?? 0} headingRef={guideHeading} onBack={() => openTask("home")} onAddNote={() => openTask("note")} bujhiHref="/app/bujhi" />}
-            {task === "share" && <AccountVisitPack rows={recent.map((item) => ({ id: item.id, subject: item.subject, label: labels[item.kind] ?? item.kind, value: item.value, unit: item.unit, observedAt: formatDate(item.observed_at), source: sourceLabel(item) }))} onBack={() => openTask("home")} />}
+            {task === "guide" && <CareGuide currentWeek={journey?.weeks ?? null} currentDay={journey?.days ?? 0} selection={guideSelection} onSelectionChange={(next) => setGuideSelections((previous) => ({ ...previous, [guideKey]: next }))} headingRef={guideHeading} onBack={() => openTask("home")} onAddNote={() => openTask("note")} bujhiHref="/app/bujhi" />}
+            {task === "share" && <AccountVisitPack key={guideKey} rows={recent.filter((item) => belongsToPregnancy(item, selectedPregnancy?.id, records.babies)).map((item) => ({ id: item.id, subject: item.subject, label: labels[item.kind] ?? item.kind, value: item.value, unit: item.unit, observedAt: formatDate(item.observed_at), source: sourceLabel(item) }))} onBack={() => openTask("home")} />}
             <nav
               aria-label="Jibonrekha quick actions"
               className="grid gap-3"
             >
-              {task !== "home" && (
+              {task !== "home" && task !== "guide" && task !== "share" && (
                 <button
                   type="button"
                   onClick={() => openTask("home")}
@@ -378,7 +393,7 @@ export function AccountRecords() {
                   ← জীবনরেখায় ফিরুন
                 </button>
               )}
-              {task !== "home" && (
+              {task !== "home" && task !== "guide" && task !== "share" && (
                 <label className="grid gap-1 sm:col-span-2">
                   অন্য কাজ বেছে নিন
                   <select
@@ -396,7 +411,7 @@ export function AccountRecords() {
               )}
               {task === "home" && (
                 <div className="grid gap-3">
-                  <button type="button" onClick={() => openTask("observation")} className={`${action} flex items-center justify-center gap-2 text-center`}><Plus className="size-5" aria-hidden="true" />নতুন তথ্য যোগ করুন</button>
+                    <button type="button" onClick={() => openTask("observation")} className={`${action} flex items-center justify-center gap-2 text-center`}><Plus className="size-5" aria-hidden="true" />মা বা শিশুর তথ্য যোগ করুন</button>
                   <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={() => openTask("records")} className="min-h-11 rounded-pill border border-pro-control-border px-4 font-semibold text-pro-primary">ইতিহাস</button>
                     <button type="button" onClick={() => openTask("visit")} className="min-h-11 rounded-pill border border-pro-control-border px-4 font-semibold text-pro-primary">ভিজিট</button>
@@ -460,31 +475,30 @@ export function AccountRecords() {
                   );
                 }}
               >
-                <h2 className="text-xl font-semibold">Add a pregnancy</h2>
+                <h3 className="text-xl font-semibold">গর্ভকালের নথি</h3>
                 <label className="grid gap-1">
-                  Name for this pregnancy
+                  নথির নাম
                   <input
                     name="label"
                     maxLength={100}
                     required
                     className={input}
-                    placeholder="e.g. Pregnancy 1"
+                    placeholder="যেমন: প্রথম গর্ভকাল"
                   />
                 </label>
                 <label className="grid gap-1">
-                  Estimated due date (optional)
+                  সম্ভাব্য প্রসবের তারিখ (ঐচ্ছিক)
                   <input name="due" type="date" className={input} />
                 </label>
                 <label className="grid gap-1">
-                  First day of last period (optional)
+                  শেষ মাসিকের প্রথম দিন (ঐচ্ছিক)
                   <input name="period" type="date" className={input} />
                 </label>
                 <p className="text-pro-muted">
-                  Dates are recorded as you entered them. PROHOR does not
-                  calculate or confirm a clinical due date.
+                  তারিখ আপনার লেখা অনুযায়ী রাখা হবে। জীবনরেখার হিসাব চিকিৎসকের নিশ্চিত করা তারিখ নয়।
                 </p>
                 <button disabled={busy} className={action}>
-                  Save pregnancy
+                  গর্ভকালের নথি সংরক্ষণ করুন
                 </button>
               </form>
             </section>
@@ -509,21 +523,21 @@ export function AccountRecords() {
                   );
                 }}
               >
-                <h2 className="text-xl font-semibold">Add a baby record</h2>
+                <h3 className="text-xl font-semibold">শিশুর নথি</h3>
                 <label className="grid gap-1">
-                  Baby record name
+                  শিশুর নথির নাম
                   <input
                     name="label"
                     maxLength={100}
                     required
                     className={input}
-                    placeholder="e.g. Baby A"
+                    placeholder="যেমন: আমার শিশু"
                   />
                 </label>
                 <label className="grid gap-1">
-                  Related pregnancy (optional)
+                  সম্পর্কিত গর্ভকাল (ঐচ্ছিক)
                   <select name="pregnancy" className={input}>
-                    <option value="">No pregnancy selected</option>
+                    <option value="">গর্ভকাল বাছা হয়নি</option>
                     {records.pregnancies.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label}
@@ -532,7 +546,7 @@ export function AccountRecords() {
                   </select>
                 </label>
                 <label className="grid gap-1">
-                  Birth date (optional)
+                  জন্মতারিখ (ঐচ্ছিক)
                   <input
                     name="birth"
                     type="date"
@@ -541,26 +555,22 @@ export function AccountRecords() {
                   />
                 </label>
                 <p className="text-pro-muted">
-                  Each baby has a separate record. More than one baby can be
-                  linked to the same pregnancy.
+                  প্রতিটি শিশুর আলাদা নথি। একই গর্ভকালের সঙ্গে একাধিক শিশুর নথি যুক্ত করা যায়।
                 </p>
                 <button disabled={busy} className={action}>
-                  Save baby record
+                  শিশুর নথি সংরক্ষণ করুন
                 </button>
               </form>
             </section>
             <section
               hidden={task !== "observation"}
-              className={`${box} grid gap-4`}
+              className={`${box} grid max-w-3xl gap-6`}
               aria-label="Record a measurement or note"
             >
-              <p>
-                Choose a person, enter the value, then save. Your entry keeps
-                its date and source.
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2"><p className="font-semibold text-pro-primary">ধাপ {bengaliNumber(observationStep)} / ৩</p><h3 className="text-xl font-semibold">{observationStep === 1 ? "কার নথিতে লিখবেন?" : observationStep === 2 ? "তথ্য লিখুন" : "সংরক্ষণের আগে মিলিয়ে নিন"}</h3><p className="text-pro-muted">মা ও শিশুর নথি আলাদা থাকবে। আপনার লেখা তথ্য চিকিৎসক নিশ্চিত করেছেন বলে দেখানো হবে না।</p></div>
+              <div hidden={observationStep !== 1} className="grid gap-5">
                 <label className="grid gap-1">
-                  Whose record?
+                  কার নথি?
                   <select
                     value={subject}
                     disabled={pendingObservation !== null}
@@ -569,19 +579,19 @@ export function AccountRecords() {
                     }
                     className={input}
                   >
-                    <option value="mother">Mother</option>
-                    <option value="baby">Baby</option>
+                    <option value="mother">মা</option>
+                    <option value="baby">শিশু</option>
                   </select>
                 </label>
                 <label className="grid gap-1">
-                  Pregnancy context
+                  কোন গর্ভকালের নথি? (ঐচ্ছিক)
                   <select
                     value={pregnancyId}
                     disabled={pendingObservation !== null}
                     onChange={(event) => setPregnancyId(event.target.value)}
                     className={input}
                   >
-                    <option value="">No pregnancy selected</option>
+                    <option value="">গর্ভকাল বাছা হয়নি</option>
                     {records.pregnancies.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label}
@@ -591,15 +601,15 @@ export function AccountRecords() {
                 </label>
               </div>
               {subject === "baby" && (
-                <label className="grid gap-1">
-                  Baby
+                <label hidden={observationStep !== 1} className="grid gap-1">
+                  কোন শিশুর নথি?
                   <select
                     value={selectedBabyId}
                     disabled={pendingObservation !== null}
                     onChange={(event) => setBabyId(event.target.value)}
                     className={input}
                   >
-                    <option value="">Choose a baby</option>
+                    <option value="">শিশু বেছে নিন</option>
                     {visibleBabies.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label}
@@ -608,9 +618,10 @@ export function AccountRecords() {
                   </select>
                 </label>
               )}
+              {observationStep === 1 && <div className="grid gap-3"><button type="button" disabled={subject === "baby" && !selectedBabyId} onClick={() => setObservationStep(2)} className={action}>তথ্য লেখার ধাপে যান →</button>{subject === "baby" && !selectedBabyId && <p className="text-pro-muted">{visibleBabies.length ? "আগে কোন শিশুর নথি বেছে নিন।" : "আগে শিশুর নথি যোগ করুন।"} {!visibleBabies.length && <button type="button" onClick={() => openTask("baby")} className="font-semibold text-pro-primary underline">শিশুর নথি যোগ করুন</button>}</p>}</div>}
               <form
-                className="grid gap-3"
-                hidden={pendingObservation !== null}
+                className="grid gap-5"
+                hidden={observationStep !== 2}
                 onSubmit={(event) => {
                   event.preventDefault();
                   const form = event.currentTarget;
@@ -633,11 +644,12 @@ export function AccountRecords() {
                       },
                     };
                   setPendingObservation({ payload, form, summary: `${subject === "mother" ? "মায়ের নথি" : `শিশুর নথি: ${visibleBabies.find((item) => item.id === selectedBabyId)?.label ?? ""}`} · ${labels[kind]}: ${String(data.get("value") ?? "")} ${kind === "note" ? "" : unit} · ${date}` });
+                   setObservationStep(3);
                   requestAnimationFrame(() => reviewHeading.current?.focus());
                 }}
               >
                 <label className="grid gap-1">
-                  Type
+                  কী তথ্য লিখবেন?
                   <select
                     value={kind}
                     onChange={(event) => {
@@ -657,7 +669,7 @@ export function AccountRecords() {
                   </select>
                 </label>
                 <label className="grid gap-1">
-                  {kind === "note" ? "Note" : `${labels[kind]} value`}
+                  {kind === "note" ? "নোট" : `${labels[kind]}-এর মান`}
                   {kind === "note" ? (
                     <textarea
                       name="value"
@@ -678,7 +690,7 @@ export function AccountRecords() {
                 {kind !== "note" &&
                   (unitOptions[kind] ? (
                     <label className="grid gap-1">
-                      Unit
+                      একক
                       <select
                         value={unit}
                         onChange={(event) => setUnit(event.target.value)}
@@ -692,10 +704,10 @@ export function AccountRecords() {
                       </select>
                     </label>
                   ) : (
-                    <p>Unit: {unit}</p>
+                    <p>একক: {unit}</p>
                   ))}
                 <label className="grid gap-1">
-                  Date observed
+                  কবে লেখা বা মাপা হয়েছে?
                   <input
                     name="date"
                     type="date"
@@ -706,22 +718,21 @@ export function AccountRecords() {
                   />
                 </label>
                 <p className="text-pro-muted">
-                  Blood pressure numbers are saved separately. Enter values as
-                  recorded; no diagnosis or automatic interpretation is
-                  provided.
+                  রক্তচাপের দুটি সংখ্যা আলাদা করে লিখুন। নিজের মাপা মান লিখুন; এখানে রোগ নির্ণয় হয় না।
                 </p>
+                <button type="button" onClick={() => setObservationStep(1)} className="min-h-11 w-fit font-semibold text-pro-primary underline">← কার নথি, বদলান</button>
                 <button
                   type="submit"
                   disabled={busy || (subject === "baby" && !selectedBabyId)}
                   className={action}
                 >
-                  Save to account
+                  সংরক্ষণের আগে দেখুন →
                 </button>
               </form>
-              {pendingObservation && <section className="grid gap-3 rounded-field border border-pro-border bg-pro-elevated p-4" aria-labelledby="observation-review-title">
+              {pendingObservation && observationStep === 3 && <section className="grid gap-5 rounded-field border border-pro-border bg-pro-elevated p-5" aria-labelledby="observation-review-title">
                 <h3 id="observation-review-title" ref={reviewHeading} tabIndex={-1} className="text-xl font-semibold">সংরক্ষণের আগে দেখুন</h3>
                 <p>{pendingObservation.summary}</p><p>উৎস: আপনার লেখা। চিকিৎসক যাচাই করেননি।</p>
-                <div className="flex flex-wrap gap-2"><button type="button" disabled={busy} onClick={() => setPendingObservation(null)} className="min-h-11 rounded-field border border-pro-control-border px-4 font-semibold text-pro-primary">সংশোধন করুন</button><button type="button" disabled={busy} onClick={() => { void save(pendingObservation.payload, pendingObservation.form, "Observation").then((saved) => { if (saved) setPendingObservation(null); }); }} className={action}>অ্যাকাউন্টে সংরক্ষণ করুন</button></div>
+                <div className="flex flex-wrap gap-3"><button type="button" disabled={busy} onClick={() => { setPendingObservation(null); setObservationStep(2); }} className="min-h-11 rounded-field border border-pro-control-border px-4 font-semibold text-pro-primary">সংশোধন করুন</button><button type="button" disabled={busy} onClick={() => { void save(pendingObservation.payload, pendingObservation.form, "তথ্য").then((saved) => { if (saved) { setPendingObservation(null); setObservationStep(1); } }); }} className={action}>আমার অ্যাকাউন্টে সংরক্ষণ করুন</button></div>
               </section>}
             </section>
             <section
@@ -1212,9 +1223,9 @@ export function AccountRecords() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <h4 className="font-semibold">আপনার লেখা শারীরিক অবস্থার কথা</h4>
-              {records.conditions.length ? (
+              {records.conditions.some((item) => !pregnancyId || item.pregnancy_id === pregnancyId) ? (
                 <ul className="grid gap-2">
-                  {records.conditions.map((item) => (
+                  {records.conditions.filter((item) => !pregnancyId || item.pregnancy_id === pregnancyId).map((item) => (
                     <li
                       key={item.id}
                       className="rounded-field border border-pro-border p-3"
@@ -1235,9 +1246,9 @@ export function AccountRecords() {
             </div>
             <div>
               <h4 className="font-semibold">উপসর্গের নোট</h4>
-              {records.symptomNotes.length ? (
+              {records.symptomNotes.some((item) => !pregnancyId || item.pregnancy_id === pregnancyId) ? (
                 <ul className="grid gap-2">
-                  {records.symptomNotes.map((item) => (
+                  {records.symptomNotes.filter((item) => !pregnancyId || item.pregnancy_id === pregnancyId).map((item) => (
                     <li
                       key={item.id}
                       className="rounded-field border border-pro-border p-3"
@@ -1253,9 +1264,9 @@ export function AccountRecords() {
             </div>
           </div>
           <h3 className="font-semibold">আপনার লেখা ভিজিট</h3>
-          {records.visits.length ? (
+          {records.visits.some((item) => belongsToPregnancy(item, pregnancyId || undefined, records.babies)) ? (
             <ul className="grid gap-2">
-              {records.visits.map((item) => (
+              {records.visits.filter((item) => belongsToPregnancy(item, pregnancyId || undefined, records.babies)).map((item) => (
                 <li
                   key={item.id}
                   className="rounded-field border border-pro-border p-3"

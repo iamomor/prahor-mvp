@@ -1,11 +1,19 @@
 ﻿import { test } from "node:test";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
-const url=(process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/jibonrekha/records";
+const url=(process.env.PROHOR_TEST_URL ?? "http://localhost:3000") + "/demo/jibonrekha/records";
 async function open() { const browser=await chromium.launch({channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge"});const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(error.message));await page.goto(url);await expect(page.getByRole("button",{name:/মায়ের তথ্য যোগ করুন/})).toBeVisible();await page.getByRole("button",{name:/মায়ের তথ্য যোগ করুন/}).click();await expect(page.getByRole("navigation",{name:"Jibonrekha sections"})).toBeVisible();return {browser,context,page,errors}; }
 async function section(page,name){const nav=page.getByRole("navigation",{name:"Jibonrekha sections"});await expect(nav).toBeVisible();const tabName=name.source.includes("Appointments")?/Visits/:name.source.includes("Privacy")?/Share/:name;const button=nav.getByRole("button",{name:tabName});if(await button.count()){await button.focus();await page.keyboard.press("Enter");await expect(button).toHaveAttribute("aria-pressed","true");}else{const select=nav.getByRole("combobox",{name:/More/});const key=name.source.includes("Overview")?"overview":name.source.includes("Pregnancy")?"pregnancy":name.source.includes("Mother")?"mother":name.source.includes("Baby")?"baby":name.source.includes("Reports")?"reports":"summary";await select.selectOption(key);await expect(page.locator('h2[tabindex="-1"]')).toHaveText(name);}}
 async function save(form){await form.getByRole("button",{name:/Save on this device/}).click();await expect(form.getByRole("status")).toContainText("Saved on this device");}
 async function maternal(page,name,value="60.00",unit="kg") {const form=page.getByRole("form",{name:/Add maternal observation/});await form.getByLabel("Observation name (required)",{exact:true}).fill(name);await form.getByLabel("Value or note (required)",{exact:true}).fill(value);await form.getByLabel("Unit (optional)",{exact:true}).fill(unit);await form.getByLabel("Observation date (required)",{exact:true}).fill("2026-11-18");await form.getByRole("button",{name:"Save maternal observation",exact:true}).click();await expect(form.getByRole("status")).toContainText("Saved to Mother's record");}
+
+test("detailed Jibonrekha demo links to account Bujhi and public safety",async()=>{
+ const {browser,page}=await open();try{
+   await expect(page.getByRole("link",{name:/জরুরি সহায়তা/})).toHaveAttribute("href","/safety");
+   await section(page,/Reports/);
+   await expect(page.getByRole("link",{name:/Open Bujhi review/})).toHaveAttribute("href","/app/bujhi");
+ }finally{await browser.close();}
+});
 
 test("task-first home works at 320px and has accessible controls",async()=>{
  const browser=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL??"msedge"});try{const context=await browser.newContext({viewport:{width:320,height:900}});const page=await context.newPage();await page.goto(url);await expect(page.getByRole("heading",{name:/আজ কী করতে চান/})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa","wcag22aa"]).analyze();expect(axe.violations.map(v=>v.id)).toEqual([]);await page.getByRole("button",{name:/আগের তথ্য দেখুন/}).focus();await page.keyboard.press("Enter");await expect(page.getByRole("heading",{name:/Timeline/})).toBeVisible();}finally{await browser.close();}

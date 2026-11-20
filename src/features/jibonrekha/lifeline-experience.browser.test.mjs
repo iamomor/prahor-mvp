@@ -50,7 +50,7 @@ test("care guide covers early, current and late weeks with sources and a note pa
   try {
     await page.getByRole("button", { name: /সপ্তাহভিত্তিক গাইড খুলুন/ }).click();
     await expect(page.getByRole("heading", { name: "সপ্তাহভিত্তিক যত্নের পথ" })).toBeFocused();
-    const week = page.getByRole("combobox", { name: "গর্ভকালের সপ্তাহ" });
+    const week = page.getByRole("combobox", { name: /গর্ভকালের সপ্তাহ|অন্য সপ্তাহে যান/ });
     await week.selectOption("1");
     await expect(page.getByText("এই সপ্তাহে নতুন নির্দিষ্ট পরীক্ষা নেই")).toBeVisible();
     await week.selectOption("24");
@@ -84,7 +84,7 @@ test("PDF topics remain source-linked and usable through keyboard at 320px", asy
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: "তারিখ ও গর্ভকাল কী বোঝায়" })).toBeVisible();
     await expect(page.getByRole("link", { name: /NHS · Due date calculator/ })).toHaveAttribute("href", "https://www.nhs.uk/pregnancy/finding-out/due-date-calculator/");
-    await page.getByRole("combobox", { name: "গর্ভকালের সপ্তাহ" }).selectOption("40");
+    await page.getByRole("combobox", { name: /গর্ভকালের সপ্তাহ|অন্য সপ্তাহে যান/ }).selectOption("40");
     await expect(page.getByRole("heading", { name: "৪০ সপ্তাহের দিকে: তারিখটি একটি অনুমান" })).toBeVisible();
     const warning = page.locator("summary").filter({ hasText: "যেসব লক্ষণে অপেক্ষা করবেন না" });
     await warning.focus();

@@ -27,6 +27,10 @@ export const starterBartaRequestSchema = bartaRequestSchema.pick({ question: tru
 export const starterCareRequestSchema = createSupportRequestRequestSchema.pick({ message: true, method: true });
 export const starterBartaResponseSchema = z.strictObject({ message: nonEmptyText(500), status: z.literal("not_connected") });
 const bartaErrorSchema = z.strictObject({ message: nonEmptyText(500) });
+const transcriptionErrorSchema = z.strictObject({
+  code: z.enum(["server-unconfigured", "server-busy", "server-failed", "too-long", "no-speech"]),
+  message: nonEmptyText(500),
+});
 export const currentBartaRequestSchema = z.union([bartaRequestSchema, starterBartaRequestSchema]);
 export const currentBartaResponseSchema = z.union([bartaAnswerSchema, starterBartaResponseSchema, bartaErrorSchema]);
 export const starterCareResponseSchema = z.strictObject({ message: nonEmptyText(500), status: z.literal("not_sent") });
@@ -233,6 +237,15 @@ export const currentApiContracts = {
     source: "src/app/api/ai/barta-audio/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
     request: bartaAudioRequestSchema,
     responses: { 200: z.instanceof(Uint8Array), 400: bartaErrorSchema, 403: bartaErrorSchema, 404: bartaErrorSchema, 429: bartaErrorSchema, 502: bartaErrorSchema, 503: bartaErrorSchema },
+  },
+  "POST /api/ai/transcribe": {
+    source: "src/app/api/ai/transcribe/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
+    request: z.instanceof(Uint8Array).refine(audio => audio.byteLength > 0 && audio.byteLength <= 3_000_000),
+    responses: {
+      200: z.strictObject({ text: z.string().max(2000), model: z.string() }),
+      400: transcriptionErrorSchema, 413: transcriptionErrorSchema, 415: transcriptionErrorSchema,
+      429: transcriptionErrorSchema, 502: transcriptionErrorSchema, 503: transcriptionErrorSchema,
+    },
   },
   "POST /api/tts/cartesia": {
     source: "src/app/api/tts/cartesia/route.ts", status: "Limited", owners: ["Iftee"], auth: "public",

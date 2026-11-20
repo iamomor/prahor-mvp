@@ -194,7 +194,7 @@ test("AAC speech and Barta microphone/read-aloud stop the previous owner; dictat
   await aac.getByRole("button", { name: "Listen aloud", exact: true }).click();
   await expect(barta.getByRole("button", { name: "Start microphone" })).toBeVisible();
   expect(await page.evaluate(() => Reflect.get(window, "day3Audio").aborted)).toBe(1);
-  await barta.getByRole("button", { name: "Read aloud", exact: true }).click();
+  await barta.getByRole("switch", { name: "Speaker", exact: true }).last().click();
   await expect(aac.getByRole("button", { name: "Stop reading", exact: true })).toHaveCount(0);
   expect(await page.evaluate(() => Reflect.get(window, "day3Audio").cancelled)).toBe(2);
   await barta.getByRole("button", { name: "Clear conversation" }).click();

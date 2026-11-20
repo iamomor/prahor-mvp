@@ -119,7 +119,7 @@ function isApprovedPublisher(publisher: string, address: string): boolean {
     const url = new URL(address);
     const approvedPath = url.pathname.startsWith(rule.path)
       || (publisher === "NHS" && [
-        "/symptoms/period-pain/", "/conditions/gestational-diabetes/",
+        "/symptoms/period-pain/", "/symptoms/diarrhoea-and-vomiting/", "/conditions/gestational-diabetes/",
         "/baby/caring-for-a-newborn/sudden-infant-death-syndrome-sids/",
         "/baby/caring-for-a-newborn/how-to-change-your-babys-nappy/",
         "/baby/caring-for-a-newborn/soothing-a-crying-baby/",

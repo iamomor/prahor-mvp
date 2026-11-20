@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { Check, FileCheck2 } from "lucide-react";
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
 
 import { fileSha256 } from "./sha256";
@@ -15,6 +16,10 @@ import { educationTopics } from "../barta/education-topics";
 type Pregnancy = { id: string; label: string };
 
 type Draft = { report: ExtractedReport; source: File; reportId: string };
+type Stage = "check" | "learn" | "save";
+const primary = "inline-flex min-h-12 items-center justify-center rounded-control bg-pro-primary px-5 py-3 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus disabled:opacity-60";
+const secondary = "inline-flex min-h-12 items-center justify-center rounded-control border border-pro-control-border px-4 py-3 font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus disabled:opacity-60";
+const control = "min-h-12 w-full min-w-0 rounded-field border border-pro-control-border bg-pro-bg px-3 py-3 text-pro-text focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus";
 
 export function AccountReportReview({
   pregnancies,
@@ -22,9 +27,10 @@ export function AccountReportReview({
   pregnancies: Pregnancy[];
 }) {
   const [draft, setDraft] = useState<Draft>();
+  const [fields, setFields] = useState<ExtractedReportField[]>([]);
+  const [stage, setStage] = useState<Stage>("check");
+  const [language, setLanguage] = useState<"bn" | "en">("bn");
   const [fieldId, setFieldId] = useState("");
-  const [value, setValue] = useState("");
-  const [unit, setUnit] = useState("");
   const [date, setDate] = useState("");
   const [pregnancyId, setPregnancyId] = useState(
     pregnancies.length === 1 ? pregnancies[0].id : "",
@@ -38,6 +44,7 @@ export function AccountReportReview({
   const snapshot = useRef<string | undefined>(undefined);
   const reviewFocus = useRef<HTMLHeadingElement>(null);
   const uploadFocus = useRef<HTMLHeadingElement>(null);
+
   const feedbackFocus = useRef<HTMLParagraphElement>(null);
 
   // OCR failed or found nothing: the mother types the printed value from the same image. rawValue stays empty, so it is never recorded as an OCR read.
@@ -99,9 +106,11 @@ export function AccountReportReview({
   const supported =
     draft?.report.fields.filter((item) => isHemoglobinLabel(item.label)) ?? [];
 
+
   async function save() {
     if (pending.current || !draft || !field || saved) return;
     if (!snapshot.current) {
+
       if (
         !pregnancyId ||
         !confirmed ||
@@ -121,9 +130,12 @@ export function AccountReportReview({
           "Check the pregnancy, printed value, g/dL unit and date, then confirm your review.",
         );
         requestAnimationFrame(() => feedbackFocus.current?.focus());
+
         return;
       }
+      const original = draft.report.fields.find((item) => item.id === field.id)!;
       snapshot.current = JSON.stringify({
+
         reportId: draft.reportId,
         pregnancyId,
         sourceSha256: draft.report.sourceFileId,
@@ -134,13 +146,13 @@ export function AccountReportReview({
         reviewedUnit: "g/dL",
         observedOn: date,
         confirmSave: true,
+
       });
       setLocked(true);
     }
-    pending.current = true;
-    setSaving(true);
-    setFeedback("Saving reviewed measurement…");
+    pending.current = true; setSaving(true); setFeedback(w("সংরক্ষণ করা হচ্ছে…", "Saving reviewed measurement…"));
     try {
+
       const response = await fetch("/api/reports/commit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -394,4 +406,5 @@ export function AccountReportReview({
       )}
     </div>
   );
+
 }

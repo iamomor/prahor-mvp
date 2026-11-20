@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { AACComposer } from "@/features/adapt";
+import { AACComposer, HeldAacText, VoiceDictationButton } from "@/features/adapt";
 import { NetworkStatus } from "@/components/pwa/NetworkStatus";
 import { useLanguage } from "@/i18n/use-language";
 import { translations } from "@/i18n/translations";
@@ -30,9 +30,10 @@ export function ConcernForm() {
   function toggleConcern(value: (typeof shonketConcernTypes)[number]) {
     setConcerns(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value]);
   }
+  const [heldAac, setHeldAac] = useState("");
   function insertAac(text: string) {
     const next = `${message}${message ? " " : ""}${text}`;
-    if (next.length > 1000) { setError(t(copy.form.aacLimitError)); messageRef.current?.focus(); return; }
+    if (next.length > 1000) { setHeldAac(text); return; }
     setMessage(next); setError("");
   }
   function review(event: FormEvent<HTMLFormElement>) {
@@ -95,10 +96,12 @@ export function ConcernForm() {
         {(["text", "aac", "call"] as const).map(value => <label key={value} className="flex min-h-11 items-center gap-3"><input type="radio" name="contact-method" value={value} checked={method === value} onChange={() => { setMethod(value); setError(""); }} className="size-5 accent-pro-primary" />{t(copy.values.method[value])}</label>)}
       </fieldset>
       {method === "aac" && <AACComposer onInsert={insertAac} targetLabel={t({ en: "Insert into message", bn: "বার্তায় যুক্ত করুন" })} />}
+      {heldAac && <HeldAacText text={heldAac} value={message} maxLength={1000} lang={language === "en" ? "en" : "bn"} onDismiss={() => setHeldAac("")} onAdd={next => { setMessage(next.replace("\n\n", " ")); setHeldAac(""); setError(""); messageRef.current?.focus(); }} />}
       <section className="grid gap-2" aria-labelledby="concern-message-heading">
         <h2 id="concern-message-heading" className="text-lg font-semibold">{t(copy.form.message)} <span aria-hidden="true">*</span><span className="sr-only"> {t(copy.form.required)}</span></h2>
         <label htmlFor="concern-message">{t(copy.form.messageHint)}</label>
         <textarea ref={messageRef} id="concern-message" value={message} onChange={event => { setMessage(event.currentTarget.value); setError(""); }} maxLength={1000} required aria-invalid={Boolean(error && !message.trim())} aria-describedby="concern-message-count" className="min-h-36 rounded-field border border-pro-control-border bg-pro-bg p-3 focus-visible:outline-3 focus-visible:outline-pro-focus" />
+        <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={message} maxLength={1000} onChange={next => { setMessage(next); setError(""); }} />
         <p id="concern-message-count" className="text-sm text-pro-muted">{new Intl.NumberFormat(language === "bn" ? "bn-BD" : "en-BD").format(message.length)}/1,000 {t(copy.form.chars)}</p>
       </section>
       <p className="text-sm text-pro-muted">{t(copy.form.legalPending)}</p>

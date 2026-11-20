@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { AppButton } from "@/components/ui/AppButton";
 import { AppCard } from "@/components/ui/AppCard";
 import { useLanguage } from "@/i18n/use-language";
+import { ReadAloudButton } from "@/features/adapt";
 import { saveWellnessEntry, shusthotaErrorCopy } from "./api";
 
 type Activity = "walking" | "assisted" | "seated" | "resting" | "other" | "none";
+const symbols: Record<string, string> = { walking: "🚶", assisted: "🤝", seated: "♿", resting: "🛌", other: "➕", none: "⛔" };
 const options: readonly { value: Activity; label: { en: string; bn: string } }[] = [
   { value: "walking", label: { en: "Walking", bn: "হাঁটা" } },
   { value: "assisted", label: { en: "Assisted activity", bn: "সহায়তা নিয়ে কাজকর্ম" } },
@@ -69,13 +71,13 @@ export function ActivityCheckIn({ onClose, onSaved }: { onClose: () => void; onS
             <fieldset aria-describedby={hintId} className="grid gap-3">
               <legend className="mb-3 font-medium text-pro-text">{t({ en: "Choose one option if you like.", bn: "ইচ্ছা হলে একটি বেছে নিন।" })}</legend>
               <p id={hintId} className="pro-muted leading-relaxed">{t(copy.instruction)}</p>
-              {options.map(option => <label key={option.value} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-field border border-pro-control-border bg-pro-elevated px-4 py-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus"><input type="radio" name="shusthota-activity-choice" value={option.value} checked={selected === option.value} onChange={() => setSelected(option.value)} className="size-5 shrink-0 accent-pro-primary" /><span>{t(option.label)}</span></label>)}
+              {options.map(option => <label key={option.value} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-field border border-pro-control-border bg-pro-elevated px-4 py-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus"><input type="radio" name="shusthota-activity-choice" value={option.value} checked={selected === option.value} onChange={() => setSelected(option.value)} className="size-5 shrink-0 accent-pro-primary" /><span aria-hidden="true" className="text-2xl">{symbols[option.value]}</span><span>{t(option.label)}</span></label>)}
             </fieldset>
             <div className="flex flex-col gap-3 border-t border-pro-border pt-4 sm:flex-row sm:flex-wrap"><AppButton disabled={!selected} onClick={() => setStep("review")}>{t({ en: "Review this choice", bn: "এই বাছাইটি দেখে নিন" })}</AppButton><AppButton variant="secondary" onClick={onClose}>{t(copy.skip)}</AppButton></div>
           </>
         ) : (
           <>
-            <div className="rounded-field border border-pro-border bg-pro-surface p-4"><p className="text-sm font-medium text-pro-muted">{t({ en: "Activity note", bn: "কাজকর্মের নোট" })}</p><p className="text-lg font-semibold">{selectedOption ? t(selectedOption.label) : ""}</p></div>
+            <div className="rounded-field border border-pro-border bg-pro-surface p-4"><p className="text-sm font-medium text-pro-muted">{t({ en: "Activity note", bn: "কাজকর্মের নোট" })}</p><p className="text-lg font-semibold">{selectedOption ? t(selectedOption.label) : ""}</p>{selectedOption && <ReadAloudButton text={t(selectedOption.label)} language={language === "en" ? "en" : "bn"} />}</div>
             <div className="flex flex-col gap-3 border-t border-pro-border pt-4 sm:flex-row sm:flex-wrap"><AppButton variant="secondary" onClick={() => { setStatus(null); setStep("choose"); }}>{t(copy.change)}</AppButton><AppButton disabled={saving || status?.kind === "success"} onClick={() => void save()}>{saving ? t(copy.saving) : t(status?.kind === "success" ? copy.saved : copy.save)}</AppButton><AppButton variant="ghost" onClick={onClose}>{t(copy.skip)}</AppButton></div>
           </>
         )}

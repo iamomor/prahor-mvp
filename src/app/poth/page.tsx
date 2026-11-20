@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function PothPage() {
-  return <main id="poth-main"><PothDirectoryMvp /></main>;
+  return <div id="poth-main"><PothDirectoryMvp /></div>;
 }

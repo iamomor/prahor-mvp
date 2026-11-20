@@ -138,6 +138,14 @@ verification; text remains available.
 
 | Method/path | Status | Inputs | Outcomes and limits |
 | --- | --- | --- | --- |
+| `POST /api/auth/phone` | Limited; public same-origin | Bangladesh E.164 number for OTP request, or number + 6–8 digit token for verification | 202 means OTP request accepted by Supabase, not delivered; verified response requires a Supabase session. Assisted-worker authorization is not available (501). |
+| `GET /api/notifications/preferences` | Limited; mother | None | Reads per-account SMS/push opt-in choices. `providerConfigured:false`; no notification is sent. |
+| `PUT /api/notifications/preferences` | Limited; mother | `{channel:'sms'|'push',optedIn:boolean}` | Persists the mother's choice only. No sender, provider receipt, retry queue or delivery claim exists. |
+| `GET /api/poth/access-evidence` | Limited; public | 1–20 repeated `facilityId` values | Returns only database-verified claims; absent claims remain `unknown`. Imported directory values are not promoted. |
+| `GET /api/poth/access-evidence/review` | Limited; signed-in | None | Returns whether the database lists this account as an authorized Poth reviewer. |
+| `POST /api/poth/access-evidence/review` | Limited; reviewer | Facility, allowlisted attribute/value, verification state and source | Database membership is rechecked on every write. Admin-managed membership is required; browser self-assignment is unavailable. |
+| `POST /api/reports/reviews` | Limited; mother | Report/pregnancy/field IDs, source hash, raw and corrected values, date, explicit decision | Stores an immutable owner-bound review. This does not save a health observation. |
+| `POST /api/reports/commit` | Limited; mother | `{reviewId,fieldId,confirmSave:true}` | Server commits only an owner-verified maternal hemoglobin in `g/dL`; retries return the same observation. Other fields are rejected. |
 | `GET /api/poth/facilities` | Limited; public | q <=120, district <=100, limit 1–100 | 200 `{facilities,sourceType:'reviewed-import',bookingAvailable:false}` or 400 `{error}`. The supplied reviewed dataset is empty; no invented entries or booking. |
 | `GET /api/poth/nearby` | Limited; public | explicit Bangladesh lat/lon and allowed radius 1–20 km | 200 `{places,truncated,source:'openstreetmap-unverified',cached}` or 400/429/503 `{error}`. Community data is separate from reviewed directory data; provider tags do not verify clinical services or accessibility. No booking. |
 
@@ -292,7 +300,7 @@ All steps require owner auth. Only the proposed `prohor-synthetic-lab-v1` PDF te
 | `POST /api/reports/extract` | `startExtractionRequestSchema` with owned document UUID | `{extractionId,status:"queued"}`, 202; only after verified upload bytes exist |
 | `GET /api/reports/extractions/:id` | Owned extraction path UUID | `ExtractionResult`, 200; bounded failure codes, no raw engine stack |
 | `POST /api/reports/extractions/:id/reviews` | `reviewExtractionRequestSchema` | Immutable review `{reviewId,revision,destination}`, 201 |
-| `POST /api/reports/commit` | Current limited synthetic hemoglobin request uses report/pregnancy UUIDs, SHA-256 source hash, raw field, reviewed value and date, and `confirmSave:true` | `{saved:true,observationId}`, 200 for first commit or identical retry. A broader document review contract remains proposed. |
+| `POST /api/reports/commit` | Current limited synthetic hemoglobin flow uses a previously stored `reviewId`, `fieldId`, and `confirmSave:true` | `{saved:true,observationId}`, 200 for first commit or identical retry. `POST /api/reports/reviews` stores the mother's immutable review separately before commit. |
 
 Uploading bytes uses Supabase authenticated Storage with owner/path policies, not an invented multipart endpoint. Metadata request does not mean upload succeeded. Extraction state is `queued / processing / review_required / failed`; only completed reviewable extraction returns fields. Field output preserves raw label/value/unit, nullable typed measurement, nullable confidence, uncertainty reasons, page/locator, and `verification:"unverified"`. Confidence is an engine signal, never clinical correctness.
 

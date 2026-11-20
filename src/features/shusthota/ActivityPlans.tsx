@@ -5,6 +5,7 @@ import { Award, CheckCircle2, ChevronRight, FileCheck, ShieldAlert, Stethoscope 
 import { AppButton } from "@/components/ui/AppButton";
 import { useLanguage } from "@/i18n/use-language";
 import styles from "./ShusthotaOverview.module.css";
+import { useModalFocus } from "@/components/accessibility/useModalFocus";
 import {
   getPublishedActivityPlans, type ClinicianApprovedPlan,
 } from "./reviewed-content";
@@ -48,6 +49,7 @@ export function ActivityPlans() {
   const { language, t } = useLanguage();
   const id = useId();
   const [activePlan, setActivePlan] = useState<ClinicianApprovedPlan | null>(null);
+  const dialogRef = useModalFocus<HTMLDivElement>(activePlan !== null, () => setActivePlan(null));
 
   const plans = getPublishedActivityPlans(language === "bn" ? "bn" : "en");
 
@@ -136,6 +138,7 @@ export function ActivityPlans() {
       {/* Plan Detail Modal */}
       {activePlan && (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={`${id}-plan-title`}

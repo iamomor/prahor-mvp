@@ -42,6 +42,7 @@ import { emptyRoleProfile, RoleProfileFields } from "./RoleProfileFields";
 import { SignOutButton } from "./SignOutButton";
 import "./account.css";
 
+
 const snapshotSchema = z.strictObject({
   account: accountAccessSchema,
   connections: z.array(supporterConnectionSchema),
@@ -61,6 +62,7 @@ export function AccountWorkspace({
   const router = useRouter();
   const [account, setAccount] = useState<AccountAccess | null>(null);
   const [connections, setConnections] = useState<SupporterConnection[]>([]);
+  const [activity, setActivity] = useState<z.infer<typeof activitySchema>>([]);
   const [profile, setProfile] = useState(emptyRoleProfile);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -119,8 +121,10 @@ export function AccountWorkspace({
     if (accountId.current && accountId.current !== snapshot.account.userId)
       throw new Error("account-changed");
     accountId.current = snapshot.account.userId;
+
     setAccount(snapshot.account);
     setConnections(snapshot.connections);
+
     if (!snapshot.account.onboarded) {
       const purposes: SignupPurpose[] = snapshot.account.roles
         .filter((r) => r.status === "approved" && r.role !== "provider")
@@ -320,6 +324,7 @@ export function AccountWorkspace({
       reviewConfirmed: reviewed,
     });
   }
+
   const initial = account?.displayName.trim().charAt(0).toUpperCase() || "•";
   const banner =
     message === "saved"
@@ -1113,4 +1118,5 @@ export function AccountWorkspace({
     </div>
     </div>
   );
+
 }

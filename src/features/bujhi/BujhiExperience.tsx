@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
 import { useEffect, useRef, useState } from "react";
 import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 import { demoUser, getDemoObservations, getDemoWorkspace, saveDemoObservations, type HealthObservation } from "@/features/jibonrekha/demo-health";
@@ -145,7 +146,7 @@ export function BujhiExperience() {
   return <div lang="bn" className="min-h-dvh bg-pro-bg text-pro-text">
     <header className="border-b border-pro-border px-4 py-3"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2 font-semibold"><Link href="/" className="text-lg text-pro-primary">প্রহর</Link><span className="border-l border-pro-border pl-2">বুঝি</span></div><div className="flex items-center gap-2"><AccessPreferencesControl compact /><Link href="/faq" className="inline-flex min-h-11 items-center rounded-field border border-pro-danger px-3 text-sm font-semibold text-pro-danger">জরুরি সহায়তা</Link></div></div></header>
     <p className="border-b border-pro-info bg-pro-info-soft px-4 py-2 text-center text-sm font-semibold text-pro-info">♧ ডেমো তথ্য — এটি কাল্পনিক। কোনো প্রকৃত চিকিৎসক এটি দেখবেন না।</p>
-    <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 pb-24 sm:px-6 lg:pb-10">
+    <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 pb-24 sm:px-6 lg:pb-10">
       {view !== "home" && <button type="button" onClick={() => go("home")} className="w-fit min-h-11 font-semibold text-pro-primary underline">← বুঝি-তে ফিরুন</button>}
       {view !== "home" && view !== "states" && <StepBar view={view} />}
       {!online && <p role="status" className="rounded-field border border-pro-warning bg-pro-warning-soft p-4 text-pro-warning">ইন্টারনেট নেই। এই নমুনা ডিভাইসেই যাচাই হয়; স্থানীয় সংরক্ষণ চলতে পারে। অ্যাকাউন্টে কিছু পাঠানো হয়নি।</p>}
@@ -154,6 +155,7 @@ export function BujhiExperience() {
 
       {view === "home" && <div className="mx-auto grid w-full max-w-2xl gap-6">
         <div><h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold">রিপোর্ট বুঝি</h1><p className="mt-2 max-w-[60ch]">রিপোর্টের লেখা আপনার চোখের সামনে রেখে, আপনি মিলিয়ে, তবেই সংরক্ষণ।</p></div>
+        <ModuleFeatureOverview module="bujhi" />
         <section className="grid gap-3 rounded-card border border-pro-border bg-pro-surface p-5"><h2 className="text-xl font-semibold">ঘরে করা কিটের ফল বুঝি</h2><p>কিটে কী দেখেছেন, তিনটি ছোট ধাপে বলুন। ফল রেকর্ডে নিজে থেকে যাবে না।</p><Link href="/demo/bujhi/kit" className={`${primary} inline-flex items-center justify-center`}>কিটের ফল বুঝি →</Link></section>
         <div className="rounded-field border border-pro-info bg-pro-info-soft p-4 font-semibold text-pro-info">এখন একটি কাল্পনিক নমুনা রিপোর্টের ধরন (prohor-synthetic-lab-v1) পড়া যায়। আসল রিপোর্ট এখানে দেবেন না।</div>
         <button type="button" onClick={() => go("upload")} className={primary}>⇧ রিপোর্ট দিন</button>
@@ -187,6 +189,6 @@ export function BujhiExperience() {
 
       {view === "states" && <div className="mx-auto grid w-full max-w-2xl gap-4"><h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold">সব অবস্থার ব্যাখ্যা</h1><p>এগুলো এই ডেমোর সম্ভাব্য অবস্থা ও কাজের পথের উদাহরণ; আপনার ফাইলে সব ঘটেছে এমন দাবি নয়।</p>{[["প্রথমবার, কোনো রিপোর্ট নেই", "নমুনা PDF দিয়ে শুরু করুন, অথবা নিজে লিখুন।"], ["ভুল ফাইলের ধরন বা ফাইল অনেক বড়", "শুধু ৫ MB পর্যন্ত PDF; অন্য ফাইল বাছুন।"], ["আংশিক বা কিছুই পড়া যায়নি", "এই ডেমো এক নমুনার সঙ্গে ফাইল মিলিয়ে দেখে। নিজে টাইপ করার পথ আছে।"], ["অফলাইন", "নমুনা আগে থেকে ডিভাইসে থাকলে স্থানীয় যাচাই ও সংরক্ষণ চলতে পারে।"], ["সব লাইন বাদ", "কিছু সংরক্ষণ হবে না।"], ["অ্যাকাউন্ট সেশন বা সংস্করণ বদলেছে", "অ্যাকাউন্টে সংরক্ষণ আলাদা সীমিত পথ; এই স্থানীয় ডেমোতে সার্ভার নিশ্চিতকরণ দেখানো হয় না।"]].map(([title, detail]) => <section key={title} className={card}><h2 className="font-semibold">{title}</h2><p className="mt-2">{detail}</p></section>)}<button type="button" onClick={() => go("upload")} className={primary}>রিপোর্ট দিন</button></div>}
       <p className="mx-auto w-full max-w-3xl border-t border-pro-border pt-4 text-sm text-pro-muted">এটি শিক্ষামূলক ডেমো তথ্য, চিকিৎসকের পরামর্শের বিকল্প নয়। রোগ নির্ণয় বা চিকিৎসার সিদ্ধান্ত এখান থেকে নেবেন না।</p>
-    </main>
+    </div>
   </div>;
 }

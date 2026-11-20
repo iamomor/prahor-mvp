@@ -114,6 +114,8 @@ function sentence(action: string, actor: "mother" | "provider", count: number): 
     case "request.delivered": return { who: "system", text: w("Delivered to the demo queue", "ডেমো তালিকায় পৌঁছেছে") };
     case "request.acknowledged": return { who: "provider", text: w("A simulated provider acknowledged it", "একজন সিমুলেটেড সেবাদাতা গ্রহণ করেছেন") };
     case "request.responded": return { who: "provider", text: w("A simulated provider replied", "একজন সিমুলেটেড সেবাদাতা উত্তর দিয়েছেন") };
+    case "request.consent_created": return { who: "you", text: w("You approved sending this request", "আপনি এই অনুরোধ পাঠাতে সম্মত হয়েছেন") };
+    case "request.access_denied": return { who: "system", text: w("An access attempt after sharing stopped was blocked", "শেয়ার বন্ধ হওয়ার পর একটি প্রবেশের চেষ্টা আটকানো হয়েছে") };
     case "request.permission_revoked": return { who: "you", text: w("You stopped sharing", "আপনি শেয়ার বন্ধ করেছেন") };
     case "request.closed": return actor === "mother" ? { who: "you", text: w("You closed the request", "আপনি অনুরোধ বন্ধ করেছেন") }
       : { who: "provider", text: w("A simulated provider closed the request", "একজন সিমুলেটেড সেবাদাতা অনুরোধ বন্ধ করেছেন") };

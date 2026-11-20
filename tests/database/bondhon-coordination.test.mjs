@@ -241,7 +241,7 @@ test("latest Bujhi reviewed hemoglobin can be shared with its exact selected pro
 
 function shonketParams(extra = {}) {
   return { p_message: "Synthetic concern for test", p_method: "text", p_concern_types: ["fever", "other"],
-    p_onset: "today", p_idempotency_key: randomUUID(), ...extra };
+    p_onset: "today", p_language: "bn", p_review_confirmed: true, p_idempotency_key: randomUUID(), ...extra };
 }
 test("Shonket request retry, owner/provider isolation, open evidence, revision acknowledgement and private projection", async () => {
   const input = shonketParams();
@@ -258,8 +258,8 @@ test("Shonket request retry, owner/provider isolation, open evidence, revision a
   assert.equal(Number((await db.query("select count(*) as n from prohor_care.support_requests where workflow='shonket'")).rows[0].n), 1);
   await assert.rejects(() => rpc("provider", "mvp_shonket_submit_request", shonketParams()));
   await assert.rejects(() => asUser(null, tx => tx.query(
-    "select public.mvp_shonket_submit_request($1,$2,$3::text[],$4,$5)",
-    ["Synthetic", "text", [], null, randomUUID()]), "anon"), { code: "42501" });
+    "select public.mvp_shonket_submit_request($1,$2,$3::text[],$4,$5,$6,$7)",
+    ["Synthetic", "text", [], null, "bn", true, randomUUID()]), "anon"), { code: "42501" });
 
   await assert.rejects(() => asUser(users.mother, tx => tx.query(
     "insert into prohor_care.support_requests(owner_user_id,recipient_user_id,message,method,purpose) values($1,$2,'Direct insert','text','No')",
@@ -309,6 +309,7 @@ test("Shonket request retry, owner/provider isolation, open evidence, revision a
   assert.equal(mine[0].status, "acknowledged");
   assert.deepEqual(mine[0].events.map(event => event.status), ["submitted", "delivered", "acknowledged"]);
   const providerProjection = await rpc(assignedProvider, "mvp_shonket_open_request", { p_id: request.id });
+  assert.equal(providerProjection.consent, undefined);
   assert.deepEqual(Object.keys(providerProjection).sort(), ["id", "createdAt", "updatedAt", "revision", "status", "message", "method", "concernTypes", "onset", "events"].sort());
   for (const secret of [users.mother, "diary", "chat", "healthRecords", "consentedRecords"])
     assert.equal(JSON.stringify(providerProjection).includes(secret), false);
@@ -318,6 +319,114 @@ test("Shonket rejects unknown categories and blank messages and denies anonymous
   await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", shonketParams({ p_concern_types: ["invented"] })));
   await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", shonketParams({ p_message: "  " })));
   await assert.rejects(() => asUser(null, tx => tx.query(
-    "select public.mvp_shonket_submit_request($1,$2,$3::text[],$4,$5)",
-    ["Synthetic", "text", [], null, randomUUID()])), { code: "42501" });
+    "select public.mvp_shonket_submit_request($1,$2,$3::text[],$4,$5,$6,$7)",
+    ["Synthetic", "text", [], null, "bn", true, randomUUID()])), { code: "42501" });
+});
+
+async function submitShonket(extra = {}) {
+  const request = await rpc("mother", "mvp_shonket_submit_request", shonketParams(extra));
+  const row = (await db.query("select recipient_user_id from prohor_care.support_requests where id=$1", [request.id])).rows[0];
+  return { request, provider: row.recipient_user_id === users.provider ? "provider" : "foreignProvider" };
+}
+const auditCount = async (id, action) => Number((await db.query(
+  "select count(*) as n from prohor_care.audit_events where resource_id=$1 and action=$2", [id, action])).rows[0].n);
+
+test("Shonket submit requires explicit review confirmation and a valid language", async () => {
+  await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", shonketParams({ p_review_confirmed: false })), { code: "22023" });
+  await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", shonketParams({ p_review_confirmed: null })), { code: "22023" });
+  await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", shonketParams({ p_language: "fr" })), { code: "22023" });
+});
+
+test("Shonket submit records a 30-day, no-reply, record-free consent and audits it", async () => {
+  const { request } = await submitShonket();
+  const row = (await db.query("select * from prohor_care.request_permissions where request_id=$1", [request.id])).rows[0];
+  assert.equal(row.terms_version, "shonket-demo-2026-11-20");
+  assert.equal(row.allow_replies, false);
+  assert.deepEqual(row.selection, []);
+  const days = (new Date(row.expires_at) - Date.now()) / 86400000;
+  assert.ok(days > 29.9 && days <= 30);
+  assert.equal(request.consent.revokedAt, null);
+  assert.equal(await auditCount(request.id, "request.consent_created"), 1);
+  assert.equal(Number((await db.query("select count(*) as n from prohor_care.request_grants where request_id=$1", [request.id])).rows[0].n), 0);
+});
+
+test("revoke immediately blocks provider list, open, acknowledge and events; denial is audited once per attempt", async () => {
+  const { request, provider } = await submitShonket();
+  const other = provider === "provider" ? "foreignProvider" : "provider";
+  const opened = await rpc(provider, "mvp_shonket_open_request", { p_id: request.id });
+  assert.equal(opened.status, "delivered");
+  await assert.rejects(() => rpc("other", "mvp_shonket_revoke_request", { p_id: request.id }), { code: "P0002" });
+  await assert.rejects(() => rpc(provider, "mvp_shonket_revoke_request", { p_id: request.id }));
+  const revoked = await rpc("mother", "mvp_shonket_revoke_request", { p_id: request.id });
+  assert.ok(revoked.consent.revokedAt);
+  assert.equal(revoked.consent.version, 2);
+  assert.equal((await rpc("mother", "mvp_shonket_revoke_request", { p_id: request.id })).consent.version, 2);
+  assert.equal(await auditCount(request.id, "request.permission_revoked"), 1);
+  assert.equal((await rpc(provider, "mvp_shonket_provider_requests", { p_limit: 50 })).some(item => item.id === request.id), false);
+  assert.deepEqual(await rpc(provider, "mvp_shonket_open_request", { p_id: request.id }), { denied: true });
+  assert.equal(await auditCount(request.id, "request.access_denied"), 1);
+  assert.deepEqual(await rpc(provider, "mvp_care_acknowledge", { p_id: request.id, p_expected_revision: opened.revision, p_idempotency_key: randomUUID() }), { denied: true });
+  assert.deepEqual(await rpc(provider, "mvp_care_respond", { p_id: request.id, p_expected_revision: opened.revision, p_message: "x", p_idempotency_key: randomUUID() }), { denied: true });
+  assert.equal(await auditCount(request.id, "request.access_denied"), 1); // repeat denials within 5 minutes are not re-audited
+  await assert.rejects(() => rpc(provider, "mvp_care_request_events", { p_id: request.id }), { code: "P0002" });
+  // A provider who was never assigned learns nothing and leaves no audit trail about the mother.
+  await assert.rejects(() => rpc(other, "mvp_shonket_open_request", { p_id: request.id }), { code: "P0002" });
+  assert.equal(await auditCount(request.id, "request.access_denied"), 1); // repeat denials within 5 minutes are not re-audited
+  assert.equal((await rpc("mother", "mvp_shonket_my_requests", { p_limit: 50 })).find(item => item.id === request.id).status, "delivered");
+});
+
+test("expired Shonket consent is denied even though the permission row still exists", async () => {
+  const { request, provider } = await submitShonket();
+  await db.query("update prohor_care.request_permissions set expires_at=clock_timestamp()-interval '1 second' where request_id=$1", [request.id]);
+  assert.equal((await rpc(provider, "mvp_shonket_provider_requests", { p_limit: 50 })).some(item => item.id === request.id), false);
+  assert.deepEqual(await rpc(provider, "mvp_shonket_open_request", { p_id: request.id }), { denied: true });
+  assert.equal(await auditCount(request.id, "request.access_denied"), 1);
+});
+
+test("a Shonket request with no permission row fails closed, and the old consent-free submit signature is gone", async () => {
+  const { request, provider } = await submitShonket();
+  await db.query("delete from prohor_care.request_permissions where request_id=$1", [request.id]);
+  assert.equal((await rpc(provider, "mvp_shonket_provider_requests", { p_limit: 50 })).some(item => item.id === request.id), false);
+  assert.deepEqual(await rpc(provider, "mvp_shonket_open_request", { p_id: request.id }), { denied: true });
+  const old = (await db.query("select to_regprocedure('public.mvp_shonket_submit_request(text,text,text[],text,uuid)') as f")).rows[0].f;
+  assert.equal(old, null);
+});
+
+test("Shonket permission allows only the request itself: no replies, no records, no mother identity", async () => {
+  const { request, provider } = await submitShonket();
+  const opened = await rpc(provider, "mvp_shonket_open_request", { p_id: request.id });
+  const acked = await rpc(provider, "mvp_care_acknowledge", { p_id: request.id, p_expected_revision: opened.revision, p_idempotency_key: randomUUID() });
+  await assert.rejects(() => rpc(provider, "mvp_care_respond", { p_id: request.id, p_expected_revision: acked.revision, p_message: "Reply", p_idempotency_key: randomUUID() }));
+  await assert.rejects(() => rpc("mother", "mvp_care_follow_up", { p_id: request.id, p_expected_revision: acked.revision, p_message: "Hi", p_idempotency_key: randomUUID() }), { code: "42501" });
+  assert.equal(JSON.stringify(opened).includes(users.mother), false);
+  assert.equal(["consentedRecords", "diary", "chat"].some(key => JSON.stringify(opened).includes(key)), false);
+});
+
+test("anonymous and provider callers cannot revoke or submit Shonket requests", async () => {
+  await assert.rejects(() => asUser(null, tx => tx.query("select public.mvp_shonket_revoke_request($1)", [randomUUID()]), "anon"), { code: "42501" });
+  await assert.rejects(() => rpc("provider", "mvp_shonket_revoke_request", { p_id: randomUUID() }));
+});
+
+test("revoking an older Shonket request with no permission row records a revoked state; replay with another language conflicts", async () => {
+  const { request, provider } = await submitShonket();
+  await db.query("delete from prohor_care.request_permissions where request_id=$1", [request.id]);
+  const revoked = await rpc("mother", "mvp_shonket_revoke_request", { p_id: request.id });
+  assert.ok(revoked.consent.revokedAt);
+  assert.equal(await auditCount(request.id, "request.permission_revoked"), 1);
+  assert.deepEqual(await rpc(provider, "mvp_shonket_open_request", { p_id: request.id }), { denied: true });
+  const input = shonketParams();
+  await rpc("mother", "mvp_shonket_submit_request", input);
+  await assert.rejects(() => rpc("mother", "mvp_shonket_submit_request", { ...input, p_language: "en" }), { code: "PT409" });
+});
+
+test("denial audits are rate limited per actor and request", async () => {
+  const { request, provider } = await submitShonket();
+  await rpc("mother", "mvp_shonket_revoke_request", { p_id: request.id });
+  for (let i = 0; i < 5; i++) await rpc(provider, "mvp_shonket_open_request", { p_id: request.id });
+  assert.equal(await auditCount(request.id, "request.access_denied"), 1);
+});
+
+test("the migration can be applied twice without error", async () => {
+  const sql = await readFile(new URL("../../supabase/migrations/20261120200000_shonket_consent_enforcement.sql", import.meta.url), "utf8");
+  await db.exec(sql);
 });

@@ -181,6 +181,12 @@ export const shonket = {
     requestId: { en: "Request ID", bn: "অনুরোধ নম্বর" }, concernTypes: { en: "Concern types", bn: "সহায়তার বিষয়" },
     contact: { en: "Preferred contact", bn: "যোগাযোগের পছন্দ" }, message: { en: "Message", bn: "বার্তা" },
     events: { en: "Verified status events", bn: "যাচাই করা অবস্থার ঘটনা" }, refresh: { en: "Refresh requests", bn: "অনুরোধ রিফ্রেশ করুন" },
+    sharing: { en: "Sharing with the demo provider", bn: "ডেমো সেবাদাতার সঙ্গে শেয়ার" },
+    endsOn: { en: "Allowed until", bn: "অনুমতি আছে" },
+    stopped: { en: "Stopped. The provider can no longer open this request.", bn: "বন্ধ করা হয়েছে। সেবাদাতা আর এই অনুরোধ খুলতে পারবেন না।" },
+    stopSharing: { en: "Stop sharing this request", bn: "এই অনুরোধ শেয়ার বন্ধ করুন" },
+    revokeError: { en: "Sharing could not be stopped. Nothing was changed; try again.", bn: "শেয়ার বন্ধ করা যায়নি। কিছু বদলায়নি; আবার চেষ্টা করুন।" },
+    noPermission: { en: "This older request has no saved permission, so the provider cannot open it.", bn: "এই পুরোনো অনুরোধে কোনো সংরক্ষিত অনুমতি নেই, তাই সেবাদাতা এটি খুলতে পারবেন না।" },
   },
   provider: {
     eyebrow: { en: "SHONKET · SIMULATED WORKFLOW", bn: "সংকেত · অনুকরণ করা ব্যবস্থা" },

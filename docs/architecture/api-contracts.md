@@ -92,6 +92,7 @@ of the contract, not merely the body type.**
 | `GET /api/care-requests/:id/coordination` | Limited Bondhon coordination detail; Omor + Samin | Request participant; UUID path id; no body or query parameters | 200 v1 Bondhon detail containing request, messages, grants and audit; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; mother/provider projection is restricted by current request authorization |
 | `POST /api/care-requests/:id/messages` | Limited Bondhon follow-up; Omor + Samin | Request participant; exact Origin, JSON body `message` 1–2000 plus positive `expectedRevision`, UUID `Idempotency-Key` | 200 v1 updated Bondhon detail; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; revision and retry key are verified before the follow-up is persisted |
 | `POST /api/care-requests/:id/revoke` | Limited Bondhon request revocation; Omor + Samin | Confirmed mother; exact Origin, UUID path id; no body or query parameters | 200 v1 updated Bondhon detail; 400/401/403/404/409/503 v1 errors | Cookie-bound RPC; only the request owner can revoke future coordination access |
+| `POST /api/care-requests/:id/shonket-revoke` | Limited Shonket consent withdrawal; Omor + Samin | Confirmed mother; exact Origin, UUID path id; no body or query parameters | 200 v1 Shonket request with `consent.revokedAt`; 400/401/403/404/503 v1 errors | Cookie-bound RPC; only the owner can revoke; provider access stops on the next call |
 
 All current outcomes use `Cache-Control: no-store` (private canonical endpoints use
 `private, no-store`). Public Barta does not require a Content-Type header.
@@ -421,6 +422,7 @@ non-emergency simulated request path. Full connected-UI QA follows integration.
 | `GET /api/care-requests/:id/coordination` | Owner or active assigned approved provider | Bondhon: request, message thread, and (owner only) grants and audit; provider gets no grants/audit |
 | `POST /api/care-requests/:id/messages` | Owner or assigned provider; `followUpRequestSchema` + retry key | Bondhon: follow-up persists only while the request permission allows replies and is unexpired/unrevoked; stale revision returns 409 |
 | `POST /api/care-requests/:id/revoke` | Owner; UUID, no body | Bondhon: revokes the request permission so later provider reads/writes fail; cannot recall content already viewed |
+| `POST /api/care-requests/:id/shonket-revoke` | Owner; UUID, no body | Shonket: revokes the 30-day request permission; idempotent; cannot recall content already viewed |
 
 Mother explicitly chooses recipient, message, purpose, exact record fields and finite consent expiry, reviews them, then sends. A grant is one resource with a typed field allowlist. No `all_records`, raw document, diary or AI scope exists in v1. A request can contain zero grant IDs when only its mother-approved message is sent. Grant IDs must belong to that mother and recipient, be active, and have matching purposes; the request grant join enforces integrity. Expired/revoked grants must not be replaced by copied snapshots.
 

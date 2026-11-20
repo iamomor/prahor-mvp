@@ -6,6 +6,7 @@ export * from "./health";
 export * from "./barta";
 export * from "./bujhi";
 export * from "./wellness";
+export * from "./shusthota-p1";
 export * from "./poth";
 export * from "./shonket";
 export * from "./bondhon";

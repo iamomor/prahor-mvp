@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { AACComposer, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
 import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
+import { ChevronDown, LayoutGrid } from "lucide-react";
+import { NetworkStatus } from "@/components/pwa/NetworkStatus";
 import { detectBartaLanguage } from "./chat-language";
 import { BartaEducationChat } from "./BartaEducationChat";
 import { educationCopy, type Language } from "./barta-education-copy";
 import { bartaDemoQuestions, getBartaDemoLanguage } from "./demo-questions";
+import styles from "./barta-education.module.css";
 
 type ChatState =
   | { status: "idle" | "checking" }
@@ -39,7 +42,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
   const pendingRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
   const [turns, setTurns] = useState<Turn[]>([]);
-  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? prefs.language : answerLanguage;
+  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? "en" : answerLanguage;
   const [previousChunkId, setPreviousChunkId] = useState<string>();
   const [state, setState] = useState<ChatState>({ status: "idle" });
   const busy = state.status === "checking";
@@ -60,15 +63,18 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
   }
 
   const symbolsOpen = aacOpen ?? prefs.communication === "aac";
-  const aacSection = <section className="pro-card mb-5 max-w-prose" aria-label="Alternative question input">
+  const chatCopy = educationCopy[formLanguage];
+  const aacSection = <section className={styles.symbolPanel} aria-label={chatCopy.useSymbols} lang={formLanguage}>
     <details id="barta-symbol-input" open={symbolsOpen} onToggle={event => setAacOpen(event.currentTarget.open)}>
-      <summary ref={symbolSummary} className="min-h-12 cursor-pointer font-semibold">Picture-and-text communication · ছবি ও লেখা (AAC)</summary>
-      <AACComposer onInsert={insertText} targetLabel="Insert into question / প্রশ্নে যুক্ত করুন" />
+      <summary ref={symbolSummary}><LayoutGrid size={18} aria-hidden="true" /><span>{chatCopy.useSymbols} · AAC</span><ChevronDown size={18} aria-hidden="true" /></summary>
+      <AACComposer onInsert={insertText} targetLabel={chatCopy.insertQuestion} />
     </details>
-    {storedDraft && <div className="mt-3 grid gap-2"><p>Saved AAC draft: {storedDraft}</p>
-      <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>Insert saved AAC draft</button>
-      <button type="button" className="pro-btn pro-btn-secondary" onClick={clearStoredAacDraft}>Dismiss saved AAC draft</button></div>}
-    {incoming && <div role="alert"><p>The combined question exceeds 1200 characters. Your draft is unchanged. Review this incoming text and shorten your question before inserting:</p><p className="whitespace-pre-wrap">{incoming}</p></div>}
+    {storedDraft && <div className={styles.savedDraft}><p>{chatCopy.savedAacDraft}: {storedDraft}</p>
+      <div className={styles.helpActions}>
+        <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>{chatCopy.insertSavedAac}</button>
+        <button type="button" className="pro-btn pro-btn-secondary" onClick={clearStoredAacDraft}>{chatCopy.dismissSavedAac}</button>
+      </div></div>}
+    {incoming && <div role="alert" className={styles.savedDraft}><p>{chatCopy.aacLimit}</p><p className="whitespace-pre-wrap">{incoming}</p></div>}
   </section>;
 
   useEffect(() => () => {
@@ -174,7 +180,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
 
   if (!demo) {
     return (
-      <>{aacSection}<BartaEducationChat languageChoice={answerLanguage} formLanguage={formLanguage}
+      <><NetworkStatus message={educationCopy[formLanguage].offline} /><BartaEducationChat symbolPanel={aacSection}languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
         question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
         onLanguage={setAnswerLanguage}
         onQuestion={setQuestion}

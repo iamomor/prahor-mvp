@@ -16,3 +16,9 @@ test-results/
 /tmp/hero-regression-results/
 /tmp/hero-test-results/
 /tmp/hero-verification/
+.vercel
+.env*
+
+# Copied from node_modules by scripts/copy-ocr-assets.mjs
+/public/ocr/worker.min.js
+/public/ocr/tesseract-core-*.js

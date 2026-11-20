@@ -13,19 +13,20 @@ import {
 } from "../contracts/bondhon";
 import { type ApiError, contractVersion, idSchema, timestampSchema } from "../contracts/common";
 import { paginationQuerySchema, pageSchema } from "../contracts/transport";
+import { shonketProviderQueueSchema, shonketRequestCreateSchema, shonketRequestListSchema, shonketRequestSchema } from "../contracts/shonket-requests";
 
 /** Local routes; database adoption and hosted acceptance are separate gates. */
 export type CareOperation = "recipients" | "create-consent" | "revoke-consent" | "create-request" |
   "request-detail" | "request-events" | "provider-list" | "acknowledge" | "respond" | "close" |
-  "request-list" | "shareable-records" | "coordination-detail" | "follow-up" | "revoke-request";
+  "request-list" | "shareable-records" | "coordination-detail" | "follow-up" | "revoke-request" | "shonket-open" | "shonket-revoke";
 export type CareDependencies = {
   createClient: () => Promise<SupabaseClient | null>;
   siteUrl?: string;
 };
 const readOperations = new Set<CareOperation>(["recipients", "request-detail", "request-events", "provider-list", "request-list", "shareable-records", "coordination-detail"]);
-const providerOperations = new Set<CareOperation>(["provider-list", "acknowledge", "respond"]);
-const motherOperations = new Set<CareOperation>(["recipients", "create-consent", "revoke-consent", "create-request", "request-list", "shareable-records", "revoke-request"]);
-const pathOperations = new Set<CareOperation>(["revoke-consent", "request-detail", "request-events", "acknowledge", "respond", "close", "coordination-detail", "follow-up", "revoke-request"]);
+const providerOperations = new Set<CareOperation>(["provider-list", "acknowledge", "respond", "shonket-open"]);
+const motherOperations = new Set<CareOperation>(["recipients", "create-consent", "revoke-consent", "create-request", "request-list", "shareable-records", "revoke-request", "shonket-revoke"]);
+const pathOperations = new Set<CareOperation>(["revoke-consent", "request-detail", "request-events", "acknowledge", "respond", "close", "coordination-detail", "follow-up", "revoke-request", "shonket-open", "shonket-revoke"]);
 const retryOperations = new Set<CareOperation>(["create-consent", "create-request", "acknowledge", "respond", "close", "follow-up"]);
 const providerCursorSchema = z.strictObject({ createdAt: timestampSchema, id: idSchema });
 const revisionCursorSchema = z.string().regex(/^[1-9]\d{0,9}$/).transform(Number).pipe(z.number().int().max(2147483647));
@@ -91,7 +92,7 @@ export async function handleCare(
       return fail("conflict", 409, "Your signed-in account changed. Reload and review before continuing.");
     }
     let input: unknown;
-    if (!reading && !["revoke-consent", "revoke-request"].includes(operation)) {
+    if (!reading && !["revoke-consent", "revoke-request", "shonket-revoke"].includes(operation)) {
       if (!request.headers.get("content-type")?.startsWith("application/json")) return fail("invalid_request", 400, "Send a JSON request.");
       try { input = await boundedJson(request); } catch { return fail("invalid_request", 400, "Send a valid request within the supported size."); }
     } else if (request.body !== null) {
@@ -110,9 +111,12 @@ export async function handleCare(
     }
     const query = queryInput(request);
     if (query === null) return fail("invalid_request", 400, "Use each query parameter once.");
+    const shonketList = (operation === "request-list" || operation === "provider-list") && query.workflow === "shonket";
     if (!["provider-list", "request-events", "request-list"].includes(operation) && Object.keys(query).length > 0) {
       return fail("invalid_request", 400, "This operation accepts no query parameters.");
     }
+    if (shonketList && Object.keys(query).some(key => !["workflow", "limit"].includes(key)))
+      return fail("invalid_request", 400, "Use only the supported workflow and result limit.");
     let rpcName: string;
     let params: Record<string, unknown>;
     let responseSchema: z.ZodType;
@@ -164,6 +168,22 @@ export async function handleCare(
         break;
       }
       case "create-request": {
+        const isShonket = input !== null && typeof input === "object" &&
+          ("concernTypes" in input || "onset" in input);
+        if (isShonket) {
+          const parsed = shonketRequestCreateSchema.safeParse(input);
+          if (!parsed.success) return fail("invalid_request", 400, "Review the concern, message, onset and contact method.");
+          rpcName = "mvp_shonket_submit_request";
+          params = { p_message: parsed.data.message, p_method: parsed.data.method,
+            p_concern_types: parsed.data.concernTypes, p_onset: parsed.data.onset, p_language: parsed.data.language,
+            p_review_confirmed: parsed.data.reviewConfirmed, p_idempotency_key: retryKey };
+          responseSchema = shonketRequestSchema.refine(stored => stored.message === parsed.data.message &&
+            stored.method === parsed.data.method && stored.onset === parsed.data.onset &&
+            stored.concernTypes.length === parsed.data.concernTypes.length &&
+            stored.concernTypes.every((value, index) => value === parsed.data.concernTypes[index]));
+          created = true;
+          break;
+        }
         const parsed = createSupportRequestRequestSchema.safeParse(input);
         if (!parsed.success) return fail("invalid_request", 400, "Review the recipient, message, purpose, explicit permission and expiry.");
         const value = parsed.data;
@@ -195,6 +215,15 @@ export async function handleCare(
         break;
       case "request-list":
       case "provider-list": {
+        if (shonketList) {
+          const limit = z.coerce.number().int().min(1).max(50).safeParse(query.limit ?? "50");
+          if (!limit.success) return fail("invalid_request", 400, "Use a result limit between 1 and 50.");
+          rpcName = operation === "request-list" ? "mvp_shonket_my_requests" : "mvp_shonket_provider_requests";
+          params = { p_limit: limit.data };
+          responseSchema = operation === "request-list" ? shonketRequestListSchema : shonketProviderQueueSchema;
+          break;
+        }
+        if (Object.hasOwn(query, "workflow")) return fail("invalid_request", 400, "Use a supported request workflow.");
         const parsed = paginationQuerySchema.safeParse(query);
         if (!parsed.success) return fail("invalid_request", 400, "Use a supported page limit and cursor.");
         let cursor: z.infer<typeof providerCursorSchema> | null = null;
@@ -234,6 +263,18 @@ export async function handleCare(
           supportRequestSchema.refine(value => value.ownerUserId === actorId && value.id === resourceId && value.status === "closed");
         break;
       }
+      case "shonket-open":
+        if (input === null || typeof input !== "object" || Array.isArray(input) || Object.keys(input).length > 0)
+          return fail("invalid_request", 400, "Opening a request accepts an empty JSON object.");
+        rpcName = "mvp_shonket_open_request";
+        params = { p_id: resourceId };
+        responseSchema = shonketRequestSchema;
+        break;
+      case "shonket-revoke":
+        rpcName = "mvp_shonket_revoke_request";
+        params = { p_id: resourceId };
+        responseSchema = shonketRequestSchema.refine(value => value.id === resourceId && !!value.consent?.revokedAt);
+        break;
     }
     const result = await client.rpc(rpcName, params);
     if (result.error) {
@@ -244,6 +285,9 @@ export async function handleCare(
       if (["22023", "23514", "23502", "22P02", "22008"].includes(code)) return fail("invalid_request", 400, "Review the request fields and try again.");
       return unavailable();
     }
+    // The open RPC returns a denial (instead of raising) so its audit row commits; never reveal why.
+    if ((result.data as { denied?: unknown } | null)?.denied === true)
+      return fail("not_found", 404, "This resource is unavailable.");
     const parsed = responseSchema.safeParse(result.data);
     if (!parsed.success) return unavailable();
     return respond({ data: parsed.data, requestId, contractVersion }, created ? 201 : 200);

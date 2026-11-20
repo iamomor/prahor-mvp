@@ -4,6 +4,7 @@ import type { ProhorAccessPreferences, ProhorTheme } from "../../lib/access-pref
 import { useAdaptPreferences } from "@/features/adapt/hooks/useAdaptPreferences";
 import { CloudSyncSection } from "@/features/adapt/components/CloudSyncSection";
 import { ContrastPreferenceControl } from "./ContrastPreferenceControl";
+import { hasApprovedEasyRead } from "@/features/adapt/lib/easy-read";
 
 const THEME_LABELS: Record<ProhorTheme, string> = {
   "quiet-garden": "Quiet Garden",
@@ -87,7 +88,9 @@ export function AccessPreferencesPanel({ titleId = "access-title" }: { titleId?:
           [
             ["spaciousLayout", "More space between controls"],
             ["reducedMotion", "Reduce animation"],
-            ["simplifiedContent", "Reviewed simpler wording where available"],
+            ["readAloud", "Show Listen buttons (audio plays only when pressed)"],
+            // Easy Read appears only when a human-approved entry exists (features/adapt/lib/easy-read.ts).
+            ...(hasApprovedEasyRead() ? [["simplifiedContent", "Easy Read where a reviewed version exists"] as const] : []),
           ] as const
         ).map(([id, label]) => (
           <label
@@ -96,7 +99,7 @@ export function AccessPreferencesPanel({ titleId = "access-title" }: { titleId?:
           >
             <input
               type="checkbox"
-              checked={prefs[id]}
+              checked={prefs[id] === true}
               onChange={(e) => update(id, e.target.checked)}
             />
             <span>{label}</span>

@@ -47,6 +47,11 @@ Accessible authentication without puzzle-only CAPTCHA or needlessly memorizing/t
 9. Offline/reconnect: no false delivery, no lost drafts, safe retries.
 10. Privacy: provider/supporter cannot read unshared notes; revoked consent actually blocks access.
 
+## Implementation, evidence and outstanding validation
+- How it is built: [../accessibility/README.md](../accessibility/README.md)
+- What is verified, with test results: [../accessibility/EVIDENCE.md](../accessibility/EVIDENCE.md)
+- Human, clinical and device checks still required: [../accessibility/VALIDATION_PLAN.md](../accessibility/VALIDATION_PLAN.md)
+
 ## Canonical references
 - https://www.w3.org/TR/WCAG22/
 - https://www.w3.org/WAI/ARIA/apg/

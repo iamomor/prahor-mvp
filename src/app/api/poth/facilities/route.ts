@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
 import { directoryQuerySchema } from "@/lib/contracts/poth-current";
+import { parseDirectoryQuery, searchDirectory } from "@/features/poth/directoryCore";
+import { getPothDiscovery } from "@/features/poth/discoveryStore";
 import { getPothFacilities } from "@/features/poth/pothFacilityStore";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  if (url.searchParams.has("view")) {
+    if (url.searchParams.getAll("view").length !== 1 || url.searchParams.get("view") !== "discovery") {
+      return NextResponse.json({ error: "Invalid directory view." }, { status: 400, headers: { "Cache-Control": "no-store" } });
+    }
+    const params = new URLSearchParams(url.searchParams); params.delete("view");
+    const query = parseDirectoryQuery(params);
+    if (!query) return NextResponse.json({ error: "Invalid directory filters." }, { status: 400, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(searchDirectory(getPothDiscovery(), query), { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } });
+  }
   const parsed = directoryQuerySchema.safeParse({
     q: url.searchParams.get("q") ?? "",
     district: url.searchParams.get("district") ?? "",

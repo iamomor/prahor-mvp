@@ -22,4 +22,5 @@ export const nearbyResponseSchema = z.strictObject({
     address: z.string().nullable(), phone: z.string().nullable(), website: z.url().nullable(), hours: z.string().nullable(),
     emergencyTagged: z.boolean(), locationPrecision: z.enum(["mapped-point", "feature-center"]),
   })), truncated: z.boolean(), source: z.literal("openstreetmap-unverified"), cached: z.boolean(),
+  dataMode: z.enum(["saved-snapshot", "live-plus-snapshot"]).optional(), retrievedAt: z.string().nullable().optional(),
 });

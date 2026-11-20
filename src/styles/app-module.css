@@ -19,7 +19,7 @@
 .app-module h1:lang(bn) { line-height: 1.35; letter-spacing: 0; }
 
 /* Module header: eyebrow, h1, lead. Put class="module-hero" on the header or section. */
-.module-hero { display: grid; gap: 0.5rem; max-width: 48rem; margin-bottom: 0.25rem; }
+.module-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-width: 48rem; margin-bottom: 0.25rem; overflow-wrap: anywhere; }
 .module-hero > p:first-child,
 .app-module [class*="pageHeader"] > p:first-child {
   margin: 0;

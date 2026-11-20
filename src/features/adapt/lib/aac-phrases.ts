@@ -5,10 +5,10 @@
  * - Natural, understandable Bengali and English sentence templates.
  * - Never create awkward concatenated strings like "😣 pain · 🫃 belly · 🙏 help".
  * - Preserve exact user intent — never invent symptoms, clinical diagnoses, or unsolicited advice.
- * - Support Symptoms, Body areas, Requests, and Feelings.
+ * - Support Symptoms, Body areas, Requests, Feelings, and Talking with me (how to communicate).
  */
 
-export type AACCategory = "symptoms" | "body-areas" | "requests" | "feelings";
+export type AACCategory = "symptoms" | "body-areas" | "requests" | "feelings" | "talking";
 
 export type AACPhraseItem = {
   id: string;
@@ -286,6 +286,123 @@ export const AAC_CATALOG: AACCatalogCategory[] = [
       },
     ],
   },
+  {
+    id: "talking",
+    labelEn: "Talking with me",
+    labelBn: "আমার সঙ্গে কথা বলা",
+    descriptionEn: "How to talk with me, and how I will answer",
+    descriptionBn: "আমার সঙ্গে কীভাবে কথা বলবেন, আর আমি কীভাবে উত্তর দেব",
+    items: [
+      {
+        id: "please_wait",
+        category: "talking",
+        emoji: "✋",
+        labelEn: "Please wait",
+        labelBn: "অপেক্ষা করুন",
+        enFragment: "Please wait a moment for me.",
+        bnFragment: "অনুগ্রহ করে আমার জন্য একটু অপেক্ষা করুন।",
+      },
+      {
+        id: "say_again",
+        category: "talking",
+        emoji: "🔁",
+        labelEn: "Say it again",
+        labelBn: "আবার বলুন",
+        enFragment: "Please say that again.",
+        bnFragment: "অনুগ্রহ করে আবার বলুন।",
+      },
+      {
+        id: "speak_slowly",
+        category: "talking",
+        emoji: "🐢",
+        labelEn: "Speak slowly",
+        labelBn: "ধীরে বলুন",
+        enFragment: "Please speak slowly.",
+        bnFragment: "অনুগ্রহ করে ধীরে ধীরে বলুন।",
+      },
+      {
+        id: "write_it",
+        category: "talking",
+        emoji: "✍️",
+        labelEn: "Write it down",
+        labelBn: "লিখে দিন",
+        enFragment: "Please write it down for me.",
+        bnFragment: "অনুগ্রহ করে আমাকে লিখে দিন।",
+      },
+      {
+        id: "show_me",
+        category: "talking",
+        emoji: "👉",
+        labelEn: "Show me",
+        labelBn: "দেখিয়ে বলুন",
+        enFragment: "Please show me with a picture or by pointing.",
+        bnFragment: "অনুগ্রহ করে ছবি বা আঙুল দিয়ে দেখিয়ে বলুন।",
+      },
+      {
+        id: "explain",
+        category: "talking",
+        emoji: "💬",
+        labelEn: "Explain please",
+        labelBn: "বুঝিয়ে বলুন",
+        enFragment: "Please explain what this means.",
+        bnFragment: "অনুগ্রহ করে এর মানে বুঝিয়ে বলুন।",
+      },
+      {
+        id: "not_understand",
+        category: "talking",
+        emoji: "🤔",
+        labelEn: "I don't understand",
+        labelBn: "বুঝতে পারছি না",
+        enFragment: "I do not understand.",
+        bnFragment: "আমি বুঝতে পারছি না।",
+      },
+      {
+        id: "understand",
+        category: "talking",
+        emoji: "👍",
+        labelEn: "I understand",
+        labelBn: "বুঝেছি",
+        enFragment: "I understand.",
+        bnFragment: "আমি বুঝেছি।",
+      },
+      {
+        id: "pause_talk",
+        category: "talking",
+        emoji: "⏸️",
+        labelEn: "Stop for a moment",
+        labelBn: "একটু থামুন",
+        enFragment: "Please stop for a moment. I need a short break.",
+        bnFragment: "অনুগ্রহ করে একটু থামুন। আমার একটু বিরতি দরকার।",
+      },
+      {
+        id: "my_way",
+        category: "talking",
+        emoji: "⌨️",
+        labelEn: "I answer by typing",
+        labelBn: "লিখে উত্তর দেব",
+        enFragment: "I will answer by typing or with pictures.",
+        bnFragment: "আমি লিখে বা ছবি দিয়ে উত্তর দেব।",
+      },
+      {
+        id: "privacy",
+        category: "talking",
+        emoji: "🚪",
+        labelEn: "Talk in private",
+        labelBn: "একান্তে কথা",
+        enFragment: "I would like to talk in private.",
+        bnFragment: "আমি একান্তে কথা বলতে চাই।",
+      },
+      {
+        id: "interpreter",
+        category: "talking",
+        emoji: "🤟",
+        labelEn: "Sign interpreter",
+        labelBn: "ইশারা ভাষার দোভাষী",
+        enFragment: "I need a sign language interpreter.",
+        bnFragment: "আমার একজন ইশারা ভাষার দোভাষী দরকার।",
+      },
+    ],
+  },
 ];
 
 /** Lookup map for quick item resolution by ID */
@@ -308,7 +425,7 @@ export function generateNaturalPhrase(
 
   const bodyAreas = items.filter((x) => x.category === "body-areas");
   const symptoms = items.filter((x) => x.category === "symptoms");
-  const requests = items.filter((x) => x.category === "requests");
+  const requests = items.filter((x) => x.category === "requests" || x.category === "talking");
   const feelings = items.filter((x) => x.category === "feelings");
 
   if (language === "bn") {

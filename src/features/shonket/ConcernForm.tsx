@@ -49,7 +49,7 @@ export function ConcernForm() {
       const response = await fetch("/api/care-requests", {
         method: "POST", cache: "no-store",
         headers: { "Content-Type": "application/json", "Idempotency-Key": retryKey.current },
-        body: JSON.stringify({ message, method, concernTypes: concerns, onset }),
+        body: JSON.stringify({ message, method, concernTypes: concerns, onset, language, reviewConfirmed: true }),
       });
       const body = await response.json().catch(() => null) as { data?: unknown; error?: { message?: string } } | null;
       const parsed = shonketRequestSchema.safeParse(body?.data);

@@ -25,6 +25,7 @@
 
 .warningActions { align-items: flex-start; }
 .warningActions h2 { flex-basis: 100%; margin: 0; font-size: clamp(1.25rem, 3vw, 1.65rem); line-height: 1.3; }
+.warningActions :global(.pro-btn) { max-width: 100%; white-space: normal; text-align: center; }
 
 .experience :global(.border-pro-border) {
   border-color: var(--pro-control-border);
@@ -1680,3 +1681,6 @@
     transform: none;
   }
 }
+
+.detailArticle ul { margin: 0.5rem 0 0.75rem; padding-inline-start: 1.5rem; list-style: disc; display: grid; gap: 0.5rem; line-height: var(--pro-leading-body); }
+.detailArticle section { margin-block: 1.25rem; }

@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/check-env.mjs",
+    "predev": "node scripts/check-env.mjs && node scripts/copy-ocr-assets.mjs",
     "dev": "next dev",
     "check:env": "node scripts/check-env.mjs",
     "test:env": "node --test tests/config/env-report.test.mjs",
-    "test:adapt": "node --test src/features/adapt/lib/*.test.mjs",
+
+    "prebuild": "node scripts/copy-ocr-assets.mjs",
+
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",

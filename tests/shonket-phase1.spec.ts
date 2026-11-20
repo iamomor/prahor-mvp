@@ -19,7 +19,7 @@ test("warning topics expose direct emergency, human and editable Barta actions",
     await expect(page.getByRole("link", { name: "Call 999 now" })).toHaveAttribute("href", "tel:999");
     await expect(page.getByRole("link", { name: "Ask a person for help" })).toHaveAttribute("href", "/app/care/new");
     await expect(page.getByRole("link", { name: "Read about this in Barta" })).toHaveAttribute("href", `/ask?q=${encodeURIComponent(question)}`);
-    await expect(page.getByText("Clinician-reviewed information is not available yet.")).toBeVisible();
+    await expect(page.getByText("SOURCE-LINKED DRAFT · NOT CLINICIAN-REVIEWED")).toBeVisible();
   }
 });
 

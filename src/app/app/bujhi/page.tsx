@@ -2,7 +2,6 @@ import { requireWorkspace } from "@/lib/auth/require-workspace";
 import Link from "next/link";
 import { BujhiTasks } from "@/features/bujhi/BujhiTasks";
 import { redirect } from "next/navigation";
-import { BujhiTasks } from "@/features/bujhi/BujhiTasks";
 import { AccountReportReview } from "@/features/bujhi/AccountReportReview";
 import { MedicalEntry } from "@/features/bujhi/MedicalEntry";
 import { createServerSupabase } from "@/lib/supabase/server";

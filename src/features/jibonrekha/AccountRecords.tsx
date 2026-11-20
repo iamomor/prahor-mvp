@@ -14,6 +14,7 @@ import { filterAccountHistory } from "./account-history";
 import type { GuideSelection } from "./account-records-model";
 
 import { accountSourceLabel } from "./account-provenance";
+import { recordKindLabel, useL } from "./use-l";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
 
 import { selectAccountPregnancy as selectAccountPregnancyFn } from "./account-records-model";

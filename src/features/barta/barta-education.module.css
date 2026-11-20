@@ -197,7 +197,7 @@
 }
 /* The whole field shows focus; the outline lives on the container so it frames the toolbar too. */
 .composer:has(textarea:focus-visible) { outline: 2px solid var(--pro-focus); outline-offset: 3px; }
-.layout .composer textarea:focus-visible { outline: none; }
+.layout .composer textarea:focus-visible { outline: 2px solid var(--pro-focus); outline-offset: 1px; }
 .composer[data-listening] { border-color: var(--pro-primary); box-shadow: inset 0 0 0 1px var(--pro-primary); }
 .form textarea {
   display: block;

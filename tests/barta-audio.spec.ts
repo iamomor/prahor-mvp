@@ -8,6 +8,7 @@ test("dictation fills an editable draft and the speaker starts muted", async ({ 
     Object.defineProperty(window, "bartaAudioTest", { value: tracker });
     class RecognitionStub {
       lang = "";
+      processLocally = false;
       onresult?: (event: { results: { transcript: string }[][] }) => void;
       onend?: () => void;
       start() { tracker.startedLocale = this.lang; }
@@ -16,6 +17,7 @@ test("dictation fills an editable draft and the speaker starts muted", async ({ 
         this.onend?.();
       }
       abort() { this.onend?.(); }
+      static available = async () => "available";
     }
     Object.defineProperty(window, "SpeechRecognition", { value: RecognitionStub });
     Object.defineProperty(window, "speechSynthesis", {
@@ -39,9 +41,9 @@ test("dictation fills an editable draft and the speaker starts muted", async ({ 
   await page.getByLabel(/Answer language|উত্তরের ভাষা/).selectOption("en");
   await expect(page.getByLabel("Speech language")).toHaveValue("auto");
   await expect(page.getByText(/Auto uses the language of your draft/)).toBeVisible();
-  await page.getByRole("button", { name: "Start microphone" }).press("Enter");
+  await page.getByRole("button", { name: "Speak instead of typing" }).press("Enter");
   await expect(page.getByRole("button", { name: "Ask Barta" })).toBeDisabled();
-  await page.getByRole("button", { name: "Stop microphone" }).press("Enter");
+  await page.getByRole("button", { name: "Stop" }).press("Enter");
   const question = page.getByRole("textbox", { name: "Your question" });
   await expect(question).toHaveValue("What does ANC mean?");
   await expect(question).toBeFocused();
@@ -54,7 +56,7 @@ test("dictation fills an editable draft and the speaker starts muted", async ({ 
   }).bartaAudioTest);
   const read = page.getByRole("switch", { name: "Speaker" }).last();
   await expect(read).toBeVisible();
-  expect(await tracker()).toMatchObject({ read: "", startedLocale: "en-GB" });
+  expect(await tracker()).toMatchObject({ read: "", startedLocale: "en-US" });
   await read.press("Enter");
   await expect.poll(tracker).toMatchObject({ read: expect.stringContaining("antenatal care"), spokenLocale: "en-GB" });
   await expect(read).toHaveAttribute("aria-checked", "true");
@@ -114,11 +116,15 @@ test("a narrow composer exposes explicit Bangla dictation and keeps the draft wh
   await page.addInitScript(() => {
     class RecognitionStub {
       lang = "";
+      processLocally = false;
       onerror?: (event: { error: string }) => void;
+      onend?: () => void;
       start() {
         Object.defineProperty(window, "bartaMicLocale", { value: this.lang });
         this.onerror?.({ error: "not-allowed" });
+        this.onend?.();
       }
+      static available = async () => "available";
     }
     Object.defineProperty(window, "SpeechRecognition", { value: RecognitionStub });
   });
@@ -127,9 +133,9 @@ test("a narrow composer exposes explicit Bangla dictation and keeps the draft wh
   const draft = page.getByRole("textbox", { name: "Your question" });
   await draft.fill("An editable draft");
   await page.getByLabel("Speech language").selectOption("bn");
-  const microphone = page.getByRole("button", { name: "Start microphone" });
+  const microphone = page.getByRole("button", { name: "লেখার বদলে বলুন" });
   await microphone.press("Enter");
-  await expect(page.getByText(/Microphone access is blocked/)).toBeVisible();
+  await expect(page.getByText(/Microphone permission was denied/)).toBeVisible();
   await expect(draft).toHaveValue("An editable draft");
   expect(await page.evaluate(() => Reflect.get(window, "bartaMicLocale"))).toBe("bn-BD");
   expect(await microphone.evaluate((button) => button.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
@@ -228,12 +234,13 @@ test("opt-in speaks typed and AAC-drafted turns in order on mobile", async ({ pa
 
   await page.getByLabel("Answer language").selectOption("bn");
   const banglaConversation = page.getByRole("region", { name: "বার্তার কথোপকথন" });
-  await banglaConversation.getByRole("link", { name: "ছবি দিয়ে বলুন" }).press("Enter");
-
   const aac = page.locator("#barta-symbol-input");
-  await aac.getByRole("button", { name: /^Pain \(ব্যথা\)/ }).press("Enter");
-  const composedMessage = aac.getByRole("textbox", { name: /Your sentence/ });
-  await expect(composedMessage).not.toHaveValue("");
+  await expect(aac).toBeVisible({ timeout: 5000 });
+  await aac.getByRole("tab", { name: /অনুরোধ/ }).click();
+  await aac.getByRole("button", { name: /সাহায্য চাই/ }).click();
+  const composedMessage = aac.getByRole("textbox", { name: /Your sentence|আপনার বাক্য/ });
+  await expect(composedMessage).toBeVisible();
+  await expect(composedMessage).toHaveValue("আমাকে সাহায্য করুন।");
   await composedMessage.fill("আমার একটি প্রশ্ন আছে।");
   await aac.getByRole("button", { name: "আমার প্রশ্নে যোগ করুন" }).click();
 
@@ -290,6 +297,7 @@ test("Barta language choices are independent and dictation highlights interim wo
     type Segment = [{ transcript: string }] & { isFinal: boolean };
     class Recognition {
       lang = "";
+      processLocally = false;
       continuous = false;
       interimResults = false;
       onend?: () => void;
@@ -297,6 +305,7 @@ test("Barta language choices are independent and dictation highlights interim wo
       start() { Reflect.set(window, "bartaTestRecognizer", this); }
       stop() { this.onend?.(); }
       abort() {}
+      static available = async () => "available";
     }
     Reflect.set(window, "SpeechRecognition", Recognition);
     Reflect.set(window, "bartaTestDictate", (parts: [string, boolean][]) => {
@@ -323,26 +332,26 @@ test("Barta language choices are independent and dictation highlights interim wo
   await expect(answerLanguage).toHaveValue("en");
   const question = page.getByRole("textbox", { name: "Your question" });
   await question.fill("Existing draft");
-  await page.getByRole("button", { name: "Start microphone" }).press("Enter");
+  await page.getByRole("button", { name: /লেখার বদলে বলুন/ }).press("Enter");
   const settings = await page.evaluate(() => {
     const { lang, continuous, interimResults } = Reflect.get(window, "bartaTestRecognizer");
     return { lang, continuous, interimResults };
   });
-  expect(settings).toEqual({ lang: "bn-BD", continuous: true, interimResults: true });
+  expect(settings).toEqual({ lang: "bn-BD", continuous: false, interimResults: true });
 
-  const preview = page.getByRole("region", { name: "Live transcript" });
+  const preview = page.getByRole("region", { name: /Live transcript|লাইভ ট্রান্সক্রিপ্ট/ });
   const speak = (parts: [string, boolean][]) => page.evaluate((items) => Reflect.get(window, "bartaTestDictate")(items), parts);
   await speak([["আমার", false]]);
   await expect(preview.locator("mark")).toHaveText("আমার");
   await expect(question).toHaveValue("Existing draft");
   await speak([["আমার প্রশ্ন", true], ["আছে", false]]);
-  await expect(preview).toContainText("আমার প্রশ্ন");
+  await expect(question).toHaveValue("Existing draft আমার প্রশ্ন");
   await expect(preview.locator("mark")).toHaveText("আছে");
   await speak([["আমার প্রশ্ন", true], ["আছে।", true], ["অস্থায়ী", false]]);
   await expect(preview.locator("mark")).toHaveText("অস্থায়ী");
-  await page.getByRole("button", { name: "Stop microphone" }).press("Enter");
+  await page.getByRole("button", { name: /থামান/ }).press("Enter");
   await expect(preview).toHaveCount(0);
-  await expect(question).toHaveValue("Existing draft\n\nআমার প্রশ্ন আছে।");
+  await expect(question).toHaveValue("Existing draft আমার প্রশ্ন আছে।");
   await expect(question).toBeEditable();
   expect(sent).toBe(0);
   await page.getByRole("button", { name: "Ask Barta" }).press("Enter");

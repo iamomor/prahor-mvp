@@ -28,7 +28,7 @@
  * - No preference reduces healthcare access.
  * - Every status uses icon + text, never colour alone.
  */
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import {
   Check,
   RotateCcw,
@@ -54,6 +54,7 @@ import { AppCard } from "@/components/ui/AppCard";
 import type { ProhorTheme } from "../types/adapt.types";
 import { useLanguage } from "@/i18n/use-language";
 import { translations } from "@/i18n/translations";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
 
 const THEME_OPTIONS: { id: ProhorTheme; label: string; labelBn: string; swatch: string }[] = [
   { id: "quiet-garden", label: "Quiet Garden", labelBn: "শান্ত বাগান", swatch: "var(--pro-primary)" },
@@ -123,7 +124,9 @@ export function AdaptSettingsPanel() {
   const { prefs, reading, updatePref, updateReading, resetAll } = useAdaptPreferences();
   const { language, setLanguage, t } = useLanguage();
   const [announcement, setAnnouncement] = useState("");
+  const [cartesiaConsent, setCartesiaConsent] = useState(false);
   const uid = useId();
+  useEffect(() => { const timer = window.setTimeout(() => setCartesiaConsent(localStorage.getItem("prohor-cartesia-cloud-consent-v1") === "yes"), 0); return () => window.clearTimeout(timer); }, []);
 
   function announce(msg: string) {
     setAnnouncement("");
@@ -148,6 +151,7 @@ export function AdaptSettingsPanel() {
 
   return (
     <div className="space-y-[var(--pro-gap-group)]">
+      <ModuleFeatureOverview module="adapt" />
       {/* Page intro */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold text-pro-text" lang={language}>
@@ -215,6 +219,13 @@ export function AdaptSettingsPanel() {
             ))}
           </div>
         </fieldset>
+      </SettingsSection>
+
+      <SettingsSection id={`${uid}-cloud-voice`} icon={<Volume2 size={18} />} titleEn="Cloud voice (Cartesia)" titleBn="ক্লাউড কণ্ঠ (Cartesia)">
+        <label className="flex cursor-pointer items-start gap-3 rounded-field border border-pro-control-border p-4 hover:bg-pro-surface focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus">
+          <input type="checkbox" checked={cartesiaConsent} onChange={(event) => { const enabled = event.target.checked; setCartesiaConsent(enabled); if (enabled) localStorage.setItem("prohor-cartesia-cloud-consent-v1", "yes"); else localStorage.removeItem("prohor-cartesia-cloud-consent-v1"); }} className="mt-0.5 accent-pro-primary" />
+          <div><span className="font-semibold text-pro-text">{language === "bn" ? "Cartesia ক্লাউডে লেখা পাঠানোর অনুমতি" : "Allow text to be sent to Cartesia"}</span><p className="mt-0.5 text-sm text-pro-muted">{language === "bn" ? "শুধু শোনার বোতাম চাপলে নির্বাচিত লেখা Cartesia-তে যাবে। এটি এই ডিভাইসে সংরক্ষিত; যেকোনো সময় বন্ধ করা যায়।" : "Only the selected text is sent to Cartesia after you press Listen. This choice stays on this device and can be revoked any time."}</p></div>
+        </label>
       </SettingsSection>
 
       {/* 2. Contrast */}
@@ -618,8 +629,8 @@ export function AdaptSettingsPanel() {
                 "readAloud",
                 e.target.checked,
                 language === "bn"
-                  ? (e.target.checked ? "শোনার বোতাম দেখানো হবে।" : "শোনার বোতাম আর আগে থেকে দেখানো হবে না।")
-                  : (e.target.checked ? "Listen buttons will be shown." : "Listen buttons are no longer shown by default."),
+                  ? (e.target.checked ? "শোনার বোতাম দেখানো হবে।" : "শোনার বোতাম সব জায়গায় লুকানো হবে। লেখা আগের মতোই থাকবে।")
+                  : (e.target.checked ? "Listen buttons will be shown." : "Listen buttons are hidden everywhere. All text stays available."),
               )
             }
             className="mt-0.5 accent-pro-primary"

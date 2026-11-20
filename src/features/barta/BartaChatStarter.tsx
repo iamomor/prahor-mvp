@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { AACComposer, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
+import { AACComposer, HeldAacText, VoiceDictationButton, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
 import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
 import { NetworkStatus } from "@/components/pwa/NetworkStatus";
 import { detectBartaLanguage } from "./chat-language";
@@ -63,7 +63,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
         <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>{chatCopy.insertSavedAac}</button>
         <button type="button" className="pro-btn pro-btn-secondary" onClick={clearStoredAacDraft}>{chatCopy.dismissSavedAac}</button>
       </div></div>}
-    {incoming && <div role="alert" className={styles.savedDraft}><p>{chatCopy.aacLimit}</p><p className="whitespace-pre-wrap">{incoming}</p></div>}
+    {incoming && <HeldAacText text={incoming} value={question} maxLength={1200} lang={formLanguage === "bn" ? "bn" : "en"} onDismiss={() => setIncoming("")} onAdd={next => { setQuestion(next); setIncoming(""); clearStoredAacDraft(); questionInput.current?.focus(); }} />}
   </section>;
 
   useEffect(() => () => {
@@ -175,9 +175,8 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
         question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
         onLanguage={setAnswerLanguage}
         onQuestion={setQuestion}
-        onDictation={insertText}
-        onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} />
-      </div>
+          onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} />
+        </div>
     );
   }
 
@@ -215,6 +214,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
               setState({ status: "idle" });
             }}
             maxLength={1200} required />
+          <VoiceDictationButton language={formLanguage} value={question} maxLength={1200} onChange={next => { setQuestion(next); setState({ status: "idle" }); }} focusTargetRef={questionInput} />
         </div>
         <button type="submit" className="pro-btn pro-btn-primary w-fit" disabled={busy || !question.trim()} lang="en">
           {busy ? "Checking…" : "Ask PROHOR"}

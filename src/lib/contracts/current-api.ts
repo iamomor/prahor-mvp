@@ -108,18 +108,53 @@ export const currentApiContracts = {
   },
   "POST /api/reports/commit": {
     source: "src/app/api/reports/commit/route.ts", status: "Limited", owners: ["Ifty", "Omor"], auth: "mother",
-    request: z.strictObject({
-      reportId: z.string().uuid(), pregnancyId: z.string().uuid(),
-      sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
-      rawLabel: z.string().min(1).max(120), rawValue: z.string().max(40), rawUnit: z.string().max(20),
-      reviewedValue: z.string().regex(/^[0-9]{1,3}(\.[0-9]{1,2})?$/),
-      reviewedUnit: z.literal("g/dL"), observedOn: z.iso.date(), confirmSave: z.literal(true),
-    }),
+    request: z.strictObject({ reviewId: z.uuid(), fieldId: z.uuid(), confirmSave: z.literal(true) }),
     responses: {
       200: z.strictObject({ saved: z.literal(true), observationId: z.string().uuid() }),
       400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema,
       409: starterHealthResponseSchema, 503: starterHealthResponseSchema,
     },
+  },
+  "POST /api/reports/reviews": {
+    source: "src/app/api/reports/reviews/route.ts", status: "Limited", owners: ["Ifty", "Omor"], auth: "mother",
+    request: z.strictObject({
+      reportId: z.uuid(), pregnancyId: z.uuid(), fieldId: z.uuid(), sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
+      rawLabel: z.string().trim().min(1).max(120), rawValue: z.string().max(40), rawUnit: z.string().max(20),
+      reviewedValue: z.string().max(40), reviewedUnit: z.string().max(20), observedOn: z.iso.date(),
+      decision: z.enum(["verified", "pending", "rejected"]),
+    }),
+    responses: { 201: z.strictObject({ reviewId: z.uuid(), fieldId: z.uuid(), decision: z.enum(["verified", "pending", "rejected"]), savedToAccount: z.literal(false) }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 409: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "POST /api/auth/phone": {
+    source: "src/app/api/auth/phone/route.ts", status: "Limited", owners: ["Omor", "Apurbo"], auth: "public",
+    request: z.union([
+      z.strictObject({ action: z.literal("request"), phone: z.string().regex(/^\+8801[3-9][0-9]{8}$/), assistedBy: z.uuid().optional() }),
+      z.strictObject({ action: z.literal("verify"), phone: z.string().regex(/^\+8801[3-9][0-9]{8}$/), token: z.string().regex(/^[0-9]{6,8}$/) }),
+    ]),
+    responses: { 200: z.strictObject({ code: z.literal("phone-verified"), accountId: z.uuid(), onboardingRequired: z.literal(true) }), 202: z.strictObject({ code: z.literal("otp-request-accepted"), delivered: z.literal(false) }), 400: z.strictObject({ code: z.string() }), 403: z.strictObject({ code: z.literal("request-denied") }), 429: z.strictObject({ code: z.literal("rate-limited") }), 501: z.strictObject({ code: z.literal("assisted-registration-unavailable") }), 503: z.strictObject({ code: z.enum(["auth-unconfigured", "otp-unavailable"]) }) },
+  },
+  "GET /api/notifications/preferences": {
+    source: "src/app/api/notifications/preferences/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: z.undefined(), responses: { 200: z.strictObject({ providerConfigured: z.literal(false), channels: z.array(z.strictObject({ channel: z.enum(["sms", "push"]), optedIn: z.boolean(), updatedAt: z.iso.datetime({ offset: true }).nullable() })) }), 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "PUT /api/notifications/preferences": {
+    source: "src/app/api/notifications/preferences/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: z.strictObject({ channel: z.enum(["sms", "push"]), optedIn: z.boolean() }),
+    responses: { 200: z.strictObject({ channel: z.enum(["sms", "push"]), optedIn: z.boolean(), providerConfigured: z.literal(false) }), 400: starterHealthResponseSchema, 401: starterHealthResponseSchema, 403: starterHealthResponseSchema, 503: starterHealthResponseSchema },
+  },
+  "GET /api/poth/access-evidence": {
+    source: "src/app/api/poth/access-evidence/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "public",
+    request: z.strictObject({ facilityId: z.array(z.string().regex(/^(dghs\/|(?:node|way|relation)\/)[A-Za-z0-9_-]{1,80}$/)).min(1).max(20) }),
+    responses: { 200: z.strictObject({ claims: z.array(z.strictObject({ facility_id: z.string(), attribute: z.enum(["wheelchair", "accessibleToilet", "hearingLoop"]), value: z.enum(["reported_available", "reported_limited", "reported_unavailable", "unknown"]), verification_status: z.literal("verified"), verification_source: z.string().nullable(), verified_by: z.uuid().nullable(), verified_on: z.iso.date().nullable(), updated_at: z.iso.datetime({ offset: true }) })), absentClaims: z.literal("unknown") }), 400: pothErrorSchema, 503: pothErrorSchema },
+  },
+  "GET /api/poth/access-evidence/review": {
+    source: "src/app/api/poth/access-evidence/review/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "confirmed-user",
+    request: z.undefined(), responses: { 200: z.strictObject({ reviewer: z.boolean() }) },
+  },
+  "POST /api/poth/access-evidence/review": {
+    source: "src/app/api/poth/access-evidence/review/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "confirmed-user",
+    request: z.strictObject({ facilityId: z.string().regex(/^(dghs\/|(?:node|way|relation)\/)[A-Za-z0-9_-]{1,80}$/), attribute: z.enum(["wheelchair", "accessibleToilet", "hearingLoop"]), value: z.enum(["reported_available", "reported_limited", "reported_unavailable", "unknown"]), status: z.enum(["verified", "withdrawn"]), source: z.string().trim().max(300) }),
+    responses: { 200: z.strictObject({ code: z.literal("saved") }), 400: z.strictObject({ code: z.literal("invalid-claim") }), 403: z.strictObject({ code: z.literal("access-denied") }), 503: z.strictObject({ code: z.literal("unavailable") }) },
   },
   "GET /api/wellness": {
     source: "src/app/api/wellness/route.ts", status: "Limited", owners: ["Samin", "Omor"], auth: "mother",
@@ -198,6 +233,11 @@ export const currentApiContracts = {
     source: "src/app/api/ai/barta-audio/route.ts", status: "Limited", owners: ["Iftee", "Omor"], auth: "public",
     request: bartaAudioRequestSchema,
     responses: { 200: z.instanceof(Uint8Array), 400: bartaErrorSchema, 403: bartaErrorSchema, 404: bartaErrorSchema, 429: bartaErrorSchema, 502: bartaErrorSchema, 503: bartaErrorSchema },
+  },
+  "POST /api/tts/cartesia": {
+    source: "src/app/api/tts/cartesia/route.ts", status: "Limited", owners: ["Iftee"], auth: "public",
+    request: z.strictObject({ text: z.string().min(1).max(2500), language: z.enum(["en", "bn"]) }),
+    responses: { 200: z.instanceof(Uint8Array), 400: z.strictObject({ error: z.literal("invalid_request") }), 422: z.strictObject({ error: z.literal("voice_unavailable") }), 502: z.strictObject({ error: z.enum(["voice_unavailable", "provider_failed"]) }), 503: z.strictObject({ error: z.literal("voice_unavailable") }) },
   },
   "GET /api/poth/facilities": {
     source: "src/app/api/poth/facilities/route.ts", status: "Limited", owners: ["Iftee", "Samin", "Omor"], auth: "public",

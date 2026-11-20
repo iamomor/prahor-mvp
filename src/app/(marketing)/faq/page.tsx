@@ -74,7 +74,7 @@ const FAQ_DATA: FaqCategory[] = [
       },
       {
         q: "Can I use PROHOR when I don't have internet access?",
-        a: "Yes, for essential offline features. Emergency hotline numbers (16263, 999), danger-sign checklists, and previously saved doctor summaries remain accessible on your device even without mobile data. Live AI queries with Barta require network access and will honestly notify you when offline.",
+        a: "Only in a limited way. The offline page shows emergency numbers (999, 16263) and, if your device saved it earlier, public safety information. Barta, your records and care requests need the internet. Nothing is sent or synced while you are offline.",
       },
     ],
   },

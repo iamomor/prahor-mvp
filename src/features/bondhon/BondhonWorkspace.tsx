@@ -17,6 +17,8 @@ import { careFetch } from "./client";
 import { accommodations, statusNames, words } from "./bondhon-copy";
 import { accessState, accessWords, digits, formatLeft, formatWhen, msLeft, queueView, splitSharing, type QueueFilter } from "./bondhon-view";
 import styles from "./bondhon.module.css";
+import { NotificationPreferences } from "./NotificationPreferences";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
 
 const filterNames: Record<QueueFilter, { en: string; bn: string }> = {
   new: words("New", "নতুন"), progress: words("In progress", "চলছে"), replied: words("Replied", "উত্তর দেওয়া"), all: words("All open", "সব খোলা"),
@@ -126,17 +128,19 @@ function BondhonSession({ profile, embedded }: { profile: OwnProfile; embedded: 
     {!embedded && <nav className={styles.actions} aria-label={t(words("Care navigation", "সেবার পথ"))}>
       <Link className="pro-btn pro-btn-secondary" href={provider ? "/provider" : "/app"}>{t(words("Dashboard", "ড্যাশবোর্ড"))}</Link>
       <Link className="pro-btn pro-btn-secondary" href="/poth">{t(words("Find care and visit preparation", "সেবা খোঁজা ও সাক্ষাতের প্রস্তুতি"))}</Link>
-      <Link className="pro-btn pro-btn-secondary" href="/account">{t(words("Account and roles", "অ্যাকাউন্ট ও পরিচয়"))}</Link>
+      <Link className="pro-btn pro-btn-secondary" href={provider ? "/account" : "/app/account"}>{t(words("Account and roles", "অ্যাকাউন্ট ও পরিচয়"))}</Link>
     </nav>}
     {!embedded && <header className={styles.pageHeader}>
       <p className={styles.eyebrow}>{t(words("PROHOR / Bondhon", "প্রহর / বন্ধন"))}</p>
       <h1 ref={heading} tabIndex={-1} className={styles.heading}>{t(provider ? words("Bondhon · Simulated provider queue", "বন্ধন · সিমুলেটেড সেবাদাতার তালিকা") : words("Bondhon · Your sharing decisions", "বন্ধন · শেয়ারের সিদ্ধান্ত আপনার"))}</h1>
       <p>{t(words("A little support, on your terms. Choose what to share and keep every request in one place.", "আপনার সিদ্ধান্তে একটু সহায়তা। কী শেয়ার করবেন বাছুন, প্রতিটি অনুরোধ এক জায়গায় রাখুন।"))}</p>
     </header>}
+
     {view === "list" && !provider && <BondhonGuide />}
     <aside className={styles.simulationNote}>
       <p>{t(words("Simulated care coordination · synthetic information only. This is not a staffed medical or emergency service.", "সিমুলেটেড সেবা সমন্বয় · শুধু নমুনা তথ্য। এটি কর্মরত চিকিৎসা বা জরুরি সেবা নয়।"))}</p>
       <Link className="underline inline-flex min-h-12 items-center" href="/poth#poth-sos" target="_blank" rel="noopener noreferrer">{t(words("Open emergency and care information (new tab)", "জরুরি ও সেবার তথ্য খুলুন (নতুন ট্যাব)"))}</Link>
+
     </aside>
     {view === "new" && !provider && <>
       <button className="pro-btn pro-btn-secondary justify-self-start" disabled={submissionState !== "idle"} onClick={() => { setLeavePath(null); setLeaving(true); }}>{t(words("Return to requests", "অনুরোধে ফিরুন"))}</button>
@@ -150,6 +154,7 @@ function BondhonSession({ profile, embedded }: { profile: OwnProfile; embedded: 
       {failed && <p role="alert" className={styles.error}>{t(words("Requests could not be loaded. Check your connection and sign-in, then refresh. If the problem continues, contact the project administrator.", "অনুরোধ আনা যায়নি। সংযোগ ও সাইন ইন দেখে আবার আনুন। সমস্যা থাকলে প্রকল্পের প্রশাসকের সঙ্গে যোগাযোগ করুন।"))}</p>}
       {!provider && !failed && <SharingNow account={profile.user_id} items={items as SupportRequest[]} now={now} ready={checked && !busy} complete={cursor === null} onOpen={open}
         onNew={() => { setInitial(undefined); setView("new"); }} onChanged={() => setRefresh(value => value + 1)} />}
+      {!provider && <NotificationPreferences />}
       {!provider && <button className="pro-btn pro-btn-secondary justify-self-start" disabled={busy} onClick={() => void load()}>{t(words("Refresh", "আবার দেখুন"))}</button>}
       {!provider && earlier.length > 0 && <details className={styles.panel}>
         <summary className="pro-btn pro-btn-secondary">{t(words(`Earlier requests (${earlier.length})`, `আগের অনুরোধ (${digits(earlier.length, "bn")})`))}</summary>

@@ -336,6 +336,7 @@ export function AACComposer({
               key={item.id}
               type="button"
               aria-pressed={isSelected}
+              aria-describedby={`${composerId}-phrase-help`}
               onClick={() => toggleItem(item)}
               className={[
                 "group relative flex min-h-28 flex-col items-center justify-center gap-1.5 rounded-card p-2.5 text-center",
@@ -345,7 +346,6 @@ export function AACComposer({
                   ? "border-2 border-pro-primary bg-pro-surface-2 text-pro-text"
                   : "border border-pro-border bg-pro-elevated text-pro-text hover:border-pro-control-border hover:shadow-pro-1",
               ].join(" ")}
-              aria-label={`${item.labelEn} (${item.labelBn}) — ${isSelected ? `Picked, number ${order}. Tap to remove.` : "Tap to add."}`}
             >
               {isSelected && (
                 <span
@@ -367,6 +367,9 @@ export function AACComposer({
           );
         })}
       </div>
+      <p id={`${composerId}-phrase-help`} className="sr-only" lang={language}>
+        {language === "bn" ? "বাক্যে যোগ করতে বাছুন। আবার বাছলে বাক্য থেকে বাদ যাবে।" : "Select to add this phrase. Select it again to remove it from the sentence."}
+      </p>
 
       {/* Sentence: a quiet hint until something is picked, then the full editor */}
       {!hasSentence ? (
@@ -459,6 +462,13 @@ export function AACComposer({
                 isCustomEdited ? "border-pro-primary" : "border-pro-control-border",
               ].join(" ")}
             />
+            {selected.some((item) => item.dangerSign) && (
+              <p role="note" className="rounded-field border border-pro-border bg-pro-surface p-3 text-sm text-pro-text">
+                {bn
+                  ? "এটি জরুরি লক্ষণ হতে পারে। এখনই ৯৯৯ নম্বরে কল করুন বা কাছের জরুরি সেবায় যান। প্রশ্ন পাঠানোর জন্য অপেক্ষা করবেন না। (এই শব্দচয়ন চিকিৎসক-পর্যালোচনার অপেক্ষায়।)"
+                  : "This may be an urgent sign. Call 999 or go to the nearest emergency care now; do not wait for an answer here. (This wording is pending clinician review.)"}
+              </p>
+            )}
             <p id={`${textareaId}-hint`} className="text-sm text-pro-muted">
               {isCustomEdited
                 ? "You changed this sentence. It will be added exactly as written."

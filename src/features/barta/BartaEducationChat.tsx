@@ -366,7 +366,7 @@ export function BartaEducationChat({
         <div className={styles.composerCard}>
           <form className={styles.form} lang={formLanguage} onSubmit={(event) => {
             if (voiceListening) { event.preventDefault(); return; }
-            if (audio.listening) { event.preventDefault(); return; }
+            if (audio.listening || voiceListening) { event.preventDefault(); return; }
             if (speakerEnabled && !busy && question.trim()) {
             delivered.current = undefined;
             stopReplyAudio();
@@ -386,6 +386,14 @@ export function BartaEducationChat({
               <textarea id="barta-question" ref={questionInput} value={question}
                 placeholder={copy.placeholder} aria-describedby="barta-privacy"
                 onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
+              <div className="grid gap-2 px-3 pb-2">
+                <p className="text-sm text-pro-muted">
+                  {formLanguage === "bn"
+                    ? "মাইক্রোফোন চাপুন → বলুন → থামান → লেখা দেখে ঠিক করুন → পাঠান"
+                    : "Tap mic → Speak → Stop → Review or edit → Send"}
+                </p>
+                <VoiceDictationButton language={voiceLanguage === "auto" ? micLanguage : voiceLanguage} hideLanguageSelect disabled={!ready || busy} value={question} maxLength={1200} onChange={onQuestion} onListeningChange={setVoiceListening} focusTargetRef={questionInput} />
+              </div>
               <div className={styles.composerBar}>
                 {symbolPanel && (
                   <button type="button" className={styles.tool} aria-controls="barta-symbol-input"
@@ -405,7 +413,6 @@ export function BartaEducationChat({
                 </div>
               </div>
             </div>
-            <VoiceDictationButton language={voiceLanguage === "auto" ? micLanguage : voiceLanguage} hideLanguageSelect disabled={!ready || busy} value={question} maxLength={1200} onChange={onQuestion} onListeningChange={setVoiceListening} focusTargetRef={questionInput} />
             <div className={styles.chatPreferences}>
 
               <label className={styles.language}>

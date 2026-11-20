@@ -1,4 +1,5 @@
--- Shonket consent enforcement. NOT APPLIED to any hosted Supabase project; validate on a disposable database only.
+-- Shonket consent enforcement. Validated on PGlite (tests/database/bondhon-coordination.test.mjs), then applied to
+-- the hosted project after 20261120100000 on 2026-11-20 (see docs/qa/final-2026-11-20/DEPLOYMENT_RECORD.md).
 -- Fixes: (1) submit routed a request to a provider with no consent record, expiry or revoke path;
 -- (2) provider_access treated "no permission row" as allowed for Shonket; (3) denied provider opens were unaudited.
 -- Behaviour: submit needs reviewConfirmed=true and writes a request_permissions row (fixed 30-day expiry,

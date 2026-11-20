@@ -430,3 +430,8 @@ test("the migration can be applied twice without error", async () => {
   const sql = await readFile(new URL("../../supabase/migrations/20261120200000_shonket_consent_enforcement.sql", import.meta.url), "utf8");
   await db.exec(sql);
 });
+
+test("request evidence trigger keeps SECURITY DEFINER after the Shonket migrations", async () => {
+  const row = (await db.query("select prosecdef from pg_proc where oid='prohor_care.check_request_evidence()'::regprocedure")).rows[0];
+  assert.equal(row.prosecdef, true);
+});

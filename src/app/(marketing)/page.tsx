@@ -13,6 +13,7 @@ import "@/components/marketing/homepage-polish.css";
 import "@/components/marketing/homepage-hero.css";
 import "@/components/marketing/homepage-navigation.css";
 import "@/components/marketing/homepage-care.css";
+import "@/components/marketing/homepage-inclusive.css";
 
 const displayFont = Fraunces({ weight: ["500", "600"], style: ["normal", "italic"], subsets: ["latin"], display: "swap", variable: "--font-prohor-fraunces" });
 const bodyFont = Manrope({ subsets: ["latin"], display: "swap", variable: "--font-prohor-manrope" });
@@ -31,8 +32,7 @@ export default function HomePage() {
     <>
       <script dangerouslySetInnerHTML={{ __html: homepagePreferenceBootstrap }} />
       <script dangerouslySetInnerHTML={{ __html: homepageAssetRecovery }} />
-      <Homepage imageAvailable={existsSync(join(process.cwd(), "public/images/hero-mother.jpg"))}
-        fontVariables={`${displayFont.variable} ${bodyFont.variable} ${tagFont.variable} ${banglaSans.variable} ${banglaSerif.variable}`}
+      <Homepage fontVariables={`${displayFont.variable} ${bodyFont.variable} ${tagFont.variable} ${banglaSans.variable} ${banglaSerif.variable}`}
         teamImages={Object.fromEntries(["omor", "iftee", "ifty", "apubo", "samin"].map(name => [name, existsSync(join(process.cwd(), `public/team/${name}.jpg`))]))} />
     </>
   );

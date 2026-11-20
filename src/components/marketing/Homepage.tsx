@@ -10,7 +10,7 @@ import { AudiencePanels, CompanionStory, FinalCTA, JourneyStory, ProductStrip, R
 import { SignInNotice } from "./SignInNotice";
 import { copy, type Locale } from "./home-content";
 
-export function Homepage({ imageAvailable, fontVariables, teamImages }: { imageAvailable: boolean; fontVariables: string; teamImages: Record<string, boolean> }) {
+export function Homepage({ fontVariables, teamImages }: { fontVariables: string; teamImages: Record<string, boolean> }) {
   const [locale, setLocaleState] = useState<Locale>("en");
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [offline, setOffline] = useState(false);
@@ -38,6 +38,23 @@ export function Homepage({ imageAvailable, fontVariables, teamImages }: { imageA
       window.removeEventListener("offline", updateOnline);
       if (initialLanguage.current) document.documentElement.lang = initialLanguage.current;
     };
+  }, []);
+
+  // Sections fade in as they arrive. Without JS (or with reduced motion via CSS) nothing is hidden.
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>(".pro-home");
+    if (!root || !("IntersectionObserver" in window)) return;
+    const sections = Array.from(root.querySelectorAll<HTMLElement>("main > section")).slice(1);
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      (entry.target as HTMLElement).dataset.revealed = "true";
+      observer.unobserve(entry.target);
+    }), { rootMargin: "0px 0px -8% 0px", threshold: 0.01 });
+    sections.forEach(section => { if (section.getBoundingClientRect().top < innerHeight) section.dataset.revealed = "true"; else observer.observe(section); });
+    root.dataset.reveal = "ready";
+    const revealFocused = (event: globalThis.FocusEvent) => { const section = (event.target as Element).closest?.<HTMLElement>("main > section"); if (section) section.dataset.revealed = "true"; };
+    root.addEventListener("focusin", revealFocused);
+    return () => { observer.disconnect(); root.removeEventListener("focusin", revealFocused); };
   }, []);
 
   function setLocale(next: Locale) {
@@ -69,7 +86,7 @@ export function Homepage({ imageAvailable, fontVariables, teamImages }: { imageA
     <main id="main-content" tabIndex={-1}>
       <HeroStory />
       <ProductStrip />
-      <ProblemStory imageAvailable={imageAvailable} />
+      <ProblemStory />
       <AdaptStory />
       <CompanionStory />
       <JourneyStory />

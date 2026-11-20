@@ -248,6 +248,10 @@ export const currentApiContracts = {
     source: "src/app/api/care-requests/[id]/revoke/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
     request: z.undefined(), responses: { 200: apiSuccessSchema(bondhonDetailSchema), ...careErrorResponses },
   },
+  "POST /api/care-requests/:id/shonket-revoke": {
+    source: "src/app/api/care-requests/[id]/shonket-revoke/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "mother",
+    request: z.undefined(), responses: { 200: apiSuccessSchema(shonketRequestSchema), ...careErrorResponses },
+  },
   "GET /api/care-requests/:id/events": {
     source: "src/app/api/care-requests/[id]/events/route.ts", status: "Limited", owners: ["Omor", "Samin"], auth: "request-participant",
     request: z.undefined(), responses: { 200: apiSuccessSchema(pageSchema(supportRequestEventSummarySchema)), ...careErrorResponses },

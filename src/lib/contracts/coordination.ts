@@ -15,7 +15,10 @@ export const coordinationApprovalSchema = coordinationTermsSchema.extend({
   records: z.array(shareableRecordSchema).max(20).refine(items =>
     new Set(items.map(item => `${item.type}/${item.id}`)).size === items.length, "Select each record once."),
 });
+export const shonketTermsVersion = "shonket-demo-2026-11-20" as const;
+// Receipts also cover Shonket requests; only Bondhon approvals (creation input) stay pinned to the Bondhon terms.
 export const coordinationReceiptSchema = coordinationTermsSchema.extend({
+  termsVersion: z.enum([bondhonTermsVersion, shonketTermsVersion]),
   approvedAt: timestampSchema,
   revokedAt: timestampSchema.nullable(),
   version: z.number().int().positive(),

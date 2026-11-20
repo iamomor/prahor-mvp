@@ -8,9 +8,11 @@ const requestId = "d9000000-0000-4000-8000-000000000003";
 const key = "d9000000-0000-4000-8000-000000000004";
 const origin = "http://localhost:3000";
 const stamp = "2026-11-20T00:00:00Z";
-const input = { message: "Synthetic request", method: "text", concernTypes: ["fever"], onset: "today" };
+const draft = { message: "Synthetic request", method: "text", concernTypes: ["fever"], onset: "today" };
+const input = { ...draft, language: "bn", reviewConfirmed: true };
 const row = { id: requestId, createdAt: stamp, updatedAt: stamp, revision: 1, status: "submitted",
-  message: input.message, method: input.method, concernTypes: input.concernTypes, onset: input.onset, events: [{ status: "submitted", occurredAt: stamp, requestRevision: 1 }] };
+  message: input.message, method: input.method, concernTypes: input.concernTypes, onset: input.onset, events: [{ status: "submitted", occurredAt: stamp, requestRevision: 1 }],
+  consent: { termsVersion: "shonket-demo-2026-11-20", expiresAt: "2026-12-20T00:00:00Z", revokedAt: null, version: 1 } };
 
 function setup(result: unknown, role: "mother" | "provider" = "mother", noSession = false) {
   const calls: Array<{ name: string; params: Record<string, unknown> }> = [];
@@ -37,9 +39,9 @@ test("Shonket submit validates exact body and calls the existing support-request
   expect(response.status).toBe(201);
   expect(mock.calls).toEqual([{ name: "mvp_shonket_submit_request", params: {
     p_message: input.message, p_method: input.method, p_concern_types: input.concernTypes,
-    p_onset: input.onset, p_idempotency_key: key,
+    p_onset: input.onset, p_language: "bn", p_review_confirmed: true, p_idempotency_key: key,
   } }]);
-  for (const bad of [{ ...input, ownerUserId: mother }, { ...input, extra: true }, { ...input, concernTypes: ["invented"] }, { ...input, message: " " }]) {
+  for (const bad of [{ ...input, reviewConfirmed: false }, { ...draft }, { ...input, language: "fr" }, { ...input, ownerUserId: mother }, { ...input, extra: true }, { ...input, concernTypes: ["invented"] }, { ...input, message: " " }]) {
     const invalid = setup(row);
     expect((await call("create-request", invalid, request("POST", bad))).status).toBe(400);
     expect(invalid.calls).toHaveLength(0);
@@ -84,4 +86,20 @@ test("provider open and acknowledge stay assigned, same-origin and revision-boun
   expect((await call("acknowledge", ackMock, current, requestId)).status).toBe(200);
   expect(ackMock.calls.at(-1)?.name).toBe("mvp_care_acknowledge");
   expect(ackMock.calls.at(-1)?.params).toMatchObject({ p_id: requestId, p_expected_revision: 2, p_idempotency_key: key });
+});
+
+test("denied provider open is a non-revealing 404 and mother revoke calls only the Shonket revoke RPC", async () => {
+  const denied = setup({ denied: true }, "provider");
+  const response = await call("shonket-open", denied, request("POST", {}, { origin }), requestId);
+  expect(response.status).toBe(404);
+  expect(JSON.stringify(await response.json())).not.toMatch(/revoked|expired|consent/i);
+  const revoked = { ...row, consent: { ...row.consent, revokedAt: stamp, version: 2 } };
+  const mock = setup(revoked);
+  expect((await call("shonket-revoke", mock, request("POST", undefined, {}), requestId)).status).toBe(200);
+  expect(mock.calls).toEqual([{ name: "mvp_shonket_revoke_request", params: { p_id: requestId } }]);
+  const notRevoked = setup(row);
+  expect((await call("shonket-revoke", notRevoked, request("POST", undefined, {}), requestId)).status).toBe(503);
+  const asProvider = setup(revoked, "provider");
+  expect((await call("shonket-revoke", asProvider, request("POST", undefined, {}), requestId)).status).toBe(403);
+  expect(asProvider.calls).toHaveLength(0);
 });

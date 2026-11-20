@@ -10,6 +10,7 @@ import { SourcePreview } from "./SourcePreview";
 
 import type { ExtractedReport, ExtractedReportField } from "./types";
 import { isHemoglobinLabel, validDate } from "./validation";
+import { educationTopics } from "../barta/education-topics";
 
 type Pregnancy = { id: string; label: string };
 
@@ -37,6 +38,7 @@ export function AccountReportReview({
   const snapshot = useRef<string | undefined>(undefined);
   const reviewFocus = useRef<HTMLHeadingElement>(null);
   const uploadFocus = useRef<HTMLHeadingElement>(null);
+  const feedbackFocus = useRef<HTMLParagraphElement>(null);
 
   // OCR failed or found nothing: the mother types the printed value from the same image. rawValue stays empty, so it is never recorded as an OCR read.
   async function openManual(file: File) {
@@ -64,11 +66,10 @@ export function AccountReportReview({
         ],
       },
       file,
-      true,
     );
   }
 
-  function openReview(report: ExtractedReport, file?: File, manual = false) {
+  function openReview(report: ExtractedReport, file?: File) {
     if (!file) return;
     const supported = report.fields.filter((field) =>
       isHemoglobinLabel(field.label),
@@ -119,6 +120,7 @@ export function AccountReportReview({
         setFeedback(
           "Check the pregnancy, printed value, g/dL unit and date, then confirm your review.",
         );
+        requestAnimationFrame(() => feedbackFocus.current?.focus());
         return;
       }
       snapshot.current = JSON.stringify({
@@ -167,6 +169,7 @@ export function AccountReportReview({
     } finally {
       pending.current = false;
       setSaving(false);
+      requestAnimationFrame(() => feedbackFocus.current?.focus());
     }
   }
 
@@ -182,8 +185,10 @@ export function AccountReportReview({
         <p className="text-pro-muted">
           Prototype. Account saving supports maternal hemoglobin in g/dL.
         </p>
+        <p>Saved now: hemoglobin (g/dL). Other values are shown for reading only.</p>
+        <p lang="bn">এখন সংরক্ষণ করা যায়: হিমোগ্লোবিন (g/dL)। অন্য মানগুলো শুধু পড়ার জন্য দেখানো হয়।</p>
       </header>
-      {!draft && <ImageMedicalEntry onDraft={openReview} />}
+      {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} />}
       {draft && (
         <section
           className="grid min-w-0 gap-4 rounded-card border border-pro-border bg-pro-elevated p-4 sm:p-6"
@@ -195,8 +200,9 @@ export function AccountReportReview({
             tabIndex={-1}
             className="text-xl font-semibold"
           >
-            Check what was read
+            {draft.report.inputMethod === "manual" ? "Check the printed value" : "Check what was read"}
           </h3>
+          {draft.report.inputMethod === "manual" && <p>Manual entry from this report image. OCR did not read it. Check the printed value before saving.</p>}
           <SourcePreview source={draft.source} />
           {(draft.report.rawText ||
             draft.report.fields.some(
@@ -264,8 +270,7 @@ export function AccountReportReview({
                 <>
                   {field.parsingReliability !== "recognized" && (
                     <p className="font-semibold">
-                      The extracted digits are unclear. Enter the printed value
-                      from the image.
+                      {draft.report.inputMethod === "manual" ? "Enter the hemoglobin value printed on this image." : "The extracted digits are unclear. Enter the printed value from the image."}
                     </p>
                   )}
                   <label className="grid gap-2">
@@ -358,9 +363,12 @@ export function AccountReportReview({
               )}
             </>
           )}
-          <p role="status" aria-atomic="true">
+          <p ref={feedbackFocus} tabIndex={-1} role="status" aria-atomic="true" className="focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus">
             {feedback}
           </p>
+          <Link href={`/ask?q=${encodeURIComponent(educationTopics.ironFolate.en)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center text-pro-primary underline">
+            Read general education about iron and folic acid (opens a new tab)
+          </Link>
           <div className="flex flex-wrap gap-x-5">
             <button
               type="button"

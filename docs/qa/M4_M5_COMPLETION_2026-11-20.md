@@ -1,5 +1,51 @@
 # M4 Jibonrekha and M5 Bujhi: completion report (2026-11-20)
 
+## Live follow-up (20 Nov 2026)
+
+This section supersedes the account/environment blockers below. Source base:
+`debfe4d`, the verified production revision; focused branch:
+`omor-m4-m5-live-verification`. All account data used is synthetic.
+
+- Existing mother and approved simulated-provider accounts signed in successfully.
+  Two isolated synthetic accounts were provisioned through Supabase Auth; the
+  second provider was approved using the existing operator-only review function.
+- Existing hosted acceptance on `https://prahor-eight.vercel.app`: **74/74 passed**.
+  This was a real application/hosted database run, without intercepted API responses.
+  It covers all seven record types, account isolation, provider restrictions,
+  reviewed report persistence, idempotency, consent and revocation.
+- Direct hosted RLS checks used real authenticated sessions: positive own reads,
+  another mother's empty reads and permission-denied updates, provider isolation,
+  and anonymous permission denial. The loopback-only `test:rls` guard was retained.
+- The M4 data-sheet values were entered through the local production UI against
+  hosted Supabase, including the linked baby, separate blood-pressure values,
+  condition, visit, correction preserving 85.4 and its reason, and an offline note
+  whose input survived and saved on retry. The current forms record dates, not
+  the data sheet's individual times of day.
+- Browser OCR read the sample as 11.2. The manual fallback had been disconnected
+  in the actual source; this follow-up connects it for failed, cancelled, or
+  unsupported OCR and keeps the selected image. Saving scope is explicit in
+  English and Bangla. General Barta education opens separately from the review.
+- The guarded manual-provenance migration was applied to the verified project
+  after a disposable-database check. Function security mode, search path and
+  grants were preserved. Historical rows were not rewritten.
+- A manual 11.5 g/dL value was saved through the finished UI after blocking only
+  OCR CDN downloads. A fresh authenticated session retrieved it with the exact
+  manual-entry provenance note. Backend responses were real. Timeline and visit
+  pack labels now distinguish known manual and OCR provenance; unknown history
+  keeps its general source label. Save feedback receives keyboard focus.
+- No new test cases are retained, as requested. Existing verification output and
+  local screenshots are under ignored `test-results/m4-m5-live/`; credentials,
+  cookies and sign-in screenshots are excluded.
+
+Limitations: saving is maternal hemoglobin in g/dL only; this remains a prototype.
+Full screen-reader, real-phone, 200% zoom and complete keyboard-only sign-off are
+not claimed. Slow/crashed-worker coverage is incomplete; cancelling OCR provides
+a manual path. The 74-check hosted run precedes these focused frontend fixes.
+Release build and lint must pass before publication; post-publication smoke
+evidence should identify the deployed revision.
+
+---
+
 Baseline: HEAD `64d67d2` on `omor-backend-completion`. Nothing committed, merged or deployed. All data synthetic.
 
 ## Verification levels used

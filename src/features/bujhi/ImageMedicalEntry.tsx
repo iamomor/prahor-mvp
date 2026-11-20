@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ReportUpload } from "./ReportUpload";
 import { recognizeReportImage } from "./ocr-service";
 import type { ExtractedReport } from "./types";
+import { isHemoglobinLabel } from "./validation";
 export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFile }: { active?: boolean; onDraft: (report: ExtractedReport, source?: File) => void; onManual?: () => void; onManualFile?: (file: File) => void }) {
   const [fallbackFile, setFallbackFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false);
@@ -13,13 +14,18 @@ export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFi
   async function scan(file: File) {
     if (!consent || busy) { setError("Allow the OCR engine/language downloads before starting. The image stays local."); return; }
     const active = new AbortController(); controller.current = active;
-    setBusy(true); setError(""); setFallbackFile(null); setStatus("Starting local English OCR…");
+    setBusy(true); setError(""); setFallbackFile(file); setStatus("Starting local English OCR…");
     try {
       const draft = await recognizeReportImage(file, (message, fraction) => { setStatus(message === "matching results" ? "Matching results…" : message === "recognizing text" ? "Finding text in the photo…" : "Preparing the local reader…"); setProgress(Math.round(fraction * 100)); }, active.signal);
 
       setStatus(draft.fields.length ? "Image read. Compare the extracted values with the original." : "OCR finished but no supported test fields were recognized. Review the raw text and use manual entry for unrecognized information.");
-      onDraft(draft, file);
-    } catch { if (!active.signal.aborted) { setError("The image could not be read. Check your connection and try again, or choose another image."); setStatus("OCR failed."); } }
+      if (onManualFile && !draft.fields.some(field => isHemoglobinLabel(field.label))) {
+        setFallbackFile(file);
+        setStatus("No hemoglobin field was read. You can type the printed value from this image. Nothing saved.");
+      } else {
+        onDraft(draft, file);
+      }
+    } catch { if (!active.signal.aborted) { setFallbackFile(file); setError("The image could not be read. Check your connection and try again, or type the printed value yourself."); setStatus("OCR failed. Nothing saved."); } }
 
     finally { if (!active.signal.aborted) setBusy(false); }
   }

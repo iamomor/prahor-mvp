@@ -430,3 +430,32 @@ html[data-text-scale="extra-large"] {
 :root[data-focused="true"] .prohor-marketing-flourish {
   display: none !important;
 }
+
+/* ── Logo colours (official PROHOR logo collection, one pair per theme) ── */
+:root,
+:root[data-theme="quiet-garden"],
+[data-prohor-preview][data-theme="quiet-garden"] {
+  --pro-logo-sun: #c6872e;
+  --pro-logo-mother: #165a48;
+}
+:root[data-theme="original-rose"],
+[data-prohor-preview][data-theme="original-rose"] {
+  --pro-logo-sun: #8a3556;
+  --pro-logo-mother: #70445a;
+}
+:root[data-theme="morning-mist"],
+[data-prohor-preview][data-theme="morning-mist"] {
+  --pro-logo-sun: #7a3656;
+  --pro-logo-mother: #075b67;
+}
+/* Reversed mark wherever the logo sits on the primary colour. */
+.on-primary,
+.refined-footer,
+.prohor-on-primary {
+  --pro-logo-sun: var(--pro-accent);
+  --pro-logo-mother: var(--pro-on-primary);
+}
+.prohor-mark { flex-shrink: 0; }
+@media (forced-colors: active) {
+  .prohor-mark path { fill: CanvasText !important; }
+}

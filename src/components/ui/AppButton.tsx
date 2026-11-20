@@ -46,7 +46,7 @@ export function AppButton({
   ...props
 }: AppButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-pill font-semibold font-control transition-all duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap select-none";
+    "inline-flex items-center justify-center rounded-pill font-semibold font-control transition-all duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus disabled:opacity-50 disabled:cursor-not-allowed max-w-full text-center select-none";
 
   const classes = [base, variantClasses[variant], sizeClasses[size], className]
     .filter(Boolean)

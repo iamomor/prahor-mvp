@@ -96,6 +96,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     }
     if (countSelection(selection).records > 20) {
       setError(t(words("Choose fields from at most 20 records for one request.", "একটি অনুরোধে সর্বোচ্চ ২০টি রেকর্ডের তথ্য বাছুন।")));
+      window.requestAnimationFrame(() => document.getElementById(`${id}-error`)?.focus());
       return;
     }
     const chosen = records.filter(item => selection[recordKey(item.record)]?.length).map(item =>
@@ -106,6 +107,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
         allowReplies, language, accommodations: needs, records: chosen } });
     if (!parsed.success || !parsed.data.coordination) {
       setError(t(words("Choose a recipient and enter a purpose and message before reviewing.", "পর্যালোচনার আগে প্রাপক বাছুন এবং উদ্দেশ্য ও বার্তা লিখুন।")));
+      window.requestAnimationFrame(() => document.getElementById(`${id}-error`)?.focus());
       return;
     }
     setReview({ key: crypto.randomUUID(), body: { ...parsed.data, coordination: parsed.data.coordination } }); setConfirmed(false);
@@ -204,7 +206,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       <button type="button" className="pro-btn pro-btn-primary" disabled={!confirmed || busy} onClick={() => void send()}>{t(busy ? words("Confirming submission…", "জমা নিশ্চিত হচ্ছে…") : uncertain ? words("Retry the same request", "একই অনুরোধ আবার পাঠান") : words("Approve and send to simulated queue", "অনুমতি দিয়ে সিমুলেটেড তালিকায় পাঠান"))}</button>
       <button type="button" className="pro-btn pro-btn-secondary" disabled={busy || uncertain} onClick={() => { setReview(null); setConfirmed(false); setStep(0); setError(""); window.requestAnimationFrame(() => composeHeading.current?.focus()); }}>{t(words("Back to edit", "সম্পাদনায় ফিরুন"))}</button>
     </div>
-    {error && <p role="alert" className={styles.error}>{error}</p>}
+    {error && <p id={`${id}-error`} tabIndex={-1} role="alert" className={styles.error}>{error}</p>}
   </section>;
   return <form onSubmit={preview} className={styles.panel}>
     <h2 ref={composeHeading} tabIndex={-1}>{t(words("New routine care request", "নতুন সাধারণ সেবার অনুরোধ"))}</h2>
@@ -322,6 +324,6 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       {step > 0 && <button type="button" className="pro-btn pro-btn-secondary" onClick={() => { setStep(value => value - 1); setError(""); window.requestAnimationFrame(() => composeHeading.current?.focus()); }}>{t(words("Previous step", "আগের ধাপ"))}</button>}
       <button className="pro-btn pro-btn-primary" disabled={step > 0 && (loading || failed || !recipients.length)}>{t(step < 3 ? words("Continue", "পরের ধাপ") : words("Review information and permissions", "তথ্য ও অনুমতি পর্যালোচনা করুন"))}</button>
     </div>
-    {error && <p role="alert" className={styles.error}>{error}</p>}
+    {error && <p id={`${id}-error`} tabIndex={-1} role="alert" className={styles.error}>{error}</p>}
   </form>;
 }

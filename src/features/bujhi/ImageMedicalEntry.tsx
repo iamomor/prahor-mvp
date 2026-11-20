@@ -38,10 +38,10 @@ export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFi
     <label className="flex gap-3 rounded-field border border-pro-border bg-pro-surface p-4"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={busy} />Allow downloads for the English reader. Your image is read on this device.</label>
     <fieldset disabled={busy} className="min-w-0"><legend className="sr-only">Select report image</legend><ReportUpload autoContinue={active && consent && !busy} onContinue={(file) => void scan(file)} /></fieldset>
     </div>
-    {busy && <div className="grid gap-4 rounded-card border border-pro-border bg-pro-surface p-5"><p className="!m-0">Photo received. Reading runs on this device.</p><progress value={progress} max={100} aria-label="OCR engine progress" className="w-full" /><button type="button" onClick={cancel} className="min-h-12 rounded-control border border-pro-primary p-3 text-pro-primary">Cancel OCR</button></div>}
+    {busy && <div className="grid gap-4 rounded-card border border-pro-border bg-pro-surface p-5"><p className="!m-0">Photo received. Reading runs on this device.</p><progress value={progress} max={100} aria-label="OCR engine progress" className="w-full" /><p aria-hidden="true" className="!m-0 text-sm">{progress}%</p><button type="button" onClick={cancel} className="min-h-12 rounded-control border border-pro-primary p-3 text-pro-primary">Cancel OCR</button></div>}
     {onManual && <button type="button" onClick={onManual} className="min-h-12 justify-self-start rounded-control px-2 font-semibold text-pro-primary underline">নিজে লিখব · Type it myself</button>}
     {onManualFile && fallbackFile && !busy && <button type="button" onClick={() => onManualFile(fallbackFile)} className="min-h-12 justify-self-start rounded-control border border-pro-primary px-4 font-semibold text-pro-primary">নিজে হিমোগ্লোবিন লিখব · Type the hemoglobin value myself</button>}
-    <p role="status" aria-atomic="true">{status}{busy ? ` (${progress}%, current engine stage)` : ""}</p><p role="alert" className="text-pro-danger">{error}</p>
+    <p role="status" aria-atomic="true">{status}</p><p role="alert" className="text-pro-danger">{error}</p>
   </section>;
 }
 

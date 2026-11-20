@@ -198,3 +198,7 @@
 }
 @keyframes adapt-sheet-in { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: none; } }
 @media (forced-colors: active) { .pro-home .adapt-switch i, .pro-home .adapt-segmented label:has(input:checked), .pro-home .adapt-theme:has(input:checked) { border: 2px solid Highlight; } }
+
+/* Official mark: give the detailed logo enough room to read. */
+.pro-home .home-header .home-brand .prohor-mark { width: 2.25rem; height: 2.25rem; }
+.pro-home .refined-footer .home-brand .prohor-mark { width: 2.75rem; height: 2.75rem; }

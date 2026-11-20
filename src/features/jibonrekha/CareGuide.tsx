@@ -8,7 +8,6 @@ import { ArrowUpRight, ChevronLeft, ChevronRight, LifeBuoy, MessageCircle, PenLi
 import { careForWeek, careGuideSources, guideWeekRange, whoModelContactWeeks } from "./care-guide-data";
 import { PregnancyReference } from "./PregnancyReference";
 import { SubviewHeader, ui } from "./jibonrekha-ui";
-import type { GuideSelection } from "./account-records-model";
 
 type Props = {
   currentWeek: number | null;
@@ -95,7 +94,7 @@ export function CareGuide({ currentWeek, currentDay, headingRef, onBack, onAddNo
 
     <section aria-labelledby="week-tests-heading" className="grid gap-3">
       <div><h2 id="week-tests-heading" className="text-xl font-semibold">এই সময়ের পরীক্ষা ও আলোচনা</h2><p className="mt-1 text-pro-muted">সময়গুলো পরিকল্পনার জানালা, নির্দিষ্ট দিনে করতেই হবে এমন তালিকা নয়।</p></div>
-      {items.length === 0 && <div className="rounded-card border border-dashed border-pro-control-border bg-pro-elevated p-5"><h3 className="font-semibold">এই সপ্তাহে নতুন নির্দিষ্ট পরীক্ষা নেই</h3><p className="mt-2">পিডিএফ বা যাচাই করা গাইডলাইনে এই সপ্তাহের জন্য আলাদা রুটিন পরীক্ষা নেই। আগের ফল, পরের ভিজিট ও প্রশ্নগুলো চিকিৎসকের সঙ্গে মিলিয়ে নিন।</p></div>}
+      {items.length === 0 && <div className="rounded-card border border-dashed border-pro-control-border bg-pro-elevated p-5"><h3 className="font-semibold">এই সপ্তাহে নতুন নির্দিষ্ট পরীক্ষা নেই</h3><p className="mt-2">এই গাইডে এ সপ্তাহের জন্য আলাদা পরীক্ষার তথ্য নেই। আগের ফল, পরের ভিজিট ও প্রশ্নগুলো চিকিৎসকের সঙ্গে মিলিয়ে নিন।</p></div>}
       {items.map(item => <article key={item.id} className={`${ui.card} grid gap-3`}>
         <div className="flex flex-wrap items-start justify-between gap-2"><h3 className="text-lg font-semibold">{item.title}</h3><span className={ui.tag}><MessageCircle className="size-4" aria-hidden="true" />{item.status === "if-needed" ? "নির্দিষ্ট কারণ থাকলে" : item.status === "optional" ? "আলোচনা করে বেছে নিন" : "চিকিৎসকের সঙ্গে আলোচনা"}</span></div>
 
@@ -111,7 +110,7 @@ export function CareGuide({ currentWeek, currentDay, headingRef, onBack, onAddNo
 
     <section className="grid gap-3 rounded-card border border-pro-info bg-pro-info-soft p-5 text-pro-info" aria-labelledby="report-caveat-heading">
       <h2 id="report-caveat-heading" className="text-lg font-semibold">রিপোর্টের ফল নিজে সিদ্ধান্তের জন্য নয়</h2>
-      <p>পিডিএফে দেওয়া একক “স্বাভাবিক” সীমা প্রত্যেক ব্যক্তির জন্য প্রযোজ্য নয়। রিপোর্টের মান, একক, সময় ও আগের ইতিহাস মিলিয়ে চিকিৎসক ব্যাখ্যা করবেন। বুঝি-তে রিপোর্ট থেকে নেওয়া লেখা আগে যাচাই করতে হয়।</p>
+      <p>রিপোর্টে লেখা মান ও সীমা দেখে একা সিদ্ধান্ত নেবেন না। মান, একক, তারিখ ও আপনার আগের তথ্য মিলিয়ে চিকিৎসক ফল বুঝিয়ে দেবেন। বুঝি-তে রিপোর্ট থেকে নেওয়া তথ্য আগে যাচাই করুন।</p>
       <Link href={bujhiHref} className="inline-flex min-h-12 w-fit items-center gap-2 rounded-pill border-[1.5px] border-pro-info bg-pro-elevated px-5 font-semibold text-pro-info focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus max-sm:w-full max-sm:justify-center">বুঝি-তে রিপোর্ট যাচাই করুন<ArrowUpRight className="size-4" aria-hidden="true" /></Link>
 
     </section>

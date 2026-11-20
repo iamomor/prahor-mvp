@@ -17,7 +17,9 @@ import { accountSourceLabel } from "./account-provenance";
 import { recordKindLabel, useL } from "./use-l";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
 
+
 import { selectAccountPregnancy as selectAccountPregnancyFn } from "./account-records-model";
+
 
 
 
@@ -113,6 +115,7 @@ const unitOptions: Record<string, string[]> = {
 type Task = "home" | "guide" | "share" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records";
 
 type RecordsTab = "measures" | "notes" | "visits" | "profiles";
+
 const taskCopy: Record<Exclude<Task, "home" | "guide" | "share">, { title: string; description: string; titleEn: string; descriptionEn: string }> = {
   observation: { title: "মাপ বা নোট যোগ করুন", description: "কার নথি বেছে নিন, মান লিখুন, তারপর দেখে সংরক্ষণ করুন। প্রতিটি মানের তারিখ ও উৎস থাকে।", titleEn: "Add a measurement or note", descriptionEn: "Choose whose record it belongs to, enter the value, review it, then save. Each entry keeps its date and source." },
   records: { title: "ইতিহাস", description: "মা ও শিশুর নথি আলাদা থাকে। প্রতিটি মানের উৎস দেখা যায়; সংশোধন করলে আগের মানও রাখা থাকে।", titleEn: "History", descriptionEn: "Maternal and baby records stay separate. Each value shows its source; corrections preserve the earlier value." },
@@ -120,6 +123,7 @@ const taskCopy: Record<Exclude<Task, "home" | "guide" | "share">, { title: strin
   baby: { title: "শিশুর নথি যোগ করুন", description: "প্রতিটি শিশুর নথি আলাদা। একই গর্ভকালের সঙ্গে একাধিক শিশু যুক্ত করা যায়।", titleEn: "Add a baby record", descriptionEn: "Each baby has a separate record. More than one baby can be linked to the same pregnancy." },
   note: { title: "স্বাস্থ্য নোট লিখুন", description: "এটি আপনার নিজের লেখা। কোনো রোগনির্ণয় তৈরি হয় না।", titleEn: "Write a health note", descriptionEn: "This is your own note. It does not create a diagnosis." },
   visit: { title: "ভিজিট লিখুন", description: "যে ভিজিট হয়ে গেছে তার কথা রাখুন। এটি অ্যাপয়েন্টমেন্ট বুক করে না, সেবাদাতাকে কিছু পাঠায় না।", titleEn: "Record a visit", descriptionEn: "Keep a note about a visit that happened. This does not book an appointment or send anything to a provider." },
+
 };
 const subjectOptions = [{ value: "mother" as const, label: "মা" }, { value: "baby" as const, label: "শিশু" }];
 const pageSize = 10;
@@ -187,6 +191,7 @@ export function AccountRecords() {
   const savingRequest = useRef(false);
   const [correctingId, setCorrectingId] = useState<string | null>(null);
   const [pendingObservation, setPendingObservation] = useState<{ payload: unknown; form: HTMLFormElement; summary: string } | null>(null);
+  const [guideSelections, setGuideSelections] = useState<Record<string, GuideSelection | null>>({});
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   function openTask(next: Task, tab?: RecordsTab) {
     setTask(next);
@@ -253,7 +258,7 @@ export function AccountRecords() {
             "কিছু সংরক্ষণ হয়নি। ঘরগুলো দেখে আবার চেষ্টা করুন।",
         );
       pendingRequests.current.delete(body);
-      setMessage(`${label} অ্যাকাউন্টে সংরক্ষিত হয়েছে। কাউকে পাঠানো হয়নি। এই MVP-তে শুধু কাল্পনিক তথ্য ব্যবহার করুন।`);
+      setMessage(`${label} আপনার অ্যাকাউন্টে সংরক্ষিত হয়েছে। কাউকে পাঠানো হয়নি।`);
 
       form.reset();
       setCorrectingId(null);
@@ -317,10 +322,12 @@ export function AccountRecords() {
   }
   const selectedPregnancy = records ? selectAccountPregnancyFn(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
+
   const guideKey = selectedPregnancy?.id ?? "none";
   const guideSelection = guideSelections[guideKey] ?? null;
   const shownJourney = journey && guideSelection ? { ...journey, weeks: guideSelection.week, days: guideSelection.day } : journey;
   const previewing = Boolean(journey && guideSelection && (guideSelection.week !== journey.weeks || guideSelection.day !== journey.days));
+
 
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);
@@ -487,14 +494,14 @@ export function AccountRecords() {
                 void save({ type: "pregnancy", record: { label: data.get("label"), estimatedDueDate: data.get("due") || null, lastMenstrualPeriodDate: data.get("period") || null } }, form, "গর্ভকালের নথি", "profiles");
               }}
             >
-              <label className={ui.field}>এই গর্ভকালের নাম<span className={ui.hint}>যেমন: গর্ভকাল ১</span>
+              <label className={ui.field}>গর্ভকালটি কী নামে রাখবেন?<span className={ui.hint}>যেমন: প্রথম গর্ভকাল</span>
                 <input name="label" maxLength={100} required className={ui.input} />
               </label>
               <div className="grid gap-5 sm:grid-cols-2">
                 <label className={ui.field}>প্রসবের সম্ভাব্য তারিখ<span className={ui.hint}>ঐচ্ছিক · রিপোর্ট বা চিকিৎসকের দেওয়া</span><input name="due" type="date" className={ui.input} /></label>
                 <label className={ui.field}>শেষ মাসিকের প্রথম দিন<span className={ui.hint}>ঐচ্ছিক</span><input name="period" type="date" className={ui.input} /></label>
               </div>
-              {formActions("গর্ভকাল সংরক্ষণ করুন")}
+              {formActions("নথি সংরক্ষণ করুন")}
             </form>}
 
             {task === "baby" && <form
@@ -762,7 +769,7 @@ export function AccountRecords() {
         )
       )}
 
-      <p className="flex flex-wrap items-start gap-2 border-t border-pro-border pt-4 text-sm text-pro-muted"><span className={ui.limitedTag}>MVP</span><span className="min-w-0 flex-1">শুধু কাল্পনিক পরীক্ষার তথ্য ব্যবহার করুন। এখানকার নথি অ্যাকাউন্টে সংরক্ষিত হয়; আগের ব্রাউজার-শুধু নমুনার সঙ্গে মেশে না।</span></p>
+      <p className="flex flex-wrap items-start gap-2 border-t border-pro-border pt-4 text-sm text-pro-muted"><span className={ui.limitedTag}>পরীক্ষামূলক</span><span className="min-w-0 flex-1">এই সংস্করণে শুধু নমুনা তথ্য লিখুন। এখানে লেখা তথ্য আপনার অ্যাকাউন্টে থাকে; ডেমোতে লেখা তথ্য এখানে আসে না।</span></p>
 
     </div>
   );

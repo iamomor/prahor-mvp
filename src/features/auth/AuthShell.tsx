@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
+  ChevronRight,
   FolderOpen,
   HandHeart,
   House,
@@ -125,6 +126,7 @@ const titles: { prefix: string; en: string; bn: string }[] = [
     .filter((item) => item.href !== "/app")
     .map((item) => ({ prefix: item.href, en: item.en, bn: item.bn })),
   { prefix: "/app/adapt", en: "Accessibility", bn: "অ্যাক্সেসিবিলিটি" },
+  { prefix: "/app/account", en: "Account", bn: "অ্যাকাউন্ট" },
 ];
 
 const isCurrent = (pathname: string | null, href: string) =>
@@ -366,6 +368,20 @@ export function AuthShell({
         aria-label={t({ en: "PROHOR sections", bn: "প্রহরের অংশসমূহ" })}
         className="flex flex-1 flex-col gap-7"
       >
+        {/* Account lives at the top, where people look for "who am I signed in as". */}
+        <Link
+          href="/app/account"
+          onClick={onNavigate}
+          aria-current={isCurrent(pathname, "/app/account") ? "page" : undefined}
+          className="side-account"
+        >
+          <span className="side-account-avatar" aria-hidden="true">{initial || "•"}</span>
+          <span className="side-account-text">
+            <span className="side-account-name">{userName?.trim() || t({ en: "My account", bn: "আমার অ্যাকাউন্ট" })}</span>
+            <span className="side-account-sub">{t({ en: "My account & roles", bn: "আমার অ্যাকাউন্ট ও পরিচয়" })}</span>
+          </span>
+          <ChevronRight size={16} aria-hidden="true" className="side-account-arrow" />
+        </Link>
         <div className="grid gap-2">
           <h2 className={eyebrow}>
             {t({ en: "Your care, your way", bn: "আপনার যত্ন, আপনার মতো" })}
@@ -523,11 +539,14 @@ export function AuthShell({
               {languageToggle}
               {accessPanel(true)}
               <Link
-                href="/account"
-                aria-label={t({ en: "Account", bn: "অ্যাকাউন্ট" })}
-                className="hidden size-10 place-items-center rounded-full bg-pro-primary font-semibold text-pro-on-primary ring-2 ring-pro-surface focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus sm:grid"
+                href="/app/account"
+                aria-label={t({ en: "My account and roles", bn: "আমার অ্যাকাউন্ট ও পরিচয়" })}
+                aria-current={isCurrent(pathname, "/app/account") ? "page" : undefined}
+                className="account-chip"
               >
-                <span aria-hidden="true">{initial || "•"}</span>
+                <span className="account-chip-avatar" aria-hidden="true">{initial || "•"}</span>
+                <span className="account-chip-name">{userName?.trim() || t({ en: "Account", bn: "অ্যাকাউন্ট" })}</span>
+                <ChevronRight size={16} aria-hidden="true" className="account-chip-arrow" />
               </Link>
             </div>
           </header>

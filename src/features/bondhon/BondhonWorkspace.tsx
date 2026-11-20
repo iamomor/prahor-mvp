@@ -91,7 +91,7 @@ export function BondhonWorkspace({ profile, embedded = false }: { profile: OwnPr
     {!embedded && <nav className={styles.actions} aria-label={t(words("Care navigation", "সেবার পথ"))}>
       <Link className="pro-btn pro-btn-secondary" href={provider ? "/provider" : "/app"}>{t(words("Dashboard", "ড্যাশবোর্ড"))}</Link>
       <Link className="pro-btn pro-btn-secondary" href="/poth">{t(words("Find care and visit preparation", "সেবা খোঁজা ও সাক্ষাতের প্রস্তুতি"))}</Link>
-      <Link className="pro-btn pro-btn-secondary" href="/account">{t(words("Account and roles", "অ্যাকাউন্ট ও পরিচয়"))}</Link>
+      <Link className="pro-btn pro-btn-secondary" href={provider ? "/account" : "/app/account"}>{t(words("Account and roles", "অ্যাকাউন্ট ও পরিচয়"))}</Link>
     </nav>}
     {!embedded && <header>
       <h1 className={styles.heading}>{t(provider ? words("Bondhon · Simulated provider queue", "বন্ধন · সিমুলেটেড সেবাদাতার তালিকা") : words("Bondhon · Your sharing decisions", "বন্ধন · শেয়ারের সিদ্ধান্ত আপনার"))}</h1>

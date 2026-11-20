@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type RefObject } from "react";
+import type { GuideSelection } from "./account-records-model";
 
 import { ArrowUpRight, ChevronLeft, ChevronRight, LifeBuoy, MessageCircle, PenLine } from "lucide-react";
 

@@ -210,8 +210,9 @@ create trigger shonket_phase_scope before update of status on prohor_care.suppor
 for each row execute function prohor_care.guard_shonket_phase_scope();
 
 -- Provider-opened delivery is evidenced by the assigned provider and queue receipt.
+-- Keep SECURITY DEFINER: the hosted definition has it, and CREATE OR REPLACE would otherwise drop it.
 create or replace function prohor_care.check_request_evidence()
-returns trigger language plpgsql set search_path='' as $$
+returns trigger language plpgsql security definer set search_path='' as $$
 declare r prohor_care.support_requests;
 begin
   select * into r from prohor_care.support_requests where id=new.id;

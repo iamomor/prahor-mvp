@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type RefObject } from "react";
 import type { GuideSelection } from "./account-records-model";
 import { careForWeek, careGuideSources, guideWeekRange, whoModelContactWeeks } from "./care-guide-data";
+import { PregnancyReference } from "./PregnancyReference";
 
 type Props = {
   currentWeek: number | null;
@@ -36,12 +37,13 @@ export function CareGuide({ currentWeek, currentDay, headingRef, onBack, onAddNo
   const nextModelContact = whoModelContactWeeks.find(value => value >= week);
   const stage = week < 14 ? "প্রথম ত্রৈমাসিক" : week < 28 ? "দ্বিতীয় ত্রৈমাসিক" : "তৃতীয় ত্রৈমাসিক";
 
-  return <div className="mx-auto grid min-w-0 max-w-3xl gap-8 [overflow-wrap:anywhere]" lang="bn">
+  return <div className="mx-auto grid min-w-0 max-w-5xl gap-10 [overflow-wrap:anywhere]" lang="bn">
     <button type="button" onClick={onBack} className="w-fit min-h-11 font-semibold text-pro-primary underline">← জীবনরেখায় ফিরুন</button>
     <header className="grid gap-2">
       <p className="font-semibold text-pro-primary">মায়ের যত্ন · ১–৪১ সপ্তাহ</p>
       <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-semibold">সপ্তাহভিত্তিক যত্নের পথ</h2>
       <p className="max-w-[65ch] text-pro-muted">সপ্তাহ ধরে যত্নের শিক্ষামূলক বিষয়গুলো দেখুন। আপনার পরীক্ষার তারিখ, প্রয়োজন ও ফল চিকিৎসকের সঙ্গে মিলিয়ে নিন। প্রতিদিন নতুন আল্ট্রাসাউন্ড বা পরীক্ষা দরকার হয় না।</p>
+      <a href="#pregnancy-reference-title" className="w-fit min-h-11 content-center font-semibold text-pro-primary underline underline-offset-2 focus-visible:outline-3 focus-visible:outline-pro-focus">গর্ভাবস্থা, প্রসব ও জন্মের পরের বিষয়গুলো দেখুন ↓</a>
     </header>
 
     <section aria-label="সপ্তাহ ও দিন বেছে নিন" className="grid gap-4 rounded-card border border-pro-border bg-pro-surface p-5">
@@ -89,5 +91,6 @@ export function CareGuide({ currentWeek, currentDay, headingRef, onBack, onAddNo
       <p>রিপোর্টে দেওয়া একক “স্বাভাবিক” সীমা প্রত্যেক ব্যক্তির জন্য প্রযোজ্য নয়। রিপোর্টের মান, একক, সময় ও আগের ইতিহাস মিলিয়ে চিকিৎসক ব্যাখ্যা করবেন। বুঝি-তে রিপোর্ট থেকে নেওয়া লেখা আগে যাচাই করতে হয়।</p>
       <Link href={bujhiHref} className="w-fit min-h-11 font-semibold underline">রিপোর্ট বুঝতে বুঝি খুলুন →</Link>
     </section>
+    <PregnancyReference week={week} />
   </div>;
 }

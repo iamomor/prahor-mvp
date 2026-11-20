@@ -71,7 +71,7 @@ function TileMap({ center, places, selected, onSelect, radius }: {
           {tiles.map(tile => <div key={tile.key} aria-hidden="true" className={`absolute h-64 w-64 ${styles.mapCanvas}`} style={{ left: tile.left, top: tile.top, backgroundImage: `url(${tile.src})`, backgroundSize: "256px 256px" }} />)}
           <div aria-hidden="true" className={`pointer-events-none absolute rounded-full ${styles.mapRadius}`} style={{ left: 450 - pan.x - radiusPixels, top: 300 - pan.y - radiusPixels, width: radiusPixels * 2, height: radiusPixels * 2 }} />
           <div aria-hidden="true" className={`pointer-events-none absolute h-3 w-3 rounded-full ${styles.mapCenter}`} style={{ left: 444 - pan.x, top: 294 - pan.y }} />
-          {pins.map(({ place, x, y }) => <button type="button" key={place.id} title={`${place.name} — ${place.distanceKm.toFixed(1)} km, unverified`} aria-label={`Select ${place.name} on map`}
+          {pins.map(({ place, x, y }) => <button type="button" key={place.id} title={t(`${place.name} — ${place.distanceKm.toFixed(1)} km, unverified`, `${place.name} — ${place.distanceKm.toFixed(1)} কিমি, যাচাই হয়নি`)} aria-label={t(`Select ${place.name} on map`, `মানচিত্রে ${place.name} বাছুন`)}
             onClick={() => onSelect(place)} className={`absolute flex h-11 w-11 items-center justify-center rounded-full font-bold ${styles.mapMarker} ${selected?.id === place.id ? styles.mapSelected : ""}`}
             style={{ left: x - 22, top: y - 22 }}>+</button>)}
         </div>

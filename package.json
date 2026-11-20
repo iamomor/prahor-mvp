@@ -7,7 +7,9 @@
     "dev": "next dev",
     "check:env": "node scripts/check-env.mjs",
     "test:env": "node --test tests/config/env-report.test.mjs",
+
     "prebuild": "node scripts/copy-ocr-assets.mjs",
+
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",

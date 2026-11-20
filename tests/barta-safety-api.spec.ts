@@ -91,3 +91,19 @@ test("Barta clarifies symbols, preserves explicit safety disclosures, and answer
     expect(await response.json(), question).toMatchObject(expected);
   }
 });
+
+test("AAC multi-symbol compositions keep their safety step through the full chat pipeline", async ({ request }) => {
+  const ask = async (question: string, language: "en" | "bn") => (await request.post("/api/ai/chat", { data: { question, language } })).json();
+  const urgent = [
+    ["I have a fever. I feel weak and tired.", "en"], ["আমার জ্বর এসেছে। আমার খুব দুর্বল ও ক্লান্ত লাগছে।", "bn"],
+    ["I have swelling. I have a headache.", "en"], ["আমার ফোলা ভাব আছে। আমার মাথাব্যথা করছে।", "bn"],
+    ["Please say that again. I feel my baby moving less.", "en"],
+  ] as const;
+  for (const [question, language] of urgent) expect(await ask(question, language), question).toMatchObject({ status: "abstained", reason: "urgent_care", answer: null });
+  for (const [question, language] of [["I am experiencing bleeding. I want to mention my lower pelvis too.", "en"], ["আমার রক্তপাত হচ্ছে। আমি তলপেট নিয়েও বলতে চাই।", "bn"]] as const) {
+    expect(await ask(question, language), question).toMatchObject({ status: "clarification", citations: [] });
+  }
+  expect(await ask("I have a headache. I feel dizzy.", "en")).toMatchObject({ status: "clarification", followUpContext: "headache_stage" });
+  // A Talking-with-me phrase on its own is an ordinary message, never escalated.
+  expect(await ask("Please speak slowly.", "en")).not.toMatchObject({ status: "abstained", reason: "urgent_care" });
+});

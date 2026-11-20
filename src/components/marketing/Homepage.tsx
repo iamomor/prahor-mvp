@@ -44,7 +44,9 @@ export function Homepage({ fontVariables, teamImages }: { fontVariables: string;
   useEffect(() => {
     const root = document.querySelector<HTMLElement>(".pro-home");
     if (!root || !("IntersectionObserver" in window)) return;
-    const sections = Array.from(root.querySelectorAll<HTMLElement>("main > section")).slice(1);
+    // Every section is covered by the hiding CSS, so the hero (and anything already on screen
+    // or scrolled past on reload) is revealed immediately below; only sections ahead fade in.
+    const sections = Array.from(root.querySelectorAll<HTMLElement>("main > section"));
     const observer = new IntersectionObserver(entries => entries.forEach(entry => {
       if (!entry.isIntersecting) return;
       (entry.target as HTMLElement).dataset.revealed = "true";

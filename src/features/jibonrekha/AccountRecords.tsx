@@ -14,7 +14,7 @@ import { selectAccountPregnancy, type GuideSelection } from "./account-records-m
 
 import { accountSourceLabel } from "./account-provenance";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
-import { selectAccountPregnancy } from "./account-records-model";
+import { selectAccountPregnancy as selectAccountPregnancyFn } from "./account-records-model";
 
 
 type Pregnancy = {
@@ -316,7 +316,7 @@ export function AccountRecords() {
     }
     return history;
   }
-  const selectedPregnancy = records ? selectAccountPregnancy(records.pregnancies, pregnancyId) : undefined;
+  const selectedPregnancy = records ? selectAccountPregnancyFn(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
 
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));

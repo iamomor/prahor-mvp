@@ -2,9 +2,8 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "prohor-dev",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["next", "dev", "-p", "3107"],
+      "name": "prohor-day3-existing",
+      "url": "http://localhost:3107",
       "port": 3107
     }
   ]

@@ -1035,3 +1035,35 @@ html[data-motion="reduce"] .auth-btn-primary:hover:not(:disabled) { transform: n
   .auth-input { border: 1px solid; }
   .auth-btn-primary { border: 1px solid ButtonText; }
 }
+
+/* Header account entry: avatar + name + arrow so it reads as a button, not a decoration. */
+.account-chip {
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.5rem; max-width: 12rem; padding: 0.2rem 0.6rem 0.2rem 0.25rem;
+  border: 1.5px solid var(--pro-control-border); border-radius: var(--pro-radius-pill); background: var(--pro-elevated);
+  color: var(--pro-text); font-size: 0.875rem; font-weight: 650; text-decoration: none; box-shadow: var(--pro-shadow-1);
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+.account-chip:hover { background: var(--pro-surface); border-color: var(--pro-primary); }
+.account-chip[aria-current="page"] { border-color: var(--pro-primary); background: var(--pro-surface); }
+.account-chip:focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 2px; }
+.account-chip-avatar { display: grid; place-items: center; flex: none; width: 2rem; height: 2rem; border-radius: 50%; background: var(--pro-primary); color: var(--pro-on-primary); }
+.account-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-chip-arrow { flex: none; color: var(--pro-muted); }
+@media (max-width: 40rem) { .account-chip { padding: 0.2rem; } .account-chip-name, .account-chip-arrow { display: none; } }
+@media (prefers-reduced-motion: reduce) { .account-chip { transition: none; } }
+
+/* Sidebar profile card: avatar + name + where it goes. */
+.side-account {
+  display: flex; align-items: center; gap: 0.75rem; min-height: 3.75rem; padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--pro-control-border); border-radius: var(--pro-radius-card); background: var(--pro-elevated);
+  color: var(--pro-text); text-decoration: none; box-shadow: var(--pro-shadow-1);
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+.side-account:hover, .side-account[aria-current="page"] { border-color: var(--pro-primary); background: var(--pro-surface); }
+.side-account:focus-visible { outline: 3px solid var(--pro-focus); outline-offset: 2px; }
+.side-account-avatar { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--pro-primary); color: var(--pro-on-primary); font-weight: 650; }
+.side-account-text { display: grid; min-width: 0; flex: 1; line-height: 1.25; }
+.side-account-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; }
+.side-account-sub { font-size: 0.8125rem; color: var(--pro-muted); }
+.side-account-arrow { flex: none; color: var(--pro-muted); }
+@media (prefers-reduced-motion: reduce) { .side-account { transition: none; } }

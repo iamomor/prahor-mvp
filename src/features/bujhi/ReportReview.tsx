@@ -173,7 +173,7 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
   const complete = fields.length > 0 && fields.every((field) => savedIds.includes(field.id) || field.reviewStatus === "rejected");
 
   return (
-    <div className="mx-auto grid w-full max-w-3xl min-w-0 grid-cols-1 gap-4 px-4 py-4 text-pro-text [overflow-wrap:anywhere] sm:gap-5 sm:px-6 sm:py-6">
+    <div className="mx-auto grid w-full max-w-6xl min-w-0 grid-cols-1 gap-4 py-4 text-pro-text [overflow-wrap:anywhere] sm:gap-5 sm:py-6">
       <header className="grid gap-3" lang={language}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0 flex-1 basis-64"><WorkflowProgress current={stage} language={language} /></div>
@@ -197,7 +197,7 @@ export function ReportReview({ report, source, recordsHref, onNew }: { report: E
           {rejected > 0 && <div><dt className="text-pro-muted">Excluded</dt><dd className="text-2xl font-semibold tabular-nums">{rejected}</dd></div>}
         </dl>
       </section>
-      <div className="grid min-w-0 gap-5">
+      <div className={source || report.rawText !== undefined || report.transcript ? "grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]" : "grid min-w-0 gap-5"}>
       <aside id={id + "-source"} className="grid min-w-0 gap-3 empty:hidden" aria-label="Report source" tabIndex={-1}>
       {source && <SourcePreview source={source} location={region} onReturn={returnFieldId ? () => document.getElementById(returnFieldId)?.focus() : undefined} />}
       {report.rawText !== undefined && <details className={card}><summary className="min-h-12 cursor-pointer font-semibold">Raw OCR text</summary><pre className="mt-3 whitespace-pre-wrap font-body">{report.rawText || "No text recognized."}</pre><p>OCR confidence: {report.ocrConfidence === undefined ? "Confidence unavailable" : `${report.ocrConfidence.toFixed(1)} / 100 (engine text confidence only)`}</p>{report.unrecognizedText?.length ? <details><summary>Unrecognized content — not imported as observations</summary><pre className="whitespace-pre-wrap font-body">{report.unrecognizedText.join("\n")}</pre></details> : null}</details>}

@@ -5,15 +5,8 @@ import { boundedJson, sameOriginPost, siteOrigin } from "@/lib/auth/validation";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 const bujhiCommitSchema = z.strictObject({
-  reportId: z.string().uuid(),
-  pregnancyId: z.string().uuid(),
-  sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
-  rawLabel: z.string().min(1).max(120),
-  rawValue: z.string().max(40),
-  rawUnit: z.string().max(20),
-  reviewedValue: z.string().regex(/^[0-9]{1,3}(\.[0-9]{1,2})?$/),
-  reviewedUnit: z.literal("g/dL"),
-  observedOn: z.iso.date(),
+  reviewId: z.uuid(),
+  fieldId: z.uuid(),
   confirmSave: z.literal(true),
 });
 
@@ -31,16 +24,8 @@ export async function POST(request: Request) {
   if (identity.status !== 200) return jsonNoStore({ message: "Sign in to save a report." }, identity.status);
   if (identity.profile.role !== "mother" || !db) return jsonNoStore({ message: "Account access denied." }, 403);
   const data = parsed.data;
-  const result = await db.rpc("bujhi_commit_reviewed_hemoglobin", {
-    p_report_id: data.reportId,
-    p_pregnancy_id: data.pregnancyId,
-    p_source_sha256: data.sourceSha256,
-    p_raw_label: data.rawLabel,
-    p_raw_value: data.rawValue,
-    p_raw_unit: data.rawUnit,
-    p_reviewed_value: data.reviewedValue,
-    p_reviewed_unit: data.reviewedUnit,
-    p_observed_on: data.observedOn,
+  const result = await db.rpc("bujhi_commit_verified_field", {
+    p_review_id: data.reviewId, p_field_id: data.fieldId,
   });
   if (result.error) {
     const status = result.error.code === "PT409" || result.error.code === "40001" ? 409 : result.error.code === "42501" ? 403 :

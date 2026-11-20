@@ -29,7 +29,11 @@ export async function GET() {
     if (account.userId !== identity.profile.user_id) return respond({ code: "unconfirmed" }, 503);
     const connections = await client.rpc("prohor_supporter_connections");
     if (connections.error) return failure(connections.error);
-    return respond({ account, connections: z.array(supporterConnectionSchema).parse(connections.data) });
+    // Activity history is additive: if its migration is not applied yet, the page still works and shows no history.
+    const activity = await client.rpc("prohor_supporter_activity");
+    return respond({ account, connections: z.array(supporterConnectionSchema).parse(connections.data),
+      activity: activity.error ? [] : z.array(z.strictObject({ id: z.uuid(), action: z.enum(["supporter_invited", "supporter_accepted", "supporter_revoked"]),
+        occurredAt: z.string(), connectionId: z.uuid().nullable(), byYou: z.boolean() })).catch([]).parse(activity.data) });
   } catch { return respond({ code: "unconfirmed" }, 503); }
 }
 export async function POST(request: Request) {

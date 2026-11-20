@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useLanguage } from "@/i18n/use-language";
+import { ReadAloudButton, VoiceDictationButton } from "@/features/adapt";
 
 import { ImageMedicalEntry } from "./ImageMedicalEntry";
 
@@ -39,7 +40,7 @@ export function AccountReportReview({
 }: {
   pregnancies: Pregnancy[];
 }) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const [draft, setDraft] = useState<Draft>();
   const [fieldId, setFieldId] = useState("");
   const [value, setValue] = useState("");
@@ -55,6 +56,7 @@ export function AccountReportReview({
   const [locked, setLocked] = useState(false);
   const pending = useRef(false);
   const snapshot = useRef<string | undefined>(undefined);
+  const reviewId = useRef<string | undefined>(undefined);
   const reviewFocus = useRef<HTMLHeadingElement>(null);
   const uploadFocus = useRef<HTMLHeadingElement>(null);
 
@@ -110,6 +112,7 @@ export function AccountReportReview({
     setSaved(false);
     setLocked(false);
     snapshot.current = undefined;
+    reviewId.current = undefined;
     requestAnimationFrame(() => reviewFocus.current?.focus());
   }
 
@@ -140,7 +143,7 @@ export function AccountReportReview({
         !draft.report.sourceFileId
       ) {
         setFeedback(
-          "Check the pregnancy, printed value, g/dL unit and date, then confirm your review.",
+          t({ en: "Check the pregnancy, printed value, g/dL unit and date, then confirm your review.", bn: "গর্ভকাল, ছাপানো মান, g/dL একক ও তারিখ দেখে নিন, তারপর আপনার যাচাই নিশ্চিত করুন।" }),
         );
         requestAnimationFrame(() => feedbackFocus.current?.focus());
 
@@ -157,44 +160,74 @@ export function AccountReportReview({
         reviewedValue: value,
         reviewedUnit: "g/dL",
         observedOn: date,
-        confirmSave: true,
-
+        fieldId: crypto.randomUUID(),
+        decision: "verified",
       });
       setLocked(true);
     }
-    pending.current = true; setSaving(true); setFeedback(t({ bn: "সংরক্ষণ করা হচ্ছে…", en: "Saving reviewed measurement…" }));
-    try {
 
-      const response = await fetch("/api/reports/commit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: snapshot.current,
-      });
+    pending.current = true; setSaving(true); setFeedback(t({ bn: "সংরক্ষণ করা হচ্ছে…", en: "Saving reviewed measurement…" }));
+
+    try {
+      const post = (url: string, body: unknown) => fetch(url, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const review = JSON.parse(snapshot.current ?? "{}") as { fieldId: string };
+      // Stage 1: the server records the mother's explicit verification. Stage 2 commits only what the server approved.
+      if (!reviewId.current) {
+        const response = await post("/api/reports/reviews", review);
+        const data = (await response.json().catch(() => ({}))) as { reviewId?: string; code?: string };
+        if (!response.ok || !data.reviewId) {
+          if (response.status === 400 || response.status === 409) {
+            if (response.status === 400) { snapshot.current = undefined; setLocked(false); }
+            setFeedback(response.status === 409
+              ? t({ en: "This report field already has a different saved review decision, so it cannot be changed. Nothing new was saved. Choose another image to start again.", bn: "এই রিপোর্টের ঘরে আগে থেকেই ভিন্ন একটি যাচাইয়ের সিদ্ধান্ত সংরক্ষিত আছে, তাই বদলানো যায় না। নতুন কিছু সংরক্ষণ হয়নি। আবার শুরু করতে অন্য ছবি বেছে নিন।" })
+              : t({ en: "Your review was not recorded. Check the value, unit and date, then try again.", bn: "আপনার যাচাই নথিভুক্ত হয়নি। মান, একক ও তারিখ দেখে আবার চেষ্টা করুন।" }));
+          } else if (response.status === 401 || response.status === 403) {
+            setFeedback(t({ en: "Your review was not recorded and nothing was saved. Sign in as the account owner and try again.", bn: "আপনার যাচাই নথিভুক্ত হয়নি এবং কিছুই সংরক্ষণ হয়নি। অ্যাকাউন্টের মালিক হিসেবে সাইন ইন করে আবার চেষ্টা করুন।" }));
+          } else setFeedback(t({ en: "Your review could not be recorded. Nothing was saved. Retry to try the same review again.", bn: "আপনার যাচাই নথিভুক্ত করা যায়নি। কিছুই সংরক্ষণ হয়নি। একই যাচাই আবার চেষ্টা করুন।" }));
+          return;
+        }
+        reviewId.current = data.reviewId;
+      }
+      const response = await post("/api/reports/commit", { reviewId: reviewId.current, fieldId: review.fieldId, confirmSave: true });
       if (response.ok) {
         setSaved(true);
         setFeedback(
-          "Saved to your account. This measurement was reviewed by you, not a clinician.",
+          t({ en: "Saved to your account (not only this device). This measurement was reviewed by you, not a clinician. Open Jibonrekha to see it.", bn: "আপনার অ্যাকাউন্টে সংরক্ষিত হয়েছে (শুধু এই ডিভাইসে নয়)। এই মাপ আপনি নিজে যাচাই করেছেন, কোনো চিকিৎসক নন। দেখতে জীবনরেখা খুলুন।" }),
         );
       } else if (response.status === 400) {
-        snapshot.current = undefined;
-        setLocked(false);
-        setFeedback(
-          "Not saved. Check the measurement and date, then try again.",
-        );
+        setFeedback(t({ en: "Your review is recorded, but this field cannot be saved to the account. Only hemoglobin in g/dL can be saved. Nothing was saved.", bn: "আপনার যাচাই নথিভুক্ত হয়েছে, কিন্তু এই ঘর অ্যাকাউন্টে সংরক্ষণ করা যায় না। শুধু g/dL এককে হিমোগ্লোবিন সংরক্ষণ করা যায়। কিছুই সংরক্ষণ হয়নি।" }));
       } else {
         setFeedback(
-          "Save could not be confirmed. Retry to check the same save.",
+          t({ en: "Your review is recorded, but the account save could not be confirmed. Retry to check the same save.", bn: "আপনার যাচাই নথিভুক্ত হয়েছে, কিন্তু অ্যাকাউন্টে সংরক্ষণ নিশ্চিত হয়নি। একই সংরক্ষণ আবার চেষ্টা করুন।" }),
         );
       }
     } catch {
       setFeedback(
-        "Save could not be confirmed. Check your connection and retry the same save.",
+        t({ en: "Save could not be confirmed. Check your connection and retry the same save.", bn: "সংরক্ষণ নিশ্চিত হয়নি। সংযোগ দেখে একই সংরক্ষণ আবার চেষ্টা করুন।" }),
       );
     } finally {
       pending.current = false;
       setSaving(false);
       requestAnimationFrame(() => feedbackFocus.current?.focus());
     }
+  }
+
+  // Records "rejected" on the server so the value can never be committed later. Nothing is saved to health records.
+  async function reject() {
+    if (pending.current || !draft || !field || !pregnancyId || !draft.report.sourceFileId) {
+      setFeedback(t({ en: "Choose the pregnancy record first, then you can record that you do not want to save this value.", bn: "আগে গর্ভকাল বেছে নিন, তারপর এই মান সংরক্ষণ করতে চান না বলে নথিভুক্ত করতে পারবেন।" }));
+      return;
+    }
+    pending.current = true; setSaving(true);
+    try {
+      const response = await fetch("/api/reports/reviews", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        reportId: draft.reportId, pregnancyId, fieldId: crypto.randomUUID(), sourceSha256: draft.report.sourceFileId,
+        rawLabel: field.label, rawValue: field.rawValue ?? field.value, rawUnit: field.unit,
+        reviewedValue: value, reviewedUnit: unit, observedOn: date || new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(new Date()), decision: "rejected" }) });
+      if (response.ok) { setLocked(true); setSaved(true); setFeedback(t({ en: "Recorded as not saved. This value will not be added to your account or Jibonrekha.", bn: "সংরক্ষণ হবে না বলে নথিভুক্ত হয়েছে। এই মান আপনার অ্যাকাউন্টে বা জীবনরেখায় যোগ হবে না।" })); }
+      else setFeedback(t({ en: "Your decision could not be recorded. Nothing was saved. You can try again.", bn: "আপনার সিদ্ধান্ত নথিভুক্ত করা যায়নি। কিছুই সংরক্ষণ হয়নি। আবার চেষ্টা করতে পারেন।" }));
+    } catch { setFeedback(t({ en: "Your decision could not be recorded. Check your connection. Nothing was saved.", bn: "আপনার সিদ্ধান্ত নথিভুক্ত করা যায়নি। সংযোগ দেখুন। কিছুই সংরক্ষণ হয়নি।" })); }
+    finally { pending.current = false; setSaving(false); requestAnimationFrame(() => feedbackFocus.current?.focus()); }
   }
 
   const control =
@@ -212,7 +245,7 @@ export function AccountReportReview({
           {t({ en: "Account saving supports maternal hemoglobin in g/dL. Other values are shown for reading only.", bn: "অ্যাকাউন্টে এখন শুধু হিমোগ্লোবিন (g/dL) সংরক্ষণ করা যায়। অন্য মানগুলো শুধু পড়ার জন্য দেখানো হয়।" })}
         </p>
       </header>
-      {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} />}
+      {!draft && <ImageMedicalEntry onDraft={openReview} onManualFile={openManual} showProgress={false} />}
       {draft && (
         <section
           className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
@@ -224,10 +257,12 @@ export function AccountReportReview({
             tabIndex={-1}
             className="text-2xl font-semibold xl:col-span-2"
           >
-            {draft.report.inputMethod === "manual" ? "Check the printed value" : "Check what was read"}
+
+            {draft.report.inputMethod === "manual" ? t({ en: "Check the printed value", bn: "রিপোর্টে লেখা মান মিলিয়ে দেখুন" }) : t({ en: "Check what was read", bn: "যা পড়া হয়েছে মিলিয়ে দেখুন" })}
+
           </h3>
           <div className="grid min-w-0 gap-4">
-          {draft.report.inputMethod === "manual" && <p className="rounded-field border border-pro-warning bg-pro-warning-soft p-4">Manual entry from this report image. OCR did not read it. Check the printed value before saving.</p>}
+          {draft.report.inputMethod === "manual" && <p className="rounded-field border border-pro-warning bg-pro-warning-soft p-4">{t({ en: "Manual entry from this report image. OCR did not read it. Check the printed value before saving.", bn: "এই রিপোর্টের ছবি থেকে হাতে লেখা। স্বয়ংক্রিয়ভাবে পড়া যায়নি। সংরক্ষণের আগে ছাপানো মান দেখে নিন।" })}</p>}
           <SourcePreview source={draft.source} expanded />
           {(draft.report.rawText ||
             draft.report.fields.some(
@@ -235,7 +270,9 @@ export function AccountReportReview({
             )) && (
             <details className="rounded-field border border-pro-border px-3">
               <summary className="min-h-12 cursor-pointer py-3 font-semibold text-pro-primary">
-                OCR text and other fields
+
+                {t({ en: "OCR text and other fields", bn: "পড়া লেখা ও অন্যান্য মান" })}
+
               </summary>
               <div className="grid min-w-0 gap-3 pb-3">
                 {draft.report.rawText && (
@@ -247,8 +284,7 @@ export function AccountReportReview({
                   .filter((item) => !isHemoglobinLabel(item.label))
                   .map((item) => (
                     <p key={item.id}>
-                      {item.label} · {item.value} {item.unit}. Read from image,
-                      unsupported for account saving.
+                      {item.label} · {item.value} {item.unit}. {t({ en: "Read from image, unsupported for account saving.", bn: "ছবি থেকে পড়া; অ্যাকাউন্টে সংরক্ষণের জন্য সমর্থিত নয়।" })}
                     </p>
                   ))}
               </div>
@@ -259,14 +295,15 @@ export function AccountReportReview({
           <p className="border-b border-pro-border pb-4 font-semibold text-pro-primary">{t({ en: "Your review · nothing saves until you confirm", bn: "আপনার যাচাই · নিশ্চিত না করা পর্যন্ত সংরক্ষণ হবে না" })}</p>
           {!supported.length ? (
             <p role="status">
-              No supported hemoglobin field found. Nothing can be saved to the
-              account.
+              {t({ en: "No supported hemoglobin field found. Nothing can be saved to the account.", bn: "সমর্থিত কোনো হিমোগ্লোবিনের ঘর পাওয়া যায়নি। অ্যাকাউন্টে কিছু সংরক্ষণ করা যাবে না।" })}
             </p>
           ) : (
             <>
               {supported.length > 1 && (
                 <label className="grid gap-2">
-                  Hemoglobin field to review
+
+                  {t({ en: "Hemoglobin field to review", bn: "যে হিমোগ্লোবিনের মান যাচাই করবেন" })}
+
                   <select
                     className={control}
                     value={fieldId}
@@ -285,7 +322,9 @@ export function AccountReportReview({
                       setConfirmed(false);
                     }}
                   >
-                    <option value="">Choose a field</option>
+
+                    <option value="">{t({ en: "Choose a field", bn: "একটি মান বেছে নিন" })}</option>
+
                     {supported.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.label} · {item.value} {item.unit}
@@ -298,12 +337,20 @@ export function AccountReportReview({
                 <>
                   {field.parsingReliability !== "recognized" && (
                     <p className="font-semibold">
-                      {draft.report.inputMethod === "manual" ? "Enter the hemoglobin value printed on this image." : "The extracted digits are unclear. Enter the printed value from the image."}
+                      {draft.report.inputMethod === "manual" ? t({ en: "Enter the hemoglobin value printed on this image.", bn: "এই ছবিতে ছাপানো হিমোগ্লোবিনের মান লিখুন।" }) : t({ en: "The extracted digits are unclear. Enter the printed value from the image.", bn: "পড়া সংখ্যাগুলো অস্পষ্ট। ছবি থেকে ছাপানো মানটি লিখুন।" })}
                     </p>
                   )}
+                  <p className="rounded-field bg-pro-surface p-3">
+                    {field.rawValue ? `Original text read from the image: “${field.rawValue} ${field.unit}”. Correct it below if it is wrong.` : t({ en: "Nothing was read from the image for this value.", bn: "এই মানের জন্য ছবি থেকে কিছু পড়া যায়নি।" })}
+                  </p>
+                  <ReadAloudButton sensitive language={language === "bn" ? "bn" : "en"} label={t({ en: "Read this value aloud", bn: "এই মান পড়ে শোনান" })} text={t({
+                    en: `Hemoglobin, as you have entered it: ${value || "not entered yet"} ${unit}. Original text read from the image: ${field.rawValue || "nothing"}. Check it against the printed report before you save.`,
+                    bn: `হিমোগ্লোবিন, আপনার লেখা মান: ${value || "এখনো লেখা হয়নি"} ${unit}। ছবি থেকে পড়া মূল লেখা: ${field.rawValue || "কিছু নেই"}। সংরক্ষণের আগে ছাপানো রিপোর্টের সঙ্গে মিলিয়ে নিন।` })} />
                   <div className="grid gap-4 sm:grid-cols-2">
                   <label className="grid gap-2 font-semibold">
-                    Hemoglobin value from report
+
+                    {t({ en: "Hemoglobin value from report", bn: "রিপোর্টে লেখা হিমোগ্লোবিনের মান" })}
+
                     <input
                       className={control}
                       value={value}
@@ -315,8 +362,14 @@ export function AccountReportReview({
                       inputMode="decimal"
                     />
                   </label>
+                  <div className="sm:col-span-2">
+                    <VoiceDictationButton language={language === "bn" ? "bn" : "en"} value={value} maxLength={32} onChange={next => { setValue(next); setConfirmed(false); }} />
+                    <p className="mt-1 text-sm text-pro-muted">{t({ en: "Voice input is an unverified draft. Check the printed report and confirm the value and unit before saving.", bn: "কণ্ঠে লেখা তথ্য যাচাইহীন খসড়া। সংরক্ষণের আগে ছাপানো রিপোর্টের সঙ্গে মান ও একক মিলিয়ে নিশ্চিত করুন।" })}</p>
+                  </div>
                   <label className="grid gap-2 font-semibold">
-                    Printed unit
+
+                    {t({ en: "Printed unit", bn: "রিপোর্টে লেখা একক" })}
+
                     <input
                       className={control}
                       value={unit}
@@ -328,7 +381,9 @@ export function AccountReportReview({
                     />
                   </label>
                   <label className="grid gap-2 font-semibold sm:col-span-2">
-                    Observation date
+
+                    {t({ en: "Observation date", bn: "তথ্যের তারিখ" })}
+
                     <input
                       className={control}
                       type="date"
@@ -342,10 +397,12 @@ export function AccountReportReview({
                     />
                   </label>
                   <p id="account-report-date-hint" className="-mt-2 text-pro-muted sm:col-span-2">
-                    If you can’t verify the date, leave this review unsaved.
+
+                    {t({ en: "If you can’t verify the date, leave this review unsaved.", bn: "তারিখ মিলিয়ে দেখতে না পারলে এই তথ্য সংরক্ষণ করবেন না।" })}
                   </p>
                   <label className="grid gap-2 font-semibold sm:col-span-2">
-                    Pregnancy record
+                    {t({ en: "Pregnancy record", bn: "গর্ভকালের রেকর্ড" })}
+
                     <select
                       className={control}
                       value={pregnancyId}
@@ -355,7 +412,9 @@ export function AccountReportReview({
                         setConfirmed(false);
                       }}
                     >
-                      <option value="">Choose a record</option>
+
+                      <option value="">{t({ en: "Choose a record", bn: "একটি রেকর্ড বেছে নিন" })}</option>
+
                       {pregnancies.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.label}
@@ -372,9 +431,15 @@ export function AccountReportReview({
                       disabled={locked || saved}
                       onChange={(event) => setConfirmed(event.target.checked)}
                     />
-                    I checked the value, unit and date against the report and
-                    chose the correct pregnancy record.
+
+                    {t({ en: "I checked the value, unit and date against the report and chose the correct pregnancy record.", bn: "রিপোর্টের সঙ্গে মান, একক ও তারিখ মিলিয়েছি এবং সঠিক গর্ভকালের রেকর্ড বেছে নিয়েছি।" })}
+
                   </label>
+                  {!saved && !reviewId.current && !locked && (
+                    <button type="button" disabled={saving} onClick={() => void reject()} className="min-h-12 text-left text-pro-primary underline disabled:opacity-60">
+                      {t({ en: "Do not save this value (record that I rejected it)", bn: "এই মান সংরক্ষণ করব না (আমি বাতিল করেছি বলে নথিভুক্ত করুন)" })}
+                    </button>
+                  )}
                   {!saved && (
                     <button
                       type="button"
@@ -383,10 +448,12 @@ export function AccountReportReview({
                       className="min-h-12 rounded-control bg-pro-primary px-4 py-3 font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus disabled:opacity-60"
                     >
                       {saving
-                        ? "Saving…"
+                        ? t({ en: "Saving…", bn: "সংরক্ষণ হচ্ছে…" })
                         : locked
-                          ? "Retry account save"
-                          : "Save reviewed hemoglobin"}
+
+                          ? t({ en: "Retry account save", bn: "আবার সংরক্ষণ চেষ্টা করুন" })
+
+                          : t({ en: "Save reviewed hemoglobin", bn: "যাচাই করা হিমোগ্লোবিন সংরক্ষণ করুন" })}
                     </button>
                   )}
                 </>
@@ -397,7 +464,7 @@ export function AccountReportReview({
             {feedback}
           </p>
           <Link href={`/ask?q=${encodeURIComponent(educationTopics.ironFolate.en)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center text-pro-primary underline">
-            Read general education about iron and folic acid (opens a new tab)
+            {t({ en: "Read general education about iron and folic acid (opens a new tab)", bn: "আয়রন ও ফলিক অ্যাসিড নিয়ে সাধারণ শিক্ষামূলক তথ্য পড়ুন (নতুন ট্যাবে খুলবে)" })}
           </Link>
           <div className="flex flex-wrap gap-x-5">
             <button
@@ -409,14 +476,16 @@ export function AccountReportReview({
                 requestAnimationFrame(() => uploadFocus.current?.focus());
               }}
             >
-              Choose another image
+              {t({ en: "Choose another image", bn: "অন্য ছবি বেছে নিন" })}
             </button>
             {saved && (
               <Link
                 href="/app/jibonrekha"
                 className="inline-flex min-h-12 items-center text-pro-primary underline"
               >
-                View Jibonrekha
+
+                {t({ en: "View Jibonrekha", bn: "জীবনরেখায় দেখুন" })}
+
               </Link>
             )}
           </div>

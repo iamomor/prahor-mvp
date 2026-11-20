@@ -1,0 +1,7 @@
+/* Printing while a card is shown prints only the card, in system colours (Poth uses the same pattern). */
+@media print {
+  :global(body):has(.printCard) * { visibility: hidden; }
+  .printCard, .printCard * { visibility: visible; }
+  .printCard { position: absolute; inset: 0 auto auto 0; width: 100%; color: CanvasText; background: Canvas; border: 0; }
+  .printCard section { break-inside: avoid; }
+}

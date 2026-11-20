@@ -5,6 +5,7 @@ import { AppButton } from "@/components/ui/AppButton";
 import { AppCard } from "@/components/ui/AppCard";
 import { useLanguage } from "@/i18n/use-language";
 import type { WellnessEntry } from "@/lib/contracts/wellness";
+import { ReadAloudButton } from "@/features/adapt";
 import { saveWellnessEntry, shusthotaErrorCopy } from "./api";
 
 type MoodValue = NonNullable<WellnessEntry["mood"]>;
@@ -14,6 +15,8 @@ const options: readonly { value: MoodValue; label: { en: string; bn: string } }[
   { value: "difficult", label: { en: "It feels difficult", bn: "কঠিন লাগছে" } },
   { value: "prefer_not_to_say", label: { en: "Prefer not to say", bn: "বলতে চাই না" } },
 ];
+// Symbols only supplement the visible text label; they are hidden from assistive technology.
+const symbols: Record<string, string> = { comfortable: "🙂", mixed: "😐", difficult: "😟", prefer_not_to_say: "🔒" };
 const copy = {
   choose: { en: "How are you feeling right now?", bn: "এই মুহূর্তে আপনার কেমন লাগছে?" },
   help: { en: "Choose one option if you like.", bn: "ইচ্ছা হলে একটি বেছে নিন।" },
@@ -75,7 +78,7 @@ export function MoodCheckIn({ onClose, onSaved }: { onClose: () => void; onSaved
               {options.map(option => (
                 <label key={option.value} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-field border border-pro-control-border bg-pro-elevated px-4 py-3 text-base text-pro-text focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus">
                   <input type="radio" name="shusthota-mood-choice" value={option.value} checked={selected === option.value} onChange={() => setSelected(option.value)} className="size-5 shrink-0 accent-pro-primary" />
-                  <span>{t(option.label)}</span>
+                  <span aria-hidden="true" className="text-2xl">{symbols[option.value]}</span><span>{t(option.label)}</span>
                 </label>
               ))}
             </fieldset>
@@ -86,7 +89,7 @@ export function MoodCheckIn({ onClose, onSaved }: { onClose: () => void; onSaved
           </>
         ) : (
           <>
-            <div className="rounded-field border border-pro-border bg-pro-surface p-4"><p className="text-sm font-medium text-pro-muted">{t({ en: "Selected mood", bn: "বাছাই করা মনের অবস্থা" })}</p><p className="text-lg font-semibold">{selectedOption ? t(selectedOption.label) : ""}</p></div>
+            <div className="rounded-field border border-pro-border bg-pro-surface p-4"><p className="text-sm font-medium text-pro-muted">{t({ en: "Selected mood", bn: "বাছাই করা মনের অবস্থা" })}</p><p className="text-lg font-semibold">{selectedOption ? t(selectedOption.label) : ""}</p>{selectedOption && <ReadAloudButton text={`${t({ en: "Selected mood", bn: "বাছাই করা মনের অবস্থা" })}: ${t(selectedOption.label)}`} language={language === "en" ? "en" : "bn"} />}</div>
             <div className="flex flex-col gap-3 border-t border-pro-border pt-4 sm:flex-row sm:flex-wrap">
               <AppButton variant="secondary" onClick={() => { setStatus(null); setStep("choose"); }}>{t(copy.change)}</AppButton>
               <AppButton disabled={saving || status?.kind === "success"} onClick={() => void save()}>{saving ? t(copy.saving) : t(status?.kind === "success" ? copy.saved : copy.save)}</AppButton>

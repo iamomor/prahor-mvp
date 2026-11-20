@@ -53,6 +53,7 @@ export function fromLocalPreferences(settings: ProhorAccessPreferences): AccessP
     textScale: settings.textScale, spaciousLayout: settings.spaciousLayout,
     reducedMotion: settings.reducedMotion, simplifiedContent: settings.simplifiedContent,
     communication: settings.communication, language: settings.language,
+    readAloud: settings.readAloud ?? DEFAULT_ACCESS_PREFERENCES.readAloud,
   });
 }
 

@@ -20,6 +20,11 @@ export type ProhorAccessPreferences = {
   language: ProhorLanguage;
   /** P1: Focused/reduced-distraction view — hides non-essential decorative elements. */
   focusedView: boolean;
+  /**
+   * Show Listen buttons by default. Never autoplays: audio starts only when she presses Listen.
+   * null = not chosen on this device, so it never overwrites her account choice (treat as off).
+   */
+  readAloud: boolean | null;
 };
 
 export const DEFAULT_PROHOR_PREFERENCES: ProhorAccessPreferences = {
@@ -33,12 +38,13 @@ export const DEFAULT_PROHOR_PREFERENCES: ProhorAccessPreferences = {
   communication: "text",
   language: "bn",
   focusedView: false,
+  readAloud: null,
 };
 
 export const ACCESS_PREFERENCES_KEY = "prohor-access-preferences-v1";
 export const READING_PREFERENCES_KEY = "prohor-home-reading-v1";
 const KEY = ACCESS_PREFERENCES_KEY;
-const PREFERENCES_SCHEMA_VERSION = 3;
+const PREFERENCES_SCHEMA_VERSION = 4;
 let lastSnapshotKey: string | null | undefined;
 let lastSnapshot = DEFAULT_PROHOR_PREFERENCES;
 let transientPreferences: ProhorAccessPreferences | null = null;
@@ -76,6 +82,7 @@ export function sanitizePreferences(value: unknown): ProhorAccessPreferences {
     communication: v.communication === "aac" ? "aac" : "text",
     language: v.language === "en" ? "en" : "bn",
     focusedView: typeof v.focusedView === "boolean" ? v.focusedView : false,
+    readAloud: typeof v.readAloud === "boolean" ? v.readAloud : null,
   };
 }
 

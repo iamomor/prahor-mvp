@@ -6,10 +6,12 @@ import { HomeBrand } from "./HomeBrand";
 import { copy } from "./home-content";
 import { useHome } from "./HomeContext";
 
+// Same order as the sections on the page, so the menu always reads top to bottom.
 const links = [
   ["#why-prohor", copy("Why PROHOR", "কেন প্রহর")],
-  ["#how-it-works", copy("How it works", "যেভাবে কাজ করে")],
+  ["#your-way", copy("Your way", "আপনার মতো")],
   ["#features", copy("Features", "সুবিধাসমূহ")],
+  ["#how-it-works", copy("How it works", "যেভাবে কাজ করে")],
   ["#responsible-ai", copy("Responsible AI", "দায়িত্বশীল এআই")],
 ] as const;
 

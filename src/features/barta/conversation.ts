@@ -41,8 +41,8 @@ export function getBartaGreeting(question: string, language: BartaRequest["langu
     .replace(/^(?:kmn|kmon)\b/u, "kemon");
   const affection = /^(?:(?:prohor|barta|প্রহর|বার্তা)[,، ]+)?(?:i love (?:you|u)|love (?:you|u)|ভালোবাসি|তোমাকে ভালোবাসি|ami tomake bhalobashi)(?:[,، ]+(?:prohor|barta|প্রহর|বার্তা))?$/iu;
   const message = voiceHelp.has(simple) ? {
-    en: "Choose a speech language in the question box and start the microphone. Review the draft before sending. Use Read aloud on a reply to hear it.",
-    bn: "প্রশ্নের ঘরে কথার ভাষা বেছে নিয়ে মাইক্রোফোন চালু করুন। পাঠানোর আগে লেখাটি দেখে নিন। উত্তর শুনতে পড়ে শোনান বোতাম চাপুন।",
+    en: "Choose a speech language in the question box and start the microphone. Review the draft before sending. Turn on Speaker to hear questions and replies.",
+    bn: "প্রশ্নের ঘরে কথার ভাষা বেছে নিয়ে মাইক্রোফোন চালু করুন। পাঠানোর আগে লেখাটি দেখে নিন। প্রশ্ন ও উত্তর শুনতে স্পিকার চালু করুন।",
   }[language] : affection.test(text) ? {
     en: "That’s kind of you. I’m glad you’re here. We can keep talking whenever you’re ready.",
     bn: "এত সুন্দর কথা বলার জন্য ধন্যবাদ। আপনি চাইলে আমরা কথা চালিয়ে যেতে পারি।",
@@ -76,6 +76,6 @@ export function stripOpeningGreeting(question: string): string {
   const prefix = opening?.[1].normalize("NFKC").toLowerCase().trim().replace(/\s+/gu, " ");
   if (opening && prefix && greetings.has(prefix)) return opening[2];
 
-  const informal = text.match(/^(?:hi+|he+y+|hello+|heya|hiya|yo+|হ্যালো|হাই|সালাম|নমস্কার|assalamu alaikum|আসসালামু আলাইকুম)(?:\s+(?:barta|prohor|বার্তা|প্রহর))?[\s,،!.?।:]+(\S[\s\S]*)$/iu);
+  const informal = text.match(/^(?:hi+|he+y+|hell?o+|heya|hiya|hlo|hlw|howdy|good (?:morning|afternoon|evening|day)|yo+|হ্যালো|হাই|সালাম|নমস্কার|আদাব|assalamu alaikum|আসসালামু আলাইকুম)(?:\s+(?:barta|prohor|বার্তা|প্রহর))?[\s,،!.?।:]+(\S[\s\S]*)$/iu);
   return informal?.[1] ?? question;
 }

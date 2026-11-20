@@ -1,60 +1,161 @@
+/* Shusthota — tactile, calm journal. Tokens only (prohor-tokens.css). */
+
 .enter {
-  animation: settle-in 360ms var(--pro-ease) both;
+  animation: settle-in 320ms var(--pro-ease) both;
 }
 
-.enter:nth-child(2) { animation-delay: 35ms; }
-.enter:nth-child(3) { animation-delay: 65ms; }
-.enter:nth-child(4) { animation-delay: 95ms; }
-.enter:nth-child(5) { animation-delay: 125ms; }
-.enter:nth-child(6) { animation-delay: 155ms; }
-.enter:nth-child(7) { animation-delay: 185ms; }
-
-.botanical {
-  animation: botanical-arrive 560ms var(--pro-ease) both;
-  animation-delay: 100ms;
-}
-.botanicalLeaf { animation: leaf-drift 6.5s ease-in-out infinite; }
-
-@keyframes settle-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes botanical-arrive {
-  from { opacity: 0; transform: scale(0.96) rotate(-3deg); }
-  to { opacity: 1; transform: scale(1) rotate(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .enter,
-  .botanical,
-  .botanicalLeaf { animation: none; }
-}
-
-:global(html[data-motion="reduce"]) .enter,
-:global(html[data-motion="reduce"]) .botanical,
-:global(html[data-motion="reduce"]) .botanicalLeaf { animation: none; }
-
-.moodOption {
-  border-color: var(--pro-control-border);
+/* ── Tactile controls ──────────────────────────────────────────────
+   A raised card with a soft "ledge" underneath so it reads as pressable.
+   Selected state = 2px primary border + tinted fill + check badge
+   (never colour alone). Works for <label> wrapping a native input
+   (:has(:checked)) and for <button aria-pressed>. */
+.tile {
+  position: relative;
+  border: 1.5px solid var(--pro-control-border);
   background: var(--pro-elevated);
+  color: var(--pro-text);
+  box-shadow: 0 3px 0 var(--pro-surface-2);
+  transition:
+    transform var(--pro-duration-fast) var(--pro-ease),
+    box-shadow var(--pro-duration-fast) var(--pro-ease),
+    background-color var(--pro-duration-fast) var(--pro-ease),
+    border-color var(--pro-duration-fast) var(--pro-ease);
+}
+.tile:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--pro-surface) 35%, var(--pro-elevated));
+  box-shadow: 0 4px 0 var(--pro-surface-2), var(--pro-shadow-1);
+}
+.tile:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--pro-surface-2);
+}
+.tile:has(:checked),
+.tile[aria-pressed="true"] {
+  border: 2px solid var(--pro-primary);
+  background: var(--pro-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pro-primary) 18%, transparent);
+}
+.tile:has(:focus-visible),
+.chip:has(:focus-visible),
+.segmentItem:has(:focus-visible) {
+  outline: 3px solid var(--pro-focus);
+  outline-offset: 2px;
+}
+.tile:has(:disabled),
+.chip:has(:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
 }
 
-.moodOption:hover {
-  background: color-mix(in srgb, var(--pro-surface) 58%, var(--pro-elevated));
-  box-shadow: var(--pro-shadow-1);
+/* Check badge: hidden until the parent tile is selected. */
+.badge {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 999px;
+  border: 1.5px solid var(--pro-control-border);
+  background: var(--pro-elevated);
+  color: transparent;
+  flex: none;
+  transition: background-color var(--pro-duration-fast) var(--pro-ease);
 }
-
-.moodSelected {
+.tile:has(:checked) .badge,
+.tile[aria-pressed="true"] .badge,
+.chip:has(:checked) .badge {
   border-color: var(--pro-primary);
-  background: color-mix(in srgb, var(--pro-accent) 18%, var(--pro-elevated));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pro-primary) 20%, transparent), var(--pro-shadow-1);
+  background: var(--pro-primary);
+  color: var(--pro-on-primary);
+}
+.chip:has(:checked) .badge {
+  border-color: var(--pro-on-primary);
+  background: var(--pro-on-primary);
+  color: var(--pro-primary);
 }
 
+/* Pill chip (multi or single select). */
+.chip {
+  border: 1.5px solid var(--pro-control-border);
+  background: var(--pro-elevated);
+  color: var(--pro-text);
+  box-shadow: 0 2px 0 var(--pro-surface-2);
+  transition:
+    transform var(--pro-duration-fast) var(--pro-ease),
+    background-color var(--pro-duration-fast) var(--pro-ease),
+    box-shadow var(--pro-duration-fast) var(--pro-ease);
+}
+.chip:hover { transform: translateY(-1px); background: var(--pro-surface); }
+.chip:active { transform: translateY(1px); box-shadow: none; }
+.chip:has(:checked),
+.chip[aria-pressed="true"] {
+  border-color: var(--pro-primary);
+  background: var(--pro-primary);
+  color: var(--pro-on-primary);
+  box-shadow: none;
+}
+
+/* Segmented scale (energy). */
+.segment {
+  background: var(--pro-surface);
+  border: 1.5px solid var(--pro-border);
+}
+.segmentItem {
+  color: var(--pro-text);
+  transition: background-color var(--pro-duration-fast) var(--pro-ease), color var(--pro-duration-fast) var(--pro-ease);
+}
+.segmentItem:hover { background: color-mix(in srgb, var(--pro-elevated) 70%, var(--pro-surface)); }
+.segmentItem:has(:checked) {
+  background: var(--pro-primary);
+  color: var(--pro-on-primary);
+  box-shadow: var(--pro-shadow-3);
+}
+
+/* Calendar day cells. */
+.day {
+  color: var(--pro-text);
+  transition: background-color var(--pro-duration-fast) var(--pro-ease);
+}
+.day:hover { background: var(--pro-surface); }
+.dayHasRecords { background: var(--pro-surface); font-weight: 700; }
+.daySelected,
+.daySelected:hover {
+  background: var(--pro-primary);
+  color: var(--pro-on-primary);
+  font-weight: 800;
+}
+.dayToday { box-shadow: inset 0 0 0 2px var(--pro-primary); }
+.daySelected.dayToday { box-shadow: inset 0 0 0 2px var(--pro-on-primary); }
+.dot { background: var(--pro-primary); }
+.daySelected .dot { background: var(--pro-accent); }
+
+/* Save / action dock: an inverted band so the main action is unmistakable. */
+.dock {
+  background: var(--pro-text);
+  color: var(--pro-bg);
+}
+.dockPrimary {
+  background: var(--pro-accent);
+  color: var(--pro-on-accent);
+  border: 2px solid var(--pro-accent);
+  transition: transform var(--pro-duration-fast) var(--pro-ease), filter var(--pro-duration-fast) var(--pro-ease);
+}
+.dockPrimary:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
+.dockPrimary:active:not(:disabled) { transform: translateY(1px); }
+.dockSecondary {
+  border: 1.5px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+.dockSecondary:hover:not(:disabled) { background: color-mix(in srgb, var(--pro-bg) 12%, transparent); }
+.dock :focus-visible { outline-color: var(--pro-accent); }
+
+/* Mood illustrations */
 .moodCharacter {
   display: grid;
-  width: 3.75rem;
-  height: 3.75rem;
+  width: 3.5rem;
+  height: 3.5rem;
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
@@ -62,24 +163,18 @@
   background: var(--pro-surface);
   transition: transform var(--pro-duration-fast) var(--pro-ease);
 }
-
-.moodOption:hover .moodCharacter { transform: translateY(-2px) rotate(-2deg); }
-.moodSelected .moodCharacter { background: color-mix(in srgb, var(--pro-accent) 32%, var(--pro-surface)); }
-.choiceCard { transition-property: background-color, border-color, box-shadow, transform; }
-.choiceCard:hover { box-shadow: var(--pro-shadow-1); }
-.moodSvg { width: 3.25rem; height: 3.25rem; overflow: visible; }
+.tile:hover .moodCharacter { transform: rotate(-4deg); }
+.tile:has(:checked) .moodCharacter { background: color-mix(in srgb, var(--pro-accent) 40%, var(--pro-elevated)); }
+.moodSvg { width: 3rem; height: 3rem; overflow: visible; }
 .sunFace { fill: var(--pro-accent); }
 .cloudFace { fill: var(--pro-elevated); }
 .moonFace { fill: var(--pro-surface-2); }
 .heart { fill: var(--pro-accent); stroke: currentColor; stroke-width: 1.5; }
-.sunRays { transform-origin: 32px 32px; animation: rays-glow 5s ease-in-out infinite; }
-.tinySparkle { animation: twinkle 3.4s ease-in-out infinite; transform-origin: 51px 14px; }
-.moodSelected .moodSvg { animation: character-greeting 420ms var(--pro-ease) both; }
-.characterSelected .sunRays { animation-duration: 2.8s; }
-.selectedMark { animation: mark-in 220ms var(--pro-ease) both; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pro-primary) 35%, transparent)); }
+.tile:has(:checked) .moodSvg { animation: character-greeting 420ms var(--pro-ease) both; }
 
-.supportMoment { animation: settle-in 220ms var(--pro-ease) both; }
-.pauseMoment { animation: settle-in 220ms var(--pro-ease) both; }
+.supportMoment,
+.pauseMoment,
+.saveConfirmed { animation: settle-in 220ms var(--pro-ease) both; }
 .breathingOrb {
   display: grid;
   width: 4.25rem;
@@ -87,7 +182,7 @@
   place-items: center;
   border: 1px solid var(--pro-border);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--pro-surface) 65%, var(--pro-elevated));
+  background: var(--pro-elevated);
 }
 .breathingOrb span {
   width: 2rem;
@@ -97,107 +192,48 @@
   animation: easy-breath 5s ease-in-out infinite alternate;
 }
 
-.restSection textarea { transition: background-color var(--pro-duration-normal) var(--pro-ease), box-shadow var(--pro-duration-normal) var(--pro-ease); }
-.restSection textarea:focus-visible { background-color: color-mix(in srgb, var(--pro-surface) 38%, var(--pro-elevated)); box-shadow: var(--pro-shadow-1); }
-.restIcon { animation: moon-float 4.5s ease-in-out infinite; }
-.saveConfirmed { animation: success-arrive 300ms var(--pro-ease) both; }
-.journal { animation: settle-in 280ms var(--pro-ease) both; }
 .journalPaper {
-  background-color: var(--pro-surface);
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 2.05rem, color-mix(in srgb, var(--pro-border) 26%, transparent) 2.05rem, color-mix(in srgb, var(--pro-border) 26%, transparent) 2.1rem);
+  background-color: var(--pro-elevated);
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 2.05rem, color-mix(in srgb, var(--pro-border) 30%, transparent) 2.05rem, color-mix(in srgb, var(--pro-border) 30%, transparent) 2.1rem);
   background-position: 0 0.25rem;
 }
 
-.historyScroll {
+.scrollArea {
   scrollbar-width: thin;
   scrollbar-color: var(--pro-border) transparent;
 }
 
-.historyScroll::-webkit-scrollbar { width: 0.5rem; }
-.historyScroll::-webkit-scrollbar-track { background: transparent; }
-.historyScroll::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background: var(--pro-border);
-  background-clip: padding-box;
+@keyframes settle-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes character-greeting {
-  0% { opacity: 0.78; transform: scale(0.96); }
-  70% { opacity: 1; transform: scale(1.04); }
-  100% { opacity: 1; transform: scale(1); }
+  0% { transform: scale(0.94); }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
-
-@keyframes mark-in {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes rays-glow {
-  0%, 100% { opacity: 0.68; }
-  50% { opacity: 1; }
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0.55; transform: scale(0.9) rotate(0); }
-  50% { opacity: 1; transform: scale(1.08) rotate(12deg); }
-}
-
 @keyframes easy-breath {
   from { transform: scale(0.88); opacity: 0.78; }
   to { transform: scale(1.12); opacity: 1; }
 }
 
-@keyframes moon-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-}
-
-@keyframes leaf-drift {
-  0%, 100% { transform: rotate(-3deg) translateY(0); }
-  50% { transform: rotate(2deg) translateY(-2px); }
-}
-
-@keyframes success-arrive {
-  from { opacity: 0.7; transform: translateY(3px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Windows high contrast: keep selection visible without our colours. */
+@media (forced-colors: active) {
+  .tile:has(:checked), .tile[aria-pressed="true"],
+  .chip:has(:checked), .chip[aria-pressed="true"],
+  .segmentItem:has(:checked), .daySelected { outline: 3px solid Highlight; }
+  .dot { background: CanvasText; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .choiceCard,
-  .choiceIcon,
-  .moodCharacter,
-  .sunRays,
-  .tinySparkle,
-  .moodSelected .moodSvg,
-  .selectedMark,
-  .supportMoment,
-  .pauseMoment,
-  .breathingOrb span,
-  .restSection textarea,
-  .restIcon,
-  .saveConfirmed,
-  .journal { animation: none; transition: none; }
+  .enter, .tile, .chip, .segmentItem, .day, .badge, .dockPrimary, .moodCharacter,
+  .tile:has(:checked) .moodSvg, .supportMoment, .pauseMoment, .saveConfirmed,
+  .breathingOrb span { animation: none; transition: none; }
+  .tile:hover, .tile:active, .chip:hover, .chip:active, .dockPrimary:hover, .tile:hover .moodCharacter { transform: none; }
 }
-
-:global(html[data-motion="reduce"]) .moodCharacter,
-:global(html[data-motion="reduce"]) .choiceCard,
-:global(html[data-motion="reduce"]) .choiceIcon,
-:global(html[data-motion="reduce"]) .botanicalLeaf,
-:global(html[data-motion="reduce"]) .motionControl,
-:global(html[data-motion="reduce"]) .sunRays,
-:global(html[data-motion="reduce"]) .tinySparkle,
-:global(html[data-motion="reduce"]) .moodSelected .moodSvg,
-:global(html[data-motion="reduce"]) .selectedMark,
-:global(html[data-motion="reduce"]) .supportMoment,
-:global(html[data-motion="reduce"]) .pauseMoment,
-:global(html[data-motion="reduce"]) .breathingOrb span,
-:global(html[data-motion="reduce"]) .restSection textarea,
-:global(html[data-motion="reduce"]) .restIcon,
-:global(html[data-motion="reduce"]) .saveConfirmed,
-:global(html[data-motion="reduce"]) .journal { animation: none; transition: none; }
-
-:global(html[data-motion="reduce"]) .moodOption:hover,
-:global(html[data-motion="reduce"]) .moodOption:hover .moodCharacter { transform: none; }
-:global(html[data-motion="reduce"]) .choiceCard:hover,
-:global(html[data-motion="reduce"]) .choiceIcon { transform: none; }
+:global(html[data-motion="reduce"]) :is(.enter, .tile, .chip, .segmentItem, .day, .badge, .dockPrimary, .moodCharacter, .moodSvg, .supportMoment, .pauseMoment, .saveConfirmed, .breathingOrb span) {
+  animation: none;
+  transition: none;
+}
+:global(html[data-motion="reduce"]) :is(.tile, .chip, .dockPrimary, .moodCharacter):is(:hover, :active),
+:global(html[data-motion="reduce"]) .tile:hover .moodCharacter { transform: none; }

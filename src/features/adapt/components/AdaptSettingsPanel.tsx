@@ -15,8 +15,9 @@
  *   6. Typeface preset
  *   7. Language
  *   8. Communication preference
- *   9. Simplified content
- *  10. Focused view (P1) ← NEW
+ *   9. Read aloud (shows Listen buttons; never autoplays)
+ *  10. Focused view (P1)
+ * Easy Read (simplifiedContent) appears only when at least one human-approved entry exists (lib/easy-read.ts).
  *
  * Design rules:
  * - Only semantic form elements (fieldset/legend, label/input, label/select).
@@ -27,7 +28,7 @@
  * - No preference reduces healthcare access.
  * - Every status uses icon + text, never colour alone.
  */
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import {
   Check,
   RotateCcw,
@@ -40,8 +41,12 @@ import {
   MessageSquare,
   TextCursor,
   Focus,
+  Volume2,
 } from "lucide-react";
 import { useAdaptPreferences } from "../hooks/useAdaptPreferences";
+import { AccessPresets } from "./AccessPresets";
+import { EasyRead } from "./EasyRead";
+import { hasApprovedEasyRead } from "../lib/easy-read";
 import { InlineLiveRegion } from "@/components/accessibility/LiveRegion";
 import { ContrastPreferenceControl } from "@/components/accessibility/ContrastPreferenceControl";
 import { AppButton } from "@/components/ui/AppButton";
@@ -49,6 +54,7 @@ import { AppCard } from "@/components/ui/AppCard";
 import type { ProhorTheme } from "../types/adapt.types";
 import { useLanguage } from "@/i18n/use-language";
 import { translations } from "@/i18n/translations";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
 
 const THEME_OPTIONS: { id: ProhorTheme; label: string; labelBn: string; swatch: string }[] = [
   { id: "quiet-garden", label: "Quiet Garden", labelBn: "শান্ত বাগান", swatch: "var(--pro-primary)" },
@@ -118,7 +124,9 @@ export function AdaptSettingsPanel() {
   const { prefs, reading, updatePref, updateReading, resetAll } = useAdaptPreferences();
   const { language, setLanguage, t } = useLanguage();
   const [announcement, setAnnouncement] = useState("");
+  const [cartesiaConsent, setCartesiaConsent] = useState(false);
   const uid = useId();
+  useEffect(() => { const timer = window.setTimeout(() => setCartesiaConsent(localStorage.getItem("prohor-cartesia-cloud-consent-v1") === "yes"), 0); return () => window.clearTimeout(timer); }, []);
 
   function announce(msg: string) {
     setAnnouncement("");
@@ -135,22 +143,33 @@ export function AdaptSettingsPanel() {
     announce(language === "bn" ? "সব পছন্দ মূল অবস্থায় ফিরেছে।" : "All preferences restored to defaults.");
   }
 
+  const deviceOnly = (
+    <p className="mt-2 text-xs text-pro-muted" lang={language}>
+      {language === "bn" ? "শুধু এই ডিভাইসে সংরক্ষিত।" : "Saved on this device only."}
+    </p>
+  );
+
   return (
     <div className="space-y-[var(--pro-gap-group)]">
+      <ModuleFeatureOverview module="adapt" />
       {/* Page intro */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold text-pro-text" lang={language}>
           {t(translations.adapt.title)}
         </h1>
-        <p className="max-w-prose text-pro-muted" lang={language}>
-          {t(translations.adapt.intro)}
-        </p>
+        <EasyRead id="adapt-settings-intro">
+          <p className="max-w-prose text-pro-muted" lang={language}>
+            {t(translations.adapt.intro)}
+          </p>
+        </EasyRead>
         <p role="note" className="text-sm text-pro-muted" lang={language}>
           {t(translations.adapt.translationStatus)}
         </p>
       </div>
 
       <InlineLiveRegion message={announcement} />
+
+      <AccessPresets />
 
       {/* 1. Appearance / Theme */}
       <SettingsSection
@@ -202,6 +221,13 @@ export function AdaptSettingsPanel() {
         </fieldset>
       </SettingsSection>
 
+      <SettingsSection id={`${uid}-cloud-voice`} icon={<Volume2 size={18} />} titleEn="Cloud voice (Cartesia)" titleBn="ক্লাউড কণ্ঠ (Cartesia)">
+        <label className="flex cursor-pointer items-start gap-3 rounded-field border border-pro-control-border p-4 hover:bg-pro-surface focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus">
+          <input type="checkbox" checked={cartesiaConsent} onChange={(event) => { const enabled = event.target.checked; setCartesiaConsent(enabled); if (enabled) localStorage.setItem("prohor-cartesia-cloud-consent-v1", "yes"); else localStorage.removeItem("prohor-cartesia-cloud-consent-v1"); }} className="mt-0.5 accent-pro-primary" />
+          <div><span className="font-semibold text-pro-text">{language === "bn" ? "Cartesia ক্লাউডে লেখা পাঠানোর অনুমতি" : "Allow text to be sent to Cartesia"}</span><p className="mt-0.5 text-sm text-pro-muted">{language === "bn" ? "শুধু শোনার বোতাম চাপলে নির্বাচিত লেখা Cartesia-তে যাবে। এটি এই ডিভাইসে সংরক্ষিত; যেকোনো সময় বন্ধ করা যায়।" : "Only the selected text is sent to Cartesia after you press Listen. This choice stays on this device and can be revoked any time."}</p></div>
+        </label>
+      </SettingsSection>
+
       {/* 2. Contrast */}
       <SettingsSection
         id={`${uid}-contrast`}
@@ -219,6 +245,11 @@ export function AdaptSettingsPanel() {
             )}
           />
           <p className="text-sm text-pro-muted" lang={language}>{t(translations.adapt.contrastHelp)}</p>
+          <p className="text-xs text-pro-muted" lang={language}>
+            {language === "bn"
+              ? "ডিভাইস অনুসরণ করার পছন্দ শুধু এই ডিভাইসে থাকে; বেশি বা সাধারণ কনট্রাস্ট অ্যাকাউন্টে রাখা যায়।"
+              : "Following your device is saved on this device only. More or standard contrast can be saved to your account."}
+          </p>
         </div>
       </SettingsSection>
 
@@ -333,6 +364,9 @@ export function AdaptSettingsPanel() {
                 </label>
               ))}
             </div>
+            <p className="mt-2 text-xs text-pro-muted" lang={language}>
+              {language === "bn" ? "ঘন বিন্যাস শুধু এই ডিভাইসে সংরক্ষিত।" : "Compact is saved on this device only."}
+            </p>
           </fieldset>
 
           <label className="flex cursor-pointer items-start gap-3 rounded-field border border-pro-control-border p-4 hover:bg-pro-surface focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus">
@@ -438,6 +472,7 @@ export function AdaptSettingsPanel() {
           <p className="mt-2 text-xs text-pro-muted">
             {language === "bn" ? "Google Sans ব্যবহারের আগে লাইসেন্স যাচাই বাকি।" : "Google Sans is planned and pending licence verification."}
           </p>
+          {deviceOnly}
         </fieldset>
       </SettingsSection>
 
@@ -553,31 +588,62 @@ export function AdaptSettingsPanel() {
         </div>
       </SettingsSection>
 
-      {/* 9. Simplified content */}
+      {/* Easy Read: shown only when an approved, human-reviewed entry exists, so the toggle never promises nothing. */}
+      {hasApprovedEasyRead() && (
+        <SettingsSection id={`${uid}-simple`} icon={<Type size={18} />} titleEn="Easy Read" titleBn="সহজ পাঠ">
+          <label className="flex cursor-pointer items-start gap-3 rounded-field border border-pro-control-border p-4 hover:bg-pro-surface focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus">
+            <input
+              type="checkbox"
+              checked={prefs.simplifiedContent}
+              onChange={(e) => handleUpdate("simplifiedContent", e.target.checked,
+                language === "bn"
+                  ? (e.target.checked ? "পর্যালোচিত সহজ পাঠ যেখানে আছে সেখানে দেখানো হবে।" : "মূল লেখা দেখানো হবে।")
+                  : (e.target.checked ? "Easy Read shown where a reviewed version exists." : "Original text shown."))}
+              className="mt-0.5 accent-pro-primary"
+            />
+            <div>
+              <span className="font-semibold text-pro-text" lang={language}>{language === "bn" ? "সহজ পাঠ দেখান" : "Show Easy Read"}</span>
+              <p className="mt-0.5 text-sm text-pro-muted" lang={language}>
+                {language === "bn"
+                  ? "মানুষের লেখা ও পর্যালোচিত সহজ পাঠ যেখানে আছে শুধু সেখানে দেখায়। মূল লেখা সবসময় দেখা যায়। স্বাস্থ্য ও জরুরি তথ্য বদলানো হয় না।"
+                  : "Shows human-written, reviewed Easy Read only where it exists. The original is always available. Health and emergency information is never changed."}
+              </p>
+            </div>
+          </label>
+        </SettingsSection>
+      )}
+
+      {/* 9. Read aloud */}
       <SettingsSection
-        id={`${uid}-simple`}
-        icon={<Type size={18} />}
-        titleEn="Reading level"
-        titleBn="পড়ার সহজতা"
+        id={`${uid}-read-aloud`}
+        icon={<Volume2 size={18} />}
+        titleEn="Read aloud"
+        titleBn="পড়ে শোনানো"
       >
         <label className="flex cursor-pointer items-start gap-3 rounded-field border border-pro-control-border p-4 hover:bg-pro-surface focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus">
           <input
             type="checkbox"
-            checked={prefs.simplifiedContent}
+            checked={prefs.readAloud === true}
             onChange={(e) =>
               handleUpdate(
-                "simplifiedContent",
+                "readAloud",
                 e.target.checked,
-                e.target.checked
-                  ? "Simplified wording enabled where reviewed content is available."
-                  : "Standard wording restored.",
+                language === "bn"
+                  ? (e.target.checked ? "শোনার বোতাম দেখানো হবে।" : "শোনার বোতাম সব জায়গায় লুকানো হবে। লেখা আগের মতোই থাকবে।")
+                  : (e.target.checked ? "Listen buttons will be shown." : "Listen buttons are hidden everywhere. All text stays available."),
               )
             }
             className="mt-0.5 accent-pro-primary"
           />
           <div>
-            <span className="font-semibold text-pro-text" lang={language}>{t(translations.adapt.simplified)}</span>
-            <p className="mt-0.5 text-sm text-pro-muted" lang={language}>{t(translations.adapt.simplifiedHelp)}</p>
+            <span className="font-semibold text-pro-text" lang={language}>
+              {language === "bn" ? "শোনার বোতাম দেখান" : "Show Listen buttons"}
+            </span>
+            <p className="mt-0.5 text-sm text-pro-muted" lang={language}>
+              {language === "bn"
+                ? "উত্তরের পাশে শোনার বোতাম দেখাবে। আপনি না চাপলে কোনো শব্দ বাজবে না।"
+                : "Shows a Listen button next to answers. Audio only plays when you press Listen."}
+            </p>
           </div>
         </label>
       </SettingsSection>
@@ -609,6 +675,7 @@ export function AdaptSettingsPanel() {
             <p className="mt-0.5 text-sm text-pro-muted" lang={language}>{t(translations.adapt.focusedHelp)}</p>
           </div>
         </label>
+        {deviceOnly}
       </SettingsSection>
 
       {/* Reset */}

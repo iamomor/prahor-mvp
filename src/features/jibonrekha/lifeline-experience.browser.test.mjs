@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { chromium, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
 
-const url = (process.env.PROHOR_TEST_URL ?? "http://127.0.0.1:3000") + "/demo/jibonrekha";
+const url = (process.env.PROHOR_TEST_URL ?? "http://localhost:3000") + "/demo/jibonrekha";
 async function open(width = 390) {
   const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL ?? "msedge" });
   const context = await browser.newContext({ viewport: { width, height: 844 } });
@@ -28,12 +28,29 @@ test("PDF Today design keeps the pregnancy line, sources and four tasks readable
   } finally { await browser.close(); }
 });
 
+test("Jibonrekha module links open integrated app destinations", async () => {
+  const { browser, page } = await open();
+  try {
+    const navigation = page.getByRole("navigation", { name: "জীবনরেখা প্রধান নেভিগেশন" }).last();
+    await navigation.getByRole("button", { name: "ভিজিট" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: /স্বাস্থ্যসেবা খুঁজুন/ })).toHaveAttribute("href", "/app/poth");
+    await navigation.getByRole("button", { name: "আজ" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: "অ্যাকাউন্টের জীবনরেখা" })).toHaveAttribute("href", "/app/jibonrekha");
+    await page.getByRole("button", { name: /নতুন তথ্য যোগ করুন · Add a record/ }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: /রিপোর্ট থেকে যোগ করতে বুঝি/ })).toHaveAttribute("href", "/app/bujhi");
+    await expect(page.getByRole("link", { name: "জরুরি সহায়তা" })).toHaveAttribute("href", "/safety");
+  } finally { await browser.close(); }
+});
+
 test("care guide covers early, current and late weeks with sources and a note path", async () => {
   const { browser, page, errors } = await open(320);
   try {
     await page.getByRole("button", { name: /সপ্তাহভিত্তিক গাইড খুলুন/ }).click();
     await expect(page.getByRole("heading", { name: "সপ্তাহভিত্তিক যত্নের পথ" })).toBeFocused();
-    const week = page.getByRole("combobox", { name: "গর্ভকালের সপ্তাহ" });
+    const week = page.getByRole("combobox", { name: /গর্ভকালের সপ্তাহ|অন্য সপ্তাহে যান/ });
     await week.selectOption("1");
     await expect(page.getByText("এই সপ্তাহে নতুন নির্দিষ্ট পরীক্ষা নেই")).toBeVisible();
     await week.selectOption("24");
@@ -52,6 +69,30 @@ test("care guide covers early, current and late weeks with sources and a note pa
     await page.getByRole("button", { name: "আজকের নোট লিখুন" }).focus();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: /নিজের নোট/ })).toBeVisible();
+    assert.deepEqual(errors, []);
+  } finally { await browser.close(); }
+});
+
+test("PDF topics remain source-linked and usable through keyboard at 320px", async () => {
+  const { browser, page, errors } = await open(320);
+  try {
+    await page.getByRole("button", { name: /সপ্তাহভিত্তিক গাইড খুলুন/ }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "গর্ভাবস্থা থেকে জন্মের পর" })).toBeVisible();
+    const week40 = page.locator("summary").filter({ hasText: "৪০ সপ্তাহ ও সম্ভাব্য প্রসবের তারিখ" });
+    await week40.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "তারিখ ও গর্ভকাল কী বোঝায়" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /NHS · Due date calculator/ })).toHaveAttribute("href", "https://www.nhs.uk/pregnancy/finding-out/due-date-calculator/");
+    await page.getByRole("combobox", { name: /গর্ভকালের সপ্তাহ|অন্য সপ্তাহে যান/ }).selectOption("40");
+    await expect(page.getByRole("heading", { name: "৪০ সপ্তাহের দিকে: তারিখটি একটি অনুমান" })).toBeVisible();
+    const warning = page.locator("summary").filter({ hasText: "যেসব লক্ষণে অপেক্ষা করবেন না" });
+    await warning.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("link", { name: /RCOG · Umbilical cord prolapse/ })).toBeVisible();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    assert.deepEqual(axe.violations.map(item => item.id), []);
     assert.deepEqual(errors, []);
   } finally { await browser.close(); }
 });

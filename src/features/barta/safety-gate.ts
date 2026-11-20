@@ -4,9 +4,13 @@ import {
   type BartaRequest,
 } from "@/lib/contracts/barta";
 
-type Route = "urgent_care" | "newborn_urgent" | "crisis_support" | "mental_health_support" | "outside_education_scope" | "safeguarding_support";
+type Route = "urinary_retention" | "urgent_care" | "newborn_urgent" | "crisis_support" | "mental_health_support" | "outside_education_scope" | "safeguarding_support";
 
 const fixedMessages = {
+  urinary_retention: {
+    en: "If you can’t pass any urine now, seek medical care immediately. Go to the nearest emergency department or maternity facility. Please don’t wait for a chat reply.",
+    bn: "এখন একদম প্রস্রাব করতে না পারলে, নিকটস্থ হাসপাতালের জরুরি বিভাগ বা মাতৃসেবা কেন্দ্রে এখনই চিকিৎসা নিন। চ্যাটের উত্তরের জন্য অপেক্ষা করবেন না।",
+  },
   urgent_care: {
     en: "If this is happening now during pregnancy or after birth, seek medical care immediately at the nearest emergency department or maternity facility. Please don’t wait for a chat reply.",
     bn: "গর্ভাবস্থায় বা সন্তান জন্মের পর এখন এমন কিছু ঘটলে, নিকটস্থ হাসপাতালের জরুরি বিভাগ বা মাতৃসেবা কেন্দ্রে এখনই চিকিৎসা নিন। চ্যাটের উত্তরের জন্য অপেক্ষা করবেন না।",
@@ -45,6 +49,12 @@ const urgent = [
   /(?:প্রচুর রক্তপাত|অনেক রক্ত যাচ্ছে|বেশি রক্তপাত|খিঁচুনি|খিচুনি|(?:বাচ্চা|শিশু) (?:আজ |একদম )?ন(?:ড়|ড়)ছে না|(?:বাচ্চা|শিশু)র নড়াচড়া কম|শ্বাস নিতে কষ্ট|প্রসবের পর জ্বর|সন্তান জন্মের পর জ্বর)/u,
   /\b(?:beshi roktopat|prochur rokto jacche|rokto pore|kichuni hole|shash nite koshto|baby r movement kome gele|baccha (?:aj |ekdom )?norche na|bacchar norachora kom|(?:baccha|bacca|bachcha) ager moto (?:nora ?chora|norachora|narachara) (?:kore|kortese|korche|korteche) na|deliveryr por jor)\b/u,
 ];
+
+// Match a current inability to pass urine. Frequency, pain, or educational questions are separate.
+const cannotPassUrine = [
+  /(?:^|[,!?.।]\s*)\s*(?:(?:i(?:[’']m)?|ami|amar|amr) )?(?:can['’]?t (?:pee|urinate|pass (?:any )?urine)|can ?not (?:pee|urinate|pass (?:any )?urine)|(?:am )?unable to (?:pee|urinate|pass (?:any )?urine)|(?:pe+s+h?a+b|piss?ab|prosrab|prosab|peshap) (?:ekdom )?(?:(?:hoy|ho[tc]che|hochhe|hoitese|as[tc]he|asche) na|kor(?:te)? par(?:ch?i|tesi) na))(?=$|[.!?,।]| (?:at all|now|since|for|after|during|and|ki korbo|help)\b)/u,
+  /(?:^|[,!?.।]\s*)\s*(?:আমি |আমার )?(?:প্রস্রাব|পেশাব|পেশাপ) (?:একদম )?(?:হয় না|হচ্ছে না|আসছে না|করতে পারছি না)(?=$|[.!?,।]| (?:এখন|কী করব|কি করব|প্রসবের পর))/u,
+].map((pattern) => new RegExp(pattern.source.normalize("NFKC"), "u"));
 
 const statedUrgency = /(?:^|[.!?।]\s*)(?:this is an urgent concern|আমার কাছে বিষয়টি জরুরি মনে হচ্ছে)(?=[.!?।]|$)/u;
 const babyBreathing = /\b(?:(?:my )?(?:baby|newborn|infant|baccha|bachcha|bacca)(?: is| has)? (?:not breathing|isn['’]?t breathing|stopped breathing|can['’]?t breathe|cannot breathe|struggling to breathe|turning blue|gone blue|(?:shash|nishshash|nisshash) (?:nicche|nite parche|nite parchhe) na))\b/u;
@@ -91,6 +101,13 @@ const swelling = new RegExp(String.raw`\b(?:swollen |swelling (?:of|in) (?:my )?
 const markedSwelling = /(?:\b(?:extreme|severe|sudden) (?:swelling|puffiness)\b|\b(?:suddenly|severely) swollen\b|(?:হঠাৎ|খুব|অনেক) ফুলে)/u;
 const headacheAny = /(?:\bheadache\b|মাথা ?ব্যথা|\bmatha (?:betha|byatha)\b)/u;
 
+// AAC symbol boards compose several short sentences ("I have a fever. I feel weak and tired.").
+// WHO PCPNC lists "fever and too weak to get out of bed" as go-immediately; swelling with headache is a pre-eclampsia warning.
+// Ported from the verified M2 kit patch (20 Nov 2026); these only ever escalate.
+const feverAny = /(?:\bfever\b|জ্বর|\bjor\b)/u;
+const tooWeak = /(?:\btoo weak\b|\bweak and tired\b|\bvery weak\b|খুব দুর্বল|অনেক দুর্বল|দুর্বল ও ক্লান্ত)/u;
+const swellingAny = /(?:\bswelling\b|\bswollen\b|ফোলা|ফুলে)/u;
+
 const outsideScope = [
   /\b(?:diagnose me|is my baby (?:okay|ok|safe)|prescribe|what (?:drug|medicine) should i take|can i take (?:this|that) (?:medicine|drug|tablet)|how (?:many pills|much medicine)|what dose|self-medicate|how (?:can i|to) (?:abort|end (?:my|a) pregnancy))\b/u,
   /\b(?:amar pa (?:fulay|fule|phule) (?:jacche|geche)|(?:ami )?\d+ maser pregnant.{0,30}ki test (?:lagbe|korbo)|(?:ei|eta) (?:oshudh|osudh) (?:khabo|khete pari))\b/u,
@@ -110,6 +127,7 @@ function routeQuestion(question: string): Route | undefined {
   if (immediateHarm.some((pattern) => pattern.test(text))) return "crisis_support";
   const severePain = severeHeadache.test(text) || intensiveHeadache.test(text);
   if (newbornTrouble.test(text) || babyBreathing.test(text) || babyBreathingBangla.test(text)) return "newborn_urgent";
+  if (cannotPassUrine.some((pattern) => pattern.test(text))) return "urinary_retention";
   if (seizureBanglish.test(text)) return "urgent_care";
   if (statedUrgency.test(text)
     || urgent.some((pattern) => pattern.test(text))
@@ -117,6 +135,8 @@ function routeQuestion(question: string): Route | undefined {
     || movementLost.test(text) || fits.test(text) || watersBroke.test(text) || severeBellyPainBangla.test(text)
     || ((pregnancy.test(text) || afterBirth.test(text)) && reportsHighFever(text))
     || (swelling.test(text) && (headacheAny.test(text) || blurredVision.test(text) || (markedSwelling.test(text) && (pregnancy.test(text) || afterBirth.test(text)))))
+    || (feverAny.test(text) && tooWeak.test(text))
+    || (swellingAny.test(text) && headacheAny.test(text))
     || breathingTrouble.test(text) || cannotKeepFluids.test(text)
     || (pregnancy.test(text) && pregnancyBleeding.test(text))
     || /^(?:i am|i['’]m) bleeding(?:\b|$)/u.test(text)
@@ -128,18 +148,26 @@ function routeQuestion(question: string): Route | undefined {
   if (outsideScope.some((pattern) => pattern.test(text))) return "outside_education_scope";
 }
 
+/** Multi-sentence messages (AAC compositions, long typed notes): an urgent or crisis sentence anywhere still routes. */
+function routeBySentence(question: string): Route | undefined {
+  const parts = question.split(/[.!?।\n]+/u).map(part => part.trim()).filter(Boolean);
+  if (parts.length < 2) return undefined;
+  const reasons = parts.map(routeQuestion);
+  return reasons.find(reason => reason === "crisis_support") ?? reasons.find(reason => reason === "urgent_care");
+}
+
 export function getBartaSafetyResponse(
   question: string,
   language: BartaRequest["language"],
 ): BartaAnswer | undefined {
-  const reason = routeQuestion(question);
+  const reason = routeQuestion(question) ?? routeBySentence(question);
   if (!reason) return undefined;
 
   return getBartaRouteResponse(reason, language);
 }
 
 export function getBartaRouteResponse(route: Route, language: BartaRequest["language"]): BartaAnswer {
-  const reason = route === "newborn_urgent" ? "urgent_care"
+  const reason = route === "newborn_urgent" || route === "urinary_retention" ? "urgent_care"
     : route === "safeguarding_support" ? "outside_education_scope" : route;
   return bartaAnswerSchema.parse({
     status: "abstained",

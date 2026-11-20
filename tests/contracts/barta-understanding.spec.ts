@@ -144,3 +144,75 @@ test("subjects without reviewed sources are named honestly with related topics",
     citations: [],
   });
 });
+
+test("varied greetings, goodbyes and small talk stay conversational in both languages", async () => {
+  for (const [question, language] of [
+    ["howdy Barta!", "en"], ["how has your day been?", "en"], ["catch you later", "en"], ["until next time", "en"],
+    ["আদাব বার্তা", "bn"], ["আবার দেখা হবে", "bn"], ["pore kotha bolbo", "bn"], ["shob thik?", "bn"],
+  ] as const) {
+    const reply = await ask(question, language);
+    expect(reply, question).toMatchObject({ status: "conversation", citations: [] });
+    expect(/[\u0980-\u09ff]/u.test(reply.status === "conversation" ? reply.message : ""), question).toBe(language === "bn");
+  }
+  expect(detectBartaLanguage("pore kotha bolbo")).toBe("bn");
+  expect(detectBartaLanguage("shob thik?")).toBe("bn");
+});
+
+test("a current inability to pass urine in all three phrasings gets immediate care guidance", async () => {
+  for (const [question, language] of [
+    ["pesab hoy na", "bn"], ["Hello, amar peshab hocche na", "bn"],
+    ["প্রস্রাব হচ্ছে না", "bn"], ["I can't pass any urine now", "en"], ["I'm unable to pee", "en"],
+  ] as const) {
+    expect(await ask(question, language), question).toMatchObject({
+      status: "abstained", reason: "urgent_care", action_level: "urgent", citations: [],
+    });
+  }
+  expect(detectBartaLanguage("pesab hoy na")).toBe("bn");
+  for (const question of ["What is urinary retention?", "I can't pee in public bathrooms", "I can't pee frequently at work"]) {
+    const reply = await ask(question, "en");
+    expect(reply.status === "abstained" && reply.reason, question).not.toBe("urgent_care");
+  }
+});
+
+test("vague breastfeeding concerns get focused choices and milk adequacy has a cited answer", async () => {
+  for (const [question, language] of [
+    ["breast milk issue what i need to do", "en"], ["buker dudh shomossha ki korbo", "bn"],
+    ["বুকের দুধ খাওয়ানো নিয়ে সমস্যা", "bn"],
+  ] as const) {
+    expect(await ask(question, language), question).toMatchObject({
+      status: "clarification", citations: [],
+      suggestions: expect.arrayContaining([educationTopics.milkSupply[language], educationTopics.breastfeedingPosition[language]]),
+    });
+    expect(await ask(educationTopics.milkSupply[language], language)).toMatchObject({
+      status: "grounded",
+      citations: [expect.objectContaining({ publisher: "World Health Organization" })],
+    });
+  }
+  expect(await ask("Hello, my newborn won't feed", "en")).toMatchObject({
+    status: "abstained", reason: "urgent_care", citations: [],
+  });
+});
+
+test("informal bowel wording gets localized clarification and useful next questions", async () => {
+  for (const question of ["haga dhore onk", "amar hagu lage onek", "onek bar paikhana hoy", "বারবার পায়খানার চাপ লাগছে"]) {
+    expect(detectBartaLanguage(question), question).toBe("bn");
+    expect(await ask(question, "bn"), question).toMatchObject({
+      status: "clarification", citations: [], message: expect.stringContaining("শিশুর"),
+      suggestions: expect.arrayContaining([educationTopics.looseStools.bn, educationTopics.pregnancyConstipation.bn]),
+    });
+  }
+  expect(await ask("patla paykhana", "bn")).toMatchObject({
+    status: "clarification", suggestions: [educationTopics.looseStools.bn],
+  });
+  expect(await ask("My baby has hard stools", "en")).toMatchObject({
+    status: "clarification", suggestions: [educationTopics.newborn.en],
+  });
+  for (const language of ["en", "bn"] as const) {
+    expect(await ask(educationTopics.looseStools[language], language)).toMatchObject({
+      status: "grounded", citations: [expect.objectContaining({ publisher: "NHS" })],
+    });
+  }
+  expect(await ask("Hello, my newborn has diarrhoea and won't feed", "en")).toMatchObject({
+    status: "abstained", reason: "urgent_care", citations: [],
+  });
+});

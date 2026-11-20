@@ -1,11 +1,12 @@
 "use client";
 
 import { Pause, Play, Square, Volume2, VolumeX } from "lucide-react";
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { AppButton } from "@/components/ui/AppButton";
 import { useAdaptPreferences } from "../hooks/useAdaptPreferences";
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
 import type { SpeechLanguage, SpeechStatus } from "../hooks/useSpeechSynthesis";
+import { claimSpeech, releaseSpeech } from "../lib/speech-engine";
 
 type ReadAloudButtonProps = {
   /** The original, reviewed text. It is only passed to the local browser speech engine. */
@@ -15,6 +16,8 @@ type ReadAloudButtonProps = {
   /** Label for the explicit start action. */
   label?: string;
   className?: string;
+  /** Ask for an additional, per-reading confirmation before sending private text to Cartesia. */
+  sensitive?: boolean;
 };
 
 const statusCopy: Record<SpeechLanguage, Record<SpeechStatus, string>> = {
@@ -52,6 +55,7 @@ export function ReadAloudButton({
   language: contentLanguage,
   label,
   className = "",
+  sensitive = false,
 }: ReadAloudButtonProps) {
   const { prefs } = useAdaptPreferences();
   const language = contentLanguage ?? prefs.language;
@@ -59,23 +63,59 @@ export function ReadAloudButton({
   const voiceId = useId();
   const rateId = useId();
   const speech = useSpeechSynthesis(text, language);
-  const active = speech.status === "starting" || speech.status === "playing" || speech.status === "paused";
-  const canStart = speech.voicesLoaded && speech.matchingVoices.length > 0 && Boolean(text.trim());
+  const stopSpeech = speech.stop;
+  const [cloudConsent, setCloudConsent] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const audioOwner = useRef(Symbol("prohor-cartesia-audio"));
+  const active = speech.status === "starting" || speech.status === "playing" || speech.status === "paused" || ["playing", "paused", "loading"].includes(cloudStatus ?? "");
+  const canStart = speech.voicesLoaded && Boolean(text.trim()) && (speech.matchingVoices.length > 0 || cloudConsent);
+  useEffect(() => {
+    const ownerId = audioOwner.current;
+    const timer = window.setTimeout(() => setCloudConsent(localStorage.getItem("prohor-cartesia-cloud-consent-v1") === "yes"), 0);
+    return () => { window.clearTimeout(timer); audioRef.current?.pause(); releaseSpeech(ownerId); if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current); };
+  }, []);
+  useEffect(() => { if (prefs.readAloud === false) { audioRef.current?.pause(); releaseSpeech(audioOwner.current); stopSpeech(); } }, [prefs.readAloud, stopSpeech]);
+  const start = async () => {
+    setCloudStatus(null);
+    if (speech.matchingVoices.length) { speech.start(); return; }
+    if (!cloudConsent) return;
+    if (sensitive && !window.confirm(language === "bn" ? "এই ব্যক্তিগত লেখাটি Cartesia ক্লাউডে পাঠিয়ে পড়ে শোনাব?" : "Send this private text to Cartesia for cloud reading?")) return;
+    setCloudStatus("loading");
+    try {
+      const response = await fetch("/api/tts/cartesia", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.slice(0, 2500), language }) });
+      if (!response.ok) throw new Error(response.status === 422 ? (language === "bn" ? "বাংলা কণ্ঠটি এখনো কনফিগার করা নেই।" : "No suitable voice is configured for this language.") : (language === "bn" ? "ক্লাউডে পড়ে শোনানো যায়নি।" : "Cloud reading is unavailable right now."));
+      const url = URL.createObjectURL(await response.blob());
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = url;
+      const audio = new Audio(url); audioRef.current = audio;
+      audio.onended = () => { releaseSpeech(audioOwner.current); setCloudStatus("completed"); }; audio.onerror = () => { releaseSpeech(audioOwner.current); setCloudStatus(language === "bn" ? "অডিও চালানো যায়নি।" : "Audio could not be played."); };
+      claimSpeech({ id: audioOwner.current, stop: () => { audio.pause(); audio.currentTime = 0; setCloudStatus(null); } });
+      await audio.play(); setCloudStatus("playing");
+    } catch (error) { setCloudStatus(error instanceof Error ? error.message : (language === "bn" ? "ক্লাউডে পড়ে শোনানো যায়নি।" : "Cloud reading is unavailable right now.")); }
+  };
+  const stop = () => { audioRef.current?.pause(); if (audioRef.current) audioRef.current.currentTime = 0; releaseSpeech(audioOwner.current); speech.stop(); setCloudStatus(null); };
+  const pause = () => { audioRef.current?.pause(); speech.pause(); setCloudStatus("paused"); };
+  const resume = () => { if (audioRef.current) void audioRef.current.play().then(() => setCloudStatus("playing")).catch(() => setCloudStatus(language === "bn" ? "অডিও চালানো যায়নি।" : "Audio could not be played.")); else speech.resume(); };
+
+  // An explicit "off" in Adapt hides every listen control; null (never chosen) leaves them available on request. Text is unaffected.
+  if (prefs.readAloud === false) return null;
 
   return (
     <div className={`inline-flex flex-col gap-2 ${className}`}>
       <div className="inline-flex flex-wrap items-center gap-2">
-        {speech.status === "playing" ? (
-          <AppButton variant="ghost" size="sm" onClick={speech.pause} aria-label={actions.pause}>
+        {speech.status === "playing" || cloudStatus === "playing" ? (
+          <AppButton variant="ghost" size="sm" onClick={pause} aria-label={actions.pause}>
             <Pause size={15} aria-hidden="true" />
             {actions.pause}
           </AppButton>
-        ) : speech.status === "paused" ? (
-          <AppButton variant="ghost" size="sm" onClick={speech.resume} aria-label={actions.resume}>
+        ) : speech.status === "paused" || cloudStatus === "paused" ? (
+          <AppButton variant="ghost" size="sm" onClick={resume} aria-label={actions.resume}>
             <Play size={15} aria-hidden="true" />
             {actions.resume}
           </AppButton>
-        ) : speech.status === "starting" ? (
+        ) : speech.status === "starting" || cloudStatus === "loading" ? (
           <AppButton variant="ghost" size="sm" disabled>
             <Volume2 size={15} aria-hidden="true" />
             {language === "bn" ? "শুরু হচ্ছে…" : "Starting…"}
@@ -84,7 +124,7 @@ export function ReadAloudButton({
           <AppButton
             variant="ghost"
             size="sm"
-            onClick={speech.start}
+            onClick={() => void start()}
             disabled={!canStart}
             aria-label={label ?? (language === "bn" ? "পড়ে শোনান" : "Read aloud")}
           >
@@ -93,7 +133,7 @@ export function ReadAloudButton({
           </AppButton>
         )}
         {active && (
-          <AppButton variant="ghost" size="sm" onClick={speech.stop} aria-label={actions.stop}>
+          <AppButton variant="ghost" size="sm" onClick={stop} aria-label={actions.stop}>
             <Square size={15} aria-hidden="true" />
             {actions.stop}
           </AppButton>
@@ -139,7 +179,7 @@ export function ReadAloudButton({
       )}
 
       <p className="text-xs text-pro-muted" role="status" aria-live="polite" aria-atomic="true" lang={language}>
-        {statusCopy[language][speech.status]}
+        {cloudStatus ?? statusCopy[language][speech.status]}
       </p>
     </div>
   );

@@ -1,9 +1,11 @@
 "use client";
 
 import { useId, useRef, useState, type FormEvent } from "react";
-import { Armchair, Check, CircleOff, Footprints, HandHelping, Leaf, MoonStar, RotateCcw, Sparkles, Star, type LucideIcon } from "lucide-react";
+import { Armchair, BatteryFull, BatteryLow, BatteryMedium, Check, CircleOff, Footprints, HandHelping, MoonStar, RotateCcw, Sparkles, Star, type LucideIcon } from "lucide-react";
 import { AppButton } from "@/components/ui/AppButton";
+import { CheckBadge } from "./ShusthotaUi";
 import { useLanguage } from "@/i18n/use-language";
+import { VoiceDictationButton } from "@/features/adapt";
 import { saveWellnessEntry, shusthotaErrorCopy } from "./api";
 import styles from "./ShusthotaOverview.module.css";
 
@@ -19,9 +21,9 @@ const moods: readonly Choice[] = [
   { value: "prefer_not_to_say", label: { en: "Prefer not to say", bn: "বলতে চাই না" } },
 ];
 const energies: readonly Choice[] = [
-  { value: "low", label: { en: "Low", bn: "কম" }, Icon: MoonStar },
-  { value: "medium", label: { en: "Medium", bn: "মাঝারি" }, Icon: Leaf },
-  { value: "high", label: { en: "High", bn: "বেশি" }, Icon: Sparkles },
+  { value: "low", label: { en: "Low", bn: "কম" }, Icon: BatteryLow },
+  { value: "medium", label: { en: "Medium", bn: "মাঝারি" }, Icon: BatteryMedium },
+  { value: "high", label: { en: "High", bn: "বেশি" }, Icon: BatteryFull },
   { value: "prefer_not_to_say", label: { en: "Prefer not to say", bn: "বলতে চাই না" }, Icon: Star },
 ];
 const activities: readonly { value: Activity; label: Choice["label"] }[] = [
@@ -32,6 +34,7 @@ const activities: readonly { value: Activity; label: Choice["label"] }[] = [
   { value: "other", label: { en: "Other", bn: "অন্য কিছু" } },
   { value: "none", label: { en: "None", bn: "কোনোটিই নয়" } },
 ];
+const activityIcons: Record<Activity, LucideIcon> = { walking: Footprints, assisted: HandHelping, seated: Armchair, resting: MoonStar, other: Sparkles, none: CircleOff };
 
 const copy = {
   kicker: { en: "A moment for you", bn: "নিজের জন্য একটু সময়" },
@@ -65,14 +68,14 @@ const copy = {
 
 const field = "min-h-12 w-full rounded-field border border-pro-control-border bg-pro-elevated px-4 py-3 text-base leading-relaxed text-pro-text placeholder:text-pro-muted focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus";
 
-function MoodCharacter({ mood, selected }: { mood: Mood; selected: boolean }) {
-  return <span className={`${styles.moodCharacter} ${selected ? styles.characterSelected : ""}`} aria-hidden="true">
+function MoodCharacter({ mood }: { mood: Mood }) {
+  return <span className={styles.moodCharacter} aria-hidden="true">
     <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.moodSvg}>
       {mood === "comfortable" && <>
-        <g className={styles.sunRays} stroke="currentColor" strokeLinecap="round" strokeWidth="2.5"><path d="M32 4v5M32 55v5M4 32h5M55 32h5M12.2 12.2l3.6 3.6M48.2 48.2l3.6 3.6M51.8 12.2l-3.6 3.6M15.8 48.2l-3.6 3.6" /></g>
+        <g stroke="currentColor" strokeLinecap="round" strokeWidth="2.5"><path d="M32 4v5M32 55v5M4 32h5M55 32h5M12.2 12.2l3.6 3.6M48.2 48.2l3.6 3.6M51.8 12.2l-3.6 3.6M15.8 48.2l-3.6 3.6" /></g>
         <circle cx="32" cy="32" r="19" className={styles.sunFace} stroke="currentColor" strokeWidth="2.2" />
         <path d="M25 31h.1M39 31h.1M27 38c1.4 1.8 3 2.7 5 2.7s3.6-.9 5-2.7" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" />
-        <path className={styles.tinySparkle} d="M51 11v7M47.5 14.5h7" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+        <path d="M51 11v7M47.5 14.5h7" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
       </>}
       {mood === "mixed" && <>
         <circle cx="39" cy="24" r="13" className={styles.sunFace} stroke="currentColor" strokeWidth="2" />
@@ -140,44 +143,44 @@ export function Wellbeing({ onSaved }: { onSaved?: () => Promise<void> | void })
     }
   }
 
-  function options(name: string, values: readonly Choice[], selected: string | null, onChange: (value: string) => void) {
-    return <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{values.map(option => {
-      const checked = selected === option.value;
-      const Icon = option.Icon;
-      return <label key={option.value} className={`${styles.choiceCard} group flex min-h-12 cursor-pointer items-center gap-3 rounded-control border px-3 py-2 text-base transition-[background-color,border-color,box-shadow,transform] duration-[var(--pro-duration-fast)] hover:-translate-y-0.5 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus motion-reduce:transform-none motion-reduce:transition-none ${checked ? "border-pro-primary bg-pro-surface shadow-pro-1" : "border-pro-control-border bg-pro-elevated hover:bg-pro-surface"}`}>
-        <input type="radio" name={`${id}-${name}`} value={option.value} checked={checked} onChange={() => { onChange(option.value); setStatus(null); setSaved(false); }} className="size-5 shrink-0 accent-pro-primary" />
-        {Icon && <span className={`${styles.choiceIcon} grid size-9 shrink-0 place-items-center rounded-full bg-pro-surface text-pro-primary transition-transform duration-[var(--pro-duration-fast)] group-hover:rotate-3 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none`}><Icon className="size-4" aria-hidden="true" /></span>}
-        <span className="min-w-0 leading-relaxed">{t(option.label)}</span>
-        {checked && <Check className={`${styles.selectedMark} ms-auto size-4 shrink-0 text-pro-primary`} aria-hidden="true" />}
-      </label>;
-    })}</div>;
-  }
+  const touch = () => { setStatus(null); setSaved(false); };
+  const answered = [mood, energy, activity, restNote.trim()].filter(Boolean).length;
+  const legend = (n: number, text: { en: string; bn: string }, hint: { en: string; bn: string }) => (
+    <legend className="mb-3 grid w-full gap-1">
+      <span className="flex items-center gap-2.5 text-lg font-bold leading-snug">
+        <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-pro-surface text-sm font-bold text-pro-primary">{t({ en: String(n), bn: "১২৩৪"[n - 1] })}</span>
+        {t(text)}
+      </span>
+      <span className="pro-muted ps-9.5 text-sm font-normal leading-relaxed">{t(hint)}</span>
+    </legend>
+  );
 
   return (
-    <section aria-labelledby={`${id}-title`} lang={language} className="rounded-hero border border-pro-border bg-pro-elevated p-4 shadow-pro-1 sm:p-6 lg:p-8">
-      <header className="mb-7 grid gap-2 border-b border-pro-border pb-5 sm:mb-8 sm:pb-6">
-        <p className="pro-eyebrow">{t(copy.kicker)}</p>
+    <section aria-labelledby={`${id}-title`} lang={language} className="rounded-hero border border-pro-border bg-pro-elevated shadow-pro-1">
+      <header className="grid gap-2 border-b border-pro-border p-4 sm:p-6 lg:px-8">
+        <p className="pro-eyebrow tracking-normal">{t(copy.kicker)}</p>
         <h2 id={`${id}-title`} className="pro-display text-2xl leading-tight sm:text-3xl">{t(copy.title)}</h2>
         <p className="pro-muted max-w-prose leading-relaxed">{t(copy.intro)}</p>
       </header>
-      <form onSubmit={submit} className="grid gap-7 sm:gap-8">
-        <fieldset className="grid gap-3">
-          <legend className="mb-1 text-lg font-semibold">{t(copy.mood)}</legend>
-          <p className="pro-muted text-sm leading-relaxed">{t(copy.moodHint)}</p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <form onSubmit={submit} className="grid gap-8 p-4 sm:gap-10 sm:p-6 lg:p-8">
+        <fieldset className="min-w-0">
+          {legend(1, copy.mood, copy.moodHint)}
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {moods.map(option => {
               const value = option.value as Mood;
               const checked = mood === value;
-              return <label key={value} className={`${styles.moodOption} ${checked ? styles.moodSelected : ""} group relative flex min-h-28 cursor-pointer items-center gap-3 overflow-hidden rounded-hero border p-3 transition-[background-color,border-color,box-shadow,transform] duration-[var(--pro-duration-normal)] hover:-translate-y-0.5 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus motion-reduce:transform-none motion-reduce:transition-none sm:min-h-32 sm:gap-4 sm:p-4`}>
-                <input type="radio" name={`${id}-mood`} value={value} checked={checked} onChange={() => { setMood(value); setPauseOpen(false); setStatus(null); setSaved(false); }} className="size-5 shrink-0 accent-pro-primary" />
-                <MoodCharacter mood={value} selected={checked} />
-                <span className="min-w-0 flex-1 font-semibold leading-relaxed">{t(option.label)}</span>
-                {checked && <Check className={`${styles.selectedMark} absolute end-3 top-3 size-4 text-pro-primary`} aria-hidden="true" />}
+              return <label key={value} className={`${styles.tile} flex min-h-32 cursor-pointer flex-col items-start justify-between gap-3 rounded-card p-3 sm:p-4`}>
+                <input type="radio" name={`${id}-mood`} value={value} checked={checked} onChange={() => { setMood(value); setPauseOpen(false); touch(); }} className="sr-only" />
+                <span className="flex w-full items-start justify-between gap-2">
+                  <MoodCharacter mood={value} />
+                  <CheckBadge />
+                </span>
+                <span className="text-base font-bold leading-snug [overflow-wrap:anywhere]">{t(option.label)}</span>
               </label>;
             })}
           </div>
-          {mood && mood !== "prefer_not_to_say" && <div className={`${styles.supportMoment} grid gap-3 rounded-control border border-pro-border bg-pro-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center`}>
-            <div className="grid gap-1"><p className="font-medium">{t(mood === "comfortable" ? copy.moodComfortable : mood === "mixed" ? copy.moodMixed : copy.moodDifficult)}</p><p className="pro-muted text-sm leading-relaxed">{t(copy.moodSupport)}</p></div>
+          {mood && mood !== "prefer_not_to_say" && <div className={`${styles.supportMoment} mt-4 grid gap-3 rounded-card bg-pro-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center`}>
+            <div className="grid gap-1"><p className="font-medium leading-relaxed">{t(mood === "comfortable" ? copy.moodComfortable : mood === "mixed" ? copy.moodMixed : copy.moodDifficult)}</p><p className="pro-muted text-sm leading-relaxed">{t(copy.moodSupport)}</p></div>
             <AppButton type="button" variant="secondary" aria-expanded={pauseOpen} aria-controls={`${id}-pause`} onClick={() => setPauseOpen(value => !value)} className="min-h-11 whitespace-normal">{t(pauseOpen ? copy.pauseClose : copy.pauseOpen)}</AppButton>
             {pauseOpen && <div id={`${id}-pause`} role="region" aria-label={t(copy.pauseLabel)} className={`${styles.pauseMoment} col-span-full grid justify-items-center gap-3 border-t border-pro-border pt-4 text-center`}>
               <span className={styles.breathingOrb} aria-hidden="true"><span /></span>
@@ -185,28 +188,57 @@ export function Wellbeing({ onSaved }: { onSaved?: () => Promise<void> | void })
             </div>}
           </div>}
         </fieldset>
-        <fieldset className="grid gap-3 border-t border-pro-border pt-6">
-          <legend className="mb-1 text-lg font-semibold">{t(copy.energy)}</legend>
-          <p className="pro-muted text-sm leading-relaxed">{t(copy.energyHint)}</p>
-          {options("energy", energies, energy, value => setEnergy(value as Energy))}
+
+        <fieldset className="min-w-0">
+          {legend(2, copy.energy, copy.energyHint)}
+          <div className={`${styles.segment} grid grid-cols-2 gap-1.5 rounded-card p-1.5 sm:grid-cols-4`}>
+            {energies.map(option => {
+              const Icon = option.Icon!;
+              return <label key={option.value} className={`${styles.segmentItem} flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-control px-2 py-2 text-center font-semibold leading-snug`}>
+                <input type="radio" name={`${id}-energy`} value={option.value} checked={energy === option.value} onChange={() => { setEnergy(option.value as Energy); touch(); }} className="sr-only" />
+                <Icon size={20} aria-hidden="true" />
+                <span className="[overflow-wrap:anywhere]">{t(option.label)}</span>
+              </label>;
+            })}
+          </div>
         </fieldset>
-        <fieldset className="grid gap-3 border-t border-pro-border pt-6">
-          <legend className="mb-1 text-lg font-semibold">{t(copy.activity)}</legend>
-          <p className="pro-muted text-sm leading-relaxed">{t(copy.activityHint)}</p>
-          {options("activity", activities.map(option => ({ ...option, Icon: ({ walking: Footprints, assisted: HandHelping, seated: Armchair, resting: MoonStar, other: Sparkles, none: CircleOff } as const)[option.value] })), activity, value => setActivity(value as Activity))}
+
+        <fieldset className="min-w-0">
+          {legend(3, copy.activity, copy.activityHint)}
+          <div className="flex flex-wrap gap-2.5">
+            {activities.map(option => {
+              const Icon = activityIcons[option.value];
+              return <label key={option.value} className={`${styles.chip} inline-flex min-h-12 max-w-full cursor-pointer items-center gap-2 rounded-pill py-2 ps-2 pe-4 font-semibold leading-snug`}>
+                <input type="radio" name={`${id}-activity`} value={option.value} checked={activity === option.value} onChange={() => { setActivity(option.value); touch(); }} className="sr-only" />
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-pro-surface text-pro-primary"><Icon size={16} aria-hidden="true" /></span>
+                <span className="min-w-0 [overflow-wrap:anywhere]">{t(option.label)}</span>
+              </label>;
+            })}
+          </div>
         </fieldset>
-        <div className={`${styles.restSection} grid gap-3 border-t border-pro-border pt-6`}>
-          <p className="flex items-center gap-2 text-sm font-medium text-pro-primary"><MoonStar size={17} aria-hidden="true" className={styles.restIcon} />{t(copy.restAccent)}</p>
-          <label htmlFor={`${id}-rest`} className="text-lg font-semibold">{t(copy.rest)}</label>
+
+        <div className="grid gap-2 rounded-card border border-pro-border bg-pro-bg p-4 sm:p-5">
+          <label htmlFor={`${id}-rest`} className="flex items-center gap-2.5 text-lg font-bold leading-snug">
+            <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-pro-surface text-sm font-bold text-pro-primary">{t({ en: "4", bn: "৪" })}</span>
+            {t(copy.rest)}
+          </label>
           <p id={`${id}-rest-help`} className="pro-muted text-sm leading-relaxed">{t(copy.restHint)}</p>
-          <textarea id={`${id}-rest`} value={restNote} onChange={event => { setRestNote(event.target.value); setStatus(null); setSaved(false); }} maxLength={1000} rows={4} aria-describedby={`${id}-rest-help ${id}-rest-count`} className={`${field} min-h-28 resize-y`} placeholder={t(copy.placeholder)} />
-          <p id={`${id}-rest-count`} className="pro-muted text-sm tabular-nums">{restNote.length}/1000</p>
+          <textarea id={`${id}-rest`} value={restNote} onChange={event => { setRestNote(event.target.value); touch(); }} maxLength={1000} rows={4} aria-describedby={`${id}-rest-help ${id}-rest-count`} className={`${styles.journalPaper} ${field} min-h-32 resize-y py-3 leading-relaxed`} placeholder={t(copy.placeholder)} />
+          <p id={`${id}-rest-count`} className="pro-muted text-end text-sm tabular-nums">{restNote.length}/1000</p>
+          <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={restNote} maxLength={1000} onChange={next => { setRestNote(next); touch(); }} />
         </div>
-        {status && <p role={status.kind === "error" ? "alert" : "status"} aria-live={status.kind === "error" ? "assertive" : "polite"} className={`${status.kind === "error" ? "rounded-control border border-pro-danger bg-pro-danger-soft p-3 text-pro-danger" : `rounded-control border border-pro-success bg-pro-success-soft p-3 text-pro-success ${styles.saveConfirmed}`}`}>{status.message}{status.kind === "success" && <Sparkles size={17} aria-hidden="true" className="ms-2 inline-block" />}</p>}
-        <div className="grid gap-3 border-t border-pro-border pt-5 sm:flex sm:flex-wrap sm:items-center">
-          <AppButton type="submit" disabled={!hasAnswers || saving || saved} className="min-h-12 w-full whitespace-normal sm:w-auto">{saving ? t(copy.saving) : t(copy.save)}</AppButton>
-          <AppButton type="button" variant="secondary" onClick={clear} disabled={saving || (!hasAnswers && !saved)} className="min-h-12 w-full whitespace-normal sm:w-auto"><RotateCcw size={16} aria-hidden="true" className="me-2" />{t(copy.reset)}</AppButton>
-          <p className="pro-muted text-sm leading-relaxed sm:max-w-xs">{saved ? t(copy.savedLock) : t(copy.empty)}</p>
+
+        {status && <p role={status.kind === "error" ? "alert" : "status"} aria-live={status.kind === "error" ? "assertive" : "polite"} className={`${status.kind === "error" ? "rounded-control border border-pro-danger bg-pro-danger-soft p-3 text-pro-danger" : `flex items-center gap-2 rounded-control border border-pro-success bg-pro-success-soft p-3 text-pro-success ${styles.saveConfirmed}`}`}>{status.kind === "success" && <Check size={18} aria-hidden="true" className="shrink-0" />}{status.message}</p>}
+
+        <div className={`${styles.dock} grid gap-3 rounded-card p-4 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:p-5`}>
+          <p className="grid gap-0.5 leading-snug">
+            <span className="font-bold">{t({ en: `${answered} of 4 parts answered`, bn: `৪টির মধ্যে ${answered.toLocaleString("bn-BD")}টি অংশের উত্তর দেওয়া হয়েছে` })}</span>
+            <span className="text-sm opacity-90">{saved ? t(copy.savedLock) : t(copy.empty)}</span>
+          </p>
+          <div className="grid gap-2 sm:flex sm:flex-wrap">
+            <button type="submit" disabled={!hasAnswers || saving || saved} className={`${styles.dockPrimary} inline-flex min-h-12 items-center justify-center gap-2 rounded-pill px-6 font-bold disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-offset-2`}>{saving ? t(copy.saving) : t(copy.save)}</button>
+            <button type="button" onClick={clear} disabled={saving || (!hasAnswers && !saved)} className={`${styles.dockSecondary} inline-flex min-h-12 items-center justify-center gap-2 rounded-pill px-5 font-semibold disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-offset-2`}><RotateCcw size={16} aria-hidden="true" />{t(copy.reset)}</button>
+          </div>
         </div>
       </form>
     </section>

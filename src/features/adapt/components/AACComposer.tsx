@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AACComposer — Universal Picture-and-Text Assisted Communication Builder.
+ * AACComposer — "Say it with pictures": a picture-and-text sentence builder.
  *
  * Designed for mothers communicating symptoms, body-related sensations,
  * requests, and emotional urgency when speaking or typing is difficult.
@@ -50,6 +50,8 @@ export type AACComposerProps = {
   initialLanguage?: "bn" | "en";
   /** Optional container class name */
   className?: string;
+  /** Drop the outer card frame when a parent already frames the builder. */
+  bare?: boolean;
 };
 
 export function AACComposer({
@@ -57,6 +59,7 @@ export function AACComposer({
   onInsert,
   initialLanguage,
   className = "",
+  bare = false,
 }: AACComposerProps) {
   const { prefs } = useAdaptPreferences();
 
@@ -229,356 +232,272 @@ export function AACComposer({
 
   const activeCatalog = AAC_CATALOG.find((cat) => cat.id === activeCategory) ?? AAC_CATALOG[0];
 
+  const selectedOrder = new Map(selected.map((item, index) => [item.id, index + 1]));
+  const hasSentence = selected.length > 0 || isCustomEdited;
+  const link = "inline-flex min-h-11 items-center gap-1.5 rounded-control px-2.5 text-sm font-semibold transition-colors duration-[var(--pro-duration-fast)] ease-pro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus disabled:cursor-not-allowed disabled:opacity-50";
+  const iconButton = "grid size-10 shrink-0 place-items-center rounded-control transition-colors duration-[var(--pro-duration-fast)] ease-pro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-pro-focus disabled:cursor-not-allowed disabled:opacity-35";
+  const bn = language === "bn";
+
   return (
     <section
-      aria-label="AAC Phrase Builder / ছবি ও প্রতীক দিয়ে বার্তা তৈরি"
+      aria-label="Say it with pictures / ছবি দিয়ে বলুন"
       className={[
-        "rounded-card border border-pro-border bg-pro-elevated shadow-sm",
+        "grid grid-cols-1 gap-4",
+        bare ? "" : "rounded-card border border-pro-border bg-pro-bg p-3 sm:p-4",
         className,
       ].join(" ")}
     >
-      {/* Header banner */}
-      <div className="border-b border-pro-border bg-pro-surface px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="text-base font-semibold text-pro-text flex items-center gap-2">
-              <span aria-hidden="true">💬</span>
-              <span>AAC Phrase Builder</span>
-              <span className="text-sm font-normal text-pro-muted" lang="bn">
-                (ছবি ও প্রতীক দিয়ে বার্তা)
-              </span>
-            </h2>
-            <p className="mt-0.5 text-xs text-pro-muted">
-              Select tiles to compose natural sentences. Nothing is sent automatically.
-            </p>
-          </div>
-
-          {/* Output Language Toggle */}
-          <div className="flex items-center gap-1 text-xs">
-            <Languages size={14} className="text-pro-muted" aria-hidden="true" />
-            <span className="sr-only">Output language:</span>
-            <div className="inline-flex rounded-pill border border-pro-control-border bg-pro-elevated p-0.5">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold leading-snug text-pro-text">
+            Say it with pictures{" "}
+            <span className="font-normal text-pro-muted" lang="bn">· ছবি দিয়ে বলুন</span>
+          </h2>
+          <p className="mt-0.5 text-sm text-pro-muted">
+            {bn
+              ? "ছবিতে চাপ দিন, আমরা একটি বাক্য বানিয়ে দেব। আপনি না চাইলে কিছুই পাঠানো হবে না।"
+              : "Tap the pictures that fit and we will write the sentence for you. Nothing is sent until you choose."}
+          </p>
+        </div>
+        <div className="flex items-center gap-2" role="group" aria-label="Sentence language / বাক্যের ভাষা">
+          <Languages size={16} className="text-pro-muted" aria-hidden="true" />
+          <div className="inline-flex rounded-pill border border-pro-control-border bg-pro-elevated p-0.5">
+            {(["bn", "en"] as const).map((code) => (
               <button
+                key={code}
                 type="button"
-                onClick={() => setUserLanguageOverride("bn")}
-                aria-pressed={language === "bn"}
+                lang={code}
+                onClick={() => setUserLanguageOverride(code)}
+                aria-pressed={language === code}
                 className={[
-                  "min-h-8 rounded-pill px-2.5 py-0.5 text-xs font-semibold transition-colors",
-                  language === "bn"
-                    ? "bg-pro-primary text-pro-on-primary"
-                    : "text-pro-text hover:bg-pro-surface",
+                  "min-h-10 rounded-pill px-3.5 text-sm font-semibold transition-colors duration-[var(--pro-duration-fast)] ease-pro",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
+                  language === code ? "bg-pro-primary text-pro-on-primary" : "text-pro-text hover:bg-pro-surface",
                 ].join(" ")}
               >
-                বাংলা
+                {code === "bn" ? "বাংলা" : "English"}
               </button>
-              <button
-                type="button"
-                onClick={() => setUserLanguageOverride("en")}
-                aria-pressed={language === "en"}
-                className={[
-                  "min-h-8 rounded-pill px-2.5 py-0.5 text-xs font-semibold transition-colors",
-                  language === "en"
-                    ? "bg-pro-primary text-pro-on-primary"
-                    : "text-pro-text hover:bg-pro-surface",
-                ].join(" ")}
-              >
-                English
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-5">
-        {/* Category Tabs */}
-        <div>
-          <p className="sr-only" id={`${composerId}-tabs-label`}>
-            AAC symbol categories
-          </p>
-          <div
-            role="tablist"
-            aria-labelledby={`${composerId}-tabs-label`}
-            className="flex flex-wrap gap-2"
-          >
-            {AAC_CATALOG.map((cat) => {
-              const isActive = cat.id === activeCategory;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  role="tab"
-                  id={`${composerId}-tab-${cat.id}`}
-                  aria-selected={isActive}
-                  aria-controls={`${composerId}-panel-${cat.id}`}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={[
-                    "min-h-11 rounded-pill px-4 py-2 text-sm font-semibold transition-all",
-                    "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
-                    isActive
-                      ? "bg-pro-primary text-pro-on-primary shadow-sm"
-                      : "border border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface",
-                  ].join(" ")}
-                >
-                  <span lang="en">{cat.labelEn}</span>
-                  <span className="ml-1 text-xs opacity-80" lang="bn">
-                    ({cat.labelBn})
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-2 text-xs text-pro-muted">
-            {language === "bn" ? activeCatalog.descriptionBn : activeCatalog.descriptionEn}
-          </p>
-        </div>
-
-        {/* Symbol Tile Grid */}
+      {/* Categories */}
+      <div>
+        <p className="sr-only" id={`${composerId}-tabs-label`}>Picture groups</p>
         <div
-          role="tabpanel"
-          id={`${composerId}-panel-${activeCategory}`}
-          aria-labelledby={`${composerId}-tab-${activeCategory}`}
-          className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+          role="tablist"
+          aria-labelledby={`${composerId}-tabs-label`}
+          className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin] sm:flex-wrap"
         >
-          {activeCatalog.items.map((item) => {
-            const isSelected = selectedIds.has(item.id);
+          {AAC_CATALOG.map((cat) => {
+            const isActive = cat.id === activeCategory;
             return (
               <button
-                key={item.id}
+                key={cat.id}
                 type="button"
-                aria-pressed={isSelected}
-                onClick={() => toggleItem(item)}
+                role="tab"
+                id={`${composerId}-tab-${cat.id}`}
+                aria-selected={isActive}
+                aria-controls={`${composerId}-panel-${cat.id}`}
+                onClick={() => setActiveCategory(cat.id)}
                 className={[
-                  "relative flex min-h-22 flex-col items-center justify-center gap-1.5 rounded-card p-3 text-center transition-all",
-                  "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
-                  isSelected
-                    ? "border-2 border-pro-primary bg-pro-surface text-pro-text shadow-sm"
-                    : "border border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface active:scale-95",
+                  "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-pill border px-4 text-sm font-semibold transition-colors duration-[var(--pro-duration-fast)] ease-pro",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
+                  isActive
+                    ? "border-pro-primary bg-pro-primary text-pro-on-primary"
+                    : "border-pro-control-border bg-pro-elevated text-pro-text hover:bg-pro-surface",
                 ].join(" ")}
-                aria-label={`${item.labelEn} (${item.labelBn}) — ${isSelected ? "Selected. Click to remove." : "Click to add."}`}
               >
-                {/* Visual selected checkmark badge (WCAG 1.4.1 non-color indicator) */}
-                {isSelected && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-pro-primary text-pro-on-primary text-[10px]"
-                  >
-                    <Check size={12} strokeWidth={3} />
-                  </span>
-                )}
-                <span className="text-3xl" aria-hidden="true">
-                  {item.emoji}
-                </span>
-                <span className="text-sm font-semibold leading-tight">
-                  {item.labelEn}
-                </span>
-                <span className="text-xs text-pro-muted leading-tight" lang="bn">
-                  {item.labelBn}
-                </span>
+                <span lang="en">{cat.labelEn}</span>
+                <span lang="bn" className={isActive ? "font-normal text-pro-on-primary-muted" : "font-normal text-pro-muted"}>{cat.labelBn}</span>
               </button>
             );
           })}
         </div>
+        <p className="mt-2 text-sm text-pro-muted">
+          {bn ? activeCatalog.descriptionBn : activeCatalog.descriptionEn}
+        </p>
+      </div>
 
-        {/* Selected Items Tray */}
-        <div className="space-y-2 rounded-card border border-pro-border bg-pro-surface p-3.5">
+      {/* Picture tiles */}
+      <div
+        role="tabpanel"
+        id={`${composerId}-panel-${activeCategory}`}
+        aria-labelledby={`${composerId}-tab-${activeCategory}`}
+        className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,6.5rem),1fr))] gap-2.5"
+      >
+        {activeCatalog.items.map((item) => {
+          const order = selectedOrder.get(item.id);
+          const isSelected = order !== undefined;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={isSelected}
+              aria-describedby={`${composerId}-phrase-help`}
+              onClick={() => toggleItem(item)}
+              className={[
+                "group relative flex min-h-28 flex-col items-center justify-center gap-1.5 rounded-card p-2.5 text-center",
+                "transition-[background-color,border-color,transform,box-shadow] duration-[var(--pro-duration-fast)] ease-pro motion-safe:active:scale-[0.97]",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
+                isSelected
+                  ? "border-2 border-pro-primary bg-pro-surface-2 text-pro-text"
+                  : "border border-pro-border bg-pro-elevated text-pro-text hover:border-pro-control-border hover:shadow-pro-1",
+              ].join(" ")}
+            >
+              {isSelected && (
+                <span
+                  aria-hidden="true"
+                  className="absolute end-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-pro-primary text-xs font-bold text-pro-on-primary tabular-nums"
+                >
+                  {order}
+                </span>
+              )}
+              <span
+                className="grid size-12 place-items-center rounded-full bg-pro-surface text-[1.65rem] transition-transform duration-[var(--pro-duration-normal)] ease-pro motion-safe:group-hover:scale-105"
+                aria-hidden="true"
+              >
+                {item.emoji}
+              </span>
+              <span className="text-sm font-semibold leading-tight">{item.labelEn}</span>
+              <span className="text-xs leading-snug text-pro-muted" lang="bn">{item.labelBn}</span>
+            </button>
+          );
+        })}
+      </div>
+      <p id={`${composerId}-phrase-help`} className="sr-only" lang={language}>
+        {language === "bn" ? "বাক্যে যোগ করতে বাছুন। আবার বাছলে বাক্য থেকে বাদ যাবে।" : "Select to add this phrase. Select it again to remove it from the sentence."}
+      </p>
+
+      {/* Sentence: a quiet hint until something is picked, then the full editor */}
+      {!hasSentence ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-field bg-pro-surface px-4 py-2.5">
+          <p className="text-sm text-pro-text">
+            {bn ? "একটি ছবিতে চাপ দিয়ে শুরু করুন।" : "Tap a picture to start your sentence."}
+          </p>
+          {undoStack.length > 0 && (
+            <button type="button" onClick={handleUndo} aria-label="Undo last selection change" className={`${link} text-pro-primary hover:bg-pro-surface-2`}>
+              <Undo2 size={16} aria-hidden="true" />
+              Undo
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-3 rounded-card border border-pro-control-border bg-pro-elevated p-3 shadow-pro-1 sm:p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-pro-text">
-              Selected items / <span lang="bn">নির্বাচিত প্রতীক</span>
-              <span className="ml-2 inline-flex items-center rounded-pill bg-pro-elevated px-2 py-0.5 text-xs font-semibold text-pro-primary border border-pro-border">
+            <p className="flex items-center gap-2 font-semibold text-pro-text">
+              <span>Picked <span className="font-normal text-pro-muted" lang="bn">· বাছাই করা ছবি</span></span>
+              <span className="inline-grid min-w-6 place-items-center rounded-pill bg-pro-primary px-1.5 text-xs font-bold leading-6 text-pro-on-primary tabular-nums">
                 {selected.length}
               </span>
             </p>
-
-            {/* Tray controls: Undo and Clear all */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleUndo}
-                disabled={undoStack.length === 0}
-                aria-label="Undo last selection change"
-                className={[
-                  "inline-flex min-h-9 items-center gap-1 rounded-pill border border-pro-control-border px-2.5 py-1 text-xs font-semibold transition-colors",
-                  "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
-                  undoStack.length === 0
-                    ? "opacity-40 cursor-not-allowed bg-pro-elevated text-pro-muted"
-                    : "bg-pro-elevated text-pro-text hover:bg-pro-surface",
-                ].join(" ")}
-              >
-                <Undo2 size={13} aria-hidden="true" />
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={handleUndo} disabled={undoStack.length === 0} aria-label="Undo last selection change" className={`${link} text-pro-primary hover:bg-pro-surface`}>
+                <Undo2 size={16} aria-hidden="true" />
                 Undo
               </button>
-
-              <button
-                type="button"
-                onClick={handleClearAll}
-                disabled={selected.length === 0}
-                aria-label="Clear all selected items"
-                className={[
-                  "inline-flex min-h-9 items-center gap-1 rounded-pill border border-pro-control-border px-2.5 py-1 text-xs font-semibold transition-colors",
-                  "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
-                  selected.length === 0
-                    ? "opacity-40 cursor-not-allowed bg-pro-elevated text-pro-muted"
-                    : "bg-pro-elevated text-pro-danger hover:bg-pro-danger-soft",
-                ].join(" ")}
-              >
-                <Trash2 size={13} aria-hidden="true" />
-                Clear
+              <button type="button" onClick={handleClearAll} disabled={selected.length === 0} aria-label="Clear all selected items" className={`${link} text-pro-danger hover:bg-pro-danger-soft`}>
+                <Trash2 size={16} aria-hidden="true" />
+                Clear all
               </button>
             </div>
           </div>
 
-          {selected.length === 0 ? (
-            <div className="rounded-field border border-dashed border-pro-border bg-pro-elevated px-4 py-6 text-center text-sm text-pro-muted">
-              <p>No symbols selected yet.</p>
-              <p className="mt-1 text-xs">
-                Tap symbols above to build symptoms, body areas, or requests.
-              </p>
-            </div>
-          ) : (
-            <ul
-              role="list"
-              aria-label="Ordered list of selected symbols"
-              className="flex flex-wrap gap-2 pt-1"
-            >
+          {selected.length > 0 && (
+            <ol aria-label="Picked pictures, in order" className="flex flex-wrap gap-2">
               {selected.map((item, index) => (
                 <li
                   key={`${item.id}-${index}`}
-                  className="inline-flex items-center gap-1 rounded-pill border border-pro-control-border bg-pro-elevated px-2.5 py-1 text-xs font-medium text-pro-text shadow-xs"
+                  className="flex min-w-0 max-w-full items-center gap-1 rounded-pill border border-pro-border bg-pro-surface py-0.5 ps-3 pe-0.5 text-pro-text"
                 >
-                  <span aria-hidden="true">{item.emoji}</span>
-                  <span>{item.labelEn}</span>
-                  <span className="text-pro-muted" lang="bn">
-                    ({item.labelBn})
+                  <span className="text-sm font-bold text-pro-primary tabular-nums" aria-hidden="true">{index + 1}</span>
+                  <span aria-hidden="true" className="text-lg">{item.emoji}</span>
+                  <span className="min-w-0 px-1 text-sm font-semibold leading-tight">
+                    {item.labelEn} <span className="font-normal text-pro-muted" lang="bn">{item.labelBn}</span>
                   </span>
-
-                  {/* Reorder earlier */}
-                  <button
-                    type="button"
-                    onClick={() => moveItem(index, "earlier")}
-                    disabled={index === 0}
-                    aria-label={`Move ${item.labelEn} earlier`}
-                    className={[
-                      "ml-1 rounded-full p-1 hover:bg-pro-surface focus-visible:outline-2 focus-visible:outline-pro-focus",
-                      index === 0 ? "opacity-30 cursor-not-allowed" : "text-pro-muted",
-                    ].join(" ")}
-                  >
-                    <ChevronLeft size={13} aria-hidden="true" />
+                  <button type="button" onClick={() => moveItem(index, "earlier")} disabled={index === 0}
+                    aria-label={`Move ${item.labelEn} earlier`} className={`${iconButton} rounded-full text-pro-text hover:bg-pro-surface-2`}>
+                    <ChevronLeft size={18} aria-hidden="true" />
                   </button>
-
-                  {/* Reorder later */}
-                  <button
-                    type="button"
-                    onClick={() => moveItem(index, "later")}
-                    disabled={index === selected.length - 1}
-                    aria-label={`Move ${item.labelEn} later`}
-                    className={[
-                      "rounded-full p-1 hover:bg-pro-surface focus-visible:outline-2 focus-visible:outline-pro-focus",
-                      index === selected.length - 1 ? "opacity-30 cursor-not-allowed" : "text-pro-muted",
-                    ].join(" ")}
-                  >
-                    <ChevronRight size={13} aria-hidden="true" />
+                  <button type="button" onClick={() => moveItem(index, "later")} disabled={index === selected.length - 1}
+                    aria-label={`Move ${item.labelEn} later`} className={`${iconButton} rounded-full text-pro-text hover:bg-pro-surface-2`}>
+                    <ChevronRight size={18} aria-hidden="true" />
                   </button>
-
-                  {/* Remove */}
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    aria-label={`Remove ${item.labelEn}`}
-                    className="ml-0.5 rounded-full p-1 text-pro-danger hover:bg-pro-danger-soft focus-visible:outline-2 focus-visible:outline-pro-focus"
-                  >
-                    <X size={13} aria-hidden="true" />
+                  <button type="button" onClick={() => removeItem(index)}
+                    aria-label={`Remove ${item.labelEn}`} className={`${iconButton} rounded-full text-pro-danger hover:bg-pro-danger-soft`}>
+                    <X size={18} aria-hidden="true" />
                   </button>
                 </li>
               ))}
-            </ul>
+            </ol>
           )}
-        </div>
 
-        {/* Message Preview & Editor */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <label
-              htmlFor={textareaId}
-              className="text-sm font-semibold text-pro-text flex items-center gap-2"
-            >
-              <span>Composed message</span>
-              <span className="text-xs font-normal text-pro-muted" lang="bn">
-                (তৈরি হওয়া বাক্য)
-              </span>
-            </label>
-
-            <div className="flex items-center gap-2">
+          <div className="grid gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label htmlFor={textareaId} className="font-semibold text-pro-text">
+                Your sentence <span className="text-sm font-normal text-pro-muted" lang="bn">· আপনার বাক্য</span>
+              </label>
               {isCustomEdited && (
-                <button
-                  type="button"
-                  onClick={handleResetToPhrase}
-                  className="inline-flex items-center gap-1 text-xs text-pro-primary underline hover:text-pro-primary-hover focus-visible:outline-2 focus-visible:outline-pro-focus"
-                >
-                  <RotateCcw size={12} aria-hidden="true" />
-                  Reset to tile phrasing
+                <button type="button" onClick={handleResetToPhrase} className={`${link} text-pro-primary underline underline-offset-2 hover:bg-pro-surface`}>
+                  <RotateCcw size={14} aria-hidden="true" />
+                  Use the picture wording again
                 </button>
               )}
-
-              {/* Read Aloud Button integration */}
-              {currentMessageText && (
-                <ReadAloudButton
-                  text={currentMessageText}
-                  language={language}
-                  label={language === "bn" ? "পড়ে শুনুন" : "Listen aloud"}
-                />
-              )}
             </div>
+            <textarea
+              id={textareaId}
+              rows={2}
+              value={currentMessageText}
+              aria-describedby={`${textareaId}-hint`}
+              onChange={(e) => {
+                setIsCustomEdited(true);
+                setCustomText(e.target.value);
+              }}
+              className={[
+                "w-full rounded-field border bg-pro-bg px-3.5 py-3 text-base text-pro-text",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
+                "leading-[var(--pro-leading-body)]",
+                isCustomEdited ? "border-pro-primary" : "border-pro-control-border",
+              ].join(" ")}
+            />
+            {selected.some((item) => item.dangerSign) && (
+              <p role="note" className="rounded-field border border-pro-border bg-pro-surface p-3 text-sm text-pro-text">
+                {bn
+                  ? "এটি জরুরি লক্ষণ হতে পারে। এখনই ৯৯৯ নম্বরে কল করুন বা কাছের জরুরি সেবায় যান। প্রশ্ন পাঠানোর জন্য অপেক্ষা করবেন না। (এই শব্দচয়ন চিকিৎসক-পর্যালোচনার অপেক্ষায়।)"
+                  : "This may be an urgent sign. Call 999 or go to the nearest emergency care now; do not wait for an answer here. (This wording is pending clinician review.)"}
+              </p>
+            )}
+            <p id={`${textareaId}-hint`} className="text-sm text-pro-muted">
+              {isCustomEdited
+                ? "You changed this sentence. It will be added exactly as written."
+                : "You can change the words before adding them."}
+            </p>
           </div>
 
-          <textarea
-            id={textareaId}
-            rows={3}
-            value={currentMessageText}
-            onChange={(e) => {
-              setIsCustomEdited(true);
-              setCustomText(e.target.value);
-            }}
-            placeholder={
-              language === "bn"
-                ? "উপরের প্রতীকগুলো স্পর্শ করে বাক্য তৈরি করুন, অথবা সরাসরি সম্পাদনা করুন…"
-                : "Select symbols above to generate a phrase, or edit directly here…"
-            }
-            className={[
-              "w-full rounded-field border bg-pro-elevated px-3 py-2.5 text-sm text-pro-text",
-              "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus",
-              "leading-[var(--pro-leading-body)]",
-              isCustomEdited ? "border-pro-primary" : "border-pro-control-border",
-            ].join(" ")}
-          />
-
-          <p className="text-xs text-pro-muted">
-            {isCustomEdited
-              ? "You have edited this text. It will be inserted exactly as typed."
-              : "This sentence is generated automatically from your selected tiles. You can edit it anytime."}
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <AppButton
+              variant="primary"
+              size="md"
+              onClick={handleInsert}
+              disabled={!currentMessageText.trim()}
+              aria-disabled={!currentMessageText.trim()}
+              className="max-sm:w-full"
+            >
+              <Check size={18} aria-hidden="true" />
+              {targetLabel ?? (bn ? "বার্তায় যুক্ত করুন" : "Insert into message")}
+            </AppButton>
+            {currentMessageText && (
+              <ReadAloudButton text={currentMessageText} language={language} label={bn ? "পড়ে শুনুন" : "Listen aloud"} />
+            )}
+          </div>
         </div>
+      )}
 
-        {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <AppButton
-            variant="primary"
-            size="md"
-            onClick={handleInsert}
-            disabled={!currentMessageText.trim()}
-            aria-disabled={!currentMessageText.trim()}
-          >
-            <Check size={16} aria-hidden="true" />
-            {targetLabel ?? (language === "bn" ? "বার্তায় যুক্ত করুন" : "Insert into message")}
-          </AppButton>
+      {/* Screen Reader Live Region */}
 
-          <p className="text-xs text-pro-muted">
-            Inserting places this draft into your target form so you can review and submit when ready.
-          </p>
-        </div>
-
-        {/* Screen Reader Live Region */}
-        <InlineLiveRegion message={announcement} />
-      </div>
+      <InlineLiveRegion message={announcement} className="text-sm text-pro-muted" />
     </section>
   );
 }

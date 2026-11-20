@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { AACComposer, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
+import { AACComposer, HeldAacText, VoiceDictationButton, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
 import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
 import { NetworkStatus } from "@/components/pwa/NetworkStatus";
 import { detectBartaLanguage } from "./chat-language";
 import { BartaEducationChat } from "./BartaEducationChat";
 import { educationCopy, type Language } from "./barta-education-copy";
 import { bartaDemoQuestions, getBartaDemoLanguage } from "./demo-questions";
+import styles from "./barta-education.module.css";
 
 type ChatState =
   | { status: "idle" | "checking" }
@@ -30,17 +31,15 @@ function readErrorMessage(body: unknown): string {
 /** `initialQuestion` only pre-fills the editable draft (e.g. from the dashboard); it is never sent automatically. */
 export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode?: "demo" | "education"; initialQuestion?: string }) {
   const demo = mode === "demo";
-  const { prefs } = useAdaptPreferences();
-  const [aacOpen, setAacOpen] = useState<boolean | null>(null);
+  useAdaptPreferences();
   const [incoming, setIncoming] = useState("");
   const storedDraft = useSyncExternalStore(subscribeDraft, getStoredAacDraft, () => null);
   const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
   const questionInput = useRef<HTMLTextAreaElement>(null);
-  const symbolSummary = useRef<HTMLElement>(null);
   const pendingRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
   const [turns, setTurns] = useState<Turn[]>([]);
-  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? prefs.language : answerLanguage;
+  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? "en" : answerLanguage;
   const [previousChunkId, setPreviousChunkId] = useState<string>();
   const [state, setState] = useState<ChatState>({ status: "idle" });
   const busy = state.status === "checking";
@@ -55,22 +54,16 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
     setQuestion(next); setIncoming(""); clearStoredAacDraft();
     questionInput.current?.focus();
   }
-  function openSymbols() {
-    setAacOpen(true);
-    symbolSummary.current?.focus();
-  }
-
-  const symbolsOpen = aacOpen ?? prefs.communication === "aac";
   const chatCopy = educationCopy[formLanguage];
-  const aacSection = <section className="pro-card mb-5 max-w-prose" aria-label={chatCopy.useSymbols} lang={formLanguage}>
-    <details id="barta-symbol-input" open={symbolsOpen} onToggle={event => setAacOpen(event.currentTarget.open)}>
-      <summary ref={symbolSummary} className="min-h-12 cursor-pointer font-semibold">{chatCopy.useSymbols} · AAC</summary>
-      <AACComposer onInsert={insertText} targetLabel={chatCopy.insertQuestion} />
-    </details>
-    {storedDraft && <div className="mt-3 grid gap-2"><p>{chatCopy.savedAacDraft}: {storedDraft}</p>
-      <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>{chatCopy.insertSavedAac}</button>
-      <button type="button" className="pro-btn pro-btn-secondary" onClick={clearStoredAacDraft}>{chatCopy.dismissSavedAac}</button></div>}
-    {incoming && <div role="alert"><p>{chatCopy.aacLimit}</p><p className="whitespace-pre-wrap">{incoming}</p></div>}
+  // Always open: asking with pictures is a first-class way to ask, not a hidden mode.
+  const aacSection = <section id="barta-symbol-input" tabIndex={-1} className={styles.symbolPanel} aria-label={chatCopy.useSymbols} lang={formLanguage}>
+    <AACComposer bare initialLanguage={formLanguage} onInsert={insertText} targetLabel={chatCopy.insertQuestion} />
+    {storedDraft && <div className={styles.savedDraft}><p>{chatCopy.savedAacDraft}: {storedDraft}</p>
+      <div className={styles.helpActions}>
+        <button type="button" className="pro-btn pro-btn-secondary" onClick={() => insertText(storedDraft)}>{chatCopy.insertSavedAac}</button>
+        <button type="button" className="pro-btn pro-btn-secondary" onClick={clearStoredAacDraft}>{chatCopy.dismissSavedAac}</button>
+      </div></div>}
+    {incoming && <HeldAacText text={incoming} value={question} maxLength={1200} lang={formLanguage === "bn" ? "bn" : "en"} onDismiss={() => setIncoming("")} onAdd={next => { setQuestion(next); setIncoming(""); clearStoredAacDraft(); questionInput.current?.focus(); }} />}
   </section>;
 
   useEffect(() => () => {
@@ -176,12 +169,10 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
 
   if (!demo) {
     return (
-      <><NetworkStatus message={educationCopy[formLanguage].offline} />{aacSection}<BartaEducationChat languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
+      <><NetworkStatus message={educationCopy[formLanguage].offline} /><BartaEducationChat symbolPanel={aacSection} languageChoice={answerLanguage} formLanguage={formLanguage} hasPrefill={Boolean(initialQuestion)}
         question={question} questionInput={questionInput} turns={turns} reply={educationReply} error={educationError} busy={busy}
         onLanguage={setAnswerLanguage}
         onQuestion={setQuestion}
-        onDictation={insertText}
-        symbolsOpen={symbolsOpen} onOpenSymbols={openSymbols}
         onSelect={fillQuestion} onClear={clearConversation} onSubmit={submit} /></>
     );
   }
@@ -220,6 +211,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
               setState({ status: "idle" });
             }}
             maxLength={1200} required />
+          <VoiceDictationButton language={formLanguage} value={question} maxLength={1200} onChange={next => { setQuestion(next); setState({ status: "idle" }); }} focusTargetRef={questionInput} />
         </div>
         <button type="submit" className="pro-btn pro-btn-primary w-fit" disabled={busy || !question.trim()} lang="en">
           {busy ? "Checking…" : "Ask PROHOR"}

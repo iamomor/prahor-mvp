@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { AppButton } from "@/components/ui/AppButton";
 import { AppCard } from "@/components/ui/AppCard";
 import { useLanguage } from "@/i18n/use-language";
+import { AACComposer, HeldAacText, mergeAacText, ReadAloudButton, VoiceDictationButton } from "@/features/adapt";
 import { saveWellnessEntry, shusthotaErrorCopy } from "./api";
 
 const copy = {
@@ -23,6 +24,7 @@ const copy = {
 export function RestSleepCheckIn({ onClose, onSaved }: { onClose: () => void; onSaved?: () => Promise<void> | void }) {
   const { language, t } = useLanguage();
   const [note, setNote] = useState("");
+  const [heldAac, setHeldAac] = useState("");
   const [step, setStep] = useState<"write" | "review">("write");
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<{ kind: "success" | "error"; message: string } | null>(null);
@@ -57,11 +59,17 @@ export function RestSleepCheckIn({ onClose, onSaved }: { onClose: () => void; on
         {step === "write" ? (
           <>
             <label htmlFor={`${id}-note`} className="grid gap-2"><span className="font-medium">{t(copy.label)}</span><span id={hintId} className="pro-muted leading-relaxed">{t(copy.help)}</span><textarea id={`${id}-note`} value={note} onChange={event => setNote(event.target.value)} maxLength={1000} rows={3} aria-describedby={hintId} placeholder={t(copy.placeholder)} className="min-h-28 w-full resize-y rounded-field border border-pro-control-border bg-pro-elevated px-4 py-3 text-base leading-relaxed text-pro-text placeholder:text-pro-muted focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus" /><span className="pro-muted text-sm">{note.length}/1000</span></label>
+            <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={note} maxLength={1000} onChange={setNote} />
+            <AACComposer initialLanguage={language === "en" ? "en" : "bn"} targetLabel={t({ en: "Add to rest note", bn: "বিশ্রামের নোটে যোগ করুন" })} onInsert={phrase => {
+              const next = mergeAacText(note, phrase);
+              if (next.length <= 1000) { setNote(next); setHeldAac(""); } else setHeldAac(phrase);
+            }} />
+            {heldAac && <HeldAacText text={heldAac} value={note} maxLength={1000} lang={language === "en" ? "en" : "bn"} onDismiss={() => setHeldAac("")} onAdd={next => { setNote(next); setHeldAac(""); }} />}
             <div className="flex flex-col gap-3 border-t border-pro-border pt-4 sm:flex-row sm:flex-wrap"><AppButton disabled={!note.trim()} onClick={() => setStep("review")}>{t({ en: "Review note", bn: "নোট দেখে নিন" })}</AppButton><AppButton variant="secondary" onClick={onClose}>{t(copy.skip)}</AppButton></div>
           </>
         ) : (
           <>
-            <div className="rounded-field border border-pro-border bg-pro-surface p-4"><p className="text-sm font-medium text-pro-muted">{t(copy.label)}</p><p className="whitespace-pre-wrap break-words leading-relaxed">{note}</p></div>
+            <div className="rounded-field border border-pro-border bg-pro-surface p-4"><p className="text-sm font-medium text-pro-muted">{t(copy.label)}</p><p className="whitespace-pre-wrap break-words leading-relaxed">{note}</p><ReadAloudButton text={note} language={language === "en" ? "en" : "bn"} /></div>
             <div className="flex flex-col gap-3 border-t border-pro-border pt-4 sm:flex-row sm:flex-wrap"><AppButton variant="secondary" onClick={() => { setStatus(null); setStep("write"); }}>{t(copy.change)}</AppButton><AppButton disabled={saving || status?.kind === "success"} onClick={() => void save()}>{saving ? t(copy.saving) : t(status?.kind === "success" ? copy.saved : copy.save)}</AppButton><AppButton variant="ghost" onClick={onClose}>{t(copy.skip)}</AppButton></div>
           </>
         )}

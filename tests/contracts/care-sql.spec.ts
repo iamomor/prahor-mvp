@@ -131,11 +131,12 @@ test("SQL-backed stale action is conflict, and provider cannot bypass role/owner
 test("Shonket HTTP adapter persists, retries, opens and acknowledges only the server-assigned request", async () => {
   const body = { message: "Synthetic Shonket request", method: "aac", concernTypes: ["fever", "other"], onset: "today" };
   const key = randomUUID();
-  const submit = await call(users.mother, "create-request", body, undefined, key);
+  const payload = { ...body, language: "bn", reviewConfirmed: true };
+  const submit = await call(users.mother, "create-request", payload, undefined, key);
   expect(submit.status).toBe(201);
   const first = (await submit.json()).data;
   expect(first).toMatchObject({ status: "submitted", revision: 1, ...body });
-  const again = await call(users.mother, "create-request", body, undefined, key);
+  const again = await call(users.mother, "create-request", payload, undefined, key);
   expect(again.status).toBe(201);
   expect((await again.json()).data.id).toBe(first.id);
   const count = ((await db.query("select count(*) as n from prohor_care.support_requests where workflow='shonket'")).rows[0] as { n: number | string }).n;
@@ -159,6 +160,7 @@ test("Shonket HTTP adapter persists, retries, opens and acknowledges only the se
   expect(unassignedQueue).toEqual([]);
   expect((await call(unassignedId, "shonket-open", {}, first.id)).status).toBe(404);
   expect((await call(assignedId, "acknowledge", { expectedRevision: 1 }, first.id)).status).toBe(409);
+  expect((await call(users.foreign, "shonket-revoke", undefined, first.id)).status).toBe(404);
 
   const opened = await call(assignedId, "shonket-open", {}, first.id);
   expect(opened.status).toBe(200);
@@ -167,4 +169,10 @@ test("Shonket HTTP adapter persists, retries, opens and acknowledges only the se
   expect(acknowledged.status).toBe(200);
   const final = await call(users.mother, "request-list", undefined, undefined, randomUUID(), "?workflow=shonket");
   expect((await final.json()).data[0].events.map((event: { status: string }) => event.status)).toEqual(["submitted", "delivered", "acknowledged"]);
+  const revoked = await call(users.mother, "shonket-revoke", undefined, first.id);
+  expect(revoked.status).toBe(200);
+  expect((await revoked.json()).data.consent.revokedAt).not.toBeNull();
+  expect((await call(assignedId, "shonket-open", {}, first.id)).status).toBe(404);
+  const afterRevoke = await call(assignedId, "provider-list", undefined, undefined, randomUUID(), "?workflow=shonket");
+  expect((await afterRevoke.json()).data).toEqual([]);
 });

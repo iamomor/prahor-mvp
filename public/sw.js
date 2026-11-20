@@ -1,7 +1,9 @@
 /* Public offline shell only. Never cache health, auth, API or Next.js bundles. */
 const CACHE_PREFIX = "prohor-public-shell-";
-const CACHE = `${CACHE_PREFIX}v4`;
+
+const CACHE = `${CACHE_PREFIX}v5`; // v5: new PROHOR logo icons
 const INSTALL_ASSETS = ["/offline", "/icon-192.png", "/icon-512.png"];
+
 const PUBLIC_NAVIGATIONS = new Set(["/", "/accessibility", "/offline"]);
 const SAFETY_NAVIGATION = /^\/safety(?:\/information(?:\/(?:pregnancy|labour-and-childbirth|postpartum|perinatal-mental-health))?)?\/?$/;
 function mayCachePublicAsset(response) {
@@ -25,6 +27,11 @@ self.addEventListener("install", event => {
           if (!mayCachePublicAsset(response)) throw new Error("Public offline shell unavailable");
           await cache.put(asset, response);
         }
+        // Safety HTML is an optional cache entry because deployment headers may prohibit storage.
+        try {
+          const safety = await fetch("/safety", { credentials: "omit", cache: "no-store" });
+          if (mayCacheSafetyPage(safety)) await cache.put("/safety", safety);
+        } catch { /* The standalone safety text remains cached. */ }
       })
       .then(() => self.skipWaiting()),
   );

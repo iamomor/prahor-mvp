@@ -97,10 +97,10 @@ export const modulesGrid = {
             name: "Shonket",
             bnName: "সংকেত",
             tagline: { en: "Emergency Signals & Rapid Care Escalation", bn: "জরুরি সংকেত ও তাৎক্ষণিক সহায়তা" },
-            status: { en: "Clinician Reviewed", bn: "চিকিৎসক দ্বারা পরীক্ষিত" },
+            status: { en: "Source-linked · clinical review pending", bn: "তথ্যসূত্রভিত্তিক · চিকিৎসক-পর্যালোচনা বাকি" },
             summary: {
-              en: "Direct, reviewed safety checklists and immediate national hotline links (16263, 999). Never forces critical life-threatening decisions through a chatbot.",
-              bn: "বিপদ সংকেতের স্পষ্ট তালিকা এবং সরাসরি ১৬২৬৩ ও ৯৯৯ হটলাইনে কল করার ব্যবস্থা। জরুরি পরিস্থিতিতে চ্যাটবটের ওপর নির্ভরশীল করে না।",
+              en: "Direct, source-linked safety checklists (clinical review pending) and immediate national hotline links (16263, 999). Never forces critical life-threatening decisions through a chatbot.",
+              bn: "বিপদ সংকেতের স্পষ্ট, তথ্যসূত্রভিত্তিক তালিকা (চিকিৎসক-পর্যালোচনা বাকি) এবং সরাসরি ১৬২৬৩ ও ৯৯৯ হটলাইনে কল করার ব্যবস্থা। জরুরি পরিস্থিতিতে চ্যাটবটের ওপর নির্ভরশীল করে না।",
             },
             impact: {
               en: "Instant clarity on when bleeding, severe fever, or vision changes require an emergency ambulance.",

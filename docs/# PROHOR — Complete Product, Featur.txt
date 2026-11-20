@@ -1,0 +1,1154 @@
+# **PROHOR — Complete Product, Features, AI & UI/UX Master Blueprint**
+
+Product Specification v1.0 | 14 November 2026 | Five-member hackathon team
+
+This is the consolidated blueprint for **PROHOR | প্রহর**, bringing together our decisions about the eight modules, 24 long-term capabilities, pregnancy-related conditions, mother-and-baby health, accessibility, AI, wellness, UI/UX, and development strategy.
+
+I am also resolving one important inconsistency in our earlier discussions: **we no longer need two public sections called "Standard Care" and "Personalized Care."** The final design will have one shared healthcare experience with optional accessibility customization for everyone.
+
+## **1. Final product identity**
+
+THE PRODUCT
+
+# **PROHOR | প্রহর**
+
+### Universal Adaptive AI Maternal & Child Care Ecosystem
+
+*Your Care. Your Way.*
+
+**Mission:** Make maternal and child healthcare information, monitoring, wellness support, and human-care coordination accessible to mothers across different abilities, communication needs, locations, and stages of motherhood.
+
+# **1**
+
+Unified platform
+
+# **8**
+
+Core modules
+
+# **24**
+
+Long-term capabilities
+
+### **What PROHOR actually is**
+
+PROHOR is not merely:
+
+- A pregnancy tracker.
+- A medical chatbot.
+- A disability-specific application.
+- A fitness or mental-health tracker.
+- A hospital booking website.
+
+**It is one connected maternal-care ecosystem incorporating all of these functions where appropriate.**
+
+A mother can record her health information, understand medical reports, manage pregnancy-related conditions, track physical and emotional well-being, ask educational questions, and connect with human support.
+
+An accessibility layer ensures those services can be used through different interaction methods.
+
+## **2. Final decisions: What is locked and what remains flexible?**
+
+| Decision                          | Final direction                                                       |
+| --------------------------------- | --------------------------------------------------------------------- |
+| Brand name                        | **PROHOR (প্রহর)**                                                    |
+| Core audience                     | Mothers during pregnancy, postpartum, and early motherhood            |
+| Disability inclusion              | Universal baseline accessibility with optional additional tools       |
+| User onboarding                   | **One unified, task-first experience**                                |
+| Disabled/non-disabled buttons     | Not used                                                              |
+| Standard/Personalized Care labels | Retired from the public UI                                            |
+| Healthcare modules                | Eight integrated modules                                              |
+| Long-term functionality           | Original 24 capabilities preserved                                    |
+| Additional health functionality   | Maternal conditions, fetal/newborn records, activity, mental wellness |
+| AI focus                          | Educational RAG, report understanding, optional care summaries        |
+| Medical decision-making           | Human clinical oversight; no unvalidated AI diagnosis                 |
+| Visual style                      | Premium, minimalist, warm, culturally appropriate, accessible         |
+| Implementation approach           | Web-first, responsive, shared backend, staged MVP                     |
+| Team development                  | Seven-day plan, five members, one repository                          |
+
+**The central UX rule: PROHOR adapts the interaction method, not the mother's healthcare rights or access to features.**
+
+# **3. Complete application architecture**
+
+The eight modules are product capabilities, **not necessarily eight separate homepage buttons**.
+
+Our interface should help users reach tasks quickly while the modules work together behind the scenes.
+
+## **PROHOR**
+
+One welcoming application for every mother
+
+**Universal Access Layer**
+
+Keyboard • Screen reader • Text • AAC • Read-aloud • Language • Layout preferences
+
+**PROHOR Adapt**
+
+Accessibility
+
+**PROHOR Barta**
+
+AI communication
+
+**PROHOR Shonket**
+
+Safety & assistance
+
+**PROHOR Jibonrekha**
+
+Mother & baby health
+
+**PROHOR Bujhi**
+
+Medical documents
+
+**PROHOR Shusthota**
+
+Wellness
+
+**PROHOR Poth**
+
+Care navigation
+
+**PROHOR Bondhon**
+
+Care coordination
+
+**Shared Services**
+
+Accounts • Health records • Consent • AI • Appointments • Provider access • Audit
+
+This model gives you three important properties:
+
+**Consistency:** A mother's records and preferences follow her into every module.
+
+**Efficiency:** Your five developers build shared components instead of eight unrelated applications.
+
+**Originality:** The differentiator is how accessibility, mother-and-baby records, AI explanations, wellness, and human support connect.
+
+# **4. Final user entry and onboarding**
+
+This replaces our old two-section selection.
+
+## **Proposed welcome screen**
+
+## **PROHOR | প্রহর**
+
+বাংলা / EN
+
+# **Your care, your way.**
+
+আপনার যত্ন, আপনার মতো।
+
+Understand your pregnancy, follow your health, and find support.
+
+**What would you like to do?**
+
+Ask PROHOR
+
+Understand a health topic
+
+My Health
+
+Records and conditions
+
+My Wellness
+
+Activity, rest and mood
+
+Find Care
+
+Facilities and appointments
+
+**Adjust reading & interaction**
+
+Text, communication, sound, layout and navigation options—available anytime.
+
+Proposed screen layout. Cards are a visual specification, not operational navigation.
+
+### **How it behaves**
+
+| User action                | System response                                                           |
+| -------------------------- | ------------------------------------------------------------------------- |
+| Selects Ask PROHOR         | Opens public educational information without requiring a medical profile  |
+| Selects My Health          | Opens sign-in only if private record access requires it                   |
+| Selects My Wellness        | Opens the selected check-in, with authentication when saving private data |
+| Selects Find Care          | Opens the facility directory                                              |
+| Opens interaction settings | Changes the interface without asking for disability identification        |
+| Returns while signed in    | Opens dashboard with relevant saved tasks and appointments                |
+
+### **What happens for mothers with disabilities?**
+
+A mother who needs screen-reader or keyboard access can already operate the welcome page. These are **baseline requirements, not optional modes**.
+
+A mother who wants AAC, reduced motion, larger controls, simplified wording or an alternative layout can configure those features before proceeding or while completing a task.
+
+A mother without disabilities can select exactly the same preferences.
+
+W3C recommends familiar patterns, predictable controls, short routes to important tasks and personalization without unnecessary cognitive effort.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.w3.org\&sz=32)
+
+w3.org+1
+
+
+
+# **5. Complete feature inventory — All 8 PROHOR modules**
+
+This is the main section your development team should use as the product specification.
+
+**Priority definitions**
+
+- **P0 — Essential MVP:** Must function in the seven-day prototype.
+- **P1 — Expanded MVP:** Implement a restricted version if the core journey is stable.
+- **P2 — Full product:** Planned for later development and validation.
+
+These priorities represent **planned work, not completed functionality**.
+
+## **Module 01 — PROHOR Adapt**
+
+## **Universal Access & Interaction Engine**
+
+The foundation of every other module
+
+**Meaning:** Adapt is the system that lets mothers choose how they read, navigate, communicate and interact with PROHOR.
+
+It is not a disability-detection system.
+
+### **Feature specification**
+
+| Feature                          | What it does                                                                       | Priority |
+| -------------------------------- | ---------------------------------------------------------------------------------- | -------- |
+| Universal accessibility baseline | Semantic pages, keyboard operation, screen-reader compatibility, meaningful labels | P0       |
+| Language preferences             | Bangla and English interface support                                               | P0       |
+| Text preferences                 | Adjustable text size and readable content spacing                                  | P0       |
+| Layout preferences               | Compact and spacious presentation options                                          | P0       |
+| Contrast controls                | Offers accessible visual contrast options                                          | P0       |
+| Reduced motion                   | Respects user and system animation preferences                                     | P0       |
+| Interaction preferences          | Remembers selected reading and communication methods                               | P0       |
+| Simple-Bangla content            | Displays reviewed, easier-to-read instructions                                     | P1       |
+| AAC communication                | Picture-and-text message composition                                               | P1       |
+| Read-aloud                       | Optional text-to-speech for supported content                                      | P1       |
+| Guided task mode                 | Breaks complicated tasks into manageable steps                                     | P1       |
+| Advanced assistive input         | Additional switch, speech and external AAC compatibility testing                   | P2       |
+
+### **How this serves different users**
+
+A blind mother can operate the website using a compatible screen reader without enabling a special mode.
+
+A deaf mother can access all essential information in text.
+
+A non-speaking mother can compose questions using a keyboard or supported AAC interface.
+
+A mother with limited dexterity can use keyboard navigation and larger controls.
+
+A mother who prefers simpler instructions can enable guided steps.
+
+A mother with several access needs can combine preferences.
+
+**AI requirement:** Low. The core accessibility engine must work without an AI model. AI may assist with rewriting noncritical educational content, but essential medical wording must be verified.
+
+**Originality:** Accessibility preferences persist across all modules, rather than existing only as an isolated settings page.
+
+## **Module 02 — PROHOR Barta**
+
+## **Evidence-Grounded Bangla AI Companion**
+
+Barta / বার্তা — communication and information
+
+**Meaning:** Barta is an educational AI assistant that helps mothers understand pregnancy, medical terminology, and available care information.
+
+### **Feature specification**
+
+| Feature                                 | What it does                                                        | Priority |
+| --------------------------------------- | ------------------------------------------------------------------- | -------- |
+| Bangla text assistant                   | Answers supported maternal-health educational questions             | P0       |
+| Curated knowledge retrieval             | Finds relevant information from a reviewed knowledge collection     | P0       |
+| Visible references                      | Links answers to the source material used                           | P0       |
+| Insufficient-evidence handling          | Says when approved information cannot answer a question             | P0       |
+| Accessibility-aware responses           | Presents answers in supported formats and reading styles            | P0       |
+| Consultation question preparation       | Helps mothers prepare questions for their clinicians                | P1       |
+| AAC-to-question input                   | Converts a user-approved symbol selection into a text question      | P1       |
+| Bangla voice input                      | Optional speech-to-text interaction                                 | P1       |
+| Read-aloud responses                    | Optional audio for supported languages                              | P1       |
+| Privacy-controlled conversation history | Saves previous educational conversations with the user's permission | P1       |
+| Expanded postpartum knowledge           | Adds clinically reviewed content for the period after childbirth    | P2       |
+
+### **Why AI belongs here**
+
+A fixed FAQ cannot easily handle the variety of everyday Bangla questions, vocabulary, incomplete phrases, and communication methods that mothers may use.
+
+A language model paired with **Retrieval-Augmented Generation (RAG)** can help produce relevant, understandable explanations grounded in reviewed documents.
+
+### **AI workflow**
+
+**Mother's question**
+
+Text, supported voice or AAC
+
+**Search approved knowledge**
+
+**Generate a grounded explanation**
+
+**Answer + source + accessible presentation**
+
+**Important:** Barta must not diagnose pregnancy complications, prescribe medication, or reassure someone that they are medically safe.
+
+WHO's guidance on healthcare AI emphasizes defined tasks, reliability, human oversight, privacy and protection against inappropriate reliance on automated outputs.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.who.int\&sz=32)
+
+who.int+1
+
+
+
+**Originality:** Barta understands the user's chosen communication method while keeping evidence requirements the same for everyone.
+
+## **Module 03 — PROHOR Shonket**
+
+## **Maternal Safety & Human Assistance**
+
+Shonket / সংকেত — signals and communication of concerns
+
+**Meaning:** Shonket helps mothers access reviewed safety information, express health concerns, and request appropriate human assistance.
+
+| Feature                            | What it does                                                             | Priority |
+| ---------------------------------- | ------------------------------------------------------------------------ | -------- |
+| Maternal warning-sign information  | Displays clinician-reviewed safety guidance                              | P0       |
+| Accessible help entry              | Makes help information accessible without requiring speech               | P0       |
+| Concern reporting                  | Allows a mother to describe a concern through text or structured choices | P0       |
+| Human-support requests             | Sends authorized requests to a provider workflow                         | P0       |
+| Request status                     | Distinguishes submitted, delivered, acknowledged and responded states    | P0       |
+| Communication preferences          | Tells providers how the mother prefers to be contacted                   | P0       |
+| Care history                       | Shows previous support requests                                          | P1       |
+| AI-assisted message drafting       | Produces a reviewable summary of a mother's own words                    | P1       |
+| Advanced clinical decision support | Requires separate clinical validation and governance                     | P2       |
+
+### **Safety interaction**
+
+Suppose a mother is worried about a new symptom.
+
+She should not be forced to describe it to an AI before accessing urgent-care information.
+
+Shonket should provide a clearly marked path to reviewed urgent-care instructions, along with the ability to communicate with human support where an actual service is available.
+
+CDC guidance recommends immediate medical care for urgent maternal warning signs during pregnancy and up to one year after delivery.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.cdc.gov\&sz=32)
+
+CDC+1
+
+
+
+**AI requirement:** Not essential for safety decisions. Use reviewed content and validated workflows; AI may help draft non-diagnostic communication summaries.
+
+**Originality:** Human assistance is available through alternative communication methods, while delivery status remains explicit.
+
+## **Module 04 — PROHOR Jibonrekha**
+
+## **Connected Mother & Baby Health Records**
+
+Jibonrekha / জীবনরেখা — continuity through the care journey
+
+**Meaning:** Jibonrekha is the central health-record system, connecting pregnancy history, maternal conditions, fetal assessments and later newborn health information.
+
+This is where your additional ideas about **diseases and medical conditions affecting both mother and baby** belong.
+
+### **Maternal health features**
+
+| Feature                     | Description                                                                     | Priority |
+| --------------------------- | ------------------------------------------------------------------------------- | -------- |
+| Pregnancy timeline          | Gestational week and pregnancy-stage information                                | P0       |
+| Health measurements         | Records selected measurements with dates and units                              | P0       |
+| Maternal conditions         | Stores clinician-confirmed diagnoses and related records                        | P0       |
+| Symptoms and notes          | Records information the mother wants to discuss with a clinician                | P0       |
+| Medical appointments        | Stores upcoming and completed care visits                                       | P0       |
+| Health history              | Shows chronological measurements and records                                    | P0       |
+| Report-linked history       | Connects verified document information to the timeline                          | P1       |
+| Medication record           | Records clinician-provided prescriptions and instructions without changing them | P1       |
+| Postpartum recovery records | Extends maternal records beyond delivery                                        | P2       |
+
+### **Baby health features**
+
+| Feature                              | Description                                             | Priority |
+| ------------------------------------ | ------------------------------------------------------- | -------- |
+| Baby record                          | Creates a separate but linked fetal/newborn record      | P0       |
+| Clinician-recorded fetal assessments | Stores documented ultrasound findings and related notes | P1       |
+| Baby-movement observations           | Lets the mother record changes or observations          | P1       |
+| Documented fetal concerns            | Stores findings entered or confirmed by clinicians      | P1       |
+| Newborn health record                | Continues the baby's record after birth                 | P2       |
+| Growth and visit history             | Records newborn measurements and appointments           | P2       |
+| Immunization history                 | Tracks documented vaccinations and schedules            | P2       |
+
+### **Condition tracking**
+
+Potential maternal condition categories include:
+
+- Gestational diabetes.
+- Pregnancy-related hypertension.
+- Anemia.
+- Other clinician-confirmed pregnancy-related conditions.
+- Existing medical conditions relevant to prenatal care.
+
+For the baby, PROHOR should store clinician-documented fetal concerns and assessments—not attempt to diagnose fetal disease from maternal activity, a photograph, or unvalidated algorithms.
+
+### **Mother and baby: One connected timeline, separate clinical facts**
+
+**Mother's Health**
+
+Conditions, symptoms, measurements, medical visits, reports
+
+**Baby's Health**
+
+Clinician-recorded fetal assessments and later newborn records
+
+**AI requirement:** Optional. Accurate record storage does not need AI. Later, AI can prepare factual summaries from verified records.
+
+**Originality:** A connected, accessible mother-and-baby timeline that remains consistent across pregnancy, delivery and early motherhood.
+
+WHO's antenatal Digital Adaptation Kit provides a useful framework for data elements, workflows, user scenarios and functional requirements, although implementation must be adapted to local clinical practice.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.who.int\&sz=32)
+
+who.int
+
+
+
+## **Module 05 — PROHOR Bujhi**
+
+## **Accessible Medical Report Understanding**
+
+Bujhi / বুঝি — helping mothers understand information
+
+| Feature                         | Description                                                     | Priority |
+| ------------------------------- | --------------------------------------------------------------- | -------- |
+| Report upload                   | Accepts supported report images or PDFs                         | P1       |
+| OCR and structured extraction   | Extracts selected text, fields, numbers and units               | P1       |
+| Extraction verification         | Allows the mother or authorized reviewer to correct values      | P1       |
+| Medical terminology explanation | Explains supported report terms using approved references       | P1       |
+| Accessible report view          | Presents structured text compatible with assistive technologies | P1       |
+| Mother/baby record association  | Saves verified information into the appropriate record          | P1       |
+| Report history                  | Stores approved medical documents with proper permissions       | P1       |
+| Broader report-format support   | Expands extraction after testing additional formats             | P2       |
+
+### **Full interaction**
+
+**Upload → Extract → Review → Explain → Save to the correct record.**
+
+A user must be able to correct a misread number before the information becomes part of the health timeline.
+
+**AI requirement:** High for flexible document extraction and language explanation.
+
+**Originality:** The report reader is not standalone. It converts verified medical information into accessible explanations and connects it to the longitudinal mother/baby record.
+
+For the first MVP, support only a limited number of synthetic report formats and explicitly disclose that limitation.
+
+## **Module 06 — PROHOR Shusthota**
+
+## **Physical, Daily-Life & Mental Well-being**
+
+Shusthota / সুস্থতা — accessible well-being
+
+This module combines the previous emotional companion, diary, daily activity, and your expanded pregnancy fitness ideas.
+
+### **Feature specification**
+
+| Feature                            | Description                                                               | Priority |
+| ---------------------------------- | ------------------------------------------------------------------------- | -------- |
+| Daily mood check-in                | Optional private mood recording                                           | P0       |
+| Energy and fatigue log             | Records self-reported energy levels                                       | P0       |
+| Activity log                       | Supports different activity and movement types                            | P0       |
+| Rest and sleep journal             | Records self-reported rest patterns                                       | P0       |
+| Personal diary                     | Stores optional notes and reflections                                     | P0       |
+| Hydration and daily habits         | Optional everyday wellness records                                        | P1       |
+| Ability-aware activity preferences | Lets mothers select activities relevant to their routines and limitations | P1       |
+| Wellness history                   | Shows previous entries without judgmental scoring                         | P1       |
+| Reviewed relaxation resources      | Provides appropriate educational content                                  | P1       |
+| Optional provider sharing          | Shares selected entries only with authorization                           | P1       |
+| AI-generated wellness summaries    | Summarizes recorded patterns without diagnosing a condition               | P2       |
+| Clinician-approved activity plans  | Integrates professionally reviewed plans for individual circumstances     | P2       |
+
+### **How fitness works for different mothers**
+
+| Mother's preference or situation    | PROHOR response                                                    |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| Walks regularly                     | Can record walking                                                 |
+| Uses a wheelchair                   | Can record other meaningful activities                             |
+| Needs assistance with movement      | Can record assisted activity                                       |
+| Has clinician-directed restrictions | Can record rest and follow the clinician's documented instructions |
+| Experiences fatigue                 | Can pause or skip a check-in                                       |
+| Does not want activity tracking     | Can disable it                                                     |
+
+**No compulsory step target. No disability-based ranking. No guilt-inducing streaks.**
+
+Physical activity guidance during pregnancy must consider individual medical circumstances. PROHOR should not generate unreviewed exercise prescriptions.
+
+### **Mental well-being**
+
+The emotional support interface should allow mothers to communicate feelings privately without assuming that a mood entry establishes a diagnosis.
+
+An important privacy decision: **private emotional diaries are not automatically shared with caregivers, family members or providers.**
+
+**AI requirement:** Optional. Well-being logging and trend visualization work well without AI.
+
+**Originality:** Ability-aware physical and emotional wellness, rather than a one-size-fits-all fitness score.
+
+## **Module 07 — PROHOR Poth**
+
+## **Accessible Healthcare Navigation**
+
+Poth / পথ — finding the way to care
+
+| Feature                   | Description                                                   | Priority |
+| ------------------------- | ------------------------------------------------------------- | -------- |
+| Facility directory        | Lists maternal healthcare services                            | P1       |
+| Location-based searching  | Helps users find relevant facilities                          | P1       |
+| Accessible list view      | Provides a text alternative to map-only navigation            | P1       |
+| Accessibility information | Shows verified communication and physical-access details      | P1       |
+| Facility contact methods  | Shows available phone, text or other contact channels         | P1       |
+| Appointment requests      | Supports booking requests where services are available        | P1       |
+| Visit preparation         | Provides a checklist for records, questions and support needs | P1       |
+| Referral records          | Stores provider-issued referrals                              | P2       |
+| Telemedicine integration  | Connects to real, available professional services             | P2       |
+| SMS/feature-phone access  | Provides a fallback for limited smartphone or internet access | P2       |
+
+A facility's accessibility features must be verified. PROHOR should show "Not verified" when reliable details are unavailable.
+
+**AI requirement:** Minimal. Facility search, filtering and appointment tracking are primarily standard software functions.
+
+**Originality:** Healthcare discovery that considers accessibility requirements, communication methods and verified service information—not only distance.
+
+## **Module 08 — PROHOR Bondhon**
+
+## **Mother-Controlled Care Coordination**
+
+Bondhon / বন্ধন — connecting mothers and care providers
+
+| Feature                          | Description                                                    | Priority |
+| -------------------------------- | -------------------------------------------------------------- | -------- |
+| Care request submission          | Sends an assistance request to an authorized provider workflow | P0       |
+| Provider follow-up queue         | Displays requests requiring attention                          | P0       |
+| Request acknowledgment           | Records whether a provider has acknowledged a request          | P0       |
+| Preferred communication method   | Makes the mother's chosen contact method visible               | P0       |
+| Mother-controlled record sharing | Lets a mother select which records to share                    | P1       |
+| Family/caregiver permissions     | Grants limited, revocable access                               | P1       |
+| Provider health timeline         | Shows permitted records in chronological order                 | P1       |
+| Care activity history            | Shows completed or pending follow-ups                          | P1       |
+| AI-assisted visit summary        | Drafts factual summaries for verification                      | P1       |
+| Audit history                    | Tracks access and important sharing events                     | P1       |
+| Provider note automation         | Future clinician-reviewed structured documentation             | P2       |
+| Aggregate service analytics      | Privacy-preserving analysis after adequate governance          | P2       |
+
+### **Example permission control**
+
+A mother may allow a supporter to:
+
+- See appointment details.
+- Help request a visit.
+- Receive a specific notification.
+
+She may decide **not** to share her private diary, full medical documents, or AI conversation history.
+
+The application must not automatically treat disability as permission for another person to control her healthcare information.
+
+**AI requirement:** Useful for preparing verified summaries, but not required for access control or request delivery.
+
+**Originality:** User-controlled care coordination designed around direct accessible communication.
+
+# **6. Complete AI strategy**
+
+AI should support clearly defined tasks. It must not become the foundation of every feature simply to increase the AI count.
+
+| Module     | AI role                             | Necessity | MVP strategy                                    |
+| ---------- | ----------------------------------- | --------- | ----------------------------------------------- |
+| Adapt      | Optional explanation simplification | Low       | Build accessibility with normal software        |
+| Barta      | Retrieval-based educational answers | **High**  | Implement a working, restricted RAG assistant   |
+| Shonket    | Draft communication summaries       | Low       | Use reviewed safety guidance and human requests |
+| Jibonrekha | Record summaries                    | Medium    | Build database and records first                |
+| Bujhi      | OCR and report explanation          | **High**  | Support a limited synthetic document format     |
+| Shusthota  | Non-diagnostic trend summaries      | Low       | Build ordinary tracking first                   |
+| Poth       | Optional natural-language search    | Low       | Build reliable directory and filters            |
+| Bondhon    | Care handoff summaries              | Medium    | Implement provider workflow before AI summaries |
+
+## **One shared AI architecture**
+
+**PROHOR application**
+
+Text • Voice where supported • AAC • Documents
+
+**Authentication, consent and request validation**
+
+**Knowledge retrieval**
+
+Curated sources and indexed passages
+
+**Approved record access**
+
+Only necessary, authorized fields
+
+**Task-specific AI processing**
+
+Explanation • Extraction • Summary
+
+**Evidence checks, human review and accessible output**
+
+### **Rules for every AI result**
+
+AI answers must distinguish educational information from individual medical advice.
+
+Extracted report data must remain unverified until reviewed.
+
+AI summaries must preserve dates, measurements, record sources and consent boundaries.
+
+Answers without adequate evidence must be allowed to abstain.
+
+AI must not infer a mother's competence, disability, clinical condition or decision-making rights from her communication method.
+
+# **7. Mapping the original 24 capabilities into the final product**
+
+This is the reconciliation between our earlier locked feature architecture and the current design.
+
+| #  | Original capability                   | Final home                  |
+| -- | ------------------------------------- | --------------------------- |
+| 01 | Universal Accessibility Profile       | Adapt                       |
+| 02 | Bangla Multimodal AI Companion        | Barta                       |
+| 03 | Evidence-grounded Maternal RAG        | Barta                       |
+| 04 | Maternal Safety & Human Handoff       | Shonket + Bondhon           |
+| 05 | 40-week Pregnancy Tracker             | Jibonrekha                  |
+| 06 | Vitals & Baby Movement Logging        | Jibonrekha                  |
+| 07 | AI Report & Prescription Reader       | Bujhi                       |
+| 08 | Accessible Diary & Notes              | Shusthota                   |
+| 09 | Accessible Appointments               | Poth                        |
+| 10 | Maternal Facility Map & Referral      | Poth                        |
+| 11 | Inclusive Mothers' Community          | Bondhon — future            |
+| 12 | Consent-based Family Link             | Bondhon                     |
+| 13 | Feature-phone SMS Fallback            | Poth — future               |
+| 14 | Emotional Support Companion           | Shusthota                   |
+| 15 | Accessible Telemedicine               | Poth — future               |
+| 16 | Postpartum & Early Motherhood Support | Jibonrekha + Shusthota      |
+| 17 | Doctor/CHW Follow-up Queue            | Bondhon                     |
+| 18 | Per-mother Health Timeline            | Jibonrekha                  |
+| 19 | Cohort AI Assistant                   | Bondhon — future            |
+| 20 | Evidence & Protocol Overlay           | Barta                       |
+| 21 | District-level Aggregate Analytics    | Bondhon — future            |
+| 22 | Voice-to-SOAP Provider Notes          | Bondhon — future            |
+| 23 | Clinical Signal Auto-flags            | Shonket — future validation |
+| 24 | Accessible Care Continuity & Audit    | Bondhon                     |
+
+The additional condition-management, baby-health and fitness functions are incorporated into existing modules. We are **not presenting them as four separately completed products**.
+
+Also, I recommend retiring the earlier *Moner Sathi* feature label because of its overlap with competitor naming. The emotional-wellness functionality remains in Shusthota.
+
+# **8. Complete UI/UX blueprint**
+
+Now we move from *what PROHOR does* to *how mothers actually use it*.
+
+The UI should not expose every internal feature at once.
+
+The guiding design principle is **progressive disclosure**: show the important action first, and reveal more detailed tools when they become relevant.
+
+## **8.1 Information architecture**
+
+### **Public website**
+
+Welcome
+
+Educational AI
+
+Find Care
+
+Access Settings
+
+**Sign in when personal records are needed**
+
+### **Mother's workspace**
+
+My Dashboard
+
+Mother & Baby Health
+
+My Wellness
+
+Ask PROHOR
+
+My Reports
+
+Appointments
+
+Human Support
+
+My Preferences
+
+**Authorized Provider Workspace**
+
+Separate role-based interface, not a separate maternal app
+
+## **8.2 Desktop navigation**
+
+For the premium desktop application, I recommend:
+
+**Left sidebar:** Dashboard, Mother & Baby Health, Wellness, Ask PROHOR, Reports, Appointments and Human Support.
+
+**Top bar:** Language, access settings, notifications and account.
+
+**Main content:** The selected task, with one dominant action.
+
+**Context panel:** Only when useful—such as an upcoming appointment, related report or help information.
+
+The sidebar should not become a long list of 24 internal capabilities.
+
+### **Responsive approach**
+
+| Desktop                            | Mobile                                               |
+| ---------------------------------- | ---------------------------------------------------- |
+| Persistent or collapsible sidebar  | Compact navigation with a labeled menu               |
+| Multi-column health cards          | Stacked cards                                        |
+| Wider record tables                | Reflowing or horizontally manageable accessible data |
+| Side panel for related information | Separate section after primary content               |
+| Same accessibility controls        | Same preferences with mobile-friendly layout         |
+
+Navigation destinations should remain consistent across platforms.
+
+## **8.3 Essential screens to design**
+
+These are the actual screens I recommend creating in Figma before expanding into detailed development.
+
+| Screen                  | Essential content                                          | Primary action                |
+| ----------------------- | ---------------------------------------------------------- | ----------------------------- |
+| 01 — Welcome            | PROHOR introduction, task shortcuts, language/access tools | Choose a task                 |
+| 02 — Access Preferences | Text, contrast, layout, communication, motion              | Apply preference              |
+| 03 — Account            | Accessible authentication                                  | Continue securely             |
+| 04 — Care Profile       | Pregnancy/postpartum status and necessary details          | Save care profile             |
+| 05 — Dashboard          | Health summary, next care tasks, quick actions             | Continue selected task        |
+| 06 — Mother Health      | Measurements, conditions, timeline                         | Add health record             |
+| 07 — Baby Health        | Fetal/newborn documents and assessments                    | View/add supported record     |
+| 08 — Barta              | Educational AI input and source-linked answers             | Ask a question                |
+| 09 — Report Reader      | Upload, extraction, verification                           | Confirm extracted information |
+| 10 — Wellness           | Mood, activity, rest, private notes                        | Save check-in                 |
+| 11 — Find Care          | Verified directory and accessibility filters               | View facility                 |
+| 12 — Human Support      | Request type, communication method, consent                | Review and submit request     |
+| 13 — Provider Portal    | Authorized requests and follow-ups                         | Acknowledge or update request |
+
+Every screen must also have appropriate loading, empty, error and success states.
+
+# **9. Premium visual design system**
+
+Your Dribbble references established the visual direction: polished service-design components, welcoming maternity presentation, refined typography and minimalist spacing.
+
+However, we should not reproduce those interfaces.
+
+From our previous visual explorations, I would develop a **hybrid of Apon's clarity and Mati's warmth** as the leading candidate—not treat that choice as final until the team reviews the screens.
+
+## **Recommended color palette**
+
+Forest
+
+\#143F34
+
+Sage
+
+\#809782
+
+Ivory
+
+\#F8F5EF
+
+Clay
+
+\#B96F55
+
+Ink
+
+\#242C28
+
+These are brand candidates. Actual foreground/background combinations still require contrast testing.
+
+### **Visual component requirements**
+
+| Element            | PROHOR specification                                            |
+| ------------------ | --------------------------------------------------------------- |
+| Typography         | Readable Bengali font paired with a restrained Latin sans-serif |
+| Main text          | Prefer roughly 16–18 CSS px, scalable                           |
+| Card design        | Simple surfaces, restrained borders, subtle shadows             |
+| Main buttons       | Clear verb labels and comfortably large targets                 |
+| Accessibility      | WCAG 2.2 AA as the target                                       |
+| Body-text contrast | At least 4.5:1 for ordinary text                                |
+| Focus indicators   | Clearly visible for keyboard use                                |
+| Icons              | Consistent, recognizable and accompanied by labels where needed |
+| Animations         | Minimal, optional and responsive to reduced-motion preferences  |
+| Illustrations      | Respectful depictions of adult mothers with varied abilities    |
+| Error states       | Helpful wording, clear corrections, no color-only messages      |
+
+I recommend designing primary controls around **44–48 CSS-pixel height or larger** where practical. WCAG 2.2 AA's target-size minimum is generally 24 × 24 CSS pixels with specified exceptions; our larger design target is a usability preference.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.w3.org\&sz=32)
+
+w3.org+1
+
+
+
+### **UI/UX skills the team must apply**
+
+The most important design skills are not merely choosing attractive colors.
+
+**Information architecture** ensures users can find important functions.
+
+**Interaction design** ensures every control produces an understandable result.
+
+**Content design** ensures Bangla and English instructions are clear.
+
+**Accessibility engineering** ensures different input and output methods actually work.
+
+**Usability research** establishes whether mothers can complete tasks without relying on developer explanations.
+
+**Visual design** provides consistency, calmness and a premium identity.
+
+W3C recommends testing with disabled people throughout development because automated conformance tests do not reveal every real-world usability barrier.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.w3.org\&sz=32)
+
+W3C
+
+
+
+# **10. How different mothers complete the same workflow**
+
+We will not maintain separate business logic for disabled and non-disabled mothers.
+
+Instead, we test the same journeys using different interaction preferences.
+
+| Scenario                             | Interaction requirements                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------ |
+| A mother using conventional controls | Standard visual interface, text entry, direct navigation                                   |
+| Blind mother                         | Screen reader, accessible headings, labeled forms, structured health data                  |
+| Low-vision mother                    | Zoom, reflow, contrast, flexible text size                                                 |
+| Deaf mother                          | Text-based AI and support, captions and visual notifications                               |
+| Deafblind mother                     | Structured text compatible with assistive technologies, including supported braille access |
+| Non-speaking mother                  | Text and AAC composition without voice requirements                                        |
+| Mother with reduced dexterity        | Keyboard/switch-compatible interaction and forgiving targets                               |
+| Mother with tremors                  | Separated controls, review and Undo                                                        |
+| Mother who prefers cognitive support | Guided steps, simple explanations and predictable layouts                                  |
+| Mother with sensory sensitivities    | Reduced motion and controlled interruptions                                                |
+| Mother with memory difficulties      | Clear progress, summaries and Save for later                                               |
+| Mother with fatigue                  | Short tasks, no unnecessary time pressure                                                  |
+| Mother with multiple access needs    | Independent, combinable settings                                                           |
+
+A disability category never automatically determines a user's language complexity, medical consent or decision-making ability.
+
+## **Example complete care journey**
+
+1. **Enter PROHOR**
+
+   The mother opens the same accessible website as everyone else.
+2. **Choose a task**
+
+   She chooses to manage a health condition.
+3. **Apply optional access preferences**
+
+   She enables any communication or presentation tools she wants.
+4. **Open her health record**
+
+   She selects a clinician-confirmed maternal condition.
+5. **Add information**
+
+   She enters or reviews a health observation.
+6. **Understand medical terminology**
+
+   She asks Barta for an evidence-grounded educational explanation.
+7. **Prepare a care request**
+
+   She selects what information may be shared.
+8. **Contact human support**
+
+   Bondhon sends the authorized request through an implemented channel.
+9. **Follow the request**
+
+   She sees whether it has been delivered, acknowledged or answered.
+
+The mother can change communication preferences at any point without starting again.
+
+# **11. Backend and data architecture**
+
+The technical structure must keep **medical records, access preferences, AI operations and permissions separate**.
+
+## **Recommended stack**
+
+| Layer                 | Technology                                                   |
+| --------------------- | ------------------------------------------------------------ |
+| Frontend              | Next.js, React, TypeScript                                   |
+| Styling               | Tailwind CSS                                                 |
+| Accessible components | Well-tested semantic React components                        |
+| Backend               | Next.js server routes and service functions                  |
+| Database              | PostgreSQL / Supabase                                        |
+| Authentication        | Supabase Auth or equivalent                                  |
+| AI                    | Hosted LLM with server-side orchestration                    |
+| Retrieval             | Searchable curated references, pgvector when useful          |
+| Document extraction   | OCR and constrained parsing                                  |
+| Testing               | Playwright, axe-core and manual assistive-technology testing |
+| Deployment            | Managed web hosting suitable for Next.js                     |
+| Collaboration         | GitHub branches, pull requests and CI                        |
+
+### **Important data entities**
+
+| Data entity           | What it stores                                                            |
+| --------------------- | ------------------------------------------------------------------------- |
+| `user_profiles`       | Account and basic profile                                                 |
+| `access_preferences`  | Reading, navigation, language, communication and presentation preferences |
+| `pregnancy_records`   | Pregnancy-stage and appointment-related information                       |
+| `maternal_conditions` | Clinician-confirmed diagnoses and source details                          |
+| `health_observations` | Measurements and symptoms with time and source                            |
+| `baby_records`        | Fetal/newborn information associated with the mother                      |
+| `medical_documents`   | Uploaded reports and verification status                                  |
+| `wellness_entries`    | Optional mood, fatigue, rest and activity records                         |
+| `appointments`        | Visit details and scheduling state                                        |
+| `facility_directory`  | Verified and explicitly unverified facility data                          |
+| `support_requests`    | Human assistance requests and delivery/response status                    |
+| `consent_grants`      | Authorized access to selected records                                     |
+| `knowledge_sources`   | Approved medical references and metadata                                  |
+| `audit_events`        | Important record-sharing and access events                                |
+
+The system needs a record-source field distinguishing **self-reported**, **document-extracted**, **clinician-entered**, and **clinician-confirmed** information.
+
+Do not silently convert a mother's notes or AI-generated explanations into confirmed clinical diagnoses.
+
+## **Permission model**
+
+**Mother**
+
+Controls her own information and permissions
+
+**Chosen supporter**
+
+Only explicitly permitted actions or records
+
+**Authorized provider**
+
+Only records needed and authorized for the care workflow
+
+The server—not the visible interface—must enforce these permissions.
+
+For the hackathon, use synthetic patient records and simulated provider accounts.
+
+# **12. Full end-to-end workflows**
+
+These workflows show how the modules integrate.
+
+| Workflow                | Modules involved              | End result                                                               |
+| ----------------------- | ----------------------------- | ------------------------------------------------------------------------ |
+| First visit             | Adapt + care profile          | Mother begins using the website with suitable interaction preferences    |
+| Pregnancy tracking      | Jibonrekha                    | Mother saves and reviews pregnancy information                           |
+| Condition monitoring    | Jibonrekha + Bujhi            | Documented condition and verified report history                         |
+| Educational AI question | Adapt + Barta                 | Source-grounded answer in a usable format                                |
+| Wellness check-in       | Adapt + Shusthota             | Private activity/mood/rest entry                                         |
+| Healthcare search       | Adapt + Poth                  | Accessible list of relevant facilities                                   |
+| Assistance request      | Shonket + Bondhon             | Authorized request reaches a provider workflow                           |
+| Provider follow-up      | Bondhon + Jibonrekha          | Authorized clinician reviews selected records and updates request status |
+| Postpartum continuity   | Jibonrekha + Shusthota + Poth | Maternal and baby records continue after birth                           |
+
+### **Error and recovery requirements**
+
+For every workflow, we must also design what happens when:
+
+- The connection fails.
+- A user makes a data-entry error.
+- AI cannot verify an answer.
+- Report extraction is incorrect.
+- A health entry is partially completed.
+- The mother changes accessibility preferences.
+- A provider cannot be reached.
+- A consent request is denied or revoked.
+
+Offline-saved information must be visibly distinguished from information successfully synchronized. An unsent help request must never be displayed as delivered.
+
+W3C's form guidance recommends clear labels, validation, correction and confirmation for important user actions.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.w3.org\&sz=32)
+
+W3C+1
+
+
+
+# **13. Seven-day implementation roadmap**
+
+The long-term architecture contains 24 capabilities, but the first seven days should concentrate on a connected MVP.
+
+## **Build sequence**
+
+1. **Day 1 — Foundation**
+
+   Finalize design tokens, user journeys, architecture, database contracts, repository branches and synthetic records.
+2. **Day 2 — Core UI and data**
+
+   Implement shared navigation, onboarding, access preferences, health records, wellness forms and authentication.
+3. **Day 3 — Working journeys**
+
+   Connect pregnancy records, condition tracking, wellness history and first human-support request.
+4. **Day 4 — AI and accessibility integration**
+
+   Integrate Barta RAG, test alternative inputs, implement a restricted report-reading prototype where feasible.
+5. **Day 5 — Full integration**
+
+   Merge modules, stabilize data flow, connect provider requests, and freeze major new features.
+6. **Day 6 — Testing and validation**
+
+   Run keyboard, screen-reader, data authorization, AI evidence, clinical-safety and complete-journey tests.
+7. **Day 7 — Release and submission**
+
+   Fix critical defects, deploy the MVP, finalize the one-page summary, prepare the three-minute demo and collect supporting evidence.
+
+## **Five-member ownership**
+
+| Member | Main responsibility                     | Modules                      |
+| ------ | --------------------------------------- | ---------------------------- |
+| M1     | UI/UX and accessibility                 | Adapt + shared UI            |
+| M2     | Maternal and baby health                | Jibonrekha + Bujhi interface |
+| M3     | AI and medical information              | Barta + Bujhi intelligence   |
+| M4     | Wellness, care directory and UX testing | Shusthota + Poth             |
+| M5     | Backend, permissions and human care     | Shonket + Bondhon            |
+
+All members must test the complete integrated application, not only their own screens.
+
+# **14. MVP acceptance criteria**
+
+Use this as the final quality gate for the initial release.
+
+### **PROHOR MVP Verification**
+
+0/18 checked
+
+Homepage provides direct access to essential tasks
+
+Keyboard and screen-reader access work without special activation
+
+Access preferences are independent and persist
+
+Preference changes do not erase in-progress forms
+
+Mother can create and retrieve pregnancy information
+
+Maternal and baby records are stored distinctly
+
+Clinician-confirmed conditions retain source information
+
+Wellness check-ins are optional and private
+
+Bangla AI assistant returns grounded educational information
+
+AI can abstain when reliable evidence is missing
+
+Any report extraction requires value verification
+
+Support request reaches only the authorized provider
+
+Help-request status correctly reflects delivery and response
+
+Caregiver access requires explicit authorization
+
+Essential information is not conveyed by color or sound alone
+
+The application correctly handles failed requests and offline states
+
+No unvalidated medical diagnosis is presented as fact
+
+The deployed demo works with synthetic data
+
+&#x20;Copy acceptance checklistThese are proposed tests, not evidence of completion. Actual verification requires running and inspecting the application.
+
+# **15. What genuinely makes PROHOR unique?**
+
+We should not claim that pregnancy tracking, health education, medical report reading, AAC, or wellness tracking are individually unprecedented.
+
+The proposed differentiation is their **connected implementation**.
+
+**Universal access embedded throughout healthcare**
+
+Instead of creating disability-specific healthcare pages, PROHOR allows mothers to use the same tasks with different communication and interaction methods.
+
+**Connected maternal and baby condition histories**
+
+Mother and baby records remain clinically distinct while forming one continuous care journey.
+
+**Ability-aware physical and emotional wellness**
+
+Mothers can track meaningful routines without being ranked against universal movement or fitness targets.
+
+**Evidence-grounded, accessible AI**
+
+Medical information is retrieved from approved references and communicated in a format suitable for the user's preferences.
+
+**Mother-controlled human care coordination**
+
+The mother can choose how to communicate and which information to share with authorized support people.
+
+To make these genuine differentiators rather than marketing claims, we need working demonstrations and accessibility testing.
+
+# **16. The final demonstration scenario**
+
+The best proof of PROHOR is not showing all 24 capabilities one by one.
+
+It is showing two mothers completing the same healthcare task through their preferred interaction methods.
+
+### **Fictional demonstration**
+
+**Ayesha** prefers a conventional dashboard and typed communication.
+
+**Nusrat** uses a wheelchair and prefers keyboard controls with optional AAC communication.
+
+Both open the same PROHOR website.
+
+Ayesha goes directly to My Health.
+
+Nusrat opens her optional interaction preferences and enables AAC.
+
+Both access pregnancy records, medical education and wellness tools.
+
+Nusrat uses a picture-and-text communication workflow to ask a question. Barta returns a source-grounded written explanation.
+
+She then chooses to share selected information with a simulated healthcare worker.
+
+The care request appears in the provider portal, where it can be acknowledged.
+
+**What judges should understand:** These are not separate applications, different levels of healthcare, or AI-generated disability classifications. They are two interactions with the same accessible system.
+
+# **17. Final project blueprint summary**
+
+# **PROHOR**
+
+Universal Adaptive AI Maternal & Child Care Ecosystem
+
+### **Product structure**
+
+One inclusive application, eight integrated modules, and 24 long-term capabilities.
+
+### **Interaction structure**
+
+Task-first navigation, accessible by default, with optional combinable preferences available everywhere.
+
+### **Healthcare structure**
+
+Connected maternal and baby records, condition tracking, daily wellness, medical information and professional-care coordination.
+
+### **AI structure**
+
+Source-grounded maternal education and restricted report interpretation, with optional verified summaries—not autonomous clinical decision-making.
+
+### **Design direction**
+
+Premium desktop-first presentation that remains responsive, minimalist, Bangla-friendly, calm and accessible.
+
+### **Implementation**
+
+Seven-day five-member MVP sprint, continuous integration, accessibility and safety testing, followed by progressive expansion.
+
+## **What the development team should use this blueprint for**
+
+This document defines the **product scope, feature ownership, interface structure, AI boundaries, data relationships, accessibility behavior, and initial delivery priorities**.
+
+The next concrete design deliverable should be a complete Figma specification covering the **welcome page, access-preference panel, care dashboard, Barta conversation, mother-and-baby health timeline, and Bondhon assistance request**. Those six screens establish the interaction rules that the remaining pages will reuse.
+
+The next engineering deliverable should be the shared application shell, access-preference service, authenticated health records, and typed API contracts.
+
+**Final design principle:**
+
+A mother should not need to learn how PROHOR is organized before receiving help. She should find the task she needs, use the communication method she prefers, and remain in control of her information.
+
+That is the standard against which we should evaluate every feature, every interface and every AI integration.&#x20;

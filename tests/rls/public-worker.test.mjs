@@ -105,7 +105,7 @@ test("even allowlisted assets with private/no-store/no-cache responses are not c
 test("install/upgrade uses only public shell assets and deletes only owned old shell caches", async () => {
   const state = worker();
   await state.lifecycle("install");
-  assert.deepEqual(state.writes.map(row => row.request), ["/offline", "/icon-192.png", "/icon-512.png"]);
+  assert.deepEqual(state.writes.map(row => row.request), ["/offline", "/offline-safety.txt", "/icon-192.png", "/icon-512.png"]);
   assert(state.fetches.every(row => row.init.credentials === "omit" && row.init.cache === "no-store"));
   await state.lifecycle("activate");
   assert.equal(state.deletes.includes("unrelated-user-cache"), false);

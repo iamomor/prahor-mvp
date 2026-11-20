@@ -2,7 +2,7 @@ import { classifyDocument, scanCandidates, type OcrLine } from "./ultrasound";
 import { normalizeReport } from "./report-normalization";
 import type { ExtractedReport, ExtractedReportField } from "./types";
 import { validDate } from "./validation";
-const knownTest = /(beta[\s-]*hcg|b[\s-]*hcg|β[\s-]*hcg|hemoglobin|haemoglobin|hgb|hb|fetal heart rate|blood glucose|glucose|platelet(?:s)?|blood pressure)/iu;
+const knownTest = /(beta[\s-]*hcg|b[\s-]*hcg|β[\s-]*hcg|hemoglobin|haemoglobin|hgb|hb|fetal heart rate|(?:(?:fasting|random|plasma)\s+)?(?:blood\s+)?glucose|platelet(?:s)?(?: count)?|plt|white blood cell(?:s)?(?: count)?|wbc|total leukocyte count|tlc|red blood cell(?:s)?(?: count)?|rbc|hematocrit|haematocrit|hct|pcv|mean corpuscular volume|mcv|blood pressure)/iu;
 
 /** Conservative allow-list parser. Unknown lines (including patient metadata) are never observations. */
 export function parseOcrText(rawText: string, reportId: string, confidence?: number, layout?: OcrLine[]): ExtractedReport {
@@ -22,7 +22,7 @@ export function parseOcrText(rawText: string, reportId: string, confidence?: num
     const line = lines[index], test = line.match(knownTest);
     if (!test || test.index !== 0 || /^\p{L}/u.test(line.slice(test[0].length))) continue;
     const snippet = line, tail = line.slice((test.index ?? 0) + test[0].length);
-    const measurement = tail.match(/^\s*[:|=]?\s*([-−]?\d[\d,.]*(?:\s*\/\s*\d+)?)\s*(mIU\s*\/\s*mL|IU\s*\/\s*L|mIU\s*\/\s*L|g\s*\/\s*dL|mg\s*\/\s*dL|mmol\s*\/\s*L|mmHg|bpm|[μµu]IU\s*\/\s*mL)?(.*)$/i);
+    const measurement = tail.match(/^\s*[:|=]?\s*([-−]?\d[\d,.]*(?:\s*\/\s*\d+)?)\s*(mIU\s*\/\s*mL|IU\s*\/\s*L|mIU\s*\/\s*L|g\s*\/\s*dL|mg\s*\/\s*dL|mmol\s*\/\s*L|mmHg|bpm|g\s*\/\s*L|fL|%|(?:[x×]\s*)?10\s*\^\s*(?:12|9|6|3)\s*\/\s*[μµu]?L|cells\s*\/\s*[μµu]L|[μµu]IU\s*\/\s*mL)?(.*)$/i);
     // A range without an established result is not a patient measurement.
     const rangeOnly = /^\s*[:|=]?\s*(?:reference|ref\b|range|[<>≤≥])/i.test(tail) ||
       Boolean(measurement && /^\s*(?:[-–—]\s*\d|to\s+\d)/i.test(measurement[3]));

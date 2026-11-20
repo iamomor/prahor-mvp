@@ -448,7 +448,7 @@ export function MotherDashboard({ profile }: { profile?: OwnProfile }) {
               <DateChip value={nextVisit.occurred_at} locale={locale} />
               <div className="grid min-w-0">
                 <p className="font-semibold text-pro-text">{t({ en: "Visit you saved", bn: "আপনার সংরক্ষিত চেকআপ" })}</p>
-                <p className="truncate text-sm text-pro-muted">{nextVisit.place_note || t({ en: "No place added", bn: "স্থান যোগ করা হয়নি" })}</p>
+                <p className="break-words text-sm text-pro-muted">{nextVisit.place_note || t({ en: "No place added", bn: "স্থান যোগ করা হয়নি" })}</p>
               </div>
             </div>
           ) : (
@@ -903,7 +903,7 @@ function Modules() {
               <Icon size={17} strokeWidth={1.75} aria-hidden="true" className="shrink-0 text-pro-primary" />
               <span className="grid min-w-0 leading-tight">
                 <span lang="en" className="text-sm font-semibold text-pro-text">{name}</span>
-                <span className="truncate text-xs text-pro-muted">{t(text)}</span>
+                <span className="break-words text-xs text-pro-muted">{t(text)}</span>
               </span>
             </Link>
           </li>

@@ -295,7 +295,7 @@ export function BartaEducationChat({
           <p lang={formLanguage}>{copy.speakerHint}</p>
         </div>
 
-        {hasThread && (
+        {hasThread ? (
 
           <div className={styles.thread}>
             {turns.map((turn, index) => (

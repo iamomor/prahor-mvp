@@ -1,12 +1,17 @@
+
 import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, HeartHandshake, LayoutGrid, Lock, Mic, ShieldCheck, Square, Volume2 } from "lucide-react";
+
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
 import type { BartaAnswer } from "@/lib/contracts/barta";
 import { educationCopy, type Language } from "./barta-education-copy";
 import { educationTopics, type EducationTopic } from "./education-topics";
-import { getBartaSpokenGuide } from "./barta-spoken-text";
+import { detectBartaLanguage } from "./chat-language";
+import { buildBartaSpeechText, getBartaSpokenGuide } from "./barta-spoken-text";
 import { BartaAudioFile } from "./BartaAudioFile";
+import { BartaLearningResources } from "./BartaLearningResources";
 import { useBartaAudio } from "./use-barta-audio";
+import { useBartaReplyAudio } from "./use-barta-reply-audio";
 import styles from "./barta-education.module.css";
 import { useHydrated } from "@/lib/use-hydrated";
 import { saveVisitQuestion, visitQuestionsHref } from "@/features/shared/visit-questions";
@@ -23,7 +28,7 @@ const additionalTopics = [
   "pregnancyBasics", "balancedMeals", "warningSigns", "maternalHealth", "mentalWellbeing", "birthPlan",
   "firstCheckup", "ultrasound", "foodSafety", "morningSickness",
   "pregnancyTest", "ironFolate", "fetalMovement",
-  "ancCard", "bloodPressureCheck", "exercise", "birthCompanion", "breastfeedingPosition", "glucoseCheck",
+  "ancCard", "bloodPressureCheck", "exercise", "birthCompanion", "breastfeedingPosition", "milkSupply", "glucoseCheck",
   "babySleep", "babyBath", "cordCare", "diaper", "solidFood", "babyPlay", "homeSafety", "babyWater",
   "feedingAtWork", "babyCrying", "postnatalVisits", "everydayWellbeing", "babyHygiene",
   "pregnancySleep", "pregnancyHeartburn", "pregnancyBackache", "pregnancyTravel", "pregnancyConstipation",
@@ -50,7 +55,24 @@ function shortPublisher(publisher: string, locale: Language): string {
   }
 }
 
-const Answer = memo(function Answer({ result, locale, question, turnId, showOptions, onSelect, busy, speaking, onRead, playbackNotice }: {
+function SpeakerSwitch({ enabled, locale, disabled, onToggle }: {
+  enabled: boolean; locale: Language; disabled: boolean; onToggle: () => void;
+}) {
+  const copy = educationCopy[locale];
+  return (
+    <button type="button" role="switch" aria-checked={enabled} className={styles.read}
+      lang={locale} disabled={disabled} onClick={onToggle}>
+      {enabled ? <Volume2 size={16} aria-hidden="true" /> : <VolumeX size={16} aria-hidden="true" />}
+      {copy.speaker} <span aria-hidden="true">{enabled ? copy.speakerOn : copy.speakerOff}</span>
+    </button>
+  );
+}
+
+function isUrgent(result: BartaAnswer) {
+  return result.status === "abstained" && (result.reason === "urgent_care" || result.reason === "crisis_support");
+}
+
+const Answer = memo(function Answer({ result, locale, question, turnId, showOptions, onSelect, busy, speakerEnabled, speakerDisabled, onToggleSpeaker }: {
   result: BartaAnswer;
   locale: Language;
   question?: string;
@@ -58,21 +80,14 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
   showOptions: boolean;
   onSelect: (question: string) => void;
   busy: boolean;
-  speaking: boolean;
-  playbackNotice?: string;
-  onRead: (id: string, text: string, language: Language) => void;
+  speakerEnabled: boolean;
+  speakerDisabled: boolean;
+  onToggleSpeaker: () => void;
 }) {
   const ready = useHydrated();
   const copy = educationCopy[locale];
   const [saveStatus, setSaveStatus] = useState<ReturnType<typeof saveVisitQuestion>>();
-  const audioTicket = result.status === "not_connected" ? undefined : result.audioTicket;
-  const audioClipUrl = result.status === "not_connected" ? undefined : result.audioClipUrl;
-  const hasAudioFile = Boolean(audioTicket || audioClipUrl);
-  const spokenText = result.status === "not_connected"
-    ? result.message
-    : result.audioText ?? (result.status === "grounded" ? result.answer : result.message);
-  const urgent = result.status === "abstained"
-    && (result.reason === "urgent_care" || result.reason === "crisis_support");
+  const urgent = isUrgent(result);
   const careHandoff = urgent || (result.status === "abstained"
     && (result.reason === "outside_education_scope" || result.reason === "mental_health_support"));
   const optionHeading = result.status === "grounded" ? copy.followUp : copy.clarify;
@@ -87,23 +102,8 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
         <span className={styles.mark}><HeartHandshake size={18} aria-hidden="true" /></span>
         <strong lang={locale === "bn" ? "bn" : "en"}>{locale === "bn" ? "বার্তা" : "Barta"}</strong>
         {urgent && <strong className={styles.urgentLabel}>{copy.urgent}</strong>}
-        {!hasAudioFile && (
-          <button type="button" className={styles.read} disabled={!ready || busy}
-            onClick={() => onRead(turnId, spokenText, locale)}>
-            {speaking ? <Square size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
-            {speaking ? copy.stopReading : copy.readAloud}
-          </button>
-        )}
-        {hasAudioFile && (
-          <div className={styles.replyAudio}>
-            <BartaAudioFile key={audioTicket ?? audioClipUrl} ticket={audioTicket} clipUrl={audioClipUrl}
-              text={spokenText} language={locale}
-              disabled={!ready || busy} browserReading={speaking}
-              onBrowserRead={() => onRead(turnId, spokenText, locale)} />
-          </div>
-        )}
+        <SpeakerSwitch enabled={speakerEnabled} locale={locale} disabled={speakerDisabled} onToggle={onToggleSpeaker} />
       </header>
-      {playbackNotice && <p role="status" className={styles.playbackNotice}>{playbackNotice}</p>}
       {result.status === "grounded" ? (
         <>
           {result.claims ? result.citations.map((citation, index) => {
@@ -147,6 +147,7 @@ const Answer = memo(function Answer({ result, locale, question, turnId, showOpti
               ))}
             </ul>
           </section>
+          <BartaLearningResources citations={result.citations} locale={locale} />
         </>
       ) : <p className={styles.answerText} role={urgent && showOptions ? "alert" : undefined}>{result.message}</p>}
       {careHandoff && (
@@ -210,10 +211,13 @@ export function BartaEducationChat({
   const ready = useHydrated();
   const copy = educationCopy[formLanguage];
   const audio = useBartaAudio();
-  const playAudio = audio.play;
+  const { play: playAudio, stopSpeaking } = audio;
+  const { start: startReplyAudio, stop: stopReplyAudio, blocked, retry } = useBartaReplyAudio();
+  const [speakerEnabled, setSpeakerEnabled] = useState(false);
+  const delivered = useRef<BartaAnswer | string | undefined>(undefined);
   const spokenGuide = useMemo(() => getBartaSpokenGuide(formLanguage), [formLanguage]);
   const [voiceLanguage, setVoiceLanguage] = useState<Language | "auto">("auto");
-  const micLanguage = voiceLanguage === "auto" ? formLanguage : voiceLanguage;
+  const micLanguage = voiceLanguage === "auto" ? detectBartaLanguage(question) ?? "en" : voiceLanguage;
   const layout = useRef<HTMLDivElement>(null);
   const transient = reply && reply.result !== turns.at(-1)?.result ? reply : undefined;
   const latest = useRef<HTMLDivElement>(null);
@@ -236,13 +240,59 @@ export function BartaEducationChat({
     playAudio(id, text, language);
   }, [playAudio, pauseAudio]);
 
+  const readReply = useCallback(({ result, language }: Reply) => {
+    const text = (result.status === "not_connected" ? undefined : result.audioText) ?? buildBartaSpeechText(result, language);
+    const ticket = result.status === "not_connected" ? undefined : result.audioTicket;
+    const clipUrl = result.status === "not_connected" ? undefined : result.audioClipUrl;
+    pauseAudio();
+    stopSpeaking();
+    if (ticket || clipUrl) {
+      startReplyAudio({ text, language, ticket, clipUrl }, () => playAudio("barta-reply", text, language));
+    } else {
+      stopReplyAudio();
+      playAudio("barta-reply", text, language);
+    }
+  }, [pauseAudio, stopSpeaking, startReplyAudio, stopReplyAudio, playAudio]);
+
+  useEffect(() => {
+    if (!speakerEnabled || audio.listening) return;
+    const next = reply?.result ?? error?.message;
+    if (!next || delivered.current === next) return;
+    if (audio.speaking === "barta-question" && !(reply && isUrgent(reply.result))) return;
+    delivered.current = next;
+    if (reply) readReply(reply);
+    else if (error) playAudio("barta-reply", error.message, error.language);
+  }, [speakerEnabled, audio.listening, audio.speaking, reply, error, readReply, playAudio]);
+
+  function toggleSpeaker(selected = busy ? undefined : reply ?? turns.at(-1)) {
+    setSpeakerEnabled(!speakerEnabled);
+    if (speakerEnabled) {
+      stopReplyAudio();
+      stopSpeaking();
+      pauseAudio();
+    } else if (selected) {
+      delivered.current = reply?.result ?? error?.message;
+      readReply(selected);
+    } else if (error) {
+      delivered.current = error.message;
+      playAudio("barta-reply", error.message, error.language);
+    }
+  }
+
   return (
     <div ref={layout} className={styles.layout} onPlayCapture={(event) => {
       if (!(event.target instanceof HTMLAudioElement)) return;
-      audio.stopSpeaking();
+      stopReplyAudio();
+      stopSpeaking();
       pauseAudio(event.target);
     }}>
       <section className={styles.chat} aria-label={formLanguage === "bn" ? "বার্তার কথোপকথন" : "Barta conversation"}>
+
+        <div className={styles.speakerBar}>
+          <SpeakerSwitch enabled={speakerEnabled} locale={formLanguage}
+            disabled={!ready || (!speakerEnabled && audio.listening)} onToggle={() => toggleSpeaker()} />
+          <p lang={formLanguage}>{copy.speakerHint}</p>
+        </div>
 
         {hasThread && (
           <div className={styles.thread}>
@@ -254,14 +304,30 @@ export function BartaEducationChat({
                 </div>
                 <Answer result={turn.result} locale={turn.language} question={turn.question} turnId={`barta-turn-${index}`}
                   showOptions={reply?.result === turn.result} onSelect={onSelect} busy={busy || audio.listening}
-                  speaking={audio.speaking === `barta-turn-${index}`} playbackNotice={playbackMessage(`barta-turn-${index}`)} onRead={readAnswer} />
+                  speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
+                  onToggleSpeaker={() => toggleSpeaker(turn)} />
               </div>
             ))}
             {transient && <div ref={latest}>
               <Answer result={transient.result} locale={transient.language} turnId="barta-current"
                 showOptions onSelect={onSelect} busy={busy || audio.listening}
-                speaking={audio.speaking === "barta-current"} playbackNotice={playbackMessage("barta-current")} onRead={readAnswer} />
+                speakerEnabled={speakerEnabled} speakerDisabled={!ready || (!speakerEnabled && (busy || audio.listening))}
+                onToggleSpeaker={() => toggleSpeaker(transient)} />
             </div>}
+            {speakerEnabled && blocked && (
+              <div className={styles.playbackNotice} lang={blocked}>
+                <p role="status">{educationCopy[blocked].speakerBlocked}</p>
+                <button type="button" className={styles.read} onClick={retry}>{educationCopy[blocked].playAudio}</button>
+              </div>
+            )}
+            {speakerEnabled && audio.notice?.replyId === "barta-question" && (
+              <p role="status" className={styles.playbackNotice} lang={audio.notice.language}>
+                {educationCopy[audio.notice.language].questionVoiceUnavailable}
+              </p>
+            )}
+            {speakerEnabled && playbackMessage("barta-reply") && (
+              <p role="status" className={styles.playbackNotice} lang={audio.notice?.language}>{playbackMessage("barta-reply")}</p>
+            )}
             {busy && <p className={styles.notice} lang={formLanguage}>{copy.checking}</p>}
             {error && <div ref={latest}><p className={styles.notice} lang={error.language} role="alert">{error.message}</p></div>}
           </div>
@@ -271,6 +337,7 @@ export function BartaEducationChat({
           {busy ? copy.checking : reply && (reply.result.status !== "abstained" || !["urgent_care", "crisis_support"].includes(reply.result.reason))
             ? educationCopy[reply.language].replyReady : ""}
         </p>
+
         <div className={styles.composerCard}>
           <form className={styles.form} lang={formLanguage} onSubmit={(event) => {
             if (audio.listening) { event.preventDefault(); return; }
@@ -316,6 +383,7 @@ export function BartaEducationChat({
               </div>
             </div>
             <div className={styles.chatPreferences}>
+
               <label className={styles.language}>
                 <span>{copy.voiceLanguage}</span>
                 <select value={voiceLanguage} disabled={!ready || busy || audio.listening} aria-describedby="barta-voice-hint"
@@ -344,6 +412,7 @@ export function BartaEducationChat({
                 <button type="button" className={styles.clear} disabled={!ready || busy} onClick={() => { audio.resetAudio(); onClear(); }} lang={formLanguage}>{copy.clear}</button>
               )}
             </div>
+
             <div className={styles.hints}>
               <p id="barta-privacy"><Lock size={16} aria-hidden="true" /><span>{copy.privacy}</span></p>
               <p id="barta-voice-hint"><Mic size={16} aria-hidden="true" /><span>
@@ -367,6 +436,7 @@ export function BartaEducationChat({
           </form>
           {symbolPanel}
         </div>
+
       </section>
 
       <aside className={styles.sidebar} lang={formLanguage}>

@@ -481,6 +481,7 @@ export function AACComposer({
             variant="primary"
             size="md"
             onClick={handleInsert}
+            data-testid="aac-insert-draft"
             disabled={!currentMessageText.trim()}
             aria-disabled={!currentMessageText.trim()}
             className="max-sm:w-full"

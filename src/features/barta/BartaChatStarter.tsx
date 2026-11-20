@@ -42,7 +42,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
   const pendingRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
   const [turns, setTurns] = useState<Turn[]>([]);
-  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? prefs.language : answerLanguage;
+  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? "en" : answerLanguage;
   const [previousChunkId, setPreviousChunkId] = useState<string>();
   const [state, setState] = useState<ChatState>({ status: "idle" });
   const busy = state.status === "checking";

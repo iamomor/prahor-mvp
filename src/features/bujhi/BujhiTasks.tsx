@@ -1,33 +1,28 @@
-"use client";
 
 import Link from "next/link";
-import { ArrowDown, ArrowRight, FileText, FlaskConical, ShieldCheck } from "lucide-react";
-import { useLanguage } from "@/i18n/use-language";
+import { FileCheck2, FlaskConical, ScanLine, ShieldCheck } from "lucide-react";
+import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
 
-/** The two Bujhi journeys share a home, but never imply the same saving capability. */
 export function BujhiTasks() {
-  const { t } = useLanguage();
-  const action = "inline-flex min-h-12 items-center justify-center gap-2 rounded-field px-5 py-3 font-semibold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus";
-  return <section className="grid gap-6 text-pro-text" aria-labelledby="bujhi-task-title">
-    <header className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-      <div className="grid gap-2">
-        <p className="text-sm font-semibold text-pro-primary">{t({ en: "BUJHI · UNDERSTAND & REVIEW", bn: "বুঝি · জানুন ও যাচাই করুন" })}</p>
-        <h1 id="bujhi-task-title" className="text-3xl font-semibold leading-tight sm:text-4xl">{t({ en: "A little clarity. Your next step.", bn: "বুঝে নিন। তারপর এগিয়ে যান।" })}</h1>
-        <p className="max-w-[65ch] text-lg text-pro-muted">{t({ en: "Check a medical report, or understand the marks on your home pregnancy kit.", bn: "মেডিকেল রিপোর্ট মিলিয়ে দেখুন, অথবা ঘরে করা কিটের চিহ্ন বুঝুন।" })}</p>
+  return <section className="mx-auto grid max-w-6xl min-w-0 gap-6 px-4 pb-6 [overflow-wrap:anywhere] pt-8 text-pro-text sm:px-6 sm:pt-12" aria-labelledby="bujhi-task-title">
+    <div className="flex flex-wrap items-center justify-between gap-3"><p className="font-semibold text-pro-primary">প্রহর / বুঝি</p><AccessPreferencesControl /></div>
+    <div className="grid min-w-0 grid-cols-1 gap-6 rounded-hero border border-pro-border bg-pro-surface p-5 sm:p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-12 lg:p-10">
+      <div className="grid min-w-0 content-start gap-5">
+        <p className="flex items-center gap-2 font-semibold text-pro-primary"><ScanLine aria-hidden="true" className="size-5 shrink-0" />REPORT UNDERSTANDING · রিপোর্ট বুঝুন</p>
+        <h1 id="bujhi-task-title" className="text-3xl font-semibold leading-snug sm:text-4xl" lang="bn">রিপোর্টের কঠিন ভাষা,<br className="hidden sm:block" /> এবার সহজ করে বুঝি।</h1>
+        <p className="max-w-[55ch] text-lg text-pro-muted" lang="bn">ছবি দিন, পড়া তথ্য মিলিয়ে দেখুন, তারপর সহজ ভাষায় বুঝে নিন। প্রতিটি ধাপে সিদ্ধান্ত আপনার।</p>
+        <a href="#report-review" className="inline-flex min-h-12 w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-control bg-pro-primary px-5 py-3 text-center font-semibold text-pro-on-primary focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-pro-focus"><FileCheck2 aria-hidden="true" className="size-5 shrink-0" />রিপোর্ট যাচাই করি</a>
+        <p className="flex items-start gap-2 text-pro-muted"><ShieldCheck aria-hidden="true" className="mt-1 size-5 shrink-0" />ছবিটি এই ব্রাউজারে পড়া হয়। যাচাই ছাড়া কিছু সংরক্ষণ হয় না।</p>
       </div>
-      <p className="flex items-center gap-2 text-sm text-pro-muted"><ShieldCheck aria-hidden="true" className="size-4 shrink-0" />{t({ en: "You review. You choose what to save.", bn: "আপনি যাচাই করবেন। সংরক্ষণের সিদ্ধান্তও আপনার।" })}</p>
-    </header>
-    <div className="grid gap-4 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-      <section className="grid content-start gap-4 rounded-hero border border-pro-border bg-pro-surface p-5 sm:p-7">
-        <div className="flex items-center gap-3"><span className="grid size-12 shrink-0 place-items-center rounded-card bg-pro-elevated text-pro-primary"><FileText aria-hidden="true" className="size-6" /></span><h2 className="text-2xl font-semibold">{t({ en: "Medical report", bn: "মেডিকেল রিপোর্ট" })}</h2></div>
-        <p className="max-w-[50ch] text-pro-muted">{t({ en: "Add a report photo, compare the extracted values, then confirm what belongs in your record.", bn: "রিপোর্টের ছবি দিন, পড়া মানগুলো মিলিয়ে নিন, তারপর সঠিক রেকর্ডে সংরক্ষণ করুন।" })}</p>
-        <a href="#report-review" className={`${action} w-fit bg-pro-primary text-pro-on-primary`}>{t({ en: "Review a report", bn: "রিপোর্ট যাচাই করি" })}<ArrowDown aria-hidden="true" className="size-4" /></a>
-      </section>
-      <section className="grid content-start gap-4 rounded-hero border border-pro-border bg-pro-elevated p-5 sm:p-7">
-        <div className="flex items-center gap-3"><span className="grid size-12 shrink-0 place-items-center rounded-card bg-pro-surface text-pro-primary"><FlaskConical aria-hidden="true" className="size-6" /></span><h2 className="text-2xl font-semibold">{t({ en: "Home pregnancy kit", bn: "ঘরে করা কিট" })}</h2></div>
-        <p className="max-w-[50ch] text-pro-muted">{t({ en: "A few short questions about what you see. No photo needed, and nothing is saved automatically.", bn: "যা দেখছেন তা নিয়ে কয়েকটি ছোট প্রশ্ন। ছবি লাগে না, কিছু নিজে থেকে সংরক্ষণও হয় না।" })}</p>
-        <Link href="/app/bujhi/kit" className={`${action} w-fit border border-pro-control-border text-pro-primary`}>{t({ en: "Understand my kit", bn: "কিটের ফল বুঝি" })}<ArrowRight aria-hidden="true" className="size-4" /></Link>
-      </section>
+      <div className="grid min-w-0 content-center gap-4 border-t border-pro-border pt-5 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+        <h2 className="text-xl font-semibold" lang="bn">আপনার বোঝার সুবিধার জন্য</h2>
+        <ul className="grid gap-4 text-pro-muted" lang="bn"><li className="border-b border-pro-border pb-4"><strong className="block text-pro-text">মূল রিপোর্ট পাশে রাখুন</strong>ভুল পড়লে ঠিক করুন, না বুঝলে বাদ রাখুন।</li><li className="border-b border-pro-border pb-4"><strong className="block text-pro-text">ব্যাখ্যার উৎস দেখুন</strong>অনিশ্চিত বা অনুপস্থিত তথ্য স্পষ্টভাবে জানুন।</li><li><strong className="block text-pro-text">পরের সাক্ষাতের প্রস্তুতি নিন</strong>চিকিৎসককে কী জিজ্ঞেস করবেন, গুছিয়ে নিন।</li></ul>
+      </div>
+    </div>
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-4 rounded-card border border-pro-border bg-pro-elevated p-5">
+      <div className="flex min-w-0 items-start gap-3"><FlaskConical aria-hidden="true" className="mt-1 size-6 shrink-0 text-pro-primary" /><div><h2 className="text-xl font-semibold" lang="bn">ঘরে করা কিটের ফল?</h2><p className="mt-1 text-pro-muted" lang="bn">ছবি ছাড়াই কিটে দেখা চিহ্ন মিলিয়ে নিন।</p></div></div>
+      <Link href="/app/bujhi/kit" className="inline-flex min-h-12 items-center rounded-control border border-pro-control-border px-4 py-3 font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-pro-focus">কিটের ফল বুঝি</Link>
+
     </div>
   </section>;
 }

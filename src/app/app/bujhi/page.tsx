@@ -2,9 +2,11 @@ import { requireWorkspace } from "@/lib/auth/require-workspace";
 import Link from "next/link";
 import { BujhiTasks } from "@/features/bujhi/BujhiTasks";
 import { redirect } from "next/navigation";
+import { BujhiTasks } from "@/features/bujhi/BujhiTasks";
 import { AccountReportReview } from "@/features/bujhi/AccountReportReview";
 import { MedicalEntry } from "@/features/bujhi/MedicalEntry";
 import { createServerSupabase } from "@/lib/supabase/server";
+
 
 async function createPregnancy(form: FormData) {
   "use server";
@@ -24,17 +26,21 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
   const availability = db ? await db.from("bujhi_document_reviews").select("id").limit(1) : null;
   if (!availability || availability.error) return <>
     <BujhiTasks />
-    <div id="report-review" tabIndex={-1} className="py-6">
+
+    <div id="report-review" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+
       <p className="mb-4 text-pro-text" role="status">Account report saving is unavailable. You can continue with a local review.</p>
       <MedicalEntry recordsHref="/app/jibonrekha" />
     </div>
   </>;
   const result = db ? await db.from("pregnancy_records").select("id, label, owner_user_id")
     .eq("owner_user_id", profile.user_id).order("created_at") : null;
-  if (result?.error || !result) return <><BujhiTasks /><div id="report-review" tabIndex={-1} className="py-6"><h2 className="text-2xl">রিপোর্ট যাচাই</h2><p role="alert">Pregnancy records could not be loaded. Reload to try again.</p></div></>;
+
+  if (result?.error || !result) return <><BujhiTasks /><div id="report-review" tabIndex={-1} className="mx-auto max-w-6xl p-6"><h2 className="text-2xl">রিপোর্ট যাচাই</h2><p role="alert">Pregnancy records could not be loaded. Reload to try again.</p></div></>;
   if (result.data.length) return <><BujhiTasks /><div id="report-review" tabIndex={-1}><AccountReportReview pregnancies={result.data.map((item) => ({ id: item.id, label: item.label }))} /></div></>;
   const { recordError } = await searchParams;
-  return <><BujhiTasks /><div id="report-review" tabIndex={-1} className="grid max-w-3xl gap-4 py-6 text-pro-text">
+  return <><BujhiTasks /><div id="report-review" tabIndex={-1} className="mx-auto grid max-w-6xl gap-4 p-6 text-pro-text">
+
     <h2 className="text-2xl font-semibold">রিপোর্ট যাচাই</h2>
     <p>Create a pregnancy record before saving a reviewed maternal measurement. Use fictional information in this prototype.</p>
     <form action={createPregnancy} className="grid gap-4 rounded-card border border-pro-border bg-pro-elevated p-5 sm:p-6">

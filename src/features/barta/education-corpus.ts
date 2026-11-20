@@ -318,6 +318,14 @@ const nhsPregnancyConstipation = {
   publishedOn: null,
 };
 
+const nhsLooseStools = {
+  ...sharedSource, id: "68da11ec-80d3-4218-bc0e-91663ccf9231", publisher: "NHS",
+  title: "Diarrhoea and vomiting",
+  url: "https://www.nhs.uk/symptoms/diarrhoea-and-vomiting/",
+  version: "Web edition, project reference check",
+  publishedOn: null,
+};
+
 type Passage = BartaCorpus["passages"][number];
 type LocalizedPassage = Pick<Passage, "chunkId" | "text" | "questions">;
 
@@ -350,7 +358,7 @@ const accessSource_maternity = { ...sharedSource, id: "a5072fe3-7aca-4fa1-a9b1-1
 export const bartaEducationCorpus: BartaCorpus = {
   sources: [accessSource_adjustments, accessSource_information, accessSource_formats, accessSource_maternity, antenatal, breastfeeding, postnatal, newborn, unicefBangladesh, dghsBangladesh, whoPreeclampsia, perinatalMentalHealth, childbirthPlanning, whoAntenatalSchedule, unicefFoodSafety, nhsMorningSickness, nhsPregnancyTest, whoIronFolate, nhsMovement, nhsPeriodPain, whoAntenatalHandbook, nhsMaternityNotes, nhsPregnancyExercise, whoBirthCompanion, unicefBreastfeedingPosition, nhsGestationalDiabetes,
     whoCareAtHome, whoChildFood, whoChildPlay, whoSafeHome, whoPostnatalVisits, whoEverydayWellbeing, nhsBabySleep, nhsDiaper, nhsBabyCrying, unicefFeedingAtWork,
-    nhsPregnancySleep, nhsPregnancyHeartburn, nhsPregnancyBackache, nhsPregnancyTravel, nhsPregnancyConstipation,
+    nhsPregnancySleep, nhsPregnancyHeartburn, nhsPregnancyBackache, nhsPregnancyTravel, nhsPregnancyConstipation, nhsLooseStools,
   ],
   passages: [
     ...pair(accessSource_adjustments, {
@@ -498,6 +506,21 @@ export const bartaEducationCorpus: BartaCorpus = {
         chunkId: "dd2cf6f4-ecd0-58c5-a239-9b8bb1d63e4b",
         questions: ["গর্ভাবস্থায় হালকা কোষ্ঠকাঠিন্যে কী করা যায়?", "pregnancy te koshthokathinno hole ki korbo?"],
         text: "সবজি, ফল, ডাল ও গোটা শস্যের মতো আঁশযুক্ত খাবার রাখুন। নিয়মিত পানি পান করুন এবং সেবাদানকারী দলের পরামর্শ অনুযায়ী সক্রিয় থাকুন। সমস্যা চলতে থাকলে গর্ভাবস্থায় কী করা উপযুক্ত, স্বাস্থ্যকর্মীকে জিজ্ঞেস করুন। চিকিৎসকের দেওয়া আয়রনে সমস্যা বাড়ছে মনে হলে তা বদলানো বা বন্ধ করার আগে বিকল্প নিয়ে কথা বলুন।",
+      },
+    }),
+    ...pair(nhsLooseStools, {
+      topic: "looseStools", audience: "mother_and_newborn", locator: "When to get medical help for diarrhoea",
+      translationGroup: "b0180aaa-3445-44bc-903a-2d00296b097b",
+    }, {
+      en: {
+        chunkId: "79880bd7-4d6a-4eed-94c8-f1a1263266cd",
+        questions: ["When should someone get help for diarrhoea?", "What are warning signs with watery stools?"],
+        text: "Loose or watery stools can cause dehydration. Get prompt medical advice if you cannot keep fluids down, notice blood in the stool, or pass much less urine than usual. If this concerns a baby, get medical advice promptly if the baby feeds less, has fewer wet nappies than usual, or you are worried. Tell the health worker if you are pregnant, recently gave birth, or asking about a baby.",
+      },
+      bn: {
+        chunkId: "f721f445-b6db-47d5-9a15-26ccf16f96dd",
+        questions: ["ডায়রিয়া হলে কখন ডাক্তার দেখাব?", "patla paykhana hole kokhon doctor dekhabo?", "diarrhea hole kokhon sahajjo nibo?"],
+        text: "পাতলা বা পানির মতো পায়খানায় শরীরে পানির ঘাটতি হতে পারে। তরল পেটে রাখতে না পারলে, পায়খানায় রক্ত দেখলে বা স্বাভাবিকের তুলনায় প্রস্রাব অনেক কম হলে দ্রুত চিকিৎসা পরামর্শ নিন। শিশুর ক্ষেত্রে দুধ কম খেলে, স্বাভাবিকের তুলনায় কম ডায়াপার ভিজলে বা আপনার চিন্তা হলে দ্রুত চিকিৎসা পরামর্শ নিন। আপনি গর্ভবতী, সম্প্রতি সন্তান জন্ম দিয়েছেন, নাকি শিশুর জন্য জানতে চাচ্ছেন, তা স্বাস্থ্যকর্মীকে বলুন।",
       },
     }),
     ...pair(nhsBabySleep, {
@@ -1038,6 +1061,28 @@ export const bartaEducationCorpus: BartaCorpus = {
         chunkId: "b1c0ab8d-03ad-4adf-959f-1ab5e777c529",
         questions: ["একচেটিয়া বুকের দুধ খাওয়ানো কী?", "শুধু বুকের দুধ দেওয়া মানে কী?", "shudhu buker dudh khaowano mane ki?", "exclusive breastfeeding mane ki?", "একচেটিয়া স্তন্যপান বলতে কী বোঝায়?", "shudhu buker dudh dewa mane ki?"],
         text: "শুধু বুকের দুধ খাওয়ানোর অর্থ শিশুকে অন্য খাবার বা পানীয় ছাড়াই বুকের দুধ দেওয়া। বিশ্ব স্বাস্থ্য সংস্থা প্রথম ছয় মাস এভাবে খাওয়ানোর পরামর্শ দেয়। প্রতিদিনের যত্নে শিশু ক্ষুধার ইঙ্গিত দিলে দিনে ও রাতে বুকের দুধ দিন। শুধু বুকের দুধ খাওয়া ছয় মাসের কম বয়সী শিশুকে গরমেও আলাদা পানি দেওয়ার প্রয়োজন হয় না। শিশু পর্যাপ্ত দুধ পাচ্ছে কি না বুঝতে না পারলে, সে কীভাবে স্তন ধরছে এবং তার বৃদ্ধি কেমন, তা স্বাস্থ্যকর্মীকে দেখে দিতে বলুন। প্রায় ছয় মাসে বুকের দুধের পাশাপাশি উপযোগী খাবার শুরু করুন।",
+      },
+    }),
+    ...pair(breastfeeding, {
+      topic: "milkSupply", stage: "after_birth", audience: "newborn",
+      locator: "How can I know that my baby is getting enough breast milk each day?",
+      translationGroup: "91b80233-3a5d-4b3f-b23f-4afc1e2474a1",
+    }, {
+      en: {
+        chunkId: "3672a64c-168d-43fd-ad1f-2777ca08c77e",
+        questions: [
+          "Is my baby getting enough breast milk?", "What are signs that a baby is getting enough breast milk?",
+          "How do I know if my baby is getting enough milk?", "I think my baby is not getting enough breast milk",
+        ],
+        text: "How often a baby wets their diapers and how they are growing can help a health worker assess whether the baby is getting enough breast milk. If you are concerned about how much your baby is getting, ask a health worker or breastfeeding counsellor to check growth and watch how the baby attaches during a feed.",
+      },
+      bn: {
+        chunkId: "307df713-b3b8-4552-992d-12ba57cbf1d7",
+        questions: [
+          "আমার বাচ্চা কি যথেষ্ট বুকের দুধ পাচ্ছে?", "শিশু পর্যাপ্ত দুধ পায় কি না কীভাবে বুঝব?",
+          "baccha buker dudh pacche kina kivabe bujhbo", "baccha porjapto dudh pacche kina kivabe bujhbo",
+        ],
+        text: "শিশু কতবার ডায়াপার ভেজায় এবং তার বৃদ্ধি কেমন, তা দেখে স্বাস্থ্যকর্মী বুঝতে পারেন শিশু পর্যাপ্ত বুকের দুধ পাচ্ছে কি না। এ নিয়ে চিন্তা হলে স্বাস্থ্যকর্মী বা বুকের দুধ খাওয়ানোর পরামর্শদাতাকে শিশুর বৃদ্ধি এবং খাওয়ানোর সময় সে কীভাবে স্তন ধরছে, তা দেখে দিতে বলুন।",
       },
     }),
     ...pair(postnatal, {

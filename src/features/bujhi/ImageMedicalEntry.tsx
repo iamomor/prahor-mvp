@@ -1,21 +1,32 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
-import { useLanguage } from "@/i18n/use-language";
-import { FileCheck2, ScanLine, ShieldCheck } from "lucide-react";
+
+import { FileImage, ScanLine, ShieldCheck } from "lucide-react";
+
 import { ReportUpload } from "./ReportUpload";
 import { recognizeReportImage } from "./ocr-service";
+import { WorkflowProgress } from "./WorkflowProgress";
 import type { ExtractedReport } from "./types";
+
 import { isHemoglobinLabel } from "./validation";
 export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFile }: { active?: boolean; onDraft: (report: ExtractedReport, source?: File) => void; onManual?: () => void; onManualFile?: (file: File) => void }) {
   const { t } = useLanguage();
   const [fallbackFile, setFallbackFile] = useState<File | null>(null);
+
   const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0), [status, setStatus] = useState("Select a fictional report image. No OCR has run."), [error, setError] = useState("");
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), []);
-  useEffect(() => { if (!active) { controller.current?.abort(); void Promise.resolve().then(() => { setBusy(false); setStatus("OCR is idle. Choose an image when ready."); }); } }, [active]);
+  useEffect(() => {
+    if (!active) {
+      controller.current?.abort();
+      void Promise.resolve().then(() => { setBusy(false); setStatus("OCR is idle. Choose an image when ready."); });
+    }
+  }, [active]);
   async function scan(file: File) {
     if (!consent || busy) { setError("Allow the OCR engine/language downloads before starting. The image stays local."); return; }
+
     const active = new AbortController(); controller.current = active;
     setBusy(true); setError(""); setFallbackFile(file); setStatus("Starting local English OCR…");
     try {
@@ -31,14 +42,31 @@ export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFi
     } catch { if (!active.signal.aborted) { setFallbackFile(file); setError("The image could not be read. Check your connection and try again, or type the printed value yourself."); setStatus("OCR failed. Nothing saved."); } }
 
     finally { if (!active.signal.aborted) setBusy(false); }
+
   }
   function cancel() { controller.current?.abort(); setBusy(false); setStatus("OCR cancelled. Nothing saved."); }
-  return <section className="grid min-w-0 gap-6 rounded-card border border-pro-border bg-pro-elevated p-4 sm:p-6" aria-label="Image OCR entry">
-    <header className="flex items-start gap-3"><span className="grid size-12 shrink-0 place-items-center rounded-field bg-pro-surface text-pro-primary"><ScanLine aria-hidden="true" className="size-6" /></span><div className="grid gap-1"><h2 className="text-xl font-semibold">{busy ? t({ en: "Reading your report", bn: "রিপোর্ট পড়া হচ্ছে" }) : t({ en: "Scan a medical report", bn: "রিপোর্টের ছবি স্ক্যান করুন" })}</h2><p className="text-pro-muted">{t({ en: "Use a fictional report. This reader supports English text.", bn: "কাল্পনিক রিপোর্ট ব্যবহার করুন। এই পাঠক শুধু ইংরেজি লেখা পড়তে পারে।" })}</p></div></header>
-    <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-    <div hidden={busy} className="grid min-w-0 gap-5">
-      <label className="flex items-start gap-3 rounded-field border border-pro-control-border bg-pro-surface p-4 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-pro-focus"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={busy} className="mt-1 size-5 shrink-0 accent-pro-primary" /><span>{t({ en: "Allow downloads for the English reader. Your image is read on this device.", bn: "ইংরেজি পাঠকের ফাইল ডাউনলোডের অনুমতি দিন। আপনার ছবিটি এই ডিভাইসেই পড়া হয়।" })}</span></label>
-      <fieldset disabled={busy} className="min-w-0"><legend className="sr-only">Select report image</legend><ReportUpload autoContinue={active && consent && !busy} onContinue={(file) => void scan(file)} /></fieldset>
+
+  return <section className="grid min-w-0 gap-6" aria-label="Image OCR entry">
+    <WorkflowProgress current="add" language="bn" />
+    <header className="grid gap-3">
+      <p className="flex items-center gap-2 font-semibold text-pro-primary"><ScanLine aria-hidden="true" className="size-5 shrink-0" />বুঝি · REPORT READER</p>
+      <h2 className="text-2xl font-semibold sm:text-3xl">{busy ? <>Reading your report · <span lang="bn">রিপোর্ট পড়া হচ্ছে</span></> : <>Scan Medical Report · <span lang="bn">রিপোর্টের ছবি স্ক্যান করুন</span></>}</h2>
+      <p className="max-w-[65ch] text-pro-muted" lang="bn">একবারে এক পাতা দিন। ছবির লেখা পড়ার পরে প্রতিটি ফল আপনার সঙ্গে মিলিয়ে নেওয়া হবে।</p>
+    </header>
+    <div hidden={busy} className="min-w-0">
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
+        <div className="grid min-w-0 gap-4">
+          <p className="rounded-field border border-pro-border bg-pro-bg p-4">Use a fictional report. This reader supports English text. <span lang="bn">এটি উন্নয়ন পর্যায়ের ডেমো; আসল ব্যক্তিগত রিপোর্ট দেবেন না।</span></p>
+          <label className="flex min-h-12 items-start gap-3 rounded-field border border-pro-control-border bg-pro-surface p-4"><input className="mt-1 size-5 shrink-0" type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={busy} /><span>Allow downloads for the English reader. Your image is read on this device.<span className="mt-1 block text-pro-muted" lang="bn">রিডার চালু করতে ইন্টারনেট লাগতে পারে। রিপোর্টের ছবি বাইরে পাঠানো হয় না।</span></span></label>
+          <fieldset disabled={busy} className="min-w-0"><legend className="sr-only">Select report image</legend><ReportUpload autoContinue={active && consent && !busy} onContinue={(file) => void scan(file)} /></fieldset>
+        </div>
+        <aside className="grid min-w-0 gap-5 rounded-card border border-pro-border bg-pro-surface p-5 sm:p-6" aria-label="Photo tips and privacy">
+          <div className="grid gap-3"><FileImage aria-hidden="true" className="size-7 text-pro-primary" /><h3 className="text-xl font-semibold" lang="bn">একটি পরিষ্কার ছবিই শুরু</h3><ul className="list-disc space-y-3 pl-5 text-pro-muted" lang="bn"><li>রিপোর্ট সমতলে রেখে আলোতে ছবি তুলুন।</li><li>লেখা, ফল ও একক যেন দেখা যায়; ছায়া বা ঝলক এড়ান।</li><li>তারিখ বা কোনো সংখ্যা বোঝা না গেলে অনুমান করবেন না।</li></ul></div>
+          <div className="border-t border-pro-border pt-5"><h3 className="font-semibold" lang="bn">আগে নমুনা দিয়ে দেখুন</h3><a href="/bujhi/prohor-synthetic-lab-v1.png" download className="inline-flex min-h-12 items-center font-semibold text-pro-primary underline">Download sample report (PNG)</a><p className="text-pro-muted">The sample has an incomplete date. Use it to practice checking the extracted values.</p></div>
+          <p className="flex items-start gap-2 border-t border-pro-border pt-5 text-pro-muted"><ShieldCheck aria-hidden="true" className="mt-1 size-5 shrink-0" /><span lang="bn">আপনি যাচাই না করা পর্যন্ত কোনো ফল সংরক্ষিত হয় না। এটি চিকিৎসকের পর্যালোচনা নয়।</span></p>
+        </aside>
+      </div>
+
     </div>
 
     {busy && <div className="grid gap-4 rounded-card border border-pro-border bg-pro-surface p-5"><p className="!m-0">Photo received. Reading runs on this device.</p><progress value={progress} max={100} aria-label="OCR engine progress" className="w-full" /><p aria-hidden="true" className="!m-0 text-sm">{progress}%</p><button type="button" onClick={cancel} className="min-h-12 rounded-control border border-pro-primary p-3 text-pro-primary">Cancel OCR</button></div>}
@@ -48,4 +76,3 @@ export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFi
 
   </section>;
 }
-

@@ -2,12 +2,12 @@ import type { BartaAnswer } from "@/lib/contracts/barta";
 
 export const bartaSmallTalk = [
   {
-    pattern: /^(?:(?:hi+|he+y+|hello+|heya|hiya|yo+|sup)(?: there| everyone| bro| sis)?(?: (?:hi+|he+y+|hello+))*|good morning|good afternoon|good evening|ass?ala?mu alaikum|ass?ala?mualaikum|assalamu alaykum|as salamu alaykum|wa ?alaikum assalam|salam|nomoskar|আসসালামু আলাইকুম|আসসালামু আলাইকুম ওয়া রহমাতুল্লাহ|ওয়ালাইকুম আসসালাম|সালাম|নমস্কার|হ্যালো|হাই|সুপ্রভাত|শুভ সকাল|শুভ সন্ধ্যা)$/u,
+    pattern: /^(?:(?:hi+|he+y+|hell?o+|heya|hiya|hlo|hlw|yo+|sup)(?: there| everyone| bro| sis)?(?: (?:hi+|he+y+|hello+))*|good morning|good afternoon|good evening|good day|howdy|ass?ala?mu alaikum|ass?ala?mualaikum|assalamu alaykum|as salamu alaykum|wa ?alaikum assalam|salaam|salam|nomoskar|namaskar|শুভ দুপুর|আদাব|আসসালামু আলাইকুম|আসসালামু আলাইকুম ওয়া রহমাতুল্লাহ|ওয়ালাইকুম আসসালাম|সালাম|নমস্কার|হ্যালো|হাই|সুপ্রভাত|শুভ সকাল|শুভ সন্ধ্যা)$/u,
     en: "Hello. I’m Barta. You can ask me about pregnancy, getting ready for birth, your recovery, or caring for your baby.",
     bn: "স্বাগতম। আমি বার্তা। গর্ভাবস্থা, প্রসবের প্রস্তুতি, সুস্থ হয়ে ওঠা বা শিশুর যত্ন নিয়ে আমাকে প্রশ্ন করতে পারেন।",
   },
   {
-    pattern: /^(?:(?:tumi|apni|তুমি|আপনি) )?(?:how are you|how are you doing|how are u|how r u|how's it going|how you doing|hru|what'?s up|wassup|wazzup|whats good|what'?s new|(?:kemon|kmn|kmon) (?:aso|acho|achen|asen)|ki obostha|ki khobor|কেমন আছো|কেমন আছেন|কি খবর|কী খবর|কী অবস্থা)$/u,
+    pattern: /^(?:(?:tumi|apni|তুমি|আপনি) )?(?:how are you|how are you doing|how are u|how r u|how's it going|how you doing|hru|what'?s up|wassup|wazzup|whats good|what'?s new|how have you been|how is your day|how has your day been|you good|shob thik|sob thik|সব ঠিক আছে তো|(?:kemon|kmn|kmon) (?:aso|acho|achen|asen)|ki obostha|ki khobor|কেমন আছো|কেমন আছেন|কি খবর|কী খবর|কী অবস্থা)$/u,
     en: "Thanks for asking. I’m here to help. What would you like to talk about today?",
     bn: "জিজ্ঞেস করার জন্য ধন্যবাদ। আমি সাহায্য করতে প্রস্তুত। আজ কী নিয়ে কথা বলতে চান?",
   },
@@ -17,7 +17,7 @@ export const bartaSmallTalk = [
     bn: "স্বাগতম। আরও কিছু জানতে চাইলে আবার প্রশ্ন করুন।",
   },
   {
-    pattern: /^(?:bye+|goodbye|good bye|bye bye|see you|see you later|see you soon|cya|gtg|g2g|gotta go|ttyl|take care|good night|gn|nite|allah hafez|allah hafiz|biday|pore kotha hobe|আল্লাহ হাফেজ|আল্লাহ হাফিজ|বিদায়|পরে কথা হবে|ভালো থাকবেন|শুভরাত্রি|শুভ রাত্রি)$/u,
+    pattern: /^(?:bye+|goodbye|good bye|bye bye|bye for now|see you|see you later|see you soon|see ya|talk to you later|catch you later|until next time|have a good day|have a nice day|im off|i'm off|cya|gtg|g2g|gotta go|ttyl|take care|good night|gn|nite|tata|ta ta|allah hafez|allah hafiz|khoda hafez|khoda hafiz|biday|ekhon jai|ami jai|pore kotha hobe|pore kotha bolbo|আল্লাহ হাফেজ|আল্লাহ হাফিজ|বিদায়|আবার কথা হবে|পরে কথা হবে|পরে কথা বলব|আজ এখানেই শেষ|ভালো থাকবেন|ভালো থেকো|আবার দেখা হবে|এখন যাই|শুভরাত্রি|শুভ রাত্রি)$/u,
     en: "Take care. You can come back whenever you have another question.",
     bn: "ভালো থাকবেন। নতুন কোনো প্রশ্ন থাকলে আবার আসতে পারেন।",
   },
@@ -27,7 +27,7 @@ export const bartaSmallTalk = [
     bn: "কোনো সমস্যা নেই। সময় নিয়ে যখন ইচ্ছা প্রশ্ন করুন।",
   },
   {
-    pattern: /^(?:ok+|okay+|okie|k|kk|yep|yup|yeah|yes|nah|nope|no|got it|i understand|i got it|noted|sure|alright|aight|acha|accha|bujhlam|thik ache|hmm+|হুম|হ্যাঁ|না|ঠিক আছে|আচ্ছা|বুঝলাম)$/u,
+    pattern: /^(?:ok+|okay+|okie|okey|k|kk|yep|yup|yeah|yes|nah|nope|no|got it|i understand|i got it|noted|sure|alright|aight|acha|accha|bujhlam|thik ache|hmm+|হুম|হ্যাঁ|না|ঠিক আছে|আচ্ছা|বুঝলাম)$/u,
     contextual: true,
     en: "Okay. Is there anything you’d like me to explain further?",
     bn: "ঠিক আছে। কোনো বিষয় আরও সহজ করে জানতে চাইলে বলুন।",
@@ -69,7 +69,7 @@ export const bartaSmallTalk = [
     bn: "আমি বার্তা, মাতৃস্বাস্থ্য শিক্ষা নিয়ে কাজ করা একটি ডিজিটাল সহকারী। সাধারণ তথ্য খুঁজতে বা স্বাস্থ্যকর্মীর জন্য প্রশ্ন গুছিয়ে নিতে সাহায্য করতে পারি।",
   },
   {
-    pattern: /^(?:let'?s chat|can we talk|i just want to talk|can i talk to you|i am bored|i'm bored|just checking|testing|test|ektu kotha boli|kotha bolbo|একটু কথা বলি|কথা বলতে পারি)$/u,
+    pattern: /^(?:let'?s chat|can we talk|i just want to talk|can i talk to you|i am bored|i'm bored|just checking|are you free to talk|can we chat|just saying hi|testing|test|ektu kotha boli|kotha bolbo|একটু কথা বলি|কথা বলতে পারি)$/u,
     en: "Sure. What’s on your mind? You can start with a few words or pick something from Explore topics.",
     bn: "অবশ্যই। মনে কী আছে? কয়েকটি শব্দ দিয়ে শুরু করতে পারেন, অথবা তালিকা থেকে একটি বিষয় বেছে নিন।",
   },

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { useLanguage } from "@/i18n/use-language";
 
 import { Check, FileCheck2 } from "lucide-react";
 
@@ -50,6 +51,8 @@ export function AccountReportReview({
   const [stage, setStage] = useState<Stage>("check");
   const [language, setLanguage] = useState<"bn" | "en">("bn");
   const [fieldId, setFieldId] = useState("");
+  const [value, setValue] = useState("");
+  const [unit, setUnit] = useState("");
   const [date, setDate] = useState("");
   const [pregnancyId, setPregnancyId] = useState(
     pregnancies.length === 1 ? pregnancies[0].id : "",

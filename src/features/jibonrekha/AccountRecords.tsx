@@ -13,6 +13,7 @@ import { filterAccountHistory } from "./account-history";
 
 import { accountSourceLabel } from "./account-provenance";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
+import { type GuideSelection, selectAccountPregnancy } from "./account-records-model";
 
 
 type Pregnancy = {
@@ -251,7 +252,7 @@ export function AccountRecords() {
           result.message ||
             "কিছু সংরক্ষণ হয়নি। ঘরগুলো দেখে আবার চেষ্টা করুন।",
         );
-      pendingRequest.current = null;
+      pendingRequests.current.delete(body);
       setMessage(`${label} অ্যাকাউন্টে সংরক্ষিত হয়েছে। কাউকে পাঠানো হয়নি। এই MVP-তে শুধু কাল্পনিক তথ্য ব্যবহার করুন।`);
 
       form.reset();

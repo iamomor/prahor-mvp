@@ -1,4 +1,10 @@
 /* Barta (Ask PROHOR). Tokens only: every colour, radius, duration and easing is a --pro-* token. */
+.workspace {
+  container-type: inline-size;
+  min-width: 0;
+  max-width: 71rem;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -16,9 +22,25 @@
 .layout svg { flex: none; }
 .layout button:disabled { cursor: default; }
 
-@media (min-width: 56rem) {
+.layout > * { grid-column: 1 / -1; min-width: 0; }
+
+@container (min-width: 48rem) {
   .layout { grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr); }
+  .layout > .chat { grid-column: 1; }
+  .layout > .sidebar { grid-column: 2; }
 }
+
+.speakerBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem clamp(1rem, 3vw, 1.75rem);
+  border-bottom: 1px solid var(--pro-border);
+  color: var(--pro-muted);
+}
+.speakerBar p { flex: 1 1 14rem; font-size: 0.875rem; }
+
 
 /* ── Conversation card ─────────────────────────────────────────── */
 .chat {

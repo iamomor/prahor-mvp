@@ -234,9 +234,8 @@ test("opt-in speaks typed and AAC-drafted turns in order on mobile", async ({ pa
 
   await page.getByLabel("Answer language").selectOption("bn");
   const banglaConversation = page.getByRole("region", { name: "বার্তার কথোপকথন" });
-  await banglaConversation.getByRole("link", { name: "ছবি দিয়ে বলুন" }).press("Enter");
-
   const aac = page.locator("#barta-symbol-input");
+  await expect(aac).toBeVisible({ timeout: 5000 });
   await aac.getByRole("tab", { name: /অনুরোধ/ }).click();
   await aac.getByRole("button", { name: /সাহায্য চাই/ }).click();
   const composedMessage = aac.getByRole("textbox", { name: /Your sentence|আপনার বাক্য/ });

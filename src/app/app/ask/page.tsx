@@ -16,7 +16,7 @@ export default async function AppAskPage({ searchParams }: { searchParams: Promi
   const { q } = await searchParams;
   const initialQuestion = typeof q === "string" ? q.slice(0, 1200) : "";
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 max-w-[71rem] grid-cols-[minmax(0,1fr)] gap-5">
       <header className="grid max-w-3xl gap-3">
         <p className="flex items-center gap-2.5 font-semibold text-pro-muted">
           <span className="grid size-10 place-items-center rounded-control bg-pro-surface text-pro-primary" aria-hidden="true">
@@ -28,7 +28,7 @@ export default async function AppAskPage({ searchParams }: { searchParams: Promi
           Ask PROHOR
           <span lang="bn" className="mt-1 block text-[0.68em] font-semibold text-pro-primary">প্রহরকে জিজ্ঞাসা করুন</span>
         </h1>
-        <p className="max-w-[65ch] text-lg leading-relaxed text-pro-muted">
+        <p className="max-w-[65ch] text-base leading-relaxed text-pro-muted">
           Ask about pregnancy, birth or newborn care and see the sources behind each answer.
           {" "}<span lang="bn">গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে প্রশ্ন করুন; প্রতিটি উত্তরের সূত্র দেখুন।</span>
         </p>
@@ -47,7 +47,22 @@ export default async function AppAskPage({ searchParams }: { searchParams: Promi
       </header>
       <ModuleCommunication placement="barta" />
       <BartaChatStarter mode="education" initialQuestion={initialQuestion} />
-      <section id="ask-help" tabIndex={-1} aria-labelledby="ask-help-title" className="grid max-w-3xl scroll-mt-6 gap-3 rounded-hero border border-pro-control-border bg-pro-elevated p-5 sm:p-6">
+      <details className="rounded-card border border-pro-border bg-pro-surface px-4 text-sm">
+        <summary className="min-h-11 cursor-pointer py-2.5 font-semibold">
+          Barta features and status · <span lang="bn">সুবিধা ও অবস্থা</span>
+        </summary>
+        <dl className="grid gap-2 pb-3">
+          <div>
+            <dt className="inline font-semibold">Available</dt>
+            <dd className="inline"> · Bangla and English education chat, voice dictation, pictures, emoji and text input.</dd>
+          </div>
+          <div>
+            <dt className="inline font-semibold">Limited availability</dt>
+            <dd className="inline"> · Configured Bangla and English read-aloud voices, emergency guidance links and conversation history.</dd>
+          </div>
+        </dl>
+      </details>
+      <section id="ask-help" tabIndex={-1} aria-labelledby="ask-help-title" className="grid scroll-mt-6 gap-3 rounded-hero border border-pro-control-border bg-pro-elevated p-5 sm:p-6">
         <h2 id="ask-help-title" className="flex flex-wrap items-center gap-x-2.5 text-xl font-semibold">
           <TriangleAlert size={22} aria-hidden="true" className="shrink-0 text-pro-danger" />
           Help without chat · <span lang="bn">চ্যাট ছাড়া সাহায্য</span>

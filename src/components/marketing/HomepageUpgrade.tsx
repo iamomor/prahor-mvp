@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { ArrowRight, ArrowUpRight, BookOpen, CalendarDays, Check, FileCheck2, Heart, HeartHandshake, LockKeyhole, MapPin, MessageCircle, MonitorSmartphone, ShieldCheck, SlidersHorizontal, Sun } from "lucide-react";
 import { InclusiveJourney } from "./InclusiveJourney";
 import { SectionEyebrow } from "./SectionEyebrow";
+import { TeamCarousel } from "./TeamCarousel";
 import { useHome } from "./HomeContext";
 import { copy, type Copy } from "./home-content";
 import { ModuleScreen, MotherWindow, ProviderWindow, type ModuleName } from "./ProductScreens";
@@ -63,14 +63,9 @@ export function JourneyStory() {
 }
 
 
-export function TeamStory({ images }: { images: Record<string, boolean> }) {
+export function TeamStory() {
   const { t } = useHome();
-  const people = [
-    { name: "Omor", role: copy("Project lead and platform", "প্রকল্প পরিচালনা ও প্ল্যাটফর্ম") }, { name: "Iftee", role: copy("Inclusive UI and accessibility", "সবার জন্য ইউআই ও প্রবেশগম্যতা") },
-    { name: "Ifty", role: copy("AI and retrieval", "এআই ও তথ্য অনুসন্ধান") }, { name: "Apubo", role: copy("Mother and baby records", "মা ও শিশুর রেকর্ড") },
-    { name: "Samin", role: copy("Wellness and care navigation", "ভালো থাকা ও সেবার পথনির্দেশ") },
-  ];
-  return <section className="upgrade-team story-section" aria-labelledby="team-title"><div className="home-container"><div className="story-section-heading"><div><SectionEyebrow>{t(copy("The people behind PROHOR", "প্রহরের পেছনের মানুষ"))}</SectionEyebrow><h2 id="team-title">{t(copy("Built with care. ", "যত্ন নিয়ে গড়া। "))}<em>{t(copy("By people who care.", "যত্নশীল মানুষের হাতে।"))}</em></h2></div><p>{t(copy("A shared effort across inclusive design, technology and the everyday details of maternal care.", "সবার জন্য নকশা, প্রযুক্তি ও মাতৃযত্নের দৈনন্দিন খুঁটিনাটি নিয়ে একটি সম্মিলিত প্রচেষ্টা।"))}</p></div><div className="upgrade-team-grid">{people.map(({ name, role }) => <article key={name}><div className="upgrade-team-avatar">{images[name.toLowerCase()] ? <Image src={`/team/${name.toLowerCase()}.jpg`} alt={name} fill sizes="(min-width: 1024px) 180px, 40vw" /> : <span aria-hidden="true" lang="en">{name[0]}</span>}</div><h3 lang="en">{name}</h3><p>{t(role)}</p></article>)}</div></div></section>;
+  return <section className="upgrade-team story-section" aria-labelledby="team-title"><div className="home-container"><div className="story-section-heading"><div><SectionEyebrow>{t(copy("The people behind PROHOR", "প্রহরের পেছনের মানুষ"))}</SectionEyebrow><h2 id="team-title">{t(copy("Built with care. ", "যত্ন নিয়ে গড়া। "))}<em>{t(copy("By people who care.", "যত্নশীল মানুষের হাতে।"))}</em></h2></div><p>{t(copy("Engineers, a designer and a clinician, building inclusive tools for pregnancy, birth and early motherhood in Bangladesh.", "প্রকৌশলী, ডিজাইনার ও একজন চিকিৎসক—বাংলাদেশে গর্ভকাল, প্রসব ও মাতৃত্বের শুরুর জন্য সবার উপযোগী টুল তৈরি করছেন।"))}</p></div><TeamCarousel /></div></section>;
 }
 
 export function FinalCTA() {

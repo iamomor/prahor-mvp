@@ -67,7 +67,7 @@ async function detail(context, id) { return data(await context.request.get(`/api
 async function continueRequest(page) { await page.locator('form button:not([type="button"])').click(); }
 async function finishRequestSteps(page, recipientId) {
   await continueRequest(page);
-  await page.locator('form select[required]').selectOption(recipientId);
+  await page.locator(`input[name="recipient"][value="${recipientId}"]`).check({ force: true });
   await continueRequest(page);
   await continueRequest(page);
 }
@@ -213,7 +213,7 @@ try {
   const page = await mother.newPage();
   await check('mother form loads with no selected record or reply permission', async () => {
     await page.goto('/app/bondhon');
-    await page.getByRole('button', { name: 'Create a reviewed request', exact: true }).click();
+    await page.getByRole('button', { name: 'Ask for help or prepare a visit', exact: true }).click();
     await page.getByLabel('Purpose of this request').fill('Synthetic browser journey');
     await page.getByLabel('Message for this recipient').fill('Synthetic browser message');
     await finishRequestSteps(page, recipient);
@@ -351,7 +351,7 @@ try {
   });
   await check('network failure retains the exact reviewed payload and retry key', async () => {
     await page.goto('/app/bondhon');
-    await page.getByRole('button', { name: 'Create a reviewed request' }).click();
+    await page.getByRole('button', { name: 'Ask for help or prepare a visit' }).click();
     await page.getByLabel('Purpose of this request').fill('Synthetic network retry');
     await page.getByLabel('Message for this recipient').fill('Synthetic preserved draft');
     await finishRequestSteps(page, recipient);

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+
 import { FileImage, ScanLine, ShieldCheck } from "lucide-react";
+
 import { ReportUpload } from "./ReportUpload";
 import { recognizeReportImage } from "./ocr-service";
 import { WorkflowProgress } from "./WorkflowProgress";
@@ -9,6 +11,7 @@ import type { ExtractedReport } from "./types";
 
 import { isHemoglobinLabel } from "./validation";
 export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFile }: { active?: boolean; onDraft: (report: ExtractedReport, source?: File) => void; onManual?: () => void; onManualFile?: (file: File) => void }) {
+  const { t } = useLanguage();
   const [fallbackFile, setFallbackFile] = useState<File | null>(null);
 
   const [consent, setConsent] = useState(false), [busy, setBusy] = useState(false);
@@ -42,6 +45,7 @@ export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFi
 
   }
   function cancel() { controller.current?.abort(); setBusy(false); setStatus("OCR cancelled. Nothing saved."); }
+
   return <section className="grid min-w-0 gap-6" aria-label="Image OCR entry">
     <WorkflowProgress current="add" language="bn" />
     <header className="grid gap-3">
@@ -62,6 +66,7 @@ export function ImageMedicalEntry({ onDraft, active = true, onManual, onManualFi
           <p className="flex items-start gap-2 border-t border-pro-border pt-5 text-pro-muted"><ShieldCheck aria-hidden="true" className="mt-1 size-5 shrink-0" /><span lang="bn">আপনি যাচাই না করা পর্যন্ত কোনো ফল সংরক্ষিত হয় না। এটি চিকিৎসকের পর্যালোচনা নয়।</span></p>
         </aside>
       </div>
+
     </div>
 
     {busy && <div className="grid gap-4 rounded-card border border-pro-border bg-pro-surface p-5"><p className="!m-0">Photo received. Reading runs on this device.</p><progress value={progress} max={100} aria-label="OCR engine progress" className="w-full" /><p aria-hidden="true" className="!m-0 text-sm">{progress}%</p><button type="button" onClick={cancel} className="min-h-12 rounded-control border border-pro-primary p-3 text-pro-primary">Cancel OCR</button></div>}

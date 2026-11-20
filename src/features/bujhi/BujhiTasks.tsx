@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { FileCheck2, FlaskConical, ScanLine, ShieldCheck } from "lucide-react";
 import { AccessPreferencesControl } from "@/components/accessibility/AccessPreferencesControl";
@@ -21,6 +22,7 @@ export function BujhiTasks() {
     <div className="flex min-w-0 flex-wrap items-center justify-between gap-4 rounded-card border border-pro-border bg-pro-elevated p-5">
       <div className="flex min-w-0 items-start gap-3"><FlaskConical aria-hidden="true" className="mt-1 size-6 shrink-0 text-pro-primary" /><div><h2 className="text-xl font-semibold" lang="bn">ঘরে করা কিটের ফল?</h2><p className="mt-1 text-pro-muted" lang="bn">ছবি ছাড়াই কিটে দেখা চিহ্ন মিলিয়ে নিন।</p></div></div>
       <Link href="/app/bujhi/kit" className="inline-flex min-h-12 items-center rounded-control border border-pro-control-border px-4 py-3 font-semibold text-pro-primary focus-visible:outline-3 focus-visible:outline-pro-focus">কিটের ফল বুঝি</Link>
+
     </div>
   </section>;
 }

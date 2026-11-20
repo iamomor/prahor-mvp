@@ -11,7 +11,7 @@ import { RevokeDialog } from "./RevokeDialog";
 import { BondhonRequestTracker } from "./BondhonRequestTracker";
 import { careFetch, CareError } from "./client";
 import { accommodations, displayValue, fieldNames, recordNames, statusNames, words } from "./bondhon-copy";
-import { accessState as accessOf, accessWords, auditTimeline, digits, isOpenAccess, closestHours, formatLeft, formatWhen, fractionLeft, msLeft, nextStep, providerOpens, ringNodes } from "./bondhon-view";
+import { accessState as accessOf, accessWords, auditTimeline, digits, isOpenAccess, closestHours, formatLeft, formatWhen, fractionLeft, msLeft, nextStep, providerOpens, ringNodes, stopEvidence } from "./bondhon-view";
 import type { FormInitial } from "./CareRequestForm";
 import styles from "./bondhon.module.css";
 
@@ -41,54 +41,67 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
   const running = useRef(false);
   const poll = useRef(true); // false once nothing can change, so we stop writing read events to the history
   const loadCounter = useRef(0);
+  const readController = useRef<AbortController | null>(null);
+  const [unavailable, setUnavailable] = useState<"access" | "session" | null>(null);
   const [now, setNow] = useState(0);
   const load = useCallback(async () => {
     const current = ++loadCounter.current;
+    readController.current?.abort();
+    const request = new AbortController();
+    readController.current = request;
     setLoading(true);
+    if (provider) { setDetail(null); setEvents([]); }
     try {
       const [requestResult, eventResult, recipientsResult] = await Promise.allSettled([
-        careFetch(`/api/care-requests/${requestId}/coordination`, bondhonDetailSchema, account),
-        careFetch(`/api/care-requests/${requestId}/events?limit=50`, pageSchema(supportRequestEventSummarySchema), account),
-        provider ? Promise.resolve([]) : careFetch("/api/care-recipients", careRecipientsSchema, account),
+        careFetch(`/api/care-requests/${requestId}/coordination`, bondhonDetailSchema, account, { signal: request.signal }),
+        careFetch(`/api/care-requests/${requestId}/events?limit=50`, pageSchema(supportRequestEventSummarySchema), account, { signal: request.signal }),
+        provider ? Promise.resolve([]) : careFetch("/api/care-recipients", careRecipientsSchema, account, { signal: request.signal }),
       ]);
       if (requestResult.status === "rejected") throw requestResult.reason;
       if (eventResult.status === "rejected" && eventResult.reason instanceof CareError &&
         [401, 403, 404].includes(eventResult.reason.status)) throw eventResult.reason;
       const value = requestResult.value;
+      // Reject an owner DTO on a provider screen, or vice versa, even if the outer envelope parses.
+      if (provider ? !providerRequestSchema.safeParse(value.request).success || value.grants.length > 0 || value.audit.length > 0 : !supportRequestSchema.safeParse(value.request).success)
+        throw new CareError(503);
       if (current !== loadCounter.current) return;
       if (revision.current !== value.request.revision) setApproved(false);
       revision.current = value.request.revision;
       const receiverId = "recipientUserId" in value.request ? value.request.recipientUserId : null;
       setRecipientName(recipientsResult.status === "fulfilled" ? recipientsResult.value.find(person => person.id === receiverId)?.displayName ?? "" : "");
-      setDetail(value); setError(previous => previous === "load" ? "" : previous); setNow(Date.now());
+      setUnavailable(null); setDetail(value); setError(previous => previous === "load" ? "" : previous); setNow(Date.now());
       setEvents(eventResult.status === "fulfilled" ? eventResult.value.items : []);
       setHistoryUnavailable(eventResult.status !== "fulfilled" || eventResult.value.nextCursor !== null);
-    } catch {
+    } catch (cause) {
       if (current !== loadCounter.current) return;
+      setUnavailable(cause instanceof CareError && cause.status === 401 ? "session" : provider && cause instanceof CareError && [403, 404].includes(cause.status) ? "access" : null);
       setDetail(null); setEvents([]); setApproved(false); setError("load");
     } finally { if (current === loadCounter.current) setLoading(false); }
   }, [account, requestId, provider]);
   useEffect(() => {
     const counter = loadCounter;
+    const activeRead = readController;
     const initial = window.setTimeout(() => { detailHeading.current?.focus(); void load(); }, 0);
     const clock = window.setInterval(() => setNow(Date.now()), 1000);
     const timer = window.setInterval(() => { setNow(Date.now()); if (!running.current && !document.hidden && poll.current) void load(); }, 30_000);
     function visibility() {
-      if (document.hidden && provider) { counter.current++; setDetail(null); setEvents([]); setApproved(false); }
+      if (document.hidden && provider) { counter.current++; activeRead.current?.abort(); setDetail(null); setEvents([]); setApproved(false); }
       if (!document.hidden && !running.current) void load();
     }
     document.addEventListener("visibilitychange", visibility);
-    return () => { counter.current++; window.clearInterval(clock); window.clearTimeout(initial); window.clearInterval(timer); document.removeEventListener("visibilitychange", visibility); };
+    return () => { counter.current++; activeRead.current?.abort(); window.clearInterval(clock); window.clearTimeout(initial); window.clearInterval(timer); document.removeEventListener("visibilitychange", visibility); };
   }, [load, provider]);
   async function perform(action: Action) {
     if (running.current) return;
     running.current = true; setBusy(true); setError(""); setNotice(""); setPending(action);
     // Discard a read started before this mutation, so it cannot restore stale content.
     loadCounter.current++;
+    readController.current?.abort();
     const operation = loadCounter.current;
     try {
       if (action.detail) {
         const value = await careFetch(action.path, bondhonDetailSchema, account, { post: true, body: action.body, key: action.key });
+        if (action.path.endsWith("/revoke") && !["stopped", "ended"].includes(stopEvidence(requestId, value.request))) throw new CareError(503);
         if (operation === loadCounter.current && (!provider || !document.hidden)) setDetail(value);
       } else if (provider) {
         await careFetch(action.path, providerRequestSchema, account, { post: true, body: action.body, key: action.key });
@@ -96,13 +109,13 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
         await careFetch(action.path, supportRequestSchema, account, { post: true, body: action.body, key: action.key });
       }
       setPending(null); setConfirmation(null); setText(""); setApproved(false);
-      setNotice(t(words("The server confirmed this action.", "সার্ভার কাজটি নিশ্চিত করেছে।")));
-      if (!provider || !document.hidden) await load();
+      setNotice(t(action.path.endsWith("/revoke") ? words("Sharing stopped. The server confirmed withdrawal of this request’s access.", "শেয়ার বন্ধ হয়েছে। সার্ভার এই অনুরোধের প্রবেশ প্রত্যাহার নিশ্চিত করেছে।") : action.path.endsWith("/close") ? words("Request closed. This does not mean a medical concern was resolved.", "অনুরোধ বন্ধ হয়েছে। এর অর্থ চিকিৎসার কোনো সমস্যা সমাধান হয়েছে তা নয়।") : words("The server confirmed this action.", "সার্ভার কাজটি নিশ্চিত করেছে।")));
+      if ((!provider || !document.hidden) && operation === loadCounter.current) await load();
     } catch (cause) {
       if (cause instanceof CareError && cause.status < 500) {
         setPending(null); setDetail(null); setEvents([]); setApproved(false); setConfirmation(null); setError("rejected");
       } else { setError("uncertain"); if (provider) setDetail(null); }
-    } finally { running.current = false; setBusy(false); }
+    } finally { running.current = false; setBusy(false); window.requestAnimationFrame(() => document.getElementById(`${id}-feedback`)?.focus()); }
   }
   function mutate(action: "acknowledge" | "close" | "revoke") {
     if (!detail) return;
@@ -163,25 +176,30 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
       allowReplies: policy.allowReplies, needs: [...policy.accommodations] });
   }
   const canWrite = active && policy?.allowReplies && (!provider || r?.status === "acknowledged" || r?.status === "responded");
-  return <section className={styles.workspace} aria-labelledby={`${id}-title`}>
+  return <section className={`${styles.workspace} ${styles.detailPane}`} aria-labelledby={`${id}-title`}>
     <div className={styles.actions}>
       <button type="button" className="pro-btn pro-btn-secondary" disabled={busy || !!pending} onClick={onBack}>{t(words("Back to requests", "অনুরোধের তালিকায় ফিরুন"))}</button>
       <button type="button" className="pro-btn pro-btn-secondary" disabled={busy} onClick={() => void load()}>{t(words("Refresh current access", "বর্তমান অনুমতি আবার দেখুন"))}</button>
       </div>
     <h2 ref={detailHeading} tabIndex={-1} id={`${id}-title`} className="text-2xl font-semibold">{t(words("Request and permissions", "অনুরোধ ও অনুমতি"))}</h2>
     {loading && <p role="status">{t(words("Checking current access…", "বর্তমান অনুমতি যাচাই হচ্ছে…"))}</p>}
-    {notice && <p role="status" className={styles.notice}>{notice}</p>}
-    {error && <div role="alert" className={styles.error}>{t(error === "uncertain" ? words("Action unconfirmed. Retry the same action with its preserved retry key.", "কাজটি নিশ্চিত হয়নি। একই চাবি দিয়ে একই কাজ আবার চেষ্টা করুন।") : error === "rejected" ? words("This action was rejected or the request changed. Refresh and review before continuing.", "কাজটি গ্রহণ করা হয়নি অথবা অনুরোধ বদলেছে। আবার এনে পর্যালোচনা করুন।") : words("Current access could not be verified. The request may have expired, been revoked or closed, or the connection may be unavailable.", "বর্তমান অনুমতি নিশ্চিত হয়নি। মেয়াদ শেষ, অনুমতি প্রত্যাহার, অনুরোধ বন্ধ অথবা সংযোগ বিচ্ছিন্ন হতে পারে।"))}</div>}
+    {!provider && r && <p className={styles.meta}><strong>{t(words("Request ID", "অনুরোধের পরিচয়"))}</strong>: <span className={styles.requestId}>{r.id}</span></p>}
+    {notice && <p id={`${id}-feedback`} tabIndex={-1} role="status" className={styles.notice}>{notice}</p>}
+    {error && !unavailable && <div id={`${id}-feedback`} tabIndex={-1} role="alert" className={styles.error}>{t(error === "uncertain" ? words("Action unconfirmed. Retry the same action with its preserved retry key.", "কাজটি নিশ্চিত হয়নি। একই চাবি দিয়ে একই কাজ আবার চেষ্টা করুন।") : error === "rejected" ? words("This action was rejected or the request changed. Refresh and review before continuing.", "কাজটি গ্রহণ করা হয়নি অথবা অনুরোধ বদলেছে। আবার এনে পর্যালোচনা করুন।") : words("Current access could not be verified. The request may have expired, been revoked or closed, or the connection may be unavailable.", "বর্তমান অনুমতি নিশ্চিত হয়নি। মেয়াদ শেষ, অনুমতি প্রত্যাহার, অনুরোধ বন্ধ অথবা সংযোগ বিচ্ছিন্ন হতে পারে।"))}</div>}
+    {unavailable && <div role="status" className={styles.accessEnded}>
+      <h3>{t(unavailable === "session" ? words("Please sign in again", "আবার সাইন ইন করুন") : words("Access ended or unavailable", "প্রবেশ শেষ বা পাওয়া যাচ্ছে না"))}</h3>
+      <p>{t(unavailable === "session" ? words("Your session could not be confirmed. Private request information is hidden. Sign in again, then refresh.", "আপনার সেশন নিশ্চিত করা যায়নি। ব্যক্তিগত তথ্য লুকানো আছে। সাইন ইন করে আবার আনুন।") : words("This provider account cannot open this request. The mother may have stopped sharing, the permission may have ended, or the request may no longer be available. No mother information is displayed.", "এই সেবাদাতা অ্যাকাউন্ট অনুরোধটি খুলতে পারছে না। মা শেয়ার বন্ধ করে থাকতে পারেন, অনুমতির সময় শেষ হতে পারে, অথবা অনুরোধটি আর উপলব্ধ নেই। মায়ের কোনো তথ্য দেখানো হচ্ছে না।"))}</p>
+    </div>}
     {pending && !busy && <button type="button" className="pro-btn pro-btn-primary" onClick={() => void perform(pending)}>{t(words("Retry the same action", "একই কাজ আবার চেষ্টা করুন"))}</button>}
-    {provider && r && policy && !active && <p role="status" className={styles.notice}>{t(words("Current permission is no longer active. Request text and shared fields are hidden. Refresh to verify access.", "বর্তমান অনুমতি আর কার্যকর নেই। অনুরোধের লেখা ও শেয়ার করা তথ্য লুকানো হয়েছে। প্রবেশাধিকার যাচাই করতে রিফ্রেশ করুন।"))}</p>}
-    {r && detail && (!provider || !policy || active) && <>
+    {provider && r && !active && <p role="status" className={styles.notice}>{t(words("Access ended or is not confirmed. Request text and shared fields are hidden. Refresh to verify access.", "বর্তমান অনুমতি আর কার্যকর নেই। অনুরোধের লেখা ও শেয়ার করা তথ্য লুকানো হয়েছে। প্রবেশাধিকার যাচাই করতে রিফ্রেশ করুন।"))}</p>}
+    {r && detail && (!provider || active) && <>
       {!provider && policy && <section className={styles.summary} aria-labelledby={`${id}-summary`}>
-        <h3 id={`${id}-summary`} className={styles.statusWord}>{t(statusNames[r.status])}</h3>
+        <h3 id={`${id}-summary`} className={styles.statusWord}>{t(isOpenAccess(access) ? statusNames[r.status] : accessWords[access])}</h3>
         <p>{t(step.meaning)}</p>
         <p><strong>{t(words("Next:", "এরপর:"))}</strong> {t(step.next)}</p>
         {(access === "active" || soon) && <>
           <div aria-hidden="true" className={`${styles.meter} ${soon ? styles.meterSoon : ""}`}><span style={{ width: `${Math.round(fractionLeft(policy, now) * 100)}%` }} /></div>
-          <p>{soon ? <TriangleAlert size={18} aria-hidden="true" /> : <Clock size={18} aria-hidden="true" />} <strong>{formatLeft(left, language)}</strong> · {formatWhen(policy.expiresAt, language, now)}</p>
+          <p>{soon ? <TriangleAlert size={18} aria-hidden="true" /> : <Clock size={18} aria-hidden="true" />} <strong>{formatLeft(left, language)}</strong> · {formatWhen(policy.expiresAt, language, now)} · {t(words("Bangladesh time", "বাংলাদেশ সময়"))}</p>
         </>}
         <button type="button" className="pro-btn pro-btn-secondary justify-self-start" disabled={busy || loading} onClick={() => void load()}><RefreshCw size={18} aria-hidden="true" /> {t(words("Refresh", "আবার দেখুন"))}</button>
       </section>}
@@ -200,7 +218,7 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
         <a href={`#${id}-messages`}>{t(words("Messages", "বার্তা"))}</a><a href={`#${id}-history`}>{t(words("History", "ইতিহাস"))}</a>
       </nav>}
       <div id={`${id}-progress`} className={styles.anchor}><BondhonRequestTracker request={r} now={now} events={events} historyUnavailable={historyUnavailable} /></div>
-      {!provider && <div className={styles.hero}>
+      {!provider && <div className={styles.detailSharing}>
         <SharingRing nodes={nodes} label={active ? `${person}: ${formatLeft(left, language)}` : t(words("Nothing is shared for this request now.", "এই অনুরোধে এখন কিছু শেয়ার হচ্ছে না।"))} />
         <p>{t(active ? words(`${person} can see what is listed under “Who can see what”, until the time shown.`, `${person} “কে কী দেখতে পারেন” অংশের তথ্য দেখতে পারবেন, দেখানো সময় পর্যন্ত।`) : words("Current access for this request is not active or could not be confirmed.", "এই অনুরোধে বর্তমান প্রবেশ কার্যকর নয় অথবা নিশ্চিত করা যায়নি।"))}</p>
       </div>}
@@ -215,7 +233,7 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
           <p>
       <strong>{t(accessWords[access])}</strong>
       </p>
-          <p>{t(words("Expires", "মেয়াদ শেষ"))} {formatWhen(policy.expiresAt, language, now)}</p>
+          <p>{t(words("Expires", "মেয়াদ শেষ"))} {formatWhen(policy.expiresAt, language, now)} · {t(words("Bangladesh time", "বাংলাদেশ সময়"))}</p>
           <p>{t(policy.allowReplies ? words("View and scoped messages approved", "দেখা ও এই উদ্দেশ্যে বার্তার অনুমতি আছে") : words("View only", "শুধু দেখার অনুমতি"))}</p>
           {policy.accommodations.length > 0 && <ul>{policy.accommodations.map(key => <li key={key}>{t(accommodations[key])}</li>)}</ul>}
           <p>{t(words("Consent receipt version", "সম্মতির রসিদের সংস্করণ"))} {policy.version} · {formatWhen(policy.approvedAt, language, now)}</p>
@@ -238,7 +256,7 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
         {provider && <div className={styles.privateBox}><p><strong>{t(words("Not shared with you", "আপনার সঙ্গে শেয়ার হয়নি"))}</strong><br />{t(words("Anything not listed above. To see more, the mother must send a new request.", "ওপরে যা নেই তা। আরও দেখতে হলে মাকে নতুন অনুরোধ পাঠাতে হবে।"))}</p></div>}
         <div className={styles.actions}>
           {provider && r.status === "delivered" && <button className="pro-btn pro-btn-primary" disabled={busy || !!pending} onClick={() => mutate("acknowledge")}>{t(words("Acknowledge simulated request", "সিমুলেটেড অনুরোধ গ্রহণ করুন"))}</button>}
-          {!provider && state !== "revoked" && <button className="pro-btn pro-btn-secondary" disabled={busy || !!pending} onClick={() => setConfirmation("revoke")}>{t(words("Revoke future access", "ভবিষ্যতের অনুমতি প্রত্যাহার করুন"))}</button>}
+          {!provider && state !== "revoked" && r.status !== "closed" && <button className="pro-btn pro-btn-secondary" disabled={busy || !!pending} onClick={() => setConfirmation("revoke")}>{t(words("Stop sharing", "শেয়ার বন্ধ করুন"))}</button>}
           {r.status !== "closed" && <button className="pro-btn pro-btn-secondary" disabled={busy || !!pending} onClick={() => setConfirmation("close")}>{t(words("Close request", "অনুরোধ বন্ধ করুন"))}</button>}
         </div>
         {confirmation && <RevokeDialog action={confirmation} busy={busy} onConfirm={() => mutate(confirmation)} onCancel={() => setConfirmation(null)} />}
@@ -252,6 +270,7 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
       <p className={styles.meta}>{formatWhen(item.sentAt, language, now)}</p>
       <p>{item.message}</p>
       </li>)}</ol>
+        {!canWrite && <p className={styles.notice}>{t(!active ? words("Messages are unavailable because current access is not active.", "বর্তমান প্রবেশ চালু না থাকায় বার্তা পাঠানো যাবে না।") : !policy?.allowReplies ? words("Replies were not authorized for this request. A new reviewed request is needed to allow messages.", "এই অনুরোধে উত্তরের অনুমতি দেওয়া হয়নি। বার্তার জন্য নতুন পর্যালোচিত অনুরোধ দরকার।") : words("Acknowledge the simulated request before replying.", "উত্তরের আগে সিমুলেটেড অনুরোধ গ্রহণ করুন।"))}</p>}
         {canWrite && <form onSubmit={send} className={styles.choices}>
           <label className={styles.field}>
       <span>{t(words("Follow-up message", "পরবর্তী বার্তা"))}</span>
@@ -296,7 +315,7 @@ export function CareRequestDetail({ account, requestId, provider, onBack, onShar
             t(words("Approved", "অনুমোদন")), formatWhen(policy.approvedAt, language, now), t(policy.revokedAt ? words("Stopped", "বন্ধ") : words("Ends", "শেষ")), formatWhen(policy.revokedAt ?? policy.expiresAt, language, now)].join(". ")} language={policy.language} label={t(words("Read it aloud", "পড়ে শোনান"))} />
         </div>
       </section>}
-      {!provider && policy && onShareAgain && <section className={styles.shareCard}>
+      {!provider && policy && onShareAgain && !pending && !busy && <section className={styles.shareCard}>
         <h3>{t(words("Need the same help again?", "আবার একই সহায়তা লাগবে?"))}</h3>
         <p>{t(words("Start a new request with the same person and purpose. You choose the message and information again.", "একই ব্যক্তি ও উদ্দেশ্যে নতুন অনুরোধ শুরু করুন। বার্তা ও তথ্য আবার আপনি বাছবেন।"))}</p>
         <button type="button" className="pro-btn pro-btn-primary justify-self-start" onClick={shareAgain}><RefreshCw size={18} aria-hidden="true" /> {t(words("Share again", "আবার শেয়ার করুন"))}</button>

@@ -28,6 +28,6 @@ export function SharingRing({ nodes, label }: { nodes: readonly RingNode[]; labe
     <line className={styles.ringLockLine} x1={CX} y1={CY + 40} x2={CX} y2={CY + R - 27} />
     <circle className={styles.ringLock} cx={CX} cy={CY + R} r={27} />
     <g className={styles.ringLockIcon} transform={`translate(${CX - 11} ${CY + R - 11})`}><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></g>
-    <text className={styles.ringLockText} x={CX + 36} y={CY + R + 5}>{t({ en: "Always private", bn: "ব্যক্তিগত থাকে" })}</text>
+    <text className={styles.ringLockText} x={CX} y={CY + R + 52} textAnchor="middle">{t({ en: "Always private", bn: "ব্যক্তিগত থাকে" })}</text>
   </svg>;
 }

@@ -8,6 +8,7 @@ import { InstallAppButton } from "@/components/pwa/InstallAppButton";
 import { isPublicMarketingRoute } from "@/lib/routes";
 import { PublicNav } from "@/components/marketing/PublicNav";
 import { PublicFooter } from "@/components/marketing/PublicFooter";
+import { QuickExit } from "@/components/layout/QuickExit";
 
 const inAppLinks = [
   { href: "/", label: "Home", icon: House },
@@ -20,6 +21,8 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const isMarketing = isPublicMarketingRoute(path);
   const isAuthPage = path.startsWith("/sign-in") || path.startsWith("/sign-up");
+  // Neutral quick-exit page: no PROHOR branding, navigation or footer.
+  if (path === "/neutral") return <main id="main-content">{children}</main>;
 
   // Render dedicated Public Marketing Chrome for all pre-login public pages
   if (isMarketing) {
@@ -31,6 +34,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         >
           Skip to main content
         </a>
+        <QuickExit />
         <PublicNav />
         <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
           {children}
@@ -49,6 +53,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
       >
         Skip to main content
       </a>
+      <QuickExit />
       <header className="sticky top-0 z-30 border-b border-pro-border bg-pro-bg/95 backdrop-blur-sm">
         <div className="pro-shell flex min-h-17 flex-wrap items-center justify-between gap-3 py-3">
           <Brand />

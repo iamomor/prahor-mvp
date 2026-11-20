@@ -7,7 +7,7 @@ import styles from "./bondhon.module.css";
 export type DialogAction = "revoke" | "close" | "discard" | "revoke_all";
 const copy = {
   revoke: { title: words("Stop future sharing?", "ভবিষ্যতের শেয়ার বন্ধ করবেন?"), body: words("This stops future provider access and messages for this request. Previously seen information and the consent history remain.", "এতে এই অনুরোধে সেবাদাতার ভবিষ্যতের প্রবেশ ও বার্তা বন্ধ হবে। আগে দেখা তথ্য ও সম্মতির ইতিহাস থাকবে।"),
-    keep: words("Keep current settings", "বর্তমান সিদ্ধান্ত রাখুন"), go: words("Revoke future access", "ভবিষ্যতের অনুমতি প্রত্যাহার করুন") },
+    keep: words("Keep current settings", "বর্তমান সিদ্ধান্ত রাখুন"), go: words("Stop sharing", "শেয়ার বন্ধ করুন") },
   revoke_all: { title: words("Stop sharing for the listed requests?", "দেখানো অনুরোধগুলোর শেয়ার বন্ধ করবেন?"), body: words("This stops future provider access and messages for each listed request. Previously seen information and the consent history remain.", "এতে দেখানো প্রতিটি অনুরোধে সেবাদাতার ভবিষ্যতের প্রবেশ ও বার্তা বন্ধ হবে। আগে দেখা তথ্য ও সম্মতির ইতিহাস থাকবে।"),
     keep: words("Keep sharing", "শেয়ার চালু রাখুন"), go: words("Stop listed sharing", "দেখানো শেয়ার বন্ধ করুন") },
   close: { title: words("Close this request?", "এই অনুরোধ বন্ধ করবেন?"), body: words("Closing ends this request and its provider access. A new request needs a new sharing review.", "বন্ধ করলে এই অনুরোধ ও সেবাদাতার প্রবেশ শেষ হবে। নতুন অনুরোধে নতুন শেয়ার পর্যালোচনা লাগবে।"),

@@ -14,6 +14,7 @@ import { RemindersGuide } from "./RemindersGuide";
 import { ShusthotaHistory } from "./ShusthotaHistory";
 import styles from "./ShusthotaOverview.module.css";
 import { Wellbeing } from "./Wellbeing";
+import { ModuleFeatureOverview } from "@/components/product/ModuleFeatureOverview";
 import { WellnessTrendSummary } from "./WellnessTrendSummary";
 
 const copy = {
@@ -76,7 +77,7 @@ export function ShusthotaOverview() {
     const today = useSyncExternalStore(subscribeNever, todayInDhaka, () => "");
 
     return (
-        <main
+        <div
             lang={language}
             className="mx-auto grid w-full grid-cols-[minmax(0,1fr)] max-w-6xl gap-8 px-4 pb-12 pt-6 text-pro-text sm:gap-10 sm:px-6 sm:pt-10 lg:px-8"
         >
@@ -124,6 +125,7 @@ export function ShusthotaOverview() {
                 </div>
             </aside>
 
+            <ModuleFeatureOverview module="shusthota" />
             <section aria-labelledby={`${id}-checkin-title`} className={`${styles.enter} grid gap-4`}>
                 <header className="grid gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-6">
                     <div>
@@ -193,6 +195,6 @@ export function ShusthotaOverview() {
                     <ArrowUpRight size={17} aria-hidden="true" />
                 </Link>
             </aside>
-        </main>
+        </div>
     );
 }

@@ -25,6 +25,31 @@ test("current API catalog matches every real route method and source file", () =
   for (const [key, contract] of Object.entries(currentApiContracts)) expect(found[key], key).toBe(contract.source);
 });
 
+test("Bujhi review and commit keep the verified clinical values server-bound", () => {
+  const review = currentApiContracts["POST /api/reports/reviews"].request;
+  const commit = currentApiContracts["POST /api/reports/commit"].request;
+  const ids = { reportId: "00000000-0000-4000-8000-000000000001", pregnancyId: "00000000-0000-4000-8000-000000000002", fieldId: "00000000-0000-4000-8000-000000000003" };
+  const record = { ...ids, sourceSha256: "a".repeat(64), rawLabel: "Hb", rawValue: "11.2", rawUnit: "g/dL", reviewedValue: "11.2", reviewedUnit: "g/dL", observedOn: "2026-11-20", decision: "verified" };
+  expect(review.safeParse(record).success).toBe(true);
+  expect(review.safeParse({ ...record, ownerId: "00000000-0000-4000-8000-000000000004" }).success).toBe(false);
+  expect(review.safeParse({ ...record, decision: "clinician_confirmed" }).success).toBe(false);
+  expect(commit.safeParse({ reviewId: ids.reportId, fieldId: ids.fieldId, confirmSave: true }).success).toBe(true);
+  expect(commit.safeParse({ reviewId: ids.reportId, fieldId: ids.fieldId, confirmSave: true, value: "99" }).success).toBe(false);
+});
+
+test("new phone, notification and Poth routes have bounded, non-escalating contracts", () => {
+  const phone = currentApiContracts["POST /api/auth/phone"].request;
+  expect(phone.safeParse({ action: "request", phone: "+8801712345678" }).success).toBe(true);
+  expect(phone.safeParse({ action: "request", phone: "+8801712345678", role: "provider" }).success).toBe(false);
+  expect(phone.safeParse({ action: "verify", phone: "+8801712345678", token: "123456" }).success).toBe(true);
+  const notify = currentApiContracts["PUT /api/notifications/preferences"].request;
+  expect(notify.safeParse({ channel: "sms", optedIn: true }).success).toBe(true);
+  expect(notify.safeParse({ channel: "sms", optedIn: true, userId: "00000000-0000-4000-8000-000000000001" }).success).toBe(false);
+  const evidence = currentApiContracts["POST /api/poth/access-evidence/review"].request;
+  expect(evidence.safeParse({ facilityId: "dghs/123", attribute: "wheelchair", value: "reported_available", status: "verified", source: "Synthetic call note" }).success).toBe(true);
+  expect(evidence.safeParse({ facilityId: "dghs/123", attribute: "wheelchair", value: "reported_available", status: "verified", source: "Synthetic call note", reviewer: true }).success).toBe(false);
+});
+
 test("canonical documentation covers every current and proposed operation", () => {
   const doc = readFileSync("docs/architecture/api-contracts.md", "utf8");
   const proposed = [...readFileSync("src/lib/contracts/api.ts", "utf8").matchAll(/^\s+"((?:GET|POST|PUT|PATCH|DELETE) \/api\/[^\"]+)":/gm)].map(match => match[1]);

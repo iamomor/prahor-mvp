@@ -17,10 +17,10 @@ export function ShonketPublicFrame({ children }: { children: React.ReactNode }) 
           <ShonketPublicNavigation />
         </div>
       </header>
-      <main id="shonket-main" tabIndex={-1} className="pro-shell py-8 sm:py-12">
+      <div id="shonket-main" tabIndex={-1} className="pro-shell py-8 sm:py-12">
         <ShonketOfflineStatus />
         {children}
-      </main>
+      </div>
     </>
   );
 }

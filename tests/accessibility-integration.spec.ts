@@ -152,6 +152,9 @@ test("Shonket: Listen buttons appear only when chosen, and nothing speaks until 
 });
 
 test("Poth: searching announces the result count politely without moving focus", async ({ page }) => {
+  await page.route("**/api/poth/facilities**", route => route.fulfill({ json: {
+    places: [], total: 0, page: 1, pageSize: 20, pages: 1, registryCount: 0, communityCount: 0, unmappedDistrictCount: 0,
+  } }));
   await open(page, "/poth");
   const search = page.locator('input[type="search"]');
   await search.fill("Dhaka");
@@ -159,4 +162,91 @@ test("Poth: searching announces the result count politely without moving focus",
   const status = page.locator('#poth-reviewed-directory [role="status"][aria-live="polite"]');
   await expect(status).toContainText(/matching listings|মিল আছে/, { timeout: 15_000 });
   await expect(search).toBeFocused();
+});
+
+test("Barta voice input: explicit start, stop appends editable text, and cancel restores the original draft", async ({ page }) => {
+  test.setTimeout(20_000);
+  await page.addInitScript(() => {
+    class FakeRecognition {
+      lang = ""; continuous = false; interimResults = false; processLocally = false;
+      onresult: ((event: { results: ArrayLike<{ isFinal?: boolean; 0: { transcript: string } }> }) => void) | null = null;
+      onerror: ((event: { error: string }) => void) | null = null;
+      onend: (() => void) | null = null;
+      start() {
+        Reflect.set(window, "__recognitionStarted", (Reflect.get(window, "__recognitionStarted") as number ?? 0) + 1);
+        Reflect.set(window, "__recognitionLanguage", this.lang);
+      }
+      stop() { this.onresult?.({ results: [{ 0: { transcript: "please help" }, isFinal: true }] }); this.onend?.(); }
+      abort() {}
+      static available = async () => "available";
+    }
+    Object.defineProperty(window, "SpeechRecognition", { configurable: true, value: FakeRecognition });
+    Reflect.set(window, "webkitSpeechRecognition", FakeRecognition);
+  });
+  await open(page, "/ask");
+  expect(await page.evaluate(() => typeof Reflect.get(window, "SpeechRecognition")), "the synthetic engine is installed before app hydration").toBe("function");
+  await page.getByLabel("Speech language").selectOption("en");
+  const field = page.locator("#barta-question");
+  await field.fill("Existing draft");
+  const start = page.getByRole("button", { name: /Speak instead of typing/ });
+  await start.click();
+  await expect(page.getByRole("button", { name: "Stop", exact: true })).toBeVisible();
+  expect(await page.evaluate(() => Reflect.get(window, "__recognitionStarted"))).toBe(1);
+  expect(await page.evaluate(() => Reflect.get(window, "__recognitionLanguage"))).toBe("en-US");
+  await page.getByRole("button", { name: "Stop", exact: true }).click();
+  await expect(field).toHaveValue("Existing draft please help");
+  await expect(page.getByText(/Added to the box above/)).toBeVisible();
+
+  await page.getByRole("button", { name: /Speak instead of typing/ }).click();
+  await expect(page.getByRole("button", { name: "Stop", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(field).toHaveValue("Existing draft please help");
+  await expect(page.getByText(/Dictation cancelled/)).toBeVisible();
+
+  await field.fill("x".repeat(1195));
+  await page.getByLabel("Speech language").selectOption("bn");
+  await page.getByRole("button", { name: /লেখার বদলে বলুন/ }).click();
+  await page.getByRole("button", { name: /থামান/ }).click();
+  await expect(field).toHaveValue("x".repeat(1195));
+  expect(await page.evaluate(() => Reflect.get(window, "__recognitionLanguage"))).toBe("bn-BD");
+  const held = page.getByText("please help", { exact: true });
+  await expect(held).toBeVisible();
+  await expect(page.getByRole("button", { name: /রাখা কথা যোগ করুন/ })).toBeDisabled();
+  await field.fill("short");
+  await page.getByRole("button", { name: /রাখা কথা যোগ করুন/ }).click();
+  await expect(field).toHaveValue("short please help");
+});
+
+test("Poth call-ahead: AAC phrase stays editable and is not sent", async ({ page }) => {
+  test.setTimeout(20_000);
+  const fixture = {
+    places: [{ id: "synthetic-clinic", name: "Synthetic Maternity Clinic", nameBn: "নমুনা মাতৃসেবা কেন্দ্র", kind: "clinic", source: "registry", sourceUrl: "https://example.org/clinic", reviewedOn: null, division: null, district: null, area: "Synthetic area", phone: null, email: null, website: null, hours: null, lat: null, lon: null, accessibility: { wheelchair: "unknown", accessibleToilet: "unknown", hearingLoop: "unknown" } }],
+    total: 1, page: 1, pageSize: 20, pages: 1, registryCount: 1, communityCount: 0, unmappedDistrictCount: 0,
+  };
+  // This app registers a service worker in some local browser profiles. Stub only the public discovery/evidence GETs at fetch level
+  // so the real component receives deterministic synthetic data even when the service worker owns network requests.
+  await page.addInitScript(fixture => {
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      if (url.includes("/api/poth/facilities?view=discovery")) return new Response(JSON.stringify(fixture), { status: 200, headers: { "content-type": "application/json" } });
+      if (url.includes("/api/poth/access-evidence?")) return new Response(JSON.stringify({ claims: [] }), { status: 200, headers: { "content-type": "application/json" } });
+      return nativeFetch(input, init);
+    }) as typeof window.fetch;
+  }, fixture);
+  let submitted = false;
+  page.on("request", request => { if (["POST", "PUT", "PATCH"].includes(request.method()) && request.url().includes("/api/poth/")) submitted = true; });
+  await open(page, "/poth");
+  await expect(page.getByRole("heading", { name: "Synthetic Maternity Clinic" })).toBeVisible({ timeout: 15_000 });
+  await page.getByText("Details, access & source").click();
+  await page.getByText("Call-ahead script", { exact: true }).click();
+  const field = page.getByLabel("Editable call-ahead script");
+  await expect(field).toBeVisible();
+  await page.getByRole("tab", { name: /Talking with me/ }).click();
+  const aac = page.getByRole("region", { name: /Say it with pictures/ }).last();
+  const phrase = aac.getByRole("button", { name: /Say it again/ });
+  await phrase.click();
+  await aac.getByRole("button", { name: /Add to call-ahead script/ }).click();
+  await expect.poll(() => field.inputValue()).toContain("Please say that again.");
+  expect(submitted, "AAC composition must not contact a facility or send data").toBe(false);
 });

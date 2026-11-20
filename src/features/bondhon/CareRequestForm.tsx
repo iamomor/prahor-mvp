@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
-import { AACComposer, ReadAloudButton, mergeAacText } from "@/features/adapt";
+import { AACComposer, HeldAacText, ReadAloudButton, VoiceDictationButton, mergeAacText } from "@/features/adapt";
 import { useLanguage } from "@/i18n/use-language";
 import { careRecipientsSchema, createSupportRequestRequestSchema, supportRequestSchema, type SupportRequest, type CreateSupportRequestRequest } from "@/lib/contracts/bondhon";
 import { availableRecordSchema, bondhonTermsVersion, type Accommodation, type CoordinationApproval } from "@/lib/contracts/coordination";
@@ -9,6 +9,8 @@ import { shareableRecordSchema } from "@/lib/contracts/sharing";
 import { careFetch, CareError } from "./client";
 import { DURATIONS, PACKS, countSelection, digits, expiryAt, formatWhen, packSelection, togglePack } from "./bondhon-view";
 import { accommodations, displayValue, fieldNames, recordNames, words } from "./bondhon-copy";
+import { RecordPicker } from "./RecordPicker";
+import { composeIssue, reconcileSelection } from "./bondhon-journey";
 import styles from "./bondhon.module.css";
 
 type RecordOption = z.infer<typeof availableRecordSchema>;
@@ -69,7 +71,10 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     ]).then(([people, items]) => {
       if (controller.signal.aborted) return;
       if (people.status === "fulfilled") setRecipients(people.value); else setFailed(true);
-      if (items.status === "fulfilled") setRecords(items.value); else setRecordError(true);
+      if (items.status === "fulfilled") {
+        setRecords(items.value);
+        setSelection(previous => reconcileSelection(previous, items.value));
+      } else { setRecords([]); setSelection({}); setRecordError(true); }
       setLoading(false);
     });
     return () => controller.abort();
@@ -81,14 +86,18 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [message, purpose, recipient, needs, selection, uncertain]);
-  function toggleField(recordId: string, field: string) {
-    setSelection(previous => {
-      const fields = previous[recordId] ?? [];
-      return { ...previous, [recordId]: fields.includes(field) ? fields.filter(value => value !== field) : [...fields, field] };
-    });
-  }
+  useEffect(() => {
+    const timer = window.setTimeout(() => composeHeading.current?.focus(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   function preview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError("");
+    const issue = composeIssue(step, { purpose, message, recipient }, recipients);
+    if (issue) {
+      setError(t(issue === "message" ? words("Write a purpose and message using your own words or the starting phrases.", "নিজের ভাষায় বা শুরুর বাক্য দিয়ে উদ্দেশ্য ও বার্তা লিখুন।") : words("Choose an available simulated recipient before continuing.", "এগোনোর আগে উপলব্ধ সিমুলেটেড প্রাপক বাছুন।")));
+      window.requestAnimationFrame(() => document.getElementById(`${id}-error`)?.focus());
+      return;
+    }
     if (step < 3) {
       setStep(value => value + 1);
       window.requestAnimationFrame(() => composeHeading.current?.focus());
@@ -114,7 +123,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     window.requestAnimationFrame(() => heading.current?.focus());
   }
   async function send() {
-    if (!review || !confirmed || submitting.current) return;
+    if (!review || !confirmed || submitting.current || (Date.parse(review.body.coordination.expiresAt) <= Date.now() && !uncertain)) return;
     submitting.current = true; setBusy(true); setError(""); onSubmissionStateChange?.("sending");
     try {
       const result = await careFetch("/api/care-requests", supportRequestSchema, account, { post: true, key: review.key, body: review.body });
@@ -131,8 +140,9 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       setError(ambiguous ? t(words("Submission unconfirmed. Keep this page open and retry the same reviewed request. Your retry key is preserved.", "জমা দেওয়া নিশ্চিত হয়নি। এই পাতা খোলা রাখুন এবং একই পর্যালোচিত অনুরোধ আবার পাঠান। একই পুনঃচেষ্টার চাবি রাখা হয়েছে।")) :
         cause instanceof CareError && cause.status === 401 ? t(words("Your session expired. Sign in again in another tab, then retry here.", "সেশনের মেয়াদ শেষ। অন্য ট্যাবে আবার সাইন ইন করে এখানে চেষ্টা করুন।")) :
         t(words("This attempt was rejected. Review your account, recipient and expiry. Your text is kept here.", "এই চেষ্টা গ্রহণ করা হয়নি। অ্যাকাউন্ট, প্রাপক ও মেয়াদ দেখুন। আপনার লেখা এখানে রাখা আছে।")));
-    } finally { submitting.current = false; setBusy(false); }
+    } finally { submitting.current = false; setBusy(false); window.requestAnimationFrame(() => document.getElementById(`${id}-error`)?.focus()); }
   }
+  const reviewExpired = !!review && Number.isFinite(clock) && Date.parse(review.body.coordination.expiresAt) <= clock;
   const receiver = recipients.find(item => item.id === recipient);
   const shown = countSelection(selection);
   const selected = records.filter(item => selection[recordKey(item.record)]?.length);
@@ -149,7 +159,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     words("Please explain things in plain language and give me time to respond.", "সহজ ভাষায় ব্যাখ্যা করুন এবং উত্তর দেওয়ার সময় দিন।"),
     words("I would like to discuss access arrangements before my visit.", "সাক্ষাতের আগে প্রবেশ ও ব্যবহারের সুবিধা নিয়ে আলোচনা করতে চাই।"),
   ];
-  if (review) return <section className={styles.panel} aria-labelledby={`${id}-review`}>
+  if (review) return <section className={`${styles.panel} ${styles.formPanel}`} aria-labelledby={`${id}-review`}>
     <p>{t(words("Step 5 of 5 · Review and approve", "ধাপ ৫/৫ · পর্যালোচনা ও অনুমতি"))}</p>
     <h2 id={`${id}-review`} ref={heading} tabIndex={-1}>{t(words("Review your sharing decision", "তথ্য শেয়ারের সিদ্ধান্ত পর্যালোচনা করুন"))}</h2>
     <p>{t(words("Only the information below will be sent to this named simulated recipient.", "শুধু নিচের তথ্য এই নামের সিমুলেটেড প্রাপকের কাছে যাবে।"))}</p>
@@ -172,7 +182,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       </div>
       <div>
       <dt>{t(words("Permission ends", "অনুমতির শেষ সময়"))}</dt>
-      <dd>{formatWhen(review.body.coordination.expiresAt, language, clock)}</dd>
+      <dd>{formatWhen(review.body.coordination.expiresAt, language, clock)} · {t(words("Bangladesh time", "বাংলাদেশ সময়"))}</dd>
       </div>
       <div>
       <dt>{t(words("Allowed actions", "অনুমোদিত কাজ"))}</dt>
@@ -197,20 +207,21 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
     {!selected.length && <p>{t(words("No health-record fields selected. Only this message, purpose, communication preference and selected accommodations are shared.", "স্বাস্থ্য রেকর্ডের কোনো তথ্য বাছা হয়নি। শুধু এই বার্তা, উদ্দেশ্য, যোগাযোগের পছন্দ ও বাছাই করা সুবিধার অনুরোধ শেয়ার হবে।"))}</p>}
     <div className={styles.privateBox}><p><strong>{t(words("Not shared", "শেয়ার হবে না"))}</strong><br />{t(words("Everything else: diary, AI conversations, files, other records, and any note you did not tick.", "বাকি সব: ডায়েরি, এআই কথোপকথন, ফাইল, অন্য রেকর্ড এবং আপনার না-বাছা যেকোনো নোট।"))}</p></div>
     <p className={styles.notice}>{t(words("You can stop future access. Information already seen, copied or downloaded cannot be recalled. This prototype keeps consent receipts and history; withdrawal does not erase them. Diary entries, AI conversations and raw files are excluded from this sharing tool.", "ভবিষ্যতের প্রবেশাধিকার বন্ধ করতে পারবেন। আগে দেখা, কপি বা ডাউনলোড করা তথ্য ফিরিয়ে নেওয়া যায় না। এই প্রোটোটাইপে সম্মতির রসিদ ও ইতিহাস থাকে; প্রত্যাহারে তা মুছে যায় না। ডায়েরি, এআই কথোপকথন ও মূল ফাইল এই শেয়ার ব্যবস্থার বাইরে।"))}</p>
+    {reviewExpired && <p role="alert" className={styles.error}>{t(words("The reviewed permission time has ended. Return to edit and review a new end time before sending. If submission was unconfirmed, retry the same request to reconcile its saved result.", "পর্যালোচিত অনুমতির সময় শেষ হয়েছে। সম্পাদনায় ফিরে নতুন শেষ সময় পর্যালোচনা করুন। জমা নিশ্চিত না হলে একই অনুরোধ আবার চেষ্টা করে সংরক্ষিত ফল যাচাই করুন।"))}</p>}
     <ReadAloudButton text={summary} language={language} label={t(words("Read my sharing summary", "শেয়ারের সারাংশ পড়ে শোনান"))} />
     <label className={styles.check}>
       <input type="checkbox" checked={confirmed} disabled={busy || uncertain} onChange={event => setConfirmed(event.target.checked)} />
       <span>{t(words("I approve sharing exactly this information with this simulated recipient until the stated time.", "উল্লিখিত সময় পর্যন্ত এই সিমুলেটেড প্রাপকের সঙ্গে ঠিক এই তথ্য শেয়ারে আমি সম্মত।"))}</span>
       </label>
     <div className={styles.actions}>
-      <button type="button" className="pro-btn pro-btn-primary" disabled={!confirmed || busy} onClick={() => void send()}>{t(busy ? words("Confirming submission…", "জমা নিশ্চিত হচ্ছে…") : uncertain ? words("Retry the same request", "একই অনুরোধ আবার পাঠান") : words("Approve and send to simulated queue", "অনুমতি দিয়ে সিমুলেটেড তালিকায় পাঠান"))}</button>
+      <button type="button" className="pro-btn pro-btn-primary" disabled={!confirmed || busy || (reviewExpired && !uncertain)} onClick={() => void send()}>{t(busy ? words("Confirming submission…", "জমা নিশ্চিত হচ্ছে…") : uncertain ? words("Retry the same request", "একই অনুরোধ আবার পাঠান") : words("Approve and send to simulated queue", "অনুমতি দিয়ে সিমুলেটেড তালিকায় পাঠান"))}</button>
       <button type="button" className="pro-btn pro-btn-secondary" disabled={busy || uncertain} onClick={() => { setReview(null); setConfirmed(false); setStep(0); setError(""); window.requestAnimationFrame(() => composeHeading.current?.focus()); }}>{t(words("Back to edit", "সম্পাদনায় ফিরুন"))}</button>
     </div>
     {error && <p id={`${id}-error`} tabIndex={-1} role="alert" className={styles.error}>{error}</p>}
   </section>;
-  return <form onSubmit={preview} className={styles.panel}>
-    <h2 ref={composeHeading} tabIndex={-1}>{t(words("New routine care request", "নতুন সাধারণ সেবার অনুরোধ"))}</h2>
-    <p role="status">{t(words("Step", "ধাপ"))} {digits(step + 1, language)}/{digits(5, language)} · {t(stepNames[step])}</p>
+  return <form onSubmit={preview} className={`${styles.panel} ${styles.formPanel}`} aria-labelledby={`${id}-compose`}>
+    <h2 id={`${id}-compose`} ref={composeHeading} tabIndex={-1}>{t(words("New routine care request", "নতুন সাধারণ সেবার অনুরোধ"))}</h2>
+    <p role="status" className={styles.eyebrow}>{t(words("Step", "ধাপ"))} {digits(step + 1, language)}/{digits(5, language)} · {t(stepNames[step])}</p>
     <ol className={styles.formSteps} aria-label={t(words("Request steps", "অনুরোধের ধাপ"))}>{stepNames.map((name, index) => <li key={name.en} aria-current={index === step ? "step" : undefined}>{digits(index + 1, language)}. {t(name)}</li>)}</ol>
     <p>{t(words("Use synthetic examples for this hackathon. Select what to share, then review before sending.", "এই হ্যাকাথনে নমুনা তথ্য ব্যবহার করুন। কী শেয়ার করবেন বেছে নিয়ে পাঠানোর আগে পর্যালোচনা করুন।"))}</p>
     {loading && <p role="status">{t(words("Loading approved simulated recipients…", "অনুমোদিত সিমুলেটেড প্রাপক আসছে…"))}</p>}
@@ -219,8 +230,8 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       <button type="button" className="pro-btn pro-btn-secondary" onClick={() => { setLoading(true); setFailed(false); setRecordError(false); setRetryLoad(value => value + 1); }}>{t(words("Retry loading", "আবার আনুন"))}</button>
       </div>}
     {!loading && !failed && !recipients.length && <p className={styles.notice}>{t(words("No approved simulated provider is available. An administrator must approve a demo provider account before you can send.", "অনুমোদিত সিমুলেটেড সেবাদাতা নেই। পাঠানোর আগে প্রশাসককে একটি ডেমো সেবাদাতার অ্যাকাউন্ট অনুমোদন করতে হবে।"))}</p>}
-    {step === 0 && <>    <fieldset className={styles.choices}>
-      <legend className={styles.legend}>{t(words("Optional starting phrases", "শুরু করার ঐচ্ছিক বাক্য"))}</legend>
+    {step === 0 && <>    <details className={styles.softDetails}>
+      <summary>{t(words("Need help finding the words?", "কী লিখবেন বুঝতে সহায়তা চান?"))}</summary>
       <p>{t(words("Choose a phrase to add, then edit it in your own words. Nothing is sent until you review and approve.", "যোগ করার জন্য একটি বাক্য বাছুন, তারপর নিজের ভাষায় সম্পাদনা করুন। পর্যালোচনা ও অনুমতি ছাড়া কিছু পাঠানো হয় না।"))}</p>
       <div className={styles.quickChoices}>{quickRequests.map(phrase => <button key={phrase.en} type="button" className="pro-btn pro-btn-secondary" onClick={() => {
         const incomingText = t(phrase);
@@ -228,7 +239,7 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
         if (next.length <= 1000) { setMessage(next); setIncoming(""); messageInput.current?.focus(); }
         else setIncoming(incomingText);
       }}>{t(phrase)}</button>)}</div>
-    </fieldset>
+    </details>
     <fieldset className={styles.choices}>
       <legend className={styles.legend}>{t(words("What do you need help with?", "কী নিয়ে সহায়তা চান?"))}</legend>
       <div className={styles.pillRow}>{purposeChoices.map(choice => <label key={choice.en} className={styles.pill}>
@@ -252,8 +263,9 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       <span>{t(words("Message for this recipient", "এই প্রাপকের জন্য বার্তা"))}</span>
       <textarea ref={messageInput} required rows={4} className="pro-input" maxLength={1000} value={message} onChange={event => setMessage(event.target.value)} aria-describedby={`${id}-privacy`} />
       </label>
+    <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={message} maxLength={1000} onChange={setMessage} />
     <p id={`${id}-privacy`}>{t(words("Everything you type in this message is shared after approval. Include only information needed for this purpose. Drafts stay in memory in this tab.", "অনুমতির পর এই বার্তায় লেখা সব তথ্য শেয়ার হবে। এই উদ্দেশ্যে প্রয়োজনীয় তথ্যই লিখুন। খসড়া এই ট্যাবের মেমরিতে থাকে।"))}</p>
-    {incoming && <p role="alert">{t(words("The combined message exceeds 1000 characters. Your existing text is kept. Incoming text", "মিলিত বার্তা ১০০০ অক্ষর ছাড়িয়েছে। আগের লেখা রাখা আছে। নতুন লেখা"))} {incoming}</p>}
+    {incoming && <HeldAacText text={incoming} value={message} maxLength={1000} lang={language === "bn" ? "bn" : "en"} onDismiss={() => setIncoming("")} onAdd={next => { setMessage(next); setIncoming(""); messageInput.current?.focus(); }} />}
 </>}
     {step === 1 && <>
     <fieldset className={styles.choices}>
@@ -274,14 +286,17 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
       <span>{t(label)}</span>
       </label>)}
     </fieldset>
-    <p className={styles.meta}>{t(words("Naming a support person here does not give them access to your account.", "এখানে সহায়কের নাম দিলে তাঁকে আপনার অ্যাকাউন্টে প্রবেশের অনুমতি দেওয়া হয় না।"))}</p>
+    <p className={styles.meta}>{t(words("Choosing support-person assistance does not give anyone access to your account.", "সহায়ক সঙ্গে নেওয়ার পছন্দ কাউকে আপনার অ্যাকাউন্টে প্রবেশের অনুমতি দেয় না।"))}</p>
 </>}
     {step === 3 && <>
     <p role="status" className={styles.notice}>{shown.fields
       ? t(words(`${shown.fields} items chosen from ${shown.records} records.`, `${digits(shown.records, "bn")}টি রেকর্ড থেকে ${digits(shown.fields, "bn")}টি তথ্য বাছা হয়েছে।`))
-      : t(words("Nothing chosen yet. Only your message and purpose will be shared. Add only what helps.", "এখনও কিছু বাছা হয়নি। শুধু আপনার বার্তা ও উদ্দেশ্য শেয়ার হবে। যা কাজে লাগবে শুধু তা যোগ করুন।"))}</p>
-    <fieldset className={styles.choices}>
-      <legend className={styles.legend}>{t(words("Quick add", "দ্রুত যোগ"))}</legend>
+      : t(words("Nothing chosen yet. Your message, purpose, communication preference and selected access requests will be shared. Add records only if useful.", "এখনও কিছু বাছা হয়নি। বার্তা, উদ্দেশ্য, যোগাযোগের পছন্দ ও বাছা সুবিধার অনুরোধ শেয়ার হবে। দরকার হলে রেকর্ড যোগ করুন।"))}</p>
+    {recordError && <div className={styles.notice}><p role="status">{t(words("Records could not be loaded. You can send a message-only request, or retry without losing your text.", "রেকর্ড আনা যায়নি। শুধু বার্তার অনুরোধ পাঠাতে পারেন, অথবা লেখা না হারিয়ে আবার চেষ্টা করুন।"))}</p><button type="button" className="pro-btn pro-btn-secondary" disabled={loading} onClick={() => { setLoading(true); setFailed(false); setRecordError(false); setRetryLoad(value => value + 1); }}>{t(words("Retry records", "রেকর্ড আবার আনুন"))}</button></div>}
+    <RecordPicker records={records} selection={selection} onChange={setSelection} />
+    <p className={styles.meta}>{t(words("Up to 100 available synthetic records are listed. Selected fields from at most 20 records can be included in one request. Wellbeing entries and notes may be sensitive.", "উপলব্ধ সর্বোচ্চ ১০০টি নমুনা রেকর্ড দেখানো হয়। এক অনুরোধে সর্বোচ্চ ২০টি রেকর্ডের বাছা তথ্য যোগ করা যায়। ভালো থাকার তথ্য ও নোট সংবেদনশীল হতে পারে।"))}</p>
+    <details className={styles.softDetails}>
+      <summary>{t(words("Optional record shortcuts", "রেকর্ড বাছার ঐচ্ছিক শর্টকাট"))}</summary>
       <p>{t(words("Each button adds only what it says. Symptom notes, recorded conditions and wellbeing entries are never added by a quick button; pick those yourself below.", "প্রতিটি বোতাম শুধু যা লেখা আছে তাই যোগ করে। উপসর্গের নোট, লিপিবদ্ধ অবস্থা ও ভালো থাকার নোট কখনও দ্রুত বোতামে যোগ হয় না; চাইলে নিচে নিজে বাছুন।"))}</p>
       {PACKS.map(pack => {
         const add = packSelection(pack, records), count = Object.values(add).reduce((sum, fields) => sum + fields.length, 0);
@@ -292,21 +307,6 @@ export function CareRequestForm({ account, onCreated, initial, initialMessage = 
             onClick={() => setSelection(togglePack(selection, add))}>{count === 0 ? t(words("None to add", "যোগ করার মতো নেই")) : t(on ? words("Remove", "সরান") : words("Add", "যোগ করুন"))}</button>
         </div>;
       })}
-    </fieldset>
-    <details>
-      <summary className="pro-btn pro-btn-secondary">{t(words("Or choose field by field", "অথবা তথ্য আলাদা করে বাছুন"))}</summary>
-      <p>{t(words("Nothing is preselected. These are your latest 100 available synthetic records. Wellbeing entries may contain sensitive information.", "কিছুই আগে থেকে বাছা নেই। এগুলো আপনার সর্বশেষ উপলব্ধ ১০০টি নমুনা রেকর্ড। ভালো থাকার নোটে সংবেদনশীল তথ্য থাকতে পারে।"))}</p>
-      {recordError && <p role="status">{t(words("Record selection is unavailable. You can still review a message-only request.", "রেকর্ড বাছাই এখন পাওয়া যাচ্ছে না। শুধু বার্তার অনুরোধ পর্যালোচনা করতে পারেন।"))}</p>}
-      {!records.length && !recordError && <p>{t(words("No shareable records are available. No example records will be sent automatically.", "শেয়ারের উপযোগী রেকর্ড নেই। স্বয়ংক্রিয়ভাবে কোনো নমুনা রেকর্ড পাঠানো হবে না।"))}</p>}
-      <div className={styles.records}>{records.map(item => <fieldset key={item.record.id} className={styles.record}>
-      <legend>{t(recordNames[item.record.type])} · {new Date(item.recordedAt).toLocaleDateString(language === "bn" ? "bn-BD" : "en-GB")}</legend>
-        {Object.entries(item.record.fields).map(([field, value]) => <label className={styles.check} key={field}>
-      <input type="checkbox" checked={selection[recordKey(item.record)]?.includes(field) ?? false} onChange={() => toggleField(recordKey(item.record), field)} />
-      <span>
-      <strong>{t(fieldNames[field] ?? words(field, field))}</strong>
-      <br />{displayValue(value)}</span>
-      </label>)}
-      </fieldset>)}</div>
     </details>
     <fieldset className={styles.choices}>
       <legend className={styles.legend}>{t(words("For how long?", "কতক্ষণের জন্য?"))}</legend>

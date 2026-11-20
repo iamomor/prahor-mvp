@@ -22,6 +22,8 @@ export type AACPhraseItem = {
   /** Locative form for body areas ("in my abdomen", "পেটে") */
   enLocative?: string;
   bnLocative?: string;
+  /** Danger-sign wording that feeds the existing Barta safety gate. Wording is pending clinician review. */
+  dangerSign?: boolean;
 };
 
 export type AACCatalogCategory = {
@@ -121,6 +123,37 @@ export const AAC_CATALOG: AACCatalogCategory[] = [
         labelBn: "শিশুর নড়াচড়া কম",
         enFragment: "I feel my baby moving less",
         bnFragment: "আমার শিশুর নড়াচড়া কম অনুভব করছি",
+      },
+      // Danger signs: phrases are worded to match the existing Barta safety gate (safety-gate.ts); no new triage logic.
+      {
+        id: "waters_broke",
+        category: "symptoms",
+        emoji: "💧",
+        labelEn: "Waters broke",
+        labelBn: "পানি ভেঙে গেছে",
+        enFragment: "My waters have broken",
+        bnFragment: "আমার পানি ভেঙে গেছে",
+        dangerSign: true,
+      },
+      {
+        id: "fits_seizure",
+        category: "symptoms",
+        emoji: "⚡",
+        labelEn: "Fits / seizure",
+        labelBn: "খিঁচুনি",
+        enFragment: "I am having a fit or seizure",
+        bnFragment: "আমার খিঁচুনি হচ্ছে",
+        dangerSign: true,
+      },
+      {
+        id: "cannot_breathe",
+        category: "symptoms",
+        emoji: "😮‍💨",
+        labelEn: "Cannot breathe",
+        labelBn: "শ্বাস নিতে কষ্ট",
+        enFragment: "I can't breathe",
+        bnFragment: "আমার শ্বাস নিতে কষ্ট হচ্ছে",
+        dangerSign: true,
       },
     ],
   },

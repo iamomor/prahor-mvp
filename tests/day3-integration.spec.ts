@@ -122,14 +122,16 @@ test("AAC inserts once without sending; over-limit incoming text remains availab
   const f = await accounts(page); f.setActive(null); let sent = 0;
   page.on("request", request => { if (request.url().endsWith("/api/ai/chat")) sent++; });
   await page.goto("/ask"); await page.locator("#barta-question").fill("Existing question");
-  await page.locator("#barta-symbol-input > summary").click();
-  const aac = page.getByRole("region", { name: /AAC Phrase Builder/ });
+  await page.locator('button[aria-controls="barta-symbol-input"]').click();
+  await expect(page.locator("#barta-symbol-input")).toBeFocused();
+  const aac = page.getByRole("region", { name: /Say it with pictures/ });
+  await aac.getByRole("tabpanel").getByRole("button", { name: /Pain/ }).click();
   const output = aac.locator("textarea"); await output.fill("Synthetic AAC message");
-  await aac.getByRole("button", { name: /Insert into question/ }).click();
+  await aac.getByRole("button", { name: /Add to my question/ }).click();
   await expect(page.locator("#barta-question")).toHaveValue("Existing question\n\nSynthetic AAC message"); expect(sent).toBe(0);
   await page.locator("#barta-question").fill("q".repeat(1198)); await output.fill("Preserved incoming text");
-  await aac.getByRole("button", { name: /Insert into question/ }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "Preserved incoming text" })).toContainText("exceed 1,200 characters");
+  await aac.getByRole("button", { name: /Add to my question/ }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Preserved incoming text" })).toContainText("characters too many");
   await expect(page.locator("#barta-question")).toHaveValue("q".repeat(1198)); expect(sent).toBe(0);
 });
 
@@ -184,8 +186,9 @@ test("AAC speech and Barta microphone/read-aloud stop the previous owner; dictat
   await expect(input).toHaveValue("Existing draft\n\nOne dictated phrase");
   await barta.getByRole("button", { name: "Ask Barta", exact: true }).click();
   await expect(barta.getByText("Synthetic educational greeting.")).toBeVisible();
-  await page.locator("#barta-symbol-input > summary").click();
-  const aac = page.getByRole("region", { name: /AAC Phrase Builder/ }); await aac.locator("textarea").fill("Synthetic AAC preview");
+  await page.locator('button[aria-controls="barta-symbol-input"]').click();
+  await expect(page.locator("#barta-symbol-input")).toBeFocused();
+  const aac = page.getByRole("region", { name: /Say it with pictures/ }); await aac.getByRole("tabpanel").getByRole("button", { name: /Pain/ }).click(); await aac.locator("textarea").fill("Synthetic AAC preview");
   await aac.getByRole("button", { name: "Listen aloud", exact: true }).click();
   await expect(aac.getByRole("button", { name: "Stop reading", exact: true })).toBeVisible();
   await barta.getByRole("button", { name: "Start microphone" }).click();
@@ -224,8 +227,9 @@ test("Barta dictation inserts once and Adapt read-aloud stops microphone ownersh
   await page.getByRole("button", { name: "Start microphone", exact: true }).click();
   await page.getByRole("button", { name: "Stop microphone", exact: true }).click();
   await expect(question).toHaveValue("Existing question\n\nSynthetic transcript");
-  await page.locator("#barta-symbol-input > summary").click();
-  const aac = page.getByRole("region", { name: /AAC Phrase Builder/ }); await aac.locator("textarea").fill("Synthetic AAC preview");
+  await page.locator('button[aria-controls="barta-symbol-input"]').click();
+  await expect(page.locator("#barta-symbol-input")).toBeFocused();
+  const aac = page.getByRole("region", { name: /Say it with pictures/ }); await aac.getByRole("tabpanel").getByRole("button", { name: /Pain/ }).click(); await aac.locator("textarea").fill("Synthetic AAC preview");
   await page.getByRole("button", { name: "Start microphone", exact: true }).click();
   await aac.getByRole("button", { name: "Listen aloud", exact: true }).click();
   await expect(page.getByRole("button", { name: "Start microphone", exact: true })).toBeVisible();

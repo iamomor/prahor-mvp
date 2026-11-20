@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ArrowUpRight, LockKeyhole } from "lucide-react";
 import { AppButton } from "@/components/ui/AppButton";
 import { useLanguage } from "@/i18n/use-language";
+import { AACComposer, HeldAacText, mergeAacText, ReadAloudButton, VoiceDictationButton } from "@/features/adapt";
 import { loadDiaryEntries, saveDiaryEntry, shusthotaErrorCopy, type DiaryHistoryEntry } from "./api";
 import styles from "./ShusthotaOverview.module.css";
 
@@ -34,6 +35,7 @@ export function PrivateDiary() {
   const submitting = useRef(false);
   const historyRequest = useRef<AbortController | null>(null);
   const [text, setText] = useState("");
+  const [heldAac, setHeldAac] = useState("");
   const [entries, setEntries] = useState<DiaryHistoryEntry[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -101,6 +103,12 @@ export function PrivateDiary() {
           <textarea id={`${id}-note`} value={text} onChange={event => { setText(event.target.value); if (saveStatus?.kind === "success") setSaveStatus(null); }} maxLength={10000} rows={7} aria-describedby={`${id}-hint ${id}-count`} placeholder={t(copy.placeholder)} className={`${styles.journalPaper} min-h-44 w-full resize-y rounded-field border border-pro-control-border px-4 py-3 text-base leading-relaxed text-pro-text placeholder:text-pro-muted focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-pro-focus`} />
           <span id={`${id}-count`} className="pro-muted text-sm tabular-nums">{text.length}/10000</span>
         </label>
+        <VoiceDictationButton language={language === "en" ? "en" : "bn"} value={text} maxLength={10000} onChange={setText} />
+        <AACComposer initialLanguage={language === "en" ? "en" : "bn"} targetLabel={t({ en: "Add to private note", bn: "ব্যক্তিগত নোটে যোগ করুন" })} onInsert={phrase => {
+          const next = mergeAacText(text, phrase);
+          if (next.length <= 10000) { setText(next); setHeldAac(""); } else setHeldAac(phrase);
+        }} />
+        {heldAac && <HeldAacText text={heldAac} value={text} maxLength={10000} lang={language === "en" ? "en" : "bn"} onDismiss={() => setHeldAac("")} onAdd={next => { setText(next); setHeldAac(""); }} />}
         {saveStatus && <p role={saveStatus.kind === "error" ? "alert" : "status"} aria-live={saveStatus.kind === "error" ? "assertive" : "polite"} className={saveStatus.kind === "error" ? "rounded-control border border-pro-danger bg-pro-danger-soft p-3 text-pro-danger" : "rounded-control border border-pro-success bg-pro-success-soft p-3 text-pro-success"}>{saveStatus.message}</p>}
         <AppButton disabled={!text.trim() || saving || saveStatus?.kind === "success"} onClick={() => void save()} className="min-h-12 w-full whitespace-normal sm:w-fit">{saving ? t(copy.saving) : t(saveStatus?.kind === "success" ? copy.saved : copy.save)}<ArrowUpRight size={16} aria-hidden="true" className="ms-2" /></AppButton>
       </section>
@@ -113,7 +121,7 @@ export function PrivateDiary() {
         {loading && <p role="status" className="pro-muted py-3">{t(copy.loading)}</p>}
         {!loading && historyError && <div className="grid justify-items-start gap-3 rounded-control border border-pro-danger bg-pro-danger-soft p-4"><p role="alert" className="text-pro-danger">{historyError}</p><AppButton variant="secondary" onClick={() => void load()}>{t(copy.retry)}</AppButton></div>}
         {!loading && !historyError && entries?.length === 0 && <div className="grid justify-items-center gap-3 rounded-hero border border-dashed border-pro-border bg-pro-surface p-7 text-center"><span className="grid size-11 place-items-center rounded-full border border-pro-border bg-pro-elevated text-pro-primary"><LockKeyhole size={18} aria-hidden="true" /></span><p className="pro-muted max-w-sm leading-relaxed">{t(copy.empty)}</p></div>}
-        {!loading && !historyError && entries && entries.length > 0 && <ol className="grid gap-4">{entries.map(entry => <li key={entry.id} className="grid gap-2 border-b border-pro-border pb-4 last:border-0"><time dateTime={entry.occurred_at} className="text-sm font-medium text-pro-muted">{formatDate(entry.occurred_at, language)}</time><p className="whitespace-pre-wrap break-words leading-relaxed">{entry.text}</p></li>)}</ol>}
+        {!loading && !historyError && entries && entries.length > 0 && <ol className="grid gap-4">{entries.map(entry => <li key={entry.id} className="grid gap-2 border-b border-pro-border pb-4 last:border-0"><time dateTime={entry.occurred_at} className="text-sm font-medium text-pro-muted">{formatDate(entry.occurred_at, language)}</time><p className="whitespace-pre-wrap break-words leading-relaxed">{entry.text}</p><ReadAloudButton text={entry.text} language={language === "en" ? "en" : "bn"} /></li>)}</ol>}
       </section>
     </div>
   );

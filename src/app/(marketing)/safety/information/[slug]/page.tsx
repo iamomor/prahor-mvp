@@ -11,7 +11,7 @@ export function generateStaticParams() {
 
 export const metadata: Metadata = {
   title: "Information detail | Shonket",
-  description: "A detail page ready for clinician-reviewed safety information.",
+  description: "A source-linked safety information page. Clinical review pending.",
 };
 
 export default async function SafetyInformationDetailPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { ReadAloudButton } from "@/features/adapt";
 import Link from "next/link";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
@@ -10,10 +11,16 @@ import { CareGuide } from "./CareGuide";
 import { AccountVisitPack } from "./AccountVisitPack";
 import { accountJourney } from "./account-journey";
 import { filterAccountHistory } from "./account-history";
-import { selectAccountPregnancy, type GuideSelection } from "./account-records-model";
+import type { GuideSelection } from "./account-records-model";
 
 import { accountSourceLabel } from "./account-provenance";
+import { recordKindLabel, useL } from "./use-l";
 import { ActionTile, Segmented, SubviewHeader, ViewSwitch, ui } from "./jibonrekha-ui";
+
+
+import { selectAccountPregnancy as selectAccountPregnancyFn } from "./account-records-model";
+
+
 
 
 type Pregnancy = {
@@ -81,16 +88,6 @@ type Records = {
   corrections: Correction[];
 };
 
-const labels: Record<string, string> = {
-  weight: "ওজন",
-  temperature: "তাপমাত্রা",
-  systolic_blood_pressure: "উপরের রক্তচাপ",
-  diastolic_blood_pressure: "নিচের রক্তচাপ",
-  hemoglobin: "হিমোগ্লোবিন",
-  glucose: "রক্তে গ্লুকোজ",
-  fetal_heart_rate: "ভ্রূণের হৃদস্পন্দন",
-  note: "নোট",
-};
 const choices = {
   mother: [
     ["weight", "kg"],
@@ -118,13 +115,15 @@ const unitOptions: Record<string, string[]> = {
 type Task = "home" | "guide" | "share" | "observation" | "pregnancy" | "baby" | "note" | "visit" | "records";
 
 type RecordsTab = "measures" | "notes" | "visits" | "profiles";
-const taskCopy: Record<Exclude<Task, "home" | "guide" | "share">, { title: string; description: string }> = {
-  observation: { title: "মাপ বা নোট যোগ করুন", description: "কার নথি বেছে নিন, মান লিখুন, তারপর দেখে সংরক্ষণ করুন। প্রতিটি মানের তারিখ ও উৎস থাকে।" },
-  records: { title: "ইতিহাস", description: "মা ও শিশুর নথি আলাদা থাকে। প্রতিটি মানের উৎস দেখা যায়; সংশোধন করলে আগের মানও রাখা থাকে।" },
-  pregnancy: { title: "গর্ভকালের নথি যোগ করুন", description: "আপনার জানা তারিখ লিখুন। সম্ভাব্য প্রসবের তারিখ চিকিৎসকের নথির সঙ্গে মিলিয়ে নিন।" },
-  baby: { title: "শিশুর নথি যোগ করুন", description: "প্রতিটি শিশুর নথি আলাদা। একই গর্ভকালের সঙ্গে একাধিক শিশু যুক্ত করা যায়।" },
-  note: { title: "স্বাস্থ্য নোট লিখুন", description: "এটি আপনার নিজের লেখা। কোনো রোগনির্ণয় তৈরি হয় না।" },
-  visit: { title: "ভিজিট লিখুন", description: "যে ভিজিট হয়ে গেছে তার কথা রাখুন। এটি অ্যাপয়েন্টমেন্ট বুক করে না, সেবাদাতাকে কিছু পাঠায় না।" },
+
+const taskCopy: Record<Exclude<Task, "home" | "guide" | "share">, { title: string; description: string; titleEn: string; descriptionEn: string }> = {
+  observation: { title: "মাপ বা নোট যোগ করুন", description: "কার নথি বেছে নিন, মান লিখুন, তারপর দেখে সংরক্ষণ করুন। প্রতিটি মানের তারিখ ও উৎস থাকে।", titleEn: "Add a measurement or note", descriptionEn: "Choose whose record it belongs to, enter the value, review it, then save. Each entry keeps its date and source." },
+  records: { title: "ইতিহাস", description: "মা ও শিশুর নথি আলাদা থাকে। প্রতিটি মানের উৎস দেখা যায়; সংশোধন করলে আগের মানও রাখা থাকে।", titleEn: "History", descriptionEn: "Maternal and baby records stay separate. Each value shows its source; corrections preserve the earlier value." },
+  pregnancy: { title: "গর্ভকালের নথি যোগ করুন", description: "আপনি যে তারিখ লিখবেন সেটাই রাখা হয়। প্রহর ক্লিনিক্যাল প্রসবের তারিখ হিসাব বা নিশ্চিত করে না।", titleEn: "Add a pregnancy record", descriptionEn: "The date you enter is kept. PROHOR does not calculate or confirm a clinical due date." },
+  baby: { title: "শিশুর নথি যোগ করুন", description: "প্রতিটি শিশুর নথি আলাদা। একই গর্ভকালের সঙ্গে একাধিক শিশু যুক্ত করা যায়।", titleEn: "Add a baby record", descriptionEn: "Each baby has a separate record. More than one baby can be linked to the same pregnancy." },
+  note: { title: "স্বাস্থ্য নোট লিখুন", description: "এটি আপনার নিজের লেখা। কোনো রোগনির্ণয় তৈরি হয় না।", titleEn: "Write a health note", descriptionEn: "This is your own note. It does not create a diagnosis." },
+  visit: { title: "ভিজিট লিখুন", description: "যে ভিজিট হয়ে গেছে তার কথা রাখুন। এটি অ্যাপয়েন্টমেন্ট বুক করে না, সেবাদাতাকে কিছু পাঠায় না।", titleEn: "Record a visit", descriptionEn: "Keep a note about a visit that happened. This does not book an appointment or send anything to a provider." },
+
 };
 const subjectOptions = [{ value: "mother" as const, label: "মা" }, { value: "baby" as const, label: "শিশু" }];
 const pageSize = 10;
@@ -162,6 +161,10 @@ function provenanceClass(item: Observation) {
 }
 
 export function AccountRecords() {
+  const L = useL();
+  const labels: Record<string, string> = Object.fromEntries([
+    "weight", "temperature", "systolic_blood_pressure", "diastolic_blood_pressure", "hemoglobin", "glucose", "fetal_heart_rate", "note", "blood_pressure", "movement_note", "visit", "medicine", "ultrasound",
+  ].map((kind) => [kind, recordKindLabel(kind, L.bn)]));
   const [records, setRecords] = useState<Records | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -171,6 +174,7 @@ export function AccountRecords() {
   const [kind, setKind] = useState("weight");
   const [unit, setUnit] = useState("kg");
   const [pregnancyId, setPregnancyId] = useState("");
+  const [guideSelections, setGuideSelections] = useState<Record<string, GuideSelection | null>>({});
   const [babyId, setBabyId] = useState("");
   const [historySubject, setHistorySubject] = useState<"both" | "mother" | "baby">("both");
   const [historyQuery, setHistoryQuery] = useState("");
@@ -316,12 +320,14 @@ export function AccountRecords() {
     }
     return history;
   }
-  const selectedPregnancy = records ? selectAccountPregnancy(records.pregnancies, pregnancyId) : undefined;
+  const selectedPregnancy = records ? selectAccountPregnancyFn(records.pregnancies, pregnancyId) : undefined;
   const journey = selectedPregnancy ? accountJourney(selectedPregnancy, today()) : null;
-  const guideKey = selectedPregnancy?.id ?? "no-pregnancy";
+
+  const guideKey = selectedPregnancy?.id ?? "none";
   const guideSelection = guideSelections[guideKey] ?? null;
-  const shownJourney = journey && guideSelection ? { weeks: guideSelection.week, days: guideSelection.day } : journey;
-  const previewing = journey !== null && guideSelection !== null;
+  const shownJourney = journey && guideSelection ? { ...journey, weeks: guideSelection.week, days: guideSelection.day } : journey;
+  const previewing = Boolean(journey && guideSelection && (guideSelection.week !== journey.weeks || guideSelection.day !== journey.days));
+
 
   const recent = [...activeObservations].sort((a, b) => b.observed_at.localeCompare(a.observed_at));
   const currentBabyIds = new Set(records?.babies.filter((item) => !selectedPregnancy || item.pregnancy_id === selectedPregnancy.id).map((item) => item.id) ?? []);
@@ -358,7 +364,7 @@ export function AccountRecords() {
         <p className="text-pro-muted">আপনার ও শিশুর যাত্রা, এক রেখায়।</p>
 
       </header>
-        : task !== "guide" && task !== "share" && <SubviewHeader title={taskCopy[task].title} description={taskCopy[task].description} onBack={() => openTask("home")} headingRef={taskHeading} />}
+        : task !== "guide" && task !== "share" && <SubviewHeader title={L(taskCopy[task].titleEn, taskCopy[task].title)} description={L(taskCopy[task].descriptionEn, taskCopy[task].description)} onBack={() => openTask("home")} headingRef={taskHeading} />}
       {message && <p ref={statusFocus} tabIndex={-1} role="status" className="rounded-field border border-pro-success bg-pro-success-soft p-4 focus-visible:outline-3 focus-visible:outline-pro-focus">{message}</p>}
       {error && (
         <div ref={errorFocus} tabIndex={-1} className="grid gap-3 rounded-field border border-pro-danger bg-pro-danger-soft p-4 focus-visible:outline-3 focus-visible:outline-pro-focus">
@@ -451,8 +457,9 @@ export function AccountRecords() {
                     <h3 id={`lane-${lane}`} className="flex items-center gap-2 border-b-2 border-pro-primary pb-2 text-lg font-semibold">{subjectMark(lane)}{name}</h3>
                     {items.length ? items.map((item) => <article key={item.id} className={`${ui.card} grid gap-2 sm:p-5`}>
                       <p className="text-sm text-pro-muted"><time dateTime={item.observed_at}>{formatBnDate(item.observed_at)}</time></p>
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-3"><h4 className="text-lg font-semibold">{labels[item.kind] ?? item.kind}</h4><p className="text-2xl font-semibold [overflow-wrap:anywhere]">{item.value} {item.unit && <span className="text-base font-normal">{item.unit}</span>}</p></div>
-                      <p className={provenanceClass(item)}>{accountSourceLabel(item)}</p>
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3"><h4 className="text-lg font-semibold">{recordKindLabel(item.kind, L.bn)}</h4><p className="text-2xl font-semibold [overflow-wrap:anywhere]">{item.value} {item.unit && <span className="text-base font-normal">{item.unit}</span>}</p></div>
+                      <p className={provenanceClass(item)}>{accountSourceLabel(item, L.bn)}</p>
+                      <ReadAloudButton language={L.bn ? "bn" : "en"} label={L("Read aloud", "পড়ে শোনান")} text={`${formatBnDate(item.observed_at)}। ${recordKindLabel(item.kind, L.bn)}: ${item.value} ${item.unit ?? ""}। ${accountSourceLabel(item, L.bn)}`} />
                       <button type="button" onClick={() => { setHistorySubject(lane); setHistoryKind(item.kind); openTask("records", "measures"); }} className={`${ui.link} w-fit`}>ইতিহাসে দেখুন</button>
                     </article>) : <div className="grid justify-items-start gap-3 rounded-card border border-dashed border-pro-control-border bg-pro-elevated p-5">
                       <p className="text-pro-muted">এই গর্ভকালে এখনও {lane === "mother" ? "মায়ের" : "শিশুর"} কোনো তথ্য নেই।</p>
@@ -473,8 +480,10 @@ export function AccountRecords() {
               </section>
             </>}
 
+
             {task === "guide" && <CareGuide currentWeek={journey?.weeks ?? null} currentDay={journey?.days ?? 0} selection={guideSelection} onSelectionChange={(next) => setGuideSelections((previous) => ({ ...previous, [guideKey]: next }))} headingRef={taskHeading} onBack={() => openTask("home")} onAddNote={() => openTask("note")} bujhiHref="/app/bujhi" />}
             {task === "share" && <AccountVisitPack headingRef={taskHeading} rows={recent.map((item) => ({ id: item.id, subject: item.subject, label: labels[item.kind] ?? item.kind, value: item.value, unit: item.unit, observedAt: formatBnDate(item.observed_at), source: accountSourceLabel(item) }))} onBack={() => openTask("home")} />}
+
 
             {task === "pregnancy" && <form
               className={formCard}
@@ -649,7 +658,7 @@ export function AccountRecords() {
                     <select value={historySubject} onChange={(event) => { setHistorySubject(event.target.value as typeof historySubject); setHistoryLimit(pageSize); }} className={ui.input}><option value="both">মা ও শিশু</option><option value="mother">শুধু মা</option><option value="baby">শুধু শিশু</option></select>
                   </label>
                   <label className={ui.field}>ধরন
-                    <select value={historyKind} onChange={(event) => { setHistoryKind(event.target.value); setHistoryLimit(pageSize); }} className={ui.input}><option value="all">সব ধরন</option>{[...new Set(activeObservations.map((item) => item.kind))].map((value) => <option key={value} value={value}>{labels[value] ?? value}</option>)}</select>
+                    <select value={historyKind} onChange={(event) => { setHistoryKind(event.target.value); setHistoryLimit(pageSize); }} className={ui.input}><option value="all">সব ধরন</option>{[...new Set(activeObservations.map((item) => item.kind))].map((value) => <option key={value} value={value}>{recordKindLabel(value, L.bn)}</option>)}</select>
                   </label>
                   <label className={ui.field}>গর্ভকাল
                     <select value={pregnancyId} onChange={(event) => { setPregnancyId(event.target.value); setHistoryLimit(pageSize); }} className={ui.input}><option value="">সব গর্ভকাল</option>{records.pregnancies.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
@@ -673,9 +682,9 @@ export function AccountRecords() {
                       <li className="grid gap-3 rounded-card border border-pro-border bg-pro-elevated px-4 py-3">
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                           {subjectMark(item.subject)}
-                          <p className="min-w-[10rem] flex-1"><strong>{labels[item.kind] ?? item.kind}</strong> · {item.subject === "mother" ? "মা" : "শিশু"}<span className="sr-only"> · {day}</span></p>
+                          <p className="min-w-[10rem] flex-1"><strong>{recordKindLabel(item.kind, L.bn)}</strong> · {item.subject === "mother" ? "মা" : "শিশু"}<span className="sr-only"> · {day}</span></p>
                           <p className="text-xl font-semibold [overflow-wrap:anywhere]">{item.value}{item.unit && <span className="text-sm font-normal"> {item.unit}</span>}</p>
-                          <p className={provenanceClass(item)}>{accountSourceLabel(item)}{previous.length > 0 && " · সংশোধিত"}</p>
+                          <p className={provenanceClass(item)}>{accountSourceLabel(item, L.bn)}{previous.length > 0 && ` · ${L("corrected", "সংশোধিত")}`}</p>
                           <button type="button" aria-expanded={item.id === correctingId} onClick={() => setCorrectingId(item.id === correctingId ? null : item.id)} className={`${ui.secondary} ${ui.small}`}>
                             {item.id === correctingId ? "সংশোধন বন্ধ করুন" : "সংশোধন"}
                           </button>

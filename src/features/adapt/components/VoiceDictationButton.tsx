@@ -13,7 +13,12 @@ type Props = {
   maxLength: number;
   /** Receives the field text with the recognised words appended. The mother can still edit it; nothing is submitted. */
   onChange: (next: string) => void;
+  /** Language the microphone listens in. */
   language?: "bn" | "en";
+  /** Language of the labels and hints around the microphone. Defaults to the listening language. */
+  uiLanguage?: "bn" | "en";
+  /** Hide the "characters left" line when the host field already shows its own counter. */
+  hideCounter?: boolean;
   hideLanguageSelect?: boolean;
   disabled?: boolean;
   onListeningChange?: (listening: boolean) => void;
@@ -27,12 +32,13 @@ const copy = {
 } as const;
 
 /** One shared, user-started microphone control. Never listens on its own; never stores audio; never submits. */
-export function VoiceDictationButton({ value, maxLength, onChange, language, hideLanguageSelect = false, disabled = false, onListeningChange, focusTargetRef, className = "" }: Props) {
+export function VoiceDictationButton({ value, maxLength, onChange, language, uiLanguage, hideCounter = false, hideLanguageSelect = false, disabled = false, onListeningChange, focusTargetRef, className = "" }: Props) {
   const { prefs } = useAdaptPreferences();
   const hydrated = useHydrated();
   const [selectedLanguage, setLang] = useState<"bn" | "en">(() => language ?? (prefs.language === "en" ? "en" : "bn"));
   const lang = hideLanguageSelect ? language ?? selectedLanguage : selectedLanguage;
-  const c = copy[lang];
+  const ui = uiLanguage ?? lang;
+  const c = copy[ui];
   const [state, setState] = useState<"idle" | "starting" | "listening">("idle");
   const [message, setMessage] = useState("");
   const [allowRemote, setAllowRemote] = useState(false);
@@ -56,7 +62,7 @@ export function VoiceDictationButton({ value, maxLength, onChange, language, hid
     const next = `${current}${current && !/\s$/.test(current) ? " " : ""}${words}`;
     if (next.length <= max) { change(next); setHeld(""); return; }
     setHeld(previous => previous ? `${previous} ${words}` : words);
-    setMessage(lang === "bn" ? `সীমা ${max} অক্ষর। এই কথাগুলো যোগ হয়নি; নিচে রাখা আছে। লেখা ছোট করে "রাখা কথা যোগ করুন" চাপুন।` : `The limit is ${max} characters. These words were not added and are kept below. Shorten your text, then press “Add held words”.`);
+    setMessage(ui === "bn" ? `সীমা ${max} অক্ষর। এই কথাগুলো যোগ হয়নি; নিচে রাখা আছে। লেখা ছোট করে "রাখা কথা যোগ করুন" চাপুন।` : `The limit is ${max} characters. These words were not added and are kept below. Shorten your text, then press “Add held words”.`);
   }
 
   async function start() {
@@ -76,7 +82,7 @@ export function VoiceDictationButton({ value, maxLength, onChange, language, hid
           setState("idle"); session.current = null; onListeningChange?.(false); setInterim("");
           if (focusTargetRef?.current) window.requestAnimationFrame(() => focusTargetRef.current?.focus());
           if (cancelled.current) {
-            latest.current.onChange(startValue.current); setHeld(startHeld.current); setInterim(""); setMessage(lang === "bn" ? "কথা বাতিল করা হয়েছে। আগের লেখা রাখা আছে।" : "Dictation cancelled. Your earlier text is unchanged.");
+            latest.current.onChange(startValue.current); setHeld(startHeld.current); setInterim(""); setMessage(ui === "bn" ? "কথা বাতিল করা হয়েছে। আগের লেখা রাখা আছে।" : "Dictation cancelled. Your earlier text is unchanged.");
           } else if (!failed.current) setMessage(heard.current ? c.done : c.empty);
         },
       });
@@ -87,9 +93,9 @@ export function VoiceDictationButton({ value, maxLength, onChange, language, hid
   }
 
   return (
-    <div className={`grid gap-2 ${className}`} lang={lang}>
+    <div className={`grid gap-2 ${className}`} lang={ui}>
       {!hideLanguageSelect && <label className="grid max-w-xs gap-1 text-sm font-medium">
-        {lang === "bn" ? "কথার ভাষা" : "Spoken language"}
+        {ui === "bn" ? "কথার ভাষা" : "Spoken language"}
         <select className="min-h-11 rounded-field border border-pro-control-border bg-pro-bg px-3 text-base" value={lang} disabled={disabled || state !== "idle"} onChange={event => setLang(event.currentTarget.value === "en" ? "en" : "bn")}>
           <option value="bn">বাংলা</option>
           <option value="en">English</option>
@@ -100,27 +106,27 @@ export function VoiceDictationButton({ value, maxLength, onChange, language, hid
           ? <>
               <AppButton variant="primary" size="sm" onClick={() => session.current?.stop()}><Square size={15} aria-hidden="true" />{c.stop}</AppButton>
               <AppButton variant="ghost" size="sm" onClick={() => { cancelled.current = true; session.current?.cancel(); }}><X size={15} aria-hidden="true" />{c.cancel}</AppButton>
-              <span aria-hidden="true" className="font-semibold text-pro-danger">● {lang === "bn" ? "রেকর্ড চলছে" : "Recording"}</span>
+              <span aria-hidden="true" className="font-semibold text-pro-danger">● {ui === "bn" ? "রেকর্ড চলছে" : "Recording"}</span>
             </>
           : <AppButton variant="ghost" size="sm" disabled={disabled || state === "starting" || !supported} onClick={() => void start()}><Mic size={15} aria-hidden="true" />{c.start}</AppButton>}
       </div>
       {supported && state === "idle" && (
         <label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" className="mt-1 size-5" disabled={disabled} checked={allowRemote} onChange={event => setAllowRemote(event.currentTarget.checked)} />{c.remote}</label>
       )}
-      {!supported && <p className="text-sm text-pro-muted">{lang === "bn" ? "এই ব্রাউজারে কণ্ঠে লেখা সমর্থিত নয়। অনুগ্রহ করে লিখুন।" : "Voice input is not supported in this browser. Please type."}</p>}
+      {!supported && <p className="text-sm text-pro-muted">{ui === "bn" ? "এই ব্রাউজারে কণ্ঠে লেখা সমর্থিত নয়। অনুগ্রহ করে লিখুন।" : "Voice input is not supported in this browser. Please type."}</p>}
       {held && (
         <div className="grid gap-2 rounded-field border border-pro-warning p-3">
           <p lang={lang}>{held}</p>
-          <AppButton variant="secondary" size="sm" disabled={value.length + held.length + 1 > maxLength} onClick={() => add(held)}>{lang === "bn" ? "রাখা কথা যোগ করুন" : "Add held words"}</AppButton>
+          <AppButton variant="secondary" size="sm" disabled={value.length + held.length + 1 > maxLength} onClick={() => add(held)}>{ui === "bn" ? "রাখা কথা যোগ করুন" : "Add held words"}</AppButton>
         </div>
       )}
-      {interim && <div role="region" aria-label={lang === "bn" ? "লাইভ ট্রান্সক্রিপ্ট" : "Live transcript"} lang={lang}>
-        <p className="text-sm text-pro-muted"><span className="font-semibold">{lang === "bn" ? "শোনা যাচ্ছে:" : "Heard so far:"}</span> <mark>{interim}</mark></p>
+      {interim && <div role="region" aria-label={ui === "bn" ? "লাইভ ট্রান্সক্রিপ্ট" : "Live transcript"} lang={lang}>
+        <p className="text-sm text-pro-muted"><span className="font-semibold">{ui === "bn" ? "শোনা যাচ্ছে:" : "Heard so far:"}</span> <mark>{interim}</mark></p>
       </div>}
-      <p className="text-sm text-pro-muted" aria-hidden="true">{lang === "bn" ? `বাকি ${Math.max(0, maxLength - value.length)} অক্ষর (সর্বোচ্চ ${maxLength})` : `${Math.max(0, maxLength - value.length)} characters left (maximum ${maxLength})`}</p>
+      {!hideCounter && <p className="text-sm text-pro-muted" aria-hidden="true">{ui === "bn" ? `বাকি ${Math.max(0, maxLength - value.length)} অক্ষর (সর্বোচ্চ ${maxLength})` : `${Math.max(0, maxLength - value.length)} characters left (maximum ${maxLength})`}</p>}
       {message
         ? <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-pro-muted">{message}</p>
-        : <p className="text-sm text-pro-muted">{supported ? c.fallback : lang === "bn" ? "এই ব্রাউজারে কণ্ঠে লেখা সমর্থিত নয়। অনুগ্রহ করে লিখুন।" : "Voice input is not supported in this browser. Please type."}</p>}
+        : <p className="text-sm text-pro-muted">{supported ? c.fallback : ui === "bn" ? "এই ব্রাউজারে কণ্ঠে লেখা সমর্থিত নয়। অনুগ্রহ করে লিখুন।" : "Voice input is not supported in this browser. Please type."}</p>}
     </div>
   );
 }

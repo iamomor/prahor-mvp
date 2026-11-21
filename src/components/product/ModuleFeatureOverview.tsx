@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { Accessibility, Activity, BookOpen, FileSearch, HeartHandshake, MapPin, ShieldCheck, UsersRound, CircleCheck, Clock3, CircleAlert } from "lucide-react";
 import { useLanguage } from "@/i18n/use-language";
+import type { Language } from "@/i18n/translations";
 
 type ModuleId = "adapt" | "barta" | "shonket" | "jibonrekha" | "bujhi" | "shusthota" | "poth" | "bondhon";
 type Feature = { en: string; bn: string; status: "available" | "coming" | "limited" };
@@ -38,8 +39,9 @@ const statusCopy = {
 };
 const StatusIcon = { available: CircleCheck, coming: Clock3, limited: CircleAlert };
 
-export function ModuleFeatureOverview({ module }: { module: ModuleId }) {
-  const { language } = useLanguage();
+export function ModuleFeatureOverview({ module, language: forcedLanguage }: { module: ModuleId; language?: Language }) {
+  const { language: siteLanguage } = useLanguage();
+  const language = forcedLanguage ?? siteLanguage;
   const id = useId();
   const item = modules[module];
   const ModuleIcon = item.icon;

@@ -30,6 +30,8 @@ const topicGroups = [
   { name: "afterBirth", topics: ["postnatal", "breastfeeding", "newborn"] },
 ] as const satisfies readonly { name: "pregnancy" | "afterBirth"; topics: readonly EducationTopic[] }[];
 
+const starterTopics = ["anc", "breastfeeding", "newborn"] as const satisfies readonly EducationTopic[];
+
 const additionalTopics = [
   "pregnancyBasics", "balancedMeals", "warningSigns", "maternalHealth", "mentalWellbeing", "birthPlan",
   "firstCheckup", "ultrasound", "foodSafety", "morningSickness",
@@ -296,7 +298,7 @@ export function BartaEducationChat({
       stopSpeaking();
       pauseAudio(event.target);
     }}>
-      <ModuleFeatureOverview module="barta" />
+      <ModuleFeatureOverview module="barta" language={formLanguage} />
       <section className={styles.chat} aria-label={formLanguage === "bn" ? "বার্তার কথোপকথন" : "Barta conversation"}>
 
 
@@ -341,7 +343,9 @@ export function BartaEducationChat({
             {speakerEnabled && playbackMessage("barta-reply") && (
               <p role="status" className={styles.playbackNotice} lang={audio.notice?.language}>{playbackMessage("barta-reply")}</p>
             )}
-            {busy && <p className={styles.notice} lang={formLanguage}>{copy.checking}</p>}
+            {busy && <p className={styles.typing} lang={formLanguage}>
+              <span className={styles.typingDots} aria-hidden="true"><i /><i /><i /></span>{copy.checking}
+            </p>}
             {error && <div ref={latest}><p className={styles.notice} lang={error.language} role="alert">{error.message}</p></div>}
           </div>
         ) : (
@@ -354,6 +358,15 @@ export function BartaEducationChat({
                   ? "গর্ভাবস্থা, প্রসব বা নবজাতকের যত্ন নিয়ে নিজের ভাষায় প্রশ্ন করুন। প্রতিটি উত্তরের সূত্র দেখতে পাবেন।"
                   : "Ask about pregnancy, birth or caring for your newborn, in your own words. Every answer shows where it comes from."}</p>
               </div>
+            </div>
+            <div className={styles.starters} role="group" aria-label={formLanguage === "bn" ? "শুরু করার প্রশ্ন" : "Ways to start"}>
+              <p>{formLanguage === "bn" ? "এখান থেকে শুরু করতে পারেন" : "Try one of these"}</p>
+              <ul>
+                {starterTopics.map((topic) => (
+                  <li key={topic}><button type="button" className={styles.starter} disabled={!ready || busy}
+                    onClick={() => onSelect(educationTopics[topic][formLanguage])}>{educationTopics[topic][formLanguage]}</button></li>
+                ))}
+              </ul>
             </div>
           </div>
         )}
@@ -385,14 +398,14 @@ export function BartaEducationChat({
             <div className={styles.composer}>
               <textarea id="barta-question" ref={questionInput} value={question}
                 placeholder={copy.placeholder} aria-describedby="barta-privacy"
-                onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} required />
-              <div className="grid gap-2 px-3 pb-2">
-                <p className="text-sm text-pro-muted">
+                onChange={(event) => onQuestion(event.currentTarget.value)} readOnly={!ready || busy} maxLength={1200} aria-required="true" rows={3} />
+              <div className={styles.voiceStrip}>
+                <p className={styles.voiceSteps}>
                   {formLanguage === "bn"
                     ? "মাইক্রোফোন চাপুন → বলুন → থামান → লেখা দেখে ঠিক করুন → পাঠান"
                     : "Tap mic → Speak → Stop → Review or edit → Send"}
                 </p>
-                <VoiceDictationButton language={voiceLanguage === "auto" ? micLanguage : voiceLanguage} hideLanguageSelect disabled={!ready || busy} value={question} maxLength={1200} onChange={onQuestion} onListeningChange={setVoiceListening} focusTargetRef={questionInput} />
+                <VoiceDictationButton language={voiceLanguage === "auto" ? micLanguage : voiceLanguage} uiLanguage={formLanguage} hideCounter hideLanguageSelect disabled={!ready || busy} value={question} maxLength={1200} onChange={onQuestion} onListeningChange={setVoiceListening} focusTargetRef={questionInput} />
               </div>
               <div className={styles.composerBar}>
                 {symbolPanel && (

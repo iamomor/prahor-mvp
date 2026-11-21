@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { AACComposer, HeldAacText, VoiceDictationButton, clearStoredAacDraft, getStoredAacDraft, mergeAacText, useAdaptPreferences } from "@/features/adapt";
 import { bartaAnswerSchema, type BartaAnswer } from "@/lib/contracts/barta";
+import { useLanguage } from "@/i18n/use-language";
 import { NetworkStatus } from "@/components/pwa/NetworkStatus";
 import { detectBartaLanguage } from "./chat-language";
 import { BartaEducationChat } from "./BartaEducationChat";
@@ -32,6 +33,7 @@ function readErrorMessage(body: unknown): string {
 export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode?: "demo" | "education"; initialQuestion?: string }) {
   const demo = mode === "demo";
   useAdaptPreferences();
+  const { language: siteLanguage } = useLanguage();
   const [incoming, setIncoming] = useState("");
   const storedDraft = useSyncExternalStore(subscribeDraft, getStoredAacDraft, () => null);
   const [answerLanguage, setAnswerLanguage] = useState<Language | "auto">("auto");
@@ -39,7 +41,7 @@ export function BartaChatStarter({ mode = "demo", initialQuestion = "" }: { mode
   const pendingRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState(() => initialQuestion.slice(0, 1200));
   const [turns, setTurns] = useState<Turn[]>([]);
-  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? "en" : answerLanguage;
+  const formLanguage = answerLanguage === "auto" ? turns.at(-1)?.language ?? siteLanguage : answerLanguage;
   const [previousChunkId, setPreviousChunkId] = useState<string>();
   const [state, setState] = useState<ChatState>({ status: "idle" });
   const busy = state.status === "checking";

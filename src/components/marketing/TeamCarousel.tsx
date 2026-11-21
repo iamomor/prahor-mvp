@@ -14,9 +14,9 @@ export const team: Member[] = [
   { name: "Muhammad Omor Faruk", photo: "/team/omor.webp", role: copy("Team Leader / Project Coordinator & Backend Engineer", "টিম লিডার / প্রজেক্ট কো-অর্ডিনেটর ও ব্যাকএন্ড ইঞ্জিনিয়ার"), place: EWU_CSE },
   { name: "Iftee Raiyan", photo: "/team/iftee.webp", role: copy("AI & Scraper Engineer", "এআই ও স্ক্র্যাপার ইঞ্জিনিয়ার"), place: EWU_CSE },
   { name: "Ahnaf Kabir Chowdhury", photo: "/team/ahnaf.webp", role: copy("UI/UX Designer & Frontend Developer", "ইউআই/ইউএক্স ডিজাইনার ও ফ্রন্টএন্ড ডেভেলপার"), place: EWU_CSE },
-  { name: "Apurbo Kumar Shill", photo: "/team/apurbo.webp", role: copy("Records & Verification Engineer · Jibonrekha, Bujhi", "রেকর্ড ও যাচাই ইঞ্জিনিয়ার · জীবনরেখা, বুঝি"), place: EWU_CSE },
-  { name: "Touhira Jannat", role: copy("Wellness & Care Navigation · Shusthota, Poth", "ভালো থাকা ও সেবার পথনির্দেশ · সুস্থতা, পথ"), place: EWU_CSE },
   { name: "Mahmud Hasan Shaon", photo: "/team/mahmud.webp", role: copy("Medical Coordinator / Clinical Domain Expert", "মেডিকেল কো-অর্ডিনেটর / ক্লিনিক্যাল ডোমেইন বিশেষজ্ঞ"), place: copy("Chattogram Maa-O-Shishu Hospital Medical College", "চট্টগ্রাম মা ও শিশু হাসপাতাল মেডিকেল কলেজ") },
+  { name: "Touhira Jannat", role: copy("Wellness & Care Navigation · Shusthota, Poth", "ভালো থাকা ও সেবার পথনির্দেশ · সুস্থতা, পথ"), place: EWU_CSE },
+  { name: "Apurbo Kumar Shill", photo: "/team/apurbo.webp", role: copy("Records & Verification Engineer · Jibonrekha, Bujhi", "রেকর্ড ও যাচাই ইঞ্জিনিয়ার · জীবনরেখা, বুঝি"), place: EWU_CSE },
 ];
 
 const initials = (name: string) => name.split(" ").filter(Boolean).map(part => part[0]).slice(0, 2).join("");
